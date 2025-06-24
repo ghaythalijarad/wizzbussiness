@@ -1,0 +1,32 @@
+{
+  "name": "order-receiver-app",
+  "version": "1.0.0",
+  "description": "An application for restaurants and stores to receive orders from customers.",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "ts-node src/main.ts",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.3.2",
+    "ts-node": "^10.0.0",
+    "jest": "^27.0.6",
+    "@types/jest": "^27.0.1",
+    "@types/react": "^17.0.2",
+    "@types/react-dom": "^17.0.2"
+  },
+  "keywords": [
+    "order",
+    "receiver",
+    "restaurant",
+    "store"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

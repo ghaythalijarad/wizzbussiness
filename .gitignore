@@ -1,0 +1,80 @@
+
+# General
+.DS_Store
+*.log
+*.swo
+*.swp
+.idea/
+*.iml
+
+# Python Backend
+backend/venv/
+backend/__pycache__/
+backend/app/__pycache__/
+backend/.env
+backend/.pytest_cache/
+backend/uploads/
+*.pyc
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+flutter_*.png
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Runner.xcworkspace/
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+android/key.properties
+android/local.properties
+
+# Frontend folder (if exists)
+frontend/build/
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugin-dependencies
+frontend/.pub-cache/
+frontend/ios/Pods/
+frontend/ios/Flutter/ephemeral/
+frontend/ios/Flutter/app.framework
+frontend/ios/Flutter/engine.framework
+frontend/ios/Flutter/flutter_assets/
+frontend/ios/.symlinks/
+frontend/ios/Runner/GeneratedPluginRegistrant.h
+frontend/ios/Runner/GeneratedPluginRegistrant.m
+frontend/ios/Runner/GeneratedPluginRegistrant-Debug.h
+frontend/ios/Runner/GeneratedPluginRegistrant-Debug.m
+frontend/ios/Runner/GeneratedPluginRegistrant-Profile.h
+frontend/ios/Runner/GeneratedPluginRegistrant-Profile.m
+frontend/ios/Runner/GeneratedPluginRegistrant-Release.h
+frontend/ios/Runner/GeneratedPluginRegistrant-Release.m
+frontend/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/android/build/
+frontend/android/key.properties
+frontend/.pub/
+frontend/.idea/
+frontend/pubspec.lock
+
+# Web
+web/
+
+# Coverage
+coverage/
+
+# IDE
+.vscode/
+

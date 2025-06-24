@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hadhir_business/screens/account_settings_page.dart';
-import 'package:hadhir_business/screens/pos_settings_page.dart';
+import './account_settings_page.dart';
+import './pos_settings_page.dart';
 import '../l10n/app_localizations.dart';
 import '../models/business.dart';
 import '../models/order.dart';
@@ -394,12 +394,34 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Profile Settings',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
+        title: Column(
+          children: [
+            Text(
+              'Profile Settings',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            if (_isLoadingUserData)
+              SizedBox(
+                height: 12,
+                width: 12,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                ),
+              )
+            else if (_userData != null && _userData!['business_name'] != null)
+              Text(
+                _userData!['business_name'],
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white70,
+                ),
+              ),
+          ],
         ),
         backgroundColor: const Color(0xFF00D4FF),
         foregroundColor: Colors.white,

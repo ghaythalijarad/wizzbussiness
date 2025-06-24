@@ -13,9 +13,18 @@ import 'package:hadhir_business/main.dart';
 void main() {
   testWidgets('App launches smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const OrderReceiverApp());
+    await tester.pumpWidget(const MyApp(initialLanguageCode: 'en'));
 
-    // Verify that the app launches successfully
+    // Verify that the splash screen loads
     expect(find.byType(MaterialApp), findsOneWidget);
+    
+    // Verify splash screen is showing
+    await tester.pump();
+    
+    // Skip the 3-second timer by pumping with a specific duration
+    await tester.pump(const Duration(seconds: 4));
+    
+    // Verify the app navigated successfully
+    await tester.pumpAndSettle();
   });
 }

@@ -9,7 +9,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appTitle => 'هاضر للأعمال';
+  String get appTitle => 'مدير الأعمال';
 
   @override
   String get welcome => 'مرحباً';
@@ -18,210 +18,52 @@ class AppLocalizationsAr extends AppLocalizations {
   String get login => 'تسجيل الدخول';
 
   @override
-  String get register => 'التسجيل';
-
-  @override
   String get email => 'البريد الإلكتروني';
 
   @override
   String get password => 'كلمة المرور';
 
   @override
-  String get businessType => 'نوع النشاط التجاري';
+  String get register => 'التسجيل';
 
   @override
-  String get store => 'متجر';
+  String get forgotPassword => 'نسيت كلمة المرور';
 
   @override
-  String get restaurant => 'مطعم';
+  String get forgotPasswordQuestion => 'نسيت كلمة المرور؟';
 
   @override
-  String get pharmacy => 'صيدلية';
+  String get dontHaveAnAccount => 'ليس لديك حساب؟';
 
   @override
-  String get kitchen => 'مطبخ';
+  String get welcomeBack => 'مرحباً بعودتك';
 
   @override
-  String get dashboard => 'لوحة التحكم';
+  String get signInToYourAccount => 'تسجيل الدخول إلى حسابك';
+
+  @override
+  String get pleaseEnterYourEmail => 'يرجى إدخال بريدك الإلكتروني';
+
+  @override
+  String get pleaseEnterYourPassword => 'يرجى إدخال كلمة المرور';
+
+  @override
+  String get errorOccurred => 'حدث خطأ';
+
+  @override
+  String get demoStore => 'متجر تجريبي';
+
+  @override
+  String get demoPharmacy => 'صيدلية تجريبية';
+
+  @override
+  String get demoRestaurant => 'مطعم تجريبي';
+
+  @override
+  String get demoKitchen => 'مطبخ تجريبي';
 
   @override
   String get orders => 'الطلبات';
-
-  @override
-  String get businessName => 'اسم النشاط التجاري';
-
-  @override
-  String get businessAddress => 'عنوان النشاط التجاري';
-
-  @override
-  String get autoFillAddress => 'Auto-fill Address';
-
-  @override
-  String get phoneNumber => 'رقم الهاتف';
-
-  @override
-  String get emailAddress => 'عنوان البريد الإلكتروني';
-
-  @override
-  String get pleaseEnterEmailAddress => 'Please enter your email address';
-
-  @override
-  String get pleaseEnterValidEmail => 'Please enter a valid email address';
-
-  @override
-  String get ownerName => 'Owner Name';
-
-  @override
-  String get nationalId => 'National ID';
-
-  @override
-  String get dateOfBirth => 'تاريخ الميلاد';
-
-  @override
-  String get country => 'البلد';
-
-  @override
-  String get city => 'المدينة';
-
-  @override
-  String get district => 'المنطقة';
-
-  @override
-  String get zipCode => 'الرمز البريدي';
-
-  @override
-  String get neighbourhood => 'الحي';
-
-  @override
-  String get street => 'الشارع';
-
-  @override
-  String get buildingNumber => 'Building Number';
-
-  @override
-  String get businessInformation => 'معلومات النشاط التجاري';
-
-  @override
-  String get businessOwnerInformation => 'معلومات صاحب النشاط التجاري';
-
-  @override
-  String get businessAndOwnerInformation => 'Business & Owner Information';
-
-  @override
-  String get businessRegistration => 'تسجيل النشاط التجاري';
-
-  @override
-  String get businessAddressLabel => 'عنوان النشاط التجاري';
-
-  @override
-  String get selectBusinessType => 'يرجى اختيار نوع النشاط التجاري';
-
-  @override
-  String get cloudKitchen => 'المطبخ السحابي';
-
-  @override
-  String get pleaseEnterBusinessName => 'Please enter business name';
-
-  @override
-  String get pleaseEnterCountry => 'Please enter country';
-
-  @override
-  String get pleaseEnterCity => 'Please enter city';
-
-  @override
-  String get pleaseEnterDistrict => 'Please enter district';
-
-  @override
-  String get pleaseEnterZipCode => 'Please enter zip code';
-
-  @override
-  String get pleaseEnterNeighbourhood => 'Please enter neighbourhood';
-
-  @override
-  String get pleaseEnterStreet => 'Please enter street';
-
-  @override
-  String get pleaseEnterOwnerName => 'يرجى إدخال اسم المالك';
-
-  @override
-  String get pleaseEnterNationalId =>
-      'يرجى إدخال رقم الهوية الوطنية أو جواز السفر';
-
-  @override
-  String get pleaseEnterDateOfBirth => 'Please enter date of birth';
-
-  @override
-  String get requiredDocuments => 'المستندات المطلوبة';
-
-  @override
-  String get commercialLicense => 'Commercial License';
-
-  @override
-  String get commercialLicenseSubtitle =>
-      'Upload your commercial license document';
-
-  @override
-  String get ownerNationalId => 'Owner National ID';
-
-  @override
-  String get ownerNationalIdSubtitle => 'Upload owner\'s national ID document';
-
-  @override
-  String get healthCertificate => 'الشهادة الصحية';
-
-  @override
-  String get healthCertificateSubtitle =>
-      'مطلوبة للأنشطة التجارية الخاصة بالأطعمة والمشروبات';
-
-  @override
-  String get ownerPhoto => 'صورة المالك';
-
-  @override
-  String get ownerPhotoSubtitle => 'صورة حديثة لصاحب النشاط التجاري';
-
-  @override
-  String get submitRegistration => 'إرسال التسجيل';
-
-  @override
-  String get registrationSubmitted => 'تم إرسال التسجيل';
-
-  @override
-  String get registrationSubmittedMessage => 'تم إرسال تسجيلك بنجاح!';
-
-  @override
-  String get close => 'إغلاق';
-
-  @override
-  String get required => 'مطلوب';
-
-  @override
-  String get changeFile => 'تغيير الملف';
-
-  @override
-  String get selectFile => 'اختر ملف';
-
-  @override
-  String get errorSelectingImage => 'خطأ في اختيار الصورة';
-
-  @override
-  String get photoLibrary => 'مكتبة الصور';
-
-  @override
-  String get camera => 'الكاميرا';
-
-  @override
-  String get language => 'اللغة';
-
-  @override
-  String get selectLanguage => 'اختر اللغة';
-
-  @override
-  String get cancel => 'إلغاء';
-
-  @override
-  String orderExpiredNotAccepted(String orderId) {
-    return 'انتهت صلاحية الطلب #$orderId - لم يتم قبوله في الوقت المحدد';
-  }
 
   @override
   String get items => 'العناصر';
@@ -230,265 +72,288 @@ class AppLocalizationsAr extends AppLocalizations {
   String get analytics => 'التحليلات';
 
   @override
-  String get profile => 'الملف الشخصي';
-
-  @override
   String get discounts => 'الخصومات';
-
-  @override
-  String get failedToSendOrderToPos => 'فشل في إرسال الطلب إلى نظام نقطة البيع';
-
-  @override
-  String get scheduled => 'مجدول';
-
-  @override
-  String get orderSentToPos => 'تم إرسال الطلب إلى نظام نقطة البيع بنجاح';
-
-  @override
-  String get off => 'خصم';
-
-  @override
-  String get expired => 'منتهي الصلاحية';
-
-  @override
-  String get enterOrderNumber => 'أدخل رقم الطلب';
-
-  @override
-  String get discount => 'خصم';
-
-  @override
-  String get delete => 'حذف';
-
-  @override
-  String get createDiscount => 'إنشاء خصم';
-
-  @override
-  String get active => 'نشط';
-
-  @override
-  String get pending => 'قيد الانتظار';
-
-  @override
-  String get preparing => 'Preparing';
-
-  @override
-  String get ready => 'Ready';
-
-  @override
-  String get delivered => 'Delivered';
-
-  @override
-  String get cancelled => 'ملغى';
-
-  @override
-  String get completed => 'Completed';
-
-  @override
-  String get confirmed => 'مؤكد';
-
-  @override
-  String get all => 'الكل';
-
-  @override
-  String get accepted => 'Accepted';
-
-  @override
-  String get accept => 'قبول';
-
-  @override
-  String get rejected => 'Rejected';
-
-  @override
-  String get reject => 'رفض';
-
-  @override
-  String get orderReady => 'جاهز';
-
-  @override
-  String get pickedUp => 'تم الاستلام';
-
-  @override
-  String get returned => 'Returned';
-
-  @override
-  String get inProgress => 'In Progress';
-
-  @override
-  String get orderReturned => 'مرتجع';
-
-  @override
-  String get filters => 'Filters';
-
-  @override
-  String get search => 'بحث';
-
-  @override
-  String get total => 'Total';
-
-  @override
-  String get today => 'اليوم';
-
-  @override
-  String get thisWeek => 'This Week';
-
-  @override
-  String get thisMonth => 'This Month';
-
-  @override
-  String get noItemsFound => 'لم يتم العثور على عناصر';
-
-  @override
-  String get add => 'إضافة';
-
-  @override
-  String get edit => 'تعديل';
-
-  @override
-  String get save => 'حفظ';
-
-  @override
-  String get update => 'Update';
-
-  @override
-  String get remove => 'Remove';
 
   @override
   String get settings => 'الإعدادات';
 
   @override
-  String get back => 'Back';
+  String get online => 'متصل';
 
   @override
-  String get next => 'Next';
+  String get offline => 'غير متصل';
 
   @override
-  String get previous => 'Previous';
+  String get businessIsNowOnline => 'العمل متصل الآن';
 
   @override
-  String get loading => 'Loading';
+  String get businessIsNowOffline => 'العمل غير متصل الآن';
 
   @override
-  String get success => 'Success';
+  String get returnOrderFeature => 'ميزة إرجاع الطلب قادمة قريباً';
 
   @override
-  String get error => 'خطأ';
+  String get notifications => 'الإشعارات';
 
   @override
-  String get warning => 'Warning';
+  String get notificationsTapped => 'تم النقر على الإشعارات';
 
   @override
-  String get info => 'Info';
+  String get returnAnOrder => 'إرجاع طلب';
 
   @override
-  String get yes => 'Yes';
+  String get manageDiscounts => 'إدارة الخصومات';
 
   @override
-  String get no => 'No';
+  String get returnOrder => 'إرجاع الطلب';
 
   @override
-  String get ok => 'موافق';
+  String get accountSettings => 'إعدادات الحساب';
 
   @override
-  String get deleteItem => 'Delete Item';
+  String get posSettings => 'إعدادات نقاط البيع';
 
   @override
-  String get deleteItemConfirmation => 'هل أنت متأكد من حذف هذا العنصر؟';
+  String get languageSettings => 'إعدادات اللغة';
 
   @override
-  String get itemName => 'اسم العنصر';
+  String get logout => 'تسجيل الخروج';
 
   @override
-  String get itemPrice => 'Item Price';
+  String get businessName => 'اسم العمل';
 
   @override
-  String get itemDescription => 'Item Description';
+  String get ownerName => 'اسم المالك';
 
   @override
-  String get addItem => 'إضافة عنصر';
+  String get phoneNumber => 'رقم الهاتف';
 
   @override
-  String get updateItem => 'Update Item';
+  String get businessAddressLabel => 'عنوان العمل';
 
   @override
-  String get itemDeletedSuccessfully => 'Item deleted successfully!';
+  String get changePassword => 'تغيير كلمة المرور';
 
   @override
-  String get addNewItem => 'Add New Item';
+  String get posSettingsUpdated => 'تم تحديث إعدادات نقاط البيع بنجاح';
 
   @override
-  String get selectMenu => 'اختر القائمة';
+  String get connectionSuccessful => 'الاتصال ناجح';
 
   @override
-  String get pleaseSelectMenu => 'يرجى اختيار قائمة';
+  String get connectionFailed => 'فشل الاتصال';
 
   @override
-  String get selectCategory => 'Select Category';
+  String get testConnection => 'اختبار الاتصال';
 
   @override
-  String get pleaseSelectCategory => 'يرجى اختيار فئة';
+  String get close => 'إغلاق';
 
   @override
-  String get pleaseEnterItemName => 'يرجى إدخال اسم العنصر';
+  String get posSystemType => 'نوع نظام نقاط البيع';
 
   @override
-  String get description => 'الوصف';
+  String get selectPosSystem => 'اختر نظام نقاط البيع';
 
   @override
-  String get price => 'السعر';
+  String get apiConfiguration => 'تكوين API';
 
   @override
-  String get pleaseEnterPrice => 'يرجى إدخال سعر صحيح';
+  String get apiEndpoint => 'نقطة API';
 
   @override
-  String get pleaseEnterValidPrice => 'يرجى إدخال سعر صحيح';
+  String get pleaseEnterApiEndpoint => 'يرجى إدخال نقطة API';
 
   @override
-  String get imageUrl => 'رابط الصورة';
+  String get pleaseEnterValidUrl => 'يرجى إدخال رابط صحيح';
 
   @override
-  String get optional => 'اختياري';
+  String get apiKey => 'مفتاح API';
 
   @override
-  String get available => 'متاح';
+  String get enterApiKey => 'أدخل مفتاح API';
 
   @override
-  String get uploadImage => 'Upload Image';
+  String get copiedToClipboard => 'تم النسخ إلى الحافظة';
 
   @override
-  String get newCategoryName => 'New Category Name';
+  String get pleaseEnterApiKey => 'يرجى إدخال مفتاح API';
 
   @override
-  String get pleaseEnterCategoryName => 'Please enter a category name';
+  String get accessToken => 'رمز الوصول';
 
   @override
-  String get selectExistingCategory => 'Select Existing Category';
+  String get enterAccessToken => 'أدخل رمز الوصول';
 
   @override
-  String get addNewCategory => 'Add New Category';
+  String get locationId => 'معرف الموقع';
 
   @override
-  String get editItem => 'تعديل العنصر';
+  String get enterLocationId => 'أدخل معرف الموقع';
 
   @override
-  String get totalSales => 'Total Sales';
+  String get posIntegrationSettings => 'إعدادات تكامل نقاط البيع';
 
   @override
-  String get totalOrders => 'إجمالي الطلبات';
+  String get enablePosIntegration => 'تفعيل تكامل نقاط البيع';
 
   @override
-  String get averageOrderValue => 'متوسط قيمة الطلب';
+  String get enablePosIntegrationDescription =>
+      'مزامنة الطلبات تلقائياً مع نظام نقاط البيع';
 
   @override
-  String get documentSelectedSuccessfully => 'Document selected successfully!';
+  String get autoSendOrders => 'إرسال الطلبات تلقائياً';
 
   @override
-  String get errorSelectingDocument => 'Error selecting document';
+  String get autoSendOrdersDescription =>
+      'إرسال الطلبات الجديدة تلقائياً لنقاط البيع';
 
   @override
-  String get topSellingItems => 'Top Selling Items';
+  String get connectionStatus => 'حالة الاتصال';
 
   @override
-  String get ordersByStatus => 'Orders by Status';
+  String get posIntegrationEnabled => 'تكامل نقاط البيع مفعل';
+
+  @override
+  String get posIntegrationDisabled => 'تكامل نقاط البيع معطل';
+
+  @override
+  String get system => 'النظام';
+
+  @override
+  String get endpoint => 'النقطة';
+
+  @override
+  String get testing => 'جاري الاختبار...';
+
+  @override
+  String get saving => 'جاري الحفظ...';
+
+  @override
+  String get saveSettings => 'حفظ الإعدادات';
+
+  @override
+  String get posSyncLogs => 'سجلات مزامنة نقاط البيع';
+
+  @override
+  String get noSyncLogsFound => 'لم يتم العثور على سجلات مزامنة';
+
+  @override
+  String get status => 'الحالة';
+
+  @override
+  String get successful => 'ناجح';
+
+  @override
+  String get failed => 'فاشل';
+
+  @override
+  String get syncLogDetails => 'تفاصيل سجل المزامنة';
+
+  @override
+  String get syncTime => 'وقت المزامنة';
+
+  @override
+  String get posOrderId => 'معرف طلب نقاط البيع';
+
+  @override
+  String get errorMessage => 'رسالة الخطأ';
+
+  @override
+  String get retrySync => 'إعادة المزامنة';
+
+  @override
+  String get orderSyncRetryInitiated => 'تم بدء إعادة مزامنة الطلب';
+
+  @override
+  String get advancedConfiguration => 'تكوين متقدم';
+
+  @override
+  String get timeoutSeconds => 'انتهاء الوقت (ثواني)';
+
+  @override
+  String get retryAttempts => 'محاولات الإعادة';
+
+  @override
+  String get testMode => 'وضع الاختبار';
+
+  @override
+  String get testModeDescription => 'تفعيل وضع الاختبار للتطوير';
+
+  @override
+  String get webhooksIntegration => 'تكامل Webhooks';
+
+  @override
+  String get webhooksDescription => 'تكوين webhooks للإشعارات الفورية';
+
+  @override
+  String get configureWebhooks => 'تكوين Webhooks';
+
+  @override
+  String get securitySettings => 'إعدادات الأمان';
+
+  @override
+  String get encryptionStatus => 'حالة التشفير';
+
+  @override
+  String get encryptionEnabled => 'التشفير مفعل';
+
+  @override
+  String get apiKeyRotation => 'دوران مفتاح API';
+
+  @override
+  String get lastRotated => 'آخر دوران';
+
+  @override
+  String get rotate => 'دوران';
+
+  @override
+  String get systemSetupGuides => 'أدلة إعداد النظام';
+
+  @override
+  String get setupGuide => 'دليل الإعداد';
+
+  @override
+  String get troubleshooting => 'استكشاف الأخطاء';
+
+  @override
+  String get connectionIssues => 'مشاكل الاتصال';
+
+  @override
+  String get syncFailures => 'فشل المزامنة';
+
+  @override
+  String get apiErrors => 'أخطاء API';
+
+  @override
+  String get supportContact => 'الاتصال بالدعم';
+
+  @override
+  String get liveChat => 'الدردشة المباشرة';
+
+  @override
+  String get availableWeekdays => 'متاح أيام الأسبوع من 9 صباحاً إلى 5 مساءً';
+
+  @override
+  String get emailSupport => 'دعم البريد الإلكتروني';
+
+  @override
+  String get liveChatComingSoon => 'الدردشة المباشرة قادمة قريباً';
+
+  @override
+  String get emailSupportOpened => 'تم فتح دعم البريد الإلكتروني';
+
+  @override
+  String get generalSettings => 'الإعدادات العامة';
+
+  @override
+  String get syncLogs => 'سجلات المزامنة';
+
+  @override
+  String get advancedSettings => 'الإعدادات المتقدمة';
+
+  @override
+  String get help => 'المساعدة';
 
   @override
   String get allDiscounts => 'جميع الخصومات';
@@ -503,139 +368,67 @@ class AppLocalizationsAr extends AppLocalizations {
   String get expiredDiscounts => 'الخصومات المنتهية';
 
   @override
-  String get noDiscountsCreated => 'لم يتم إنشاء أي خصومات بعد';
+  String get createDiscount => 'إنشاء خصم';
 
   @override
-  String get createYourFirstDiscount => 'أنشئ خصمك الأول لزيادة المبيعات';
+  String get noDiscountsCreated => 'لم يتم إنشاء خصومات بعد';
+
+  @override
+  String get createYourFirstDiscount => 'أنشئ أول خصم لك لبدء جذب العملاء';
 
   @override
   String get deleteDiscount => 'حذف الخصم';
 
   @override
   String get areYouSureYouWantToDeleteThisDiscount =>
-      'Are you sure you want to delete this discount?';
+      'هل أنت متأكد من حذف هذا الخصم؟';
 
   @override
-  String get notes => 'Notes';
+  String get cancel => 'إلغاء';
 
   @override
-  String get english => 'English';
+  String get delete => 'حذف';
 
   @override
-  String get arabic => 'العربية';
+  String get editDiscount => 'تعديل الخصم';
 
   @override
-  String get locationSaved => 'Location Saved';
+  String get title => 'العنوان';
 
   @override
-  String get locationSet => 'Location Set';
+  String get pleaseEnterTitle => 'يرجى إدخال عنوان';
 
   @override
-  String get noLocationSet => 'No Location Set';
+  String get description => 'الوصف';
 
   @override
-  String get businessLocation => 'Business Location';
+  String get discountType => 'نوع الخصم';
 
   @override
-  String get latitude => 'Latitude';
+  String get percentage => 'نسبة مئوية';
 
   @override
-  String get longitude => 'Longitude';
+  String get fixedAmount => 'مبلغ ثابت';
 
   @override
-  String get updateLocation => 'Update Location';
-
-  @override
-  String get chooseLocationOnMap =>
-      'Please choose your business location on the map.';
-
-  @override
-  String get selectLocation => 'Select Location';
-
-  @override
-  String get notificationChannelName => 'Main Channel';
-
-  @override
-  String get notificationChannelDescription => 'Main channel notifications';
-
-  @override
-  String get newOrderReceived => 'New Order Received';
-
-  @override
-  String newOrderNotificationBody(String orderId, String customerName) {
-    return 'Order #$orderId from $customerName';
-  }
-
-  @override
-  String get sampleItem => 'Sample Item';
-
-  @override
-  String itemSoldQuantity(int quantity) {
-    return 'Sold: $quantity';
-  }
-
-  @override
-  String itemRevenue(String revenue) {
-    return 'Revenue: $revenue';
-  }
-
-  @override
-  String get orderStatusTitle => 'Order Status';
-
-  @override
-  String get orderStatusPending => 'Pending';
-
-  @override
-  String get orderStatusConfirmed => 'Confirmed';
-
-  @override
-  String get orderStatusPreparing => 'Preparing';
-
-  @override
-  String get orderStatusReady => 'Ready';
-
-  @override
-  String get orderStatusPickedUp => 'Picked Up';
-
-  @override
-  String get orderStatusCancelled => 'Cancelled';
-
-  @override
-  String get orderStatusReturned => 'Returned';
-
-  @override
-  String get orderStatusExpired => 'Expired';
+  String get conditional => 'مشروط';
 
   @override
   String get freeDelivery => 'توصيل مجاني';
 
   @override
+  String get value => 'القيمة';
+
+  @override
+  String get pleaseEnterValue => 'يرجى إدخال قيمة';
+
+  @override
+  String get pleaseEnterValidNumber => 'يرجى إدخال رقم صحيح';
+
+  @override
   String minimumOrderAmount(String amount) {
-    return 'Min: \$$amount';
+    return 'الحد الأدنى لمبلغ الطلب: $amount';
   }
-
-  @override
-  String validityPeriod(String startDate, String endDate) {
-    return 'Valid: $startDate - $endDate';
-  }
-
-  @override
-  String get unknownStatus => 'Unknown';
-
-  @override
-  String get title => 'Title';
-
-  @override
-  String get pleaseEnterTitle => 'Please enter title';
-
-  @override
-  String get value => 'Value';
-
-  @override
-  String get pleaseEnterValue => 'Please enter value';
-
-  @override
-  String get pleaseEnterValidNumber => 'Please enter a valid number';
 
   @override
   String get startDate => 'تاريخ البداية';
@@ -644,648 +437,585 @@ class AppLocalizationsAr extends AppLocalizations {
   String get endDate => 'تاريخ النهاية';
 
   @override
-  String get saveChanges => 'Save Changes';
+  String get saveChanges => 'حفظ التغييرات';
 
   @override
-  String get create => 'Create';
+  String get create => 'إنشاء';
 
   @override
-  String get percentage => 'Percentage';
+  String get off => 'خصم';
 
   @override
-  String get fixedAmount => 'Fixed Amount';
+  String get discount => 'خصم';
 
   @override
-  String get conditional => 'Conditional';
+  String get active => 'نشط';
 
   @override
-  String get editDiscount => 'تعديل الخصم';
+  String get scheduled => 'مجدول';
 
   @override
-  String get discountType => 'Discount Type';
+  String get expired => 'منتهي';
 
   @override
-  String get emailSent => 'Email Sent';
+  String get sampleItem => 'عنصر تجريبي';
 
   @override
-  String get passwordResetLinkSent =>
-      'If your email address is registered, you will receive a password reset link shortly. Please check your email and follow the instructions.';
+  String get totalSales => 'إجمالي المبيعات';
 
   @override
-  String get forgotPassword => 'نسيت كلمة المرور؟';
+  String get totalOrders => 'إجمالي الطلبات';
 
   @override
-  String get resetYourPassword => 'Reset Your Password';
+  String get averageOrderValue => 'متوسط قيمة الطلب';
 
   @override
-  String get enterEmailForPasswordReset =>
-      'Enter your email address and we\'ll send you a link to reset your password.';
+  String get topSellingItems => 'العناصر الأكثر مبيعاً';
 
   @override
-  String get sendResetEmail => 'Send Reset Email';
-
-  @override
-  String get backToLogin => 'Back to Login';
-
-  @override
-  String get noMenusAvailable => 'No menus available. Please add a menu first.';
-
-  @override
-  String get itemAddedSuccessfully => 'Item added successfully!';
-
-  @override
-  String get itemUpdatedSuccessfully => 'Item updated successfully!';
-
-  @override
-  String get unavailable => 'غير متاح';
-
-  @override
-  String get currency => 'KWD';
-
-  @override
-  String get refresh => 'Refresh';
-
-  @override
-  String get invalidCredentials => 'Invalid username or password';
-
-  @override
-  String anErrorOccurred(String error) {
-    return 'An error occurred: $error';
+  String itemSoldQuantity(int quantity) {
+    return 'مباع: $quantity';
   }
 
   @override
-  String get demoStore => 'Demo Store';
+  String itemRevenue(String revenue) {
+    return 'الإيرادات: \$$revenue';
+  }
 
   @override
-  String get demoPharmacy => 'Demo Pharmacy';
+  String get ordersByStatus => 'الطلبات حسب الحالة';
 
   @override
-  String get demoRestaurant => 'Demo Restaurant';
+  String get orderStatusPending => 'معلق';
 
   @override
-  String get demoKitchen => 'Demo Kitchen';
+  String get orderStatusConfirmed => 'مؤكد';
 
   @override
-  String get unknownBusinessType => 'Unknown business type';
+  String get orderStatusPreparing => 'قيد التحضير';
 
   @override
-  String get welcomeBack => 'Welcome Back';
+  String get orderStatusReady => 'جاهز';
 
   @override
-  String get signInToYourAccount => 'Sign in to your account';
+  String get orderStatusPickedUp => 'تم الاستلام';
 
   @override
-  String get pleaseEnterYourEmail => 'Please enter your email';
+  String get orderStatusCancelled => 'ملغي';
 
   @override
-  String get pleaseEnterYourPassword => 'Please enter your password';
+  String get orderStatusReturned => 'مرجع';
 
   @override
-  String get forgotPasswordQuestion => 'Forgot Password?';
+  String get orderStatusExpired => 'منتهي';
 
   @override
-  String get dontHaveAnAccount => 'Don\'t have an account? Register';
+  String get itemAddedSuccessfully => 'تم إضافة العنصر بنجاح';
+
+  @override
+  String get itemUpdatedSuccessfully => 'تم تحديث العنصر بنجاح';
+
+  @override
+  String get refresh => 'تحديث';
+
+  @override
+  String get search => 'بحث';
+
+  @override
+  String get noItemsFound => 'لم يتم العثور على عناصر';
+
+  @override
+  String get currency => 'العملة';
+
+  @override
+  String get edit => 'تعديل';
+
+  @override
+  String get deleteItem => 'حذف العنصر';
+
+  @override
+  String get deleteItemConfirmation => 'هل أنت متأكد من حذف هذا العنصر؟';
+
+  @override
+  String get itemDeletedSuccessfully => 'تم حذف العنصر بنجاح';
+
+  @override
+  String get addNewItem => 'إضافة عنصر جديد';
+
+  @override
+  String get uploadImage => 'تحميل صورة';
+
+  @override
+  String get selectCategory => 'اختيار الفئة';
+
+  @override
+  String get pleaseSelectCategory => 'يرجى اختيار فئة';
+
+  @override
+  String get newCategoryName => 'اسم الفئة الجديدة';
+
+  @override
+  String get pleaseEnterCategoryName => 'يرجى إدخال اسم الفئة';
+
+  @override
+  String get selectExistingCategory => 'اختيار فئة موجودة';
+
+  @override
+  String get addNewCategory => 'إضافة فئة جديدة';
+
+  @override
+  String get itemName => 'اسم العنصر';
+
+  @override
+  String get pleaseEnterItemName => 'يرجى إدخال اسم العنصر';
+
+  @override
+  String get price => 'السعر';
+
+  @override
+  String get pleaseEnterPrice => 'يرجى إدخال السعر';
+
+  @override
+  String get pleaseEnterValidPrice => 'يرجى إدخال سعر صحيح';
+
+  @override
+  String get imageUrl => 'رابط الصورة';
+
+  @override
+  String get optional => 'اختياري';
+
+  @override
+  String get available => 'متاح';
+
+  @override
+  String get add => 'إضافة';
+
+  @override
+  String get editItem => 'تعديل العنصر';
+
+  @override
+  String get update => 'تحديث';
+
+  @override
+  String get pending => 'معلق';
+
+  @override
+  String get confirmed => 'مؤكد';
+
+  @override
+  String get orderReady => 'جاهز';
+
+  @override
+  String get pickedUp => 'تم الاستلام';
+
+  @override
+  String get cancelled => 'ملغي';
+
+  @override
+  String get orderReturned => 'مرجع';
 
   @override
   String noOrdersFoundFor(String filter) {
-    return 'No orders found for $filter';
+    return 'لم يتم العثور على طلبات لـ $filter';
   }
 
   @override
-  String get profileUpdatedSuccessfully => 'Profile updated successfully!';
+  String get notes => 'الملاحظات';
 
   @override
-  String get website => 'الموقع الإلكتروني';
+  String get total => 'الإجمالي';
 
   @override
-  String get posSettings => 'POS Settings';
+  String get reject => 'رفض';
 
   @override
-  String get logout => 'Logout';
+  String get accept => 'قبول';
 
   @override
-  String get areYouSureYouWantToLogout => 'Are you sure you want to logout?';
+  String get required => 'مطلوب';
 
   @override
-  String fieldIsRequired(String field) {
-    return '$field is required';
-  }
+  String get changeFile => 'تغيير الملف';
 
   @override
-  String get emailIsRequired => 'Email is required';
+  String get selectFile => 'اختيار ملف';
 
   @override
-  String get enterValidEmail => 'Please enter a valid email address';
+  String get restaurant => 'مطعم';
 
   @override
-  String get phoneNumberIsRequired => 'Phone number is required';
+  String get store => 'متجر';
 
   @override
-  String get enterValidPhoneNumber => 'Please enter a valid phone number';
+  String get pharmacy => 'صيدلية';
 
   @override
-  String get passwordIsRequired => 'Password is required';
+  String get cloudKitchen => 'مطبخ سحابي';
 
   @override
-  String get passwordTooShort => 'Password must be at least 8 characters long';
+  String get registrationFailed => 'فشل التسجيل';
 
   @override
-  String get passwordRequiresLowercase =>
-      'Password must contain at least one lowercase letter';
+  String get registrationSubmitted => 'تم إرسال التسجيل';
 
   @override
-  String get passwordRequiresUppercase =>
-      'Password must contain at least one uppercase letter';
+  String get registrationSubmittedMessage => 'تم إرسال تسجيلك للمراجعة';
 
   @override
-  String get passwordRequiresNumber =>
-      'Password must contain at least one number';
+  String get businessInformation => 'معلومات العمل';
 
   @override
-  String get passwordRequiresSpecialCharacter =>
-      'Password must contain at least one special character';
+  String get nameLabel => 'الاسم';
 
   @override
-  String get registrationFailed => 'Registration failed';
+  String get typeLabel => 'النوع';
 
   @override
-  String networkError(String error) {
-    return 'Network error: $error';
-  }
+  String get notSelected => 'غير محدد';
 
   @override
-  String get notSelected => 'Not selected';
+  String get phoneLabel => 'الهاتف';
+
+  @override
+  String get addressLabel => 'العنوان';
+
+  @override
+  String get countryLabel => 'البلد';
+
+  @override
+  String get cityLabel => 'المدينة';
+
+  @override
+  String get districtLabel => 'المقاطعة';
+
+  @override
+  String get neighbourhoodLabel => 'الحي';
+
+  @override
+  String get streetLabel => 'الشارع';
+
+  @override
+  String get buildingHomeLabel => 'المبنى/المنزل';
+
+  @override
+  String get zipCodeLabel => 'الرمز البريدي';
+
+  @override
+  String get businessOwnerInformation => 'معلومات مالك العمل';
+
+  @override
+  String get nationalIdLabel => 'الهوية الوطنية';
+
+  @override
+  String get dateOfBirthLabel => 'تاريخ الميلاد';
 
   @override
   String get registrationSuccessLogin =>
-      'Registration successful! You can now login with your credentials.';
+      'تم التسجيل بنجاح! يمكنك الآن تسجيل الدخول باستخدام بياناتك.';
 
   @override
-  String get gettingYourLocation => 'Getting your location...';
+  String get gettingYourLocation => 'جاري الحصول على موقعك...';
 
   @override
-  String get locationPermissionDeniedForever =>
-      'Location permissions are permanently denied. Please enable location access in your device settings.';
+  String get locationPermissionDeniedForever => 'تم رفض إذن الموقع نهائياً';
 
   @override
-  String get locationPermissionDenied =>
-      'Location permission denied. Please allow location access to use this feature.';
+  String get locationPermissionDenied => 'تم رفض إذن الموقع';
 
   @override
-  String get couldNotGetLocation =>
-      'Could not get current location. Please try again or enter manually.';
+  String get locationServicesDisabled => 'خدمات الموقع معطلة';
 
   @override
-  String get locationServicesDisabled =>
-      'Location services are disabled. Please enable location services.';
+  String get couldNotDeterminePlacemark => 'لا يمكن تحديد العلامة المكانية';
 
   @override
-  String get couldNotDeterminePlacemark =>
-      'Could not determine placemark. Please enter address details manually.';
+  String get businessRegistration => 'تسجيل العمل';
 
   @override
-  String get nameLabel => 'Name';
+  String get businessAndOwnerInformation => 'معلومات العمل والمالك';
 
   @override
-  String get typeLabel => 'Type';
+  String get businessType => 'نوع العمل';
 
   @override
-  String get phoneLabel => 'Phone';
+  String get selectBusinessType => 'يرجى اختيار نوع العمل';
 
   @override
-  String get addressLabel => 'Address';
+  String get pleaseEnterBusinessName => 'يرجى إدخال اسم العمل';
 
   @override
-  String get countryLabel => 'Country';
+  String get pleaseEnterOwnerName => 'يرجى إدخال اسم المالك';
 
   @override
-  String get cityLabel => 'City';
+  String get emailAddress => 'عنوان البريد الإلكتروني';
 
   @override
-  String get districtLabel => 'District';
+  String get country => 'البلد';
 
   @override
-  String get neighbourhoodLabel => 'Neighbourhood';
+  String get pleaseEnterCountry => 'يرجى إدخال البلد';
 
   @override
-  String get streetLabel => 'Street';
+  String get city => 'المدينة';
 
   @override
-  String get buildingHomeLabel => 'Building/Home';
+  String get pleaseEnterCity => 'يرجى إدخال المدينة';
 
   @override
-  String get zipCodeLabel => 'Zip Code';
+  String get district => 'المقاطعة';
 
   @override
-  String get nationalIdLabel => 'National ID';
+  String get pleaseEnterDistrict => 'يرجى إدخال المقاطعة';
 
   @override
-  String get dateOfBirthLabel => 'Date of Birth';
+  String get zipCode => 'الرمز البريدي';
 
   @override
-  String registrationFailedWithMessage(String message) {
-    return 'Registration failed: $message';
-  }
+  String get pleaseEnterZipCode => 'يرجى إدخال الرمز البريدي';
 
   @override
-  String get passwordResetSuccessful => 'Password Reset Successful';
+  String get neighbourhood => 'الحي';
 
   @override
-  String get passwordResetSuccessMessage =>
-      'Your password has been reset successfully. You can now log in with your new password.';
+  String get pleaseEnterNeighbourhood => 'يرجى إدخال الحي';
 
   @override
-  String get goToLogin => 'Go to Login';
+  String get street => 'الشارع';
 
   @override
-  String get pleaseEnterPassword => 'يرجى إدخال كلمة المرور';
+  String get pleaseEnterStreet => 'يرجى إدخال الشارع';
 
   @override
-  String get passwordLengthRequirement =>
-      'Password must be at least 8 characters long';
+  String get buildingNumber => 'رقم المبنى';
 
   @override
-  String get passwordComplexityRequirement =>
-      'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+  String get nationalId => 'الهوية الوطنية';
 
   @override
-  String get pleaseConfirmPassword => 'Please confirm your password';
+  String get pleaseEnterNationalId => 'يرجى إدخال الهوية الوطنية';
 
   @override
-  String get passwordsDoNotMatch => 'كلمات المرور غير متطابقة';
+  String get dateOfBirth => 'تاريخ الميلاد';
 
   @override
-  String get resetPassword => 'Reset Password';
+  String get pleaseEnterDateOfBirth => 'يرجى إدخال تاريخ الميلاد';
 
   @override
-  String get setNewPassword => 'Set New Password';
+  String get ownerNationalId => 'هوية المالك الوطنية';
 
   @override
-  String get enterNewPasswordBelow => 'Please enter your new password below.';
+  String get ownerNationalIdSubtitle => 'ارفع صورة واضحة للهوية الوطنية';
+
+  @override
+  String get ownerPhoto => 'صورة المالك';
+
+  @override
+  String get ownerPhotoSubtitle => 'ارفع صورة واضحة للمالك';
+
+  @override
+  String get requiredDocuments => 'المستندات المطلوبة';
+
+  @override
+  String get commercialLicense => 'الرخصة التجارية';
+
+  @override
+  String get commercialLicenseSubtitle => 'ارفع رخصتك التجارية';
+
+  @override
+  String get healthCertificate => 'شهادة صحية';
+
+  @override
+  String get healthCertificateSubtitle => 'مطلوبة للأعمال المتعلقة بالطعام';
+
+  @override
+  String get submitRegistration => 'إرسال التسجيل';
+
+  @override
+  String get passwordMismatch => 'كلمات المرور غير متطابقة';
+
+  @override
+  String get emailSent => 'تم إرسال البريد الإلكتروني';
+
+  @override
+  String get passwordResetLinkSent =>
+      'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني';
+
+  @override
+  String get ok => 'موافق';
+
+  @override
+  String get enterOtp => 'أدخل رمز التحقق';
+
+  @override
+  String get pleaseEnterOtp => 'يرجى إدخال رمز التحقق';
+
+  @override
+  String get resetYourPassword => 'إعادة تعيين كلمة المرور';
+
+  @override
+  String get emailOrPhone => 'البريد الإلكتروني أو الهاتف';
+
+  @override
+  String get pleaseEnterEmailAddress => 'يرجى إدخال عنوان بريدك الإلكتروني';
 
   @override
   String get newPassword => 'كلمة المرور الجديدة';
 
   @override
+  String get pleaseEnterPassword => 'يرجى إدخال كلمة المرور';
+
+  @override
   String get confirmNewPassword => 'تأكيد كلمة المرور الجديدة';
 
   @override
-  String get passwordRequirements => 'Password Requirements:';
+  String get pleaseConfirmPassword => 'يرجى تأكيد كلمة المرور';
 
   @override
-  String get passwordRequirementsDetails =>
-      '• At least 8 characters long\n• Contains uppercase and lowercase letters\n• Contains at least one number';
+  String get resetPassword => 'إعادة تعيين كلمة المرور';
 
   @override
-  String get wizzBusiness => 'WIZZ Business';
+  String get sendOtp => 'إرسال رمز التحقق';
 
   @override
-  String get businessManagement => 'Business Management';
+  String get backToLogin => 'العودة لتسجيل الدخول';
 
   @override
-  String get changeLanguage => 'Change Language';
+  String get language => 'اللغة';
 
   @override
-  String get enableLocationServices =>
-      'Please enable location services to fetch your current location.';
+  String get arabic => 'العربية';
 
   @override
-  String get locationNotSelected =>
-      'Please select a location before confirming.';
+  String get english => 'English';
 
   @override
-  String get confirmLocation => 'Confirm Location';
+  String get selectLanguage => 'اختيار اللغة';
 
   @override
-  String get tapToSelectLocation => 'Tap on the map to select a location';
-
-  @override
-  String get online => 'Online';
-
-  @override
-  String get offline => 'Offline';
-
-  @override
-  String get notificationsTapped => 'Notifications tapped';
-
-  @override
-  String get notifications => 'الإشعارات';
-
-  @override
-  String get returnAnOrder => 'Return an Order';
-
-  @override
-  String get manageDiscounts => 'إدارة الخصومات';
-
-  @override
-  String get returnOrder => 'إرجاع الطلب';
-
-  @override
-  String get demoCustomerName1 => 'Mohammed Al-Rashid';
-
-  @override
-  String get demoDeliveryAddress1 =>
-      'Kuwait City, Block 7, Street 12, Building 8';
-
-  @override
-  String get demoDishName1 => 'Grilled Chicken';
-
-  @override
-  String get demoDishName2 => 'Caesar Salad';
-
-  @override
-  String get demoDishName3 => 'French Fries';
-
-  @override
-  String get demoNotes1 => 'Please provide extra ketchup.';
-
-  @override
-  String get simulatedCustomerName1 => 'Ahmed Ali';
-
-  @override
-  String get simulatedCustomerName2 => 'Sara Mohammed';
-
-  @override
-  String get simulatedCustomerName3 => 'Khalid Omar';
-
-  @override
-  String get simulatedCustomerName4 => 'Fatima Hassan';
-
-  @override
-  String get simulatedCustomerName5 => 'Omar Youssef';
-
-  @override
-  String get simulatedDishName1 => 'Beef Burger';
-
-  @override
-  String get simulatedDishName2 => 'Onion Rings';
-
-  @override
-  String get simulatedDishName3 => 'Cola';
-
-  @override
-  String get simulatedNotes1 => 'Extra pickles in the burger please.';
-
-  @override
-  String simulatedDeliveryAddress(int block, int street) {
-    return 'Kuwait City, Block $block, Street $street';
+  String newOrderReceived(String customerName) {
+    return 'تم استلام طلب جديد من $customerName';
   }
 
   @override
-  String get returnOrderPressed => 'Return order pressed';
+  String get passwordResetSuccessful => 'تم إعادة تعيين كلمة المرور بنجاح';
 
   @override
-  String get simulatedCustomerName6 => 'Sara Al-Mutairi';
+  String get passwordResetSuccessMessage =>
+      'تمت إعادة تعيين كلمة المرور الخاصة بك بنجاح.';
 
   @override
-  String get simulatedCustomerName7 => 'Omar Al-Kandari';
+  String get goToLogin => 'اذهب إلى تسجيل الدخول';
 
   @override
-  String get simulatedCustomerName8 => 'Noor Al-Ajmi';
+  String get passwordLengthRequirement =>
+      'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.';
 
   @override
-  String get simulatedCustomerName9 => 'Khalid Al-Rashid';
+  String get passwordComplexityRequirement =>
+      'يجب أن تتضمن كلمة المرور أحرفاً كبيرة وصغيرة وأرقاماً.';
 
   @override
-  String get simulatedCustomerName10 => 'Maryam Al-Sabah';
+  String get passwordsDoNotMatch => 'كلمتا المرور غير متطابقتين.';
 
   @override
-  String get simulatedNotes2 => 'Customer has allergies to certain ingredients';
+  String get setNewPassword => 'تعيين كلمة مرور جديدة';
 
   @override
-  String get demoRestaurantCustomerName => 'Jassim Abdullah';
+  String get enterNewPasswordBelow =>
+      'أدخل كلمة المرور الجديدة الخاصة بك أدناه.';
 
   @override
-  String get demoRestaurantDeliveryAddress =>
-      'Salmiya, Block 10, Street 5, Building 15';
+  String get passwordRequirements => 'متطلبات كلمة المرور';
 
   @override
-  String get demoRestaurantDishName1 => 'Margherita Pizza';
+  String get passwordRequirementsDetails =>
+      'يجب أن تتكون من 8 أحرف على الأقل، وتتضمن أحرفاً كبيرة وصغيرة وعدداً.';
 
   @override
-  String get demoRestaurantDishName2 => 'Pasta Alfredo';
+  String get pleaseEnterValidEmail => 'يرجى إدخال عنوان بريد إلكتروني صالح';
 
   @override
-  String get demoRestaurantDishName3 => 'Garlic Bread';
+  String get confirmPassword => 'تأكيد كلمة المرور';
 
   @override
-  String get demoRestaurantNotes => 'No olives on the pizza, please.';
+  String get autoFillAddress => 'ملء العنوان تلقائياً';
 
   @override
-  String get simulatedRestaurantCustomerName1 => 'Fatima Ahmed';
+  String get validityPeriod => 'فترة الصلاحية';
 
   @override
-  String get simulatedRestaurantCustomerName2 => 'Youssef Hassan';
+  String get unknownStatus => 'حالة غير معروفة';
 
   @override
-  String get simulatedRestaurantCustomerName3 => 'Aisha Ibrahim';
+  String get wizzBusiness => 'ويز بزنس';
 
   @override
-  String get simulatedRestaurantCustomerName4 => 'Mohammed Jassem';
+  String get businessManagement => 'إدارة الأعمال';
 
   @override
-  String get simulatedRestaurantCustomerName5 => 'Zainab Ali';
+  String get welcomeToOrderReceiver => 'مرحباً بك في مستقبل الطلبات';
 
   @override
-  String get simulatedRestaurantDishName1 => 'Pepperoni Pizza';
+  String get welcomeDescription =>
+      'إدارة طلبات عملك بكفاءة مع نظام إدارة الطلبات القوي الخاص بنا.';
 
   @override
-  String get simulatedRestaurantDishName2 => 'Vegetable Lasagna';
+  String get getStarted => 'ابدأ الآن';
 
   @override
-  String get simulatedRestaurantDishName3 => 'Tiramisu';
+  String get testRegistrationForm => 'اختبر نموذج التسجيل';
 
   @override
-  String get simulatedRestaurantNotes => 'Extra cheese on the lasagna.';
+  String get networkError => 'خطأ في الشبكة';
 
   @override
-  String get demoStoreCustomerName => 'Abdullah Al-Fahad';
+  String get returnOrderTitle => 'إرجاع الطلب';
 
   @override
-  String get demoStoreDeliveryAddress =>
-      'Hawally, Block 3, Street 8, Building 20';
+  String get enterOrderNumber => 'أدخل رقم الطلب';
 
   @override
-  String get demoStoreItemName1 => 'Organic Apples';
-
-  @override
-  String get demoStoreItemName2 => 'Whole Wheat Bread';
-
-  @override
-  String get demoStoreItemName3 => 'Fresh Milk';
-
-  @override
-  String get demoStoreNotes => 'Please select ripe apples.';
-
-  @override
-  String get simulatedStoreCustomerName1 => 'Maryam Khalid';
-
-  @override
-  String get simulatedStoreCustomerName2 => 'Ali Saleh';
-
-  @override
-  String get simulatedStoreCustomerName3 => 'Noura Saad';
-
-  @override
-  String get simulatedStoreCustomerName4 => 'Fahad Nasser';
-
-  @override
-  String get simulatedStoreCustomerName5 => 'Hessa Mubarak';
-
-  @override
-  String get simulatedStoreItemName1 => 'Imported Cheese';
-
-  @override
-  String get simulatedStoreItemName2 => 'Artisanal Honey';
-
-  @override
-  String get simulatedStoreItemName3 => 'Sparkling Water';
-
-  @override
-  String get simulatedStoreNotes => 'Handle with care, fragile items.';
-
-  @override
-  String get businessIsNowOnline => 'النشاط التجاري متصل الآن';
-
-  @override
-  String get businessIsNowOffline => 'النشاط التجاري غير متصل الآن';
-
-  @override
-  String get returnOrderFeature => 'ميزة إرجاع الطلب قادمة قريباً';
-
-  @override
-  String get orderNotFound => 'لم يتم العثور على الطلب';
+  String get orderNotFound => 'الطلب غير موجود';
 
   @override
   String get orderReturnedSuccessfully => 'تم إرجاع الطلب بنجاح';
 
   @override
-  String get confirmPassword => 'Confirm Password';
+  String get locationSaved => 'تم حفظ الموقع';
 
   @override
-  String get iraqiPhoneRequired =>
-      'Please enter a valid Iraqi phone number (+964 77X/78X/79X XXXXXXX)';
+  String get businessLocation => 'موقع العمل';
 
   @override
-  String get phoneRequired => 'Phone number is required';
+  String get locationSet => 'تم تعيين الموقع';
 
   @override
-  String get passwordRequired => 'Password is required';
+  String get latitude => 'خط العرض';
 
   @override
-  String get passwordMinLength => 'Password must be at least 8 characters long';
+  String get longitude => 'خط الطول';
 
   @override
-  String get passwordRequiresSpecial =>
-      'Password must contain at least one special character';
+  String get updateLocation => 'تحديث الموقع';
 
   @override
-  String get emailOptional => 'البريد الإلكتروني (اختياري)';
+  String get noLocationSet => 'لم يتم تعيين موقع';
 
   @override
-  String get validEmailRequired => 'Please enter a valid email address';
+  String get chooseLocationOnMap => 'اختر الموقع على الخريطة';
 
   @override
-  String get accountSettings => 'إعدادات الحساب';
+  String get selectLocation => 'اختر الموقع';
 
   @override
-  String get changePassword => 'تغيير كلمة المرور';
+  String get enableLocationServices => 'تفعيل خدمات الموقع';
 
   @override
-  String get languageSettings => 'إعدادات اللغة';
+  String get locationNotSelected => 'لم يتم اختيار الموقع';
 
   @override
-  String get posSystemType => 'نوع نظام نقاط البيع';
+  String get confirmLocation => 'تأكيد الموقع';
 
   @override
-  String get selectPosSystem => 'اختر نظام نقاط البيع';
-
-  @override
-  String get apiConfiguration => 'إعدادات واجهة برمجة التطبيقات';
-
-  @override
-  String get apiEndpoint => 'نقطة نهاية API';
-
-  @override
-  String get apiKey => 'مفتاح API';
-
-  @override
-  String get accessToken => 'رمز الوصول';
-
-  @override
-  String get locationId => 'معرف الموقع';
-
-  @override
-  String get pleaseEnterApiEndpoint => 'يرجى إدخال نقطة نهاية API';
-
-  @override
-  String get pleaseEnterValidUrl => 'يرجى إدخال رابط صحيح';
-
-  @override
-  String get pleaseEnterApiKey => 'يرجى إدخال مفتاح API';
-
-  @override
-  String get enterApiKey => 'أدخل مفتاح API الخاص بك';
-
-  @override
-  String get enterAccessToken => 'أدخل رمز الوصول (اختياري)';
-
-  @override
-  String get enterLocationId => 'أدخل معرف الموقع (اختياري)';
-
-  @override
-  String get posIntegrationSettings => 'إعدادات التكامل مع نقاط البيع';
-
-  @override
-  String get enablePosIntegration => 'تفعيل التكامل مع نقاط البيع';
-
-  @override
-  String get enablePosIntegrationDescription =>
-      'إرسال الطلبات تلقائياً إلى نظام نقاط البيع';
-
-  @override
-  String get autoSendOrders => 'إرسال الطلبات تلقائياً';
-
-  @override
-  String get autoSendOrdersDescription =>
-      'إرسال الطلبات الجديدة تلقائياً إلى نقاط البيع عند استلامها';
-
-  @override
-  String get connectionStatus => 'حالة الاتصال';
-
-  @override
-  String get posIntegrationEnabled => 'تم تفعيل التكامل مع نقاط البيع';
-
-  @override
-  String get posIntegrationDisabled => 'تم إلغاء التكامل مع نقاط البيع';
-
-  @override
-  String get system => 'النظام';
-
-  @override
-  String get endpoint => 'نقطة النهاية';
-
-  @override
-  String get testConnection => 'اختبار الاتصال';
-
-  @override
-  String get testing => 'جاري الاختبار...';
-
-  @override
-  String get saveSettings => 'حفظ الإعدادات';
-
-  @override
-  String get saving => 'جاري الحفظ...';
-
-  @override
-  String get connectionSuccessful => 'تم الاتصال بنجاح!';
-
-  @override
-  String get connectionFailed => 'فشل الاتصال. يرجى التحقق من الإعدادات.';
-
-  @override
-  String get posSettingsUpdated => 'تم تحديث إعدادات نقاط البيع بنجاح!';
-
-  @override
-  String get copiedToClipboard => 'تم النسخ إلى الحافظة';
+  String get tapToSelectLocation => 'انقر لاختيار الموقع';
 }

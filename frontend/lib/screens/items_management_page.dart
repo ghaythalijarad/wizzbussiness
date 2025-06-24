@@ -5,8 +5,10 @@ import '../models/order.dart';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ItemsManagementPage extends StatefulWidget {
   final Business business;
@@ -30,11 +32,13 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
   final TextEditingController _searchController = TextEditingController();
   List<ItemCategory> _categories = [];
   final ApiService _apiService = ApiService();
+  Map<String, dynamic>? _userData;
 
   @override
   void initState() {
     super.initState();
     _loadCategories();
+    _loadUserData();
     _searchController.addListener(_filterItems);
   }
 
@@ -47,6 +51,20 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
     } catch (e) {
       // Handle error
       print(e);
+    }
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final response = await AuthService.getCurrentUser();
+      if (response['success'] == true) {
+        setState(() {
+          _userData = response['user'];
+        });
+      }
+    } catch (e) {
+      // Handle error silently or log it
+      print('Error loading user data: $e');
     }
   }
 
@@ -106,7 +124,19 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
     final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.items),
+        title: Column(
+          children: [
+            Text(loc.items),
+            if (_userData != null && _userData!['business_name'] != null)
+              Text(
+                _userData!['business_name'],
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+          ],
+        ),
         centerTitle: true,
         actions: [
           IconButton(
@@ -218,7 +248,7 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
 
   void _deleteItem(Dish item) async {
     try {
-      await _apiService.deleteItem(item.id);
+      await _apiService.deleteItem(widget.business.id, item.id);
       _loadCategories();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -229,6 +259,12 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
     } catch (e) {
       // Handle error
       print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete item: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }
@@ -271,12 +307,40 @@ class _AddItemDialogState extends State<AddItemDialog> {
 
   Future<void> _loadCategories() async {
     try {
-      final categories = await widget.apiService.getCategories(widget.business.id);
+      print('AddItemDialog: Loading categories for business: ${widget.business.id}');
+      
+      // Check if user is logged in first
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('access_token');
+      
+      if (token == null) {
+        throw Exception('User not logged in. Please log in first.');
+      }
+      
+      final categories =
+          await widget.apiService.getCategories(widget.business.id);
+      print('AddItemDialog: Loaded ${categories.length} categories');
+      for (var category in categories) {
+        print('Category: ${category.id} - ${category.name}');
+      }
       setState(() {
         _categories = categories;
       });
     } catch (e) {
-      print(e);
+      print('AddItemDialog: Error loading categories: $e');
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load categories: $e'),
+            backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Retry',
+              onPressed: _loadCategories,
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -319,27 +383,68 @@ class _AddItemDialogState extends State<AddItemDialog> {
                 onPressed: _pickImage,
               ),
               if (!_showNewCategoryField)
-                DropdownButtonFormField<String>(
-                  value: _selectedCategoryId,
-                  decoration: InputDecoration(
-                    labelText: loc.selectCategory,
-                    border: const OutlineInputBorder(),
-                  ),
-                  items: _categories.map((category) {
-                    return DropdownMenuItem(
-                      value: category.id,
-                      child: Text(category.name),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCategoryId = value;
-                    });
-                  },
-                  validator: (value) =>
-                      value == null && !_showNewCategoryField
-                          ? loc.pleaseSelectCategory
-                          : null,
+                Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Categories loaded: ${_categories.length}'),
+                        if (_categories.isEmpty)
+                          TextButton.icon(
+                            icon: const Icon(Icons.add),
+                            label: const Text('Create First Category'),
+                            onPressed: () {
+                              setState(() {
+                                _showNewCategoryField = true;
+                              });
+                            },
+                          ),
+                      ],
+                    ),
+                    if (_categories.isEmpty && !_showNewCategoryField)
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          border: Border.all(color: Colors.orange.shade200),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          children: [
+                            const Icon(Icons.info, color: Colors.orange),
+                            const SizedBox(height: 8),
+                            Text(
+                              'No categories found. Create your first category to organize your items.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.orange.shade700),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (_categories.isNotEmpty)
+                      DropdownButtonFormField<String>(
+                        value: _selectedCategoryId,
+                        decoration: InputDecoration(
+                          labelText: loc.selectCategory,
+                          border: const OutlineInputBorder(),
+                        ),
+                        items: _categories.map((category) {
+                          return DropdownMenuItem(
+                            value: category.id,
+                            child: Text(category.name),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          print('Category selected: $value');
+                          setState(() {
+                            _selectedCategoryId = value;
+                          });
+                        },
+                        validator: (value) => value == null && !_showNewCategoryField && _categories.isNotEmpty
+                            ? loc.pleaseSelectCategory
+                            : null,
+                      ),
+                  ],
                 ),
               if (_showNewCategoryField)
                 TextFormField(
@@ -438,11 +543,16 @@ class _AddItemDialogState extends State<AddItemDialog> {
     if (_formKey.currentState!.validate()) {
       try {
         ItemCategory? category;
-        if (_showNewCategoryField) {
-          category = await widget.apiService.createCategory(
-              widget.business.id, _newCategoryController.text);
-        } else {
+        if (_showNewCategoryField && _newCategoryController.text.isNotEmpty) {
+          // Create new category
+          category = await widget.apiService
+              .createCategory(widget.business.id, _newCategoryController.text);
+        } else if (_selectedCategoryId != null) {
+          // Use existing category
           category = _categories.firstWhere((c) => c.id == _selectedCategoryId);
+        } else {
+          // This shouldn't happen due to validation, but handle gracefully
+          throw Exception('Please select a category or create a new one');
         }
 
         final newItem = Dish(
@@ -452,23 +562,37 @@ class _AddItemDialogState extends State<AddItemDialog> {
           price: double.parse(_priceController.text),
           categoryId: category.id,
           isAvailable: _isAvailable,
-          imageUrl: _imageUrlController.text,
+          imageUrl: _imageUrlController.text.isEmpty ? null : _imageUrlController.text,
           businessId: widget.business.id,
         );
 
-        final createdItem = await widget.apiService.createItem(category.id, newItem);
+        final createdItem =
+            await widget.apiService.createItem(widget.business.id, newItem);
 
         if (_imageFile != null) {
-          final imageUrl = await widget.apiService.uploadItemImage(createdItem.id, _imageFile!);
-          createdItem.imageUrl = imageUrl;
-          await widget.apiService.updateItem(createdItem);
+          try {
+            final imageUrl = await widget.apiService
+                .uploadItemImage(createdItem.id, _imageFile!);
+            createdItem.imageUrl = imageUrl;
+            await widget.apiService.updateItem(widget.business.id, createdItem);
+          } catch (imageError) {
+            print('Error uploading image: $imageError');
+            // Continue anyway, item was created successfully
+          }
         }
 
         widget.onItemAdded(category, createdItem);
         Navigator.of(context).pop();
       } catch (e) {
-        print(e);
-        // Show error message
+        print('Error adding item: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to add item: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -520,7 +644,8 @@ class _EditItemDialogState extends State<EditItemDialog> {
 
   Future<void> _loadCategories() async {
     try {
-      final categories = await widget.apiService.getCategories(widget.business.id);
+      final categories =
+          await widget.apiService.getCategories(widget.business.id);
       setState(() {
         _categories = categories;
       });
@@ -667,11 +792,17 @@ class _EditItemDialogState extends State<EditItemDialog> {
       );
 
       try {
-        final item = await widget.apiService.updateItem(updatedDish);
+        final item = await widget.apiService.updateItem(widget.business.id, updatedDish);
         widget.onItemUpdated(item);
         Navigator.of(context).pop();
       } catch (e) {
         print(e);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update item: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }

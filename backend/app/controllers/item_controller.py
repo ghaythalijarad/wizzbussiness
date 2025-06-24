@@ -36,14 +36,26 @@ async def create_item(
     try:
         business_obj_id = PydanticObjectId(business_id)
         
-        # Verify user owns the business (you might want to add this check)
-        # This would require a method to check business ownership
+        # Verify user owns the business
+        from ..models.business import Business
+        business = await Business.get(business_obj_id)
+        if not business:
+            raise HTTPException(status_code=404, detail="Business not found")
         
-        item = await ItemService.create_item(business_obj_id, item_data)
+        if business.owner_id != current_user.id:
+            raise HTTPException(status_code=403, detail="You can only create items for your own business")
+        
+        # Ensure user has an ID
+        if not current_user.id:
+            raise HTTPException(status_code=401, detail="User authentication required")
+        
+        item = await ItemService.create_item(business_obj_id, item_data, current_user.id)
         return ItemResponseSchema(**item.to_dict())
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Error creating item: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
@@ -70,11 +82,28 @@ async def get_items(
     try:
         business_obj_id = PydanticObjectId(business_id)
         
+        # Convert string enums to proper types
+        item_type_enum = None
+        if item_type:
+            try:
+                from ..models.item import ItemType
+                item_type_enum = ItemType(item_type.lower())
+            except ValueError:
+                raise HTTPException(status_code=400, detail=f"Invalid item type: {item_type}")
+        
+        status_enum = None
+        if status:
+            try:
+                from ..models.item import ItemStatus
+                status_enum = ItemStatus(status.lower())
+            except ValueError:
+                raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
+        
         search_params = ItemSearchSchema(
             query=query,
             category_id=category_id,
-            item_type=item_type,
-            status=status,
+            item_type=item_type_enum,
+            status=status_enum,
             is_available=is_available,
             min_price=min_price,
             max_price=max_price,

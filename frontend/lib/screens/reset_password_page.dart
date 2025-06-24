@@ -7,10 +7,12 @@ import '../screens/login_page.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   final String token;
+  final Function(Locale) onLanguageChanged;
 
   const ResetPasswordPage({
     super.key,
     required this.token,
+    required this.onLanguageChanged,
   });
 
   @override
@@ -73,7 +75,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 Navigator.of(context).pop(); // Close dialog
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
-                    builder: (context) => const LoginPage(),
+                    builder: (context) => LoginPage(onLanguageChanged: widget.onLanguageChanged),
                   ),
                   (route) => false, // Remove all previous routes
                 );

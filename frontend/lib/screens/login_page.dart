@@ -7,6 +7,7 @@ import '../screens/forgot_password_page.dart';
 import '../screens/registration_form_screen.dart';
 import '../screens/dashboards/business_dashboard.dart';
 import '../services/auth_service.dart';
+import '../services/api_service.dart';
 import '../models/business.dart';
 import '../models/business_type.dart';
 import '../utils/responsive_helper.dart';
@@ -52,15 +53,57 @@ class _LoginPageState extends State<LoginPage> {
           final accessToken = response['access_token'];
           print('Login successful, access token: $accessToken');
 
-          // For now, navigate to a restaurant dashboard as default
-          // TODO: Fetch user business type from backend and navigate accordingly
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  _createDashboard(BusinessType.restaurant, email, context),
-            ),
-          );
+          // Fetch user's businesses from backend
+          try {
+            final apiService = ApiService();
+            final businesses = await apiService.getUserBusinesses();
+            
+            if (businesses.isNotEmpty) {
+              // Use the first business (users should have at least one business)
+              final businessData = businesses[0];
+              final business = Business(
+                id: businessData['id'],
+                name: businessData['name'],
+                email: businessData['email'] ?? email,
+                phone: businessData['phone_number'] ?? '',
+                address: businessData['address']?['street'] ?? '',
+                latitude: businessData['address']?['latitude']?.toDouble() ?? 0.0,
+                longitude: businessData['address']?['longitude']?.toDouble() ?? 0.0,
+                offers: [],
+                businessHours: {},
+                settings: {},
+                businessType: _getBusinessTypeFromString(businessData['business_type']),
+              );
+              
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BusinessDashboard(
+                    business: business,
+                    onLanguageChanged: widget.onLanguageChanged,
+                  ),
+                ),
+              );
+            } else {
+              // User has no businesses - this shouldn't happen but handle it
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('No business found for this user'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            }
+          } catch (e) {
+            print('Error fetching user business: $e');
+            // Fallback to demo business if API fails
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    _createDashboard(BusinessType.restaurant, email, context),
+              ),
+            );
+          }
         } else {
           // Login failed, show error message
           ScaffoldMessenger.of(context).showSnackBar(
@@ -73,8 +116,7 @@ class _LoginPageState extends State<LoginPage> {
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                AppLocalizations.of(context)!.anErrorOccurred(e.toString())),
+            content: Text(AppLocalizations.of(context)!.errorOccurred),
             backgroundColor: Colors.red,
           ),
         );
@@ -83,6 +125,21 @@ class _LoginPageState extends State<LoginPage> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  BusinessType _getBusinessTypeFromString(String? businessTypeString) {
+    switch (businessTypeString?.toLowerCase()) {
+      case 'restaurant':
+        return BusinessType.restaurant;
+      case 'store':
+        return BusinessType.store;
+      case 'pharmacy':
+        return BusinessType.pharmacy;
+      case 'kitchen':
+        return BusinessType.kitchen;
+      default:
+        return BusinessType.restaurant; // Default fallback
     }
   }
 

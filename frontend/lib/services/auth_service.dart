@@ -329,4 +329,55 @@ class AuthService {
       };
     }
   }
+
+  /// Request an OTP for password reset via email or phone
+  static Future<Map<String, dynamic>> requestOtp(
+    String contact,
+    String method, // 'email' or 'phone'
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/otp/request'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'contact': contact, 'method': method}),
+      );
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': 'OTP sent successfully'};
+      } else {
+        final errorData = jsonDecode(response.body);
+        return {'success': false, 'message': _parseError(errorData['detail'])};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Reset password using OTP code
+  static Future<Map<String, dynamic>> resetPasswordWithOtp(
+    String contact,
+    String method,
+    String code,
+    String newPassword,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/reset-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'contact': contact,
+          'method': method,
+          'code': code,
+          'new_password': newPassword,
+        }),
+      );
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': 'Password reset successfully'};
+      } else {
+        final errorData = jsonDecode(response.body);
+        return {'success': false, 'message': _parseError(errorData['detail'])};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    }
+  }
 }

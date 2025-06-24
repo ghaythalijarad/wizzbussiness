@@ -15,6 +15,7 @@ class ItemCategory {
   });
 
   factory ItemCategory.fromJson(Map<String, dynamic> json) {
+    // Handle items list - it might be nested in a separate API call
     var itemsList = json['items'] as List? ?? [];
     List<Dish> items = itemsList.map((i) => Dish.fromJson(i)).toList();
     

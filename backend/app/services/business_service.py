@@ -4,10 +4,12 @@ Business service using OOP principles.
 from typing import List, Optional, Dict, Any
 from beanie import PydanticObjectId
 from fastapi import HTTPException
+import logging
 
 from ..models.business import Business, Restaurant, Store, Pharmacy, Kitchen, BusinessType, BusinessStatus, Address, BusinessSettings
 from ..models.user import User
 from ..schemas.business import BusinessCreate, BusinessUpdate, POSSettingsUpdate, BusinessStatusUpdate
+from .category_defaults_service import category_defaults_service
 
 
 class BusinessService:
@@ -64,6 +66,17 @@ class BusinessService:
             # Override the ID to maintain consistency
             unified_business.id = business.id
             await unified_business.save()
+            
+            # CREATE DEFAULT CATEGORIES: Automatically create default categories for the business
+            try:
+                default_categories = await category_defaults_service.create_default_categories(
+                    business.id, business_data.business_type
+                )
+                logging.info(f"Created {len(default_categories)} default categories for business {business.id}")
+            except Exception as category_error:
+                # Log the error but don't fail business creation
+                logging.error(f"Failed to create default categories for business {business.id}: {category_error}")
+                # Categories can be created manually later if needed
             
             return business
             

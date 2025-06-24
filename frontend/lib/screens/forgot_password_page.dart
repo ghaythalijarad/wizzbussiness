@@ -14,17 +14,24 @@ class ForgotPasswordPage extends StatefulWidget {
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _otpController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
+  bool _otpRequested = false;
   String? _message;
   bool _isSuccess = false;
 
   @override
   void dispose() {
     _emailController.dispose();
+    _otpController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _sendPasswordReset() async {
+  Future<void> _requestOtp() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
@@ -32,18 +39,44 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       });
 
       final result =
-          await AuthService.sendPasswordReset(_emailController.text.trim());
+          await AuthService.requestOtp(_emailController.text.trim(), 'email');
 
       setState(() {
         _isLoading = false;
+        _otpRequested = result['success'];
         _message = result['message'];
-        _isSuccess = result['success'];
+      });
+    }
+  }
+
+  Future<void> _resetWithOtp() async {
+    if (_formKey.currentState!.validate()) {
+      if (_newPasswordController.text != _confirmPasswordController.text) {
+        setState(() {
+          _message = AppLocalizations.of(context)!.passwordMismatch;
+          _isSuccess = false;
+        });
+        return;
+      }
+      setState(() {
+        _isLoading = true;
+        _message = null;
       });
 
-      if (_isSuccess) {
-        // Show success dialog
-        _showSuccessDialog();
-      }
+      final result = await AuthService.resetPasswordWithOtp(
+        _emailController.text.trim(),
+        'email',
+        _otpController.text.trim(),
+        _newPasswordController.text,
+      );
+
+      setState(() {
+        _isLoading = false;
+        _isSuccess = result['success'];
+        _message = result['message'];
+      });
+
+      if (_isSuccess) _showSuccessDialog();
     }
   }
 
@@ -72,6 +105,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.forgotPassword),
@@ -86,46 +120,51 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 32),
-              // Header
               Text(
-                AppLocalizations.of(context)!.resetYourPassword,
+                _otpRequested ? loc.enterOtp : loc.resetYourPassword,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              Text(
-                AppLocalizations.of(context)!.enterEmailForPasswordReset,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-
-              // Email Field
-              WizzBusinessTextFormField(
-                controller: _emailController,
-                labelText: AppLocalizations.of(context)!.emailAddress,
-                keyboardType: TextInputType.emailAddress,
-                prefixIcon: const Icon(Icons.email_outlined),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return AppLocalizations.of(context)!
-                        .pleaseEnterEmailAddress;
-                  }
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                      .hasMatch(value)) {
-                    return AppLocalizations.of(context)!
-                        .pleaseEnterValidEmail;
-                  }
-                  return null;
-                },
-              ),
+              if (!_otpRequested) ...[
+                WizzBusinessTextFormField(
+                  controller: _emailController,
+                  labelText: loc.emailOrPhone,
+                  keyboardType: TextInputType.emailAddress,
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return loc.pleaseEnterEmailAddress;
+                    return null;
+                  },
+                ),
+              ] else ...[
+                WizzBusinessTextFormField(
+                  controller: _otpController,
+                  labelText: loc.enterOtp,
+                  keyboardType: TextInputType.number,
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  validator: (value) => (value == null || value.isEmpty) ? loc.pleaseEnterOtp : null,
+                ),
+                const SizedBox(height: 16),
+                WizzBusinessTextFormField(
+                  controller: _newPasswordController,
+                  labelText: loc.newPassword,
+                  obscureText: true,
+                  prefixIcon: const Icon(Icons.lock),
+                  validator: (value) => (value==null||value.isEmpty) ? loc.pleaseEnterPassword : null,
+                ),
+                const SizedBox(height: 16),
+                WizzBusinessTextFormField(
+                  controller: _confirmPasswordController,
+                  labelText: loc.confirmNewPassword,
+                  obscureText: true,
+                  prefixIcon: const Icon(Icons.lock),
+                  validator: (value) => (value==null||value.isEmpty) ? loc.pleaseConfirmPassword : null,
+                ),
+              ],
               const SizedBox(height: 24),
-
-              // Error/Success Message
               if (_message != null) ...[
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -147,21 +186,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 ),
                 const SizedBox(height: 24),
               ],
-
-              // Send Reset Email Button
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : WizzBusinessButton(
-                      onPressed: _sendPasswordReset,
-                      text: AppLocalizations.of(context)!.sendResetEmail,
+                      onPressed: _otpRequested ? _resetWithOtp : _requestOtp,
+                      text: _otpRequested ? loc.resetPassword : loc.sendOtp,
                     ),
-
               const SizedBox(height: 24),
-
-              // Back to Login
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text(AppLocalizations.of(context)!.backToLogin),
+                child: Text(loc.backToLogin),
               ),
             ],
           ),

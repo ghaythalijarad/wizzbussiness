@@ -20,7 +20,7 @@ class ItemService:
     """Service class for item-related operations."""
     
     @staticmethod
-    async def create_item(business_id: PydanticObjectId, item_data: ItemCreateSchema) -> Item:
+    async def create_item(business_id: PydanticObjectId, item_data: ItemCreateSchema, user_id: PydanticObjectId) -> Item:
         """Create a new item for a business."""
         try:
             # Verify business exists
@@ -42,11 +42,13 @@ class ItemService:
                     category_name = category.name
             
             # Create item
-            item = Item(
-                business_id=business_id,
-                category_name=category_name,
-                **item_data.dict()
-            )
+            item_dict = item_data.dict()
+            item_dict['business_id'] = business_id
+            item_dict['category_name'] = category_name
+            item_dict['created_by'] = user_id
+            item_dict['updated_by'] = user_id
+            
+            item = Item(**item_dict)
             
             await item.insert()
             
@@ -56,7 +58,7 @@ class ItemService:
                     business_id, PydanticObjectId(item_data.category_id)
                 )
             
-            logging.info(f"Created item {item.id} for business {business_id}")
+            logging.info(f"Created item {item.id} for business {business_id} by user {user_id}")
             return item
             
         except Exception as e:

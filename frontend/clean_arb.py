@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-import json
+import json, os
 
 def clean_arb_file(file_path):
     # Read the file content
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
-    
     try:
         # Parse as JSON
         data = json.loads(content)
     except json.JSONDecodeError as e:
-        print(f"Error parsing JSON: {e}")
+        print(f"Error parsing JSON in {file_path}: {e}")
         return False
     
     # Create new dict to preserve order but remove duplicates
@@ -28,15 +27,14 @@ def clean_arb_file(file_path):
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(cleaned_data, f, ensure_ascii=False, indent=2)
     
-    print(f"Removed {duplicate_count} duplicate keys")
-    print(f"File saved with {len(cleaned_data)} unique keys")
+    print(f"Removed {duplicate_count} duplicate keys from {os.path.basename(file_path)}")
     return True
 
-# Clean the English ARB file
-print("Cleaning English ARB file...")
-success = clean_arb_file('/Users/ghaythallaheebi/order-receiver-app 2/lib/l10n/app_en.arb')
-
-if success:
-    print("English ARB file cleaned successfully!")
-else:
-    print("Failed to clean the file. Please check for JSON syntax errors.")
+if __name__ == '__main__':
+    base_dir = os.path.dirname(__file__)
+    l10n_dir = os.path.join(base_dir, 'lib', 'l10n')  # adjust if needed
+    arb_files = ['app_en.arb', 'app_ar.arb']
+    for arb in arb_files:
+        path = os.path.join(l10n_dir, arb)
+        print(f"Cleaning {arb}...")
+        clean_arb_file(path)

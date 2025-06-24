@@ -108,6 +108,10 @@ class Item(Document):
     tags: List[str] = Field(default_factory=list)
     search_keywords: List[str] = Field(default_factory=list)
     
+    # User tracking
+    created_by: Optional[PydanticObjectId] = None
+    updated_by: Optional[PydanticObjectId] = None
+    
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

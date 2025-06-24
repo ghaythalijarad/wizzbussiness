@@ -418,7 +418,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         'password': _passwordController.text,
         'business_name': _businessNameController.text.trim(),
         'business_type': _selectedBusinessType,
-        'phone': '+964${_phoneController.text.trim()}', // Add +964 prefix
+        'phone_number': '+964${_phoneController.text.trim()}', // Changed from 'phone' to 'phone_number'
         'owner_name': _ownerNameController.text.trim(),
         'address': {
           'country': _businessCountryController.text.trim(),

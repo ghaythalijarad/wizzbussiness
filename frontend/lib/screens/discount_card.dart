@@ -145,10 +145,7 @@ class DiscountCard extends StatelessWidget {
                           size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 8),
                       Text(
-                        loc.validityPeriod(
-                          '${discount.validFrom.day}/${discount.validFrom.month}/${discount.validFrom.year}',
-                          '${discount.validTo.day}/${discount.validTo.month}/${discount.validTo.year}',
-                        ),
+                        '${loc.validityPeriod}: ${discount.validFrom.day}/${discount.validFrom.month}/${discount.validFrom.year} - ${discount.validTo.day}/${discount.validTo.month}/${discount.validTo.year}',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],

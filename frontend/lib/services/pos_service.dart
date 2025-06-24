@@ -17,6 +17,9 @@ class PosSettings {
   String apiKey;
   String? accessToken;
   String? locationId;
+  int? timeoutSeconds;
+  int? retryAttempts;
+  bool? testMode;
 
   PosSettings({
     this.enabled = false,
@@ -26,6 +29,9 @@ class PosSettings {
     this.apiKey = '',
     this.accessToken,
     this.locationId,
+    this.timeoutSeconds = 30,
+    this.retryAttempts = 3,
+    this.testMode = false,
   });
 
   Map<String, dynamic> toJson() {
@@ -37,6 +43,9 @@ class PosSettings {
       'apiKey': apiKey,
       'accessToken': accessToken,
       'locationId': locationId,
+      'timeoutSeconds': timeoutSeconds,
+      'retryAttempts': retryAttempts,
+      'testMode': testMode,
     };
   }
 
@@ -52,36 +61,38 @@ class PosSettings {
       apiKey: json['apiKey'] ?? '',
       accessToken: json['accessToken'],
       locationId: json['locationId'],
+      timeoutSeconds: json['timeoutSeconds'] ?? 30,
+      retryAttempts: json['retryAttempts'] ?? 3,
+      testMode: json['testMode'] ?? false,
     );
   }
 }
 
 class PosService {
-  static const Duration _connectionTimeout = Duration(seconds: 10);
+  static String getSystemTypeName(PosSystemType type) {
+    switch (type) {
+      case PosSystemType.square:
+        return 'Square';
+      case PosSystemType.toast:
+        return 'Toast POS';
+      case PosSystemType.clover:
+        return 'Clover';
+      case PosSystemType.shopifyPos:
+        return 'Shopify POS';
+      case PosSystemType.genericApi:
+        return 'Generic API';
+    }
+  }
 
-  // Test connection to POS system
-  static Future<bool> testConnection(PosSettings settings) async {
+  static bool isValidApiEndpoint(String endpoint) {
+    if (endpoint.isEmpty) return false;
+
     try {
-      if (settings.apiEndpoint.isEmpty || settings.apiKey.isEmpty) {
-        return false;
-      }
-
-      final uri = Uri.parse(settings.apiEndpoint);
+      final uri = Uri.parse(endpoint);
       if (!uri.isAbsolute) {
         return false;
       }
-
-      final headers = _buildHeaders(settings);
-
-      // Test with a basic GET request or health check endpoint
-      final response = await http
-          .get(
-            uri,
-            headers: headers,
-          )
-          .timeout(_connectionTimeout);
-
-      return response.statusCode >= 200 && response.statusCode < 300;
+      return uri.scheme == 'http' || uri.scheme == 'https';
     } catch (e) {
       return false;
     }
@@ -92,34 +103,35 @@ class PosService {
     Map<String, dynamic> orderData,
     PosSettings settings,
   ) async {
+    if (!settings.enabled) return false;
+
     try {
-      if (!settings.enabled || settings.apiEndpoint.isEmpty) {
+      final uri = Uri.parse(settings.apiEndpoint);
+      if (!uri.isAbsolute) {
         return false;
       }
 
-      final uri = Uri.parse('${settings.apiEndpoint}/orders');
       final headers = _buildHeaders(settings);
-      headers['Content-Type'] = 'application/json';
+      final formattedData = _formatOrderForPos(orderData, settings);
 
-      final orderPayload = _formatOrderForPos(orderData, settings);
-
-      final response = await http
-          .post(
-            uri,
-            headers: headers,
-            body: json.encode(orderPayload),
-          )
-          .timeout(_connectionTimeout);
+      final response = await http.post(
+        uri,
+        headers: headers,
+        body: jsonEncode(formattedData),
+      );
 
       return response.statusCode >= 200 && response.statusCode < 300;
     } catch (e) {
+      print('Error sending order to POS: $e');
       return false;
     }
   }
 
-  // Build authentication headers based on POS system type
+  // Build authentication headers for each POS system
   static Map<String, String> _buildHeaders(PosSettings settings) {
-    final headers = <String, String>{};
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+    };
 
     switch (settings.systemType) {
       case PosSystemType.square:
@@ -220,13 +232,13 @@ class PosService {
         },
         'selections': orderData['items']
             ?.map((item) => {
-                  'itemId': item['id'],
+                  'item': {
+                    'name': item['name'],
+                  },
                   'quantity': item['quantity'],
                   'unitPrice': item['price'],
                 })
             ?.toList(),
-        'requiredTime':
-            DateTime.now().add(const Duration(minutes: 30)).toIso8601String(),
       },
     };
   }
@@ -237,19 +249,14 @@ class PosService {
     PosSettings settings,
   ) {
     return {
-      'merchantId': settings.locationId,
-      'state': 'open',
+      'note': 'Order from mobile app',
       'lineItems': orderData['items']
           ?.map((item) => {
                 'name': item['name'],
+                'unitQty': item['quantity'],
                 'price': (item['price'] * 100).round(), // Convert to cents
-                'quantity': item['quantity'],
               })
           ?.toList(),
-      'customer': {
-        'name': orderData['customerName'],
-        'phoneNumber': orderData['customerPhone'],
-      },
     };
   }
 
@@ -273,8 +280,8 @@ class PosService {
               orderData['customerName']?.split(' ').skip(1).join(' ') ?? '',
           'phone': orderData['customerPhone'],
         },
-        'fulfillment_status': 'pending',
         'financial_status': 'pending',
+        'fulfillment_status': null,
       },
     };
   }
@@ -284,40 +291,24 @@ class PosService {
     Map<String, dynamic> orderData,
     PosSettings settings,
   ) {
-    return {
-      'orderId': orderData['id'],
-      'customerName': orderData['customerName'],
-      'customerPhone': orderData['customerPhone'],
-      'items': orderData['items'],
-      'totalAmount': orderData['totalAmount'],
-      'orderTime': orderData['createdAt'],
-      'notes': orderData['notes'],
-    };
+    // Keep the original format for generic APIs
+    return orderData;
   }
 
-  // Get system type display name
-  static String getSystemTypeName(PosSystemType type) {
-    switch (type) {
-      case PosSystemType.square:
-        return 'Square';
-      case PosSystemType.toast:
-        return 'Toast';
-      case PosSystemType.clover:
-        return 'Clover';
-      case PosSystemType.shopifyPos:
-        return 'Shopify POS';
-      case PosSystemType.genericApi:
-        return 'Generic API';
+  // Test connection to POS system
+  static Future<bool> testConnection(PosSettings settings) async {
+    if (settings.apiEndpoint.isEmpty || settings.apiKey.isEmpty) {
+      return false;
     }
-  }
 
-  // Validate API endpoint URL
-  static bool isValidApiEndpoint(String endpoint) {
-    if (endpoint.isEmpty) return false;
     try {
-      final uri = Uri.parse(endpoint);
-      return uri.isAbsolute && (uri.scheme == 'http' || uri.scheme == 'https');
+      final uri = Uri.parse('${settings.apiEndpoint}/health');
+      final headers = _buildHeaders(settings);
+
+      final response = await http.get(uri, headers: headers);
+      return response.statusCode >= 200 && response.statusCode < 300;
     } catch (e) {
+      print('Connection test failed: $e');
       return false;
     }
   }

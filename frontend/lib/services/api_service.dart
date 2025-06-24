@@ -31,7 +31,7 @@ class ApiService {
     print('getCategories: headers=$headers');
     
     final response = await http.get(
-      Uri.parse('$baseUrl/api/categories?business_id=$businessId'),
+      Uri.parse('$baseUrl/api/categories/?business_id=$businessId'),
       headers: headers,
     );
 
@@ -49,7 +49,7 @@ class ApiService {
 
   Future<ItemCategory> createCategory(String businessId, String name) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/api/categories?business_id=$businessId'),
+      Uri.parse('$baseUrl/api/categories/?business_id=$businessId'),
       headers: await _getAuthHeaders(),
       body: jsonEncode(<String, String>{
         'name': name,
@@ -78,7 +78,7 @@ class ApiService {
 
   Future<Dish> createItem(String businessId, Dish item) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/api/items?business_id=$businessId'),
+      Uri.parse('$baseUrl/api/items/?business_id=$businessId'),
       headers: await _getAuthHeaders(),
       body: jsonEncode(item.toJson()),
     );
@@ -93,7 +93,7 @@ class ApiService {
 
   Future<Dish> updateItem(String businessId, Dish item) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/api/items/${item.id}?business_id=$businessId'),
+      Uri.parse('$baseUrl/api/items/${item.id}/?business_id=$businessId'),
       headers: await _getAuthHeaders(),
       body: jsonEncode(item.toJson()),
     );
@@ -108,7 +108,7 @@ class ApiService {
 
   Future<void> deleteItem(String businessId, String itemId) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/api/items/$itemId?business_id=$businessId'),
+      Uri.parse('$baseUrl/api/items/$itemId/?business_id=$businessId'),
       headers: await _getAuthHeaders(),
     );
 
@@ -121,7 +121,7 @@ class ApiService {
   Future<String> uploadItemImage(String itemId, XFile image) async {
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('$baseUrl/api/items/$itemId/upload-image'),
+      Uri.parse('$baseUrl/api/items/$itemId/upload-image/'),
     );
     
     // Add auth headers

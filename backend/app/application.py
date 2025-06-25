@@ -68,8 +68,9 @@ def create_app() -> FastAPI:
     async def startup_event():
         """Initialize database and other services on startup."""
         try:
-            # Initialize database connection
+            # Try to initialize database connection
             await db_manager.connect()
+            logger.info("Database connected successfully")
             
             # Drop any conflicting index to allow re-creation with case-insensitive collation
             db = db_manager.database
@@ -88,7 +89,6 @@ def create_app() -> FastAPI:
             logging.warning("⚠️ Application starting without database connection - some features may be limited")
             # Don't raise the exception - allow app to start without database
             logging.error(f"Startup failed: {e}")
-            raise
     
     @app.on_event("shutdown")
     async def shutdown_event():

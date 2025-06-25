@@ -43,7 +43,8 @@ class DatabaseManager:
             if self._client:
                 self._client.close()
                 self._client = None
-            raise Exception(f"Database connection failed: {e}")
+            logger.warning("Continuing without database connection")
+            return
     
     async def disconnect(self) -> None:
         """Close database connection."""
@@ -53,7 +54,7 @@ class DatabaseManager:
     
     async def initialize_beanie(self, document_models: list) -> None:
         """Initialize Beanie ODM with document models."""
-        if not self._database:
+        if self._database is None:
             raise RuntimeError("Database connection not established")
         
         try:

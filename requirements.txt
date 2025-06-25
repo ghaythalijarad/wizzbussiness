@@ -12,7 +12,7 @@ email-validator>=2.1.1
 pydantic<3.0,>=2.0
 # HTTP client for POS integration
 aiohttp==3.9.5
-# Fix PyMongo version compatibility - use compatible versions
-pymongo==4.10.1
+# Fix PyMongo version compatibility - use compatible versions for motor 3.6.0
+pymongo>=4.9,<4.10
 dnspython>=2.6.1
 certifi>=2023.7.22

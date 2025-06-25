@@ -19,37 +19,64 @@ class DatabaseManager:
         self._database = None
     
     async def connect(self) -> None:
-        """Establish database connection optimized for Heroku deployment with TLS 1.2+."""
+        """Establish database connection optimized for Heroku deployment with TLS fallback."""
         atlas_uri = config.database.mongo_uri
         
-        try:
-            logger.info("Attempting to connect to MongoDB Atlas with TLS 1.2+...")
-            
-            # Enhanced TLS connection for Atlas with explicit TLS version
-            self._client = motor.motor_asyncio.AsyncIOMotorClient(
-                atlas_uri,
-                tls=True,
-                tlsCAFile=certifi.where(),
-                serverSelectionTimeoutMS=30000,  # Increased timeout for Heroku
-                connectTimeoutMS=30000,
-                socketTimeoutMS=30000,
-                retryWrites=True,
-                w='majority'
-            )
-            
-            # Test the connection with a ping
-            await self._client.admin.command('ping')
-            self._database = self._client.get_default_database()
-            logger.info("✅ Successfully connected to MongoDB Atlas with TLS")
-            
-        except Exception as e:
-            logger.error(f"MongoDB Atlas connection failed: {e}")
-            if self._client:
-                self._client.close()
-                self._client = None
-            self._database = None
-            logger.warning("Continuing without database connection")
-            # Never raise exception to prevent startup crash
+        # Try multiple connection strategies
+        connection_strategies = [
+            {
+                "name": "Standard TLS with certifi",
+                "config": {
+                    "tls": True,
+                    "tlsCAFile": certifi.where(),
+                    "serverSelectionTimeoutMS": 30000,
+                    "connectTimeoutMS": 30000,
+                    "socketTimeoutMS": 30000,
+                    "retryWrites": True,
+                    "w": 'majority'
+                }
+            },
+            {
+                "name": "TLS without cert verification (fallback)",
+                "config": {
+                    "tls": True,
+                    "tlsAllowInvalidCertificates": True,
+                    "tlsAllowInvalidHostnames": True,
+                    "serverSelectionTimeoutMS": 15000,
+                    "connectTimeoutMS": 15000,
+                    "socketTimeoutMS": 15000,
+                    "retryWrites": True,
+                    "w": 'majority'
+                }
+            }
+        ]
+        
+        for strategy in connection_strategies:
+            try:
+                logger.info(f"Attempting to connect to MongoDB Atlas using: {strategy['name']}")
+                
+                self._client = motor.motor_asyncio.AsyncIOMotorClient(
+                    atlas_uri,
+                    **strategy['config']
+                )
+                
+                # Test the connection with a ping
+                await self._client.admin.command('ping')
+                self._database = self._client.get_default_database()
+                logger.info(f"✅ Successfully connected to MongoDB Atlas with: {strategy['name']}")
+                return
+                
+            except Exception as e:
+                logger.error(f"❌ {strategy['name']} failed: {e}")
+                if self._client:
+                    self._client.close()
+                    self._client = None
+                continue
+        
+        # If all strategies failed
+        logger.error("All MongoDB connection strategies failed")
+        self._database = None
+        logger.warning("Continuing without database connection")
     
     async def disconnect(self) -> None:
         """Close database connection."""

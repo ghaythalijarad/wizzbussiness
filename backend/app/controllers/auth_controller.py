@@ -126,7 +126,18 @@ class UserController:
         
         @self.router.get("/me", response_model=UserRead)
         async def get_me(user: User = Depends(auth_service.get_current_active_user())):
-            """Get current user information."""
+            """Get current user information with business details."""
+            # Get business information to include owner name
+            owner_name = None
+            try:
+                if user.id:
+                    businesses = await business_service.get_businesses_by_owner(user.id)
+                    if businesses:
+                        # Get owner name from the first business (users typically have one main business)
+                        owner_name = businesses[0].owner_name
+            except Exception as e:
+                logging.warning(f"Could not fetch business details for user {user.id}: {e}")
+            
             return UserRead(
                 id=str(user.id),
                 email=user.email,
@@ -136,6 +147,7 @@ class UserController:
                 phone_number=user.phone_number,
                 business_name=user.business_name,
                 business_type=user.business_type,
+                owner_name=owner_name,
             )
         
         @self.router.get("/protected")

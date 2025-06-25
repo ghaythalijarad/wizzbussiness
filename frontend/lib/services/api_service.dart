@@ -7,21 +7,22 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String baseUrl = "http://192.168.31.7:8000"; // Backend server URL (same as AuthService)
+  final String baseUrl =
+      "http://localhost:8000"; // Backend server URL (localhost for iOS simulator)
 
   /// Get authorization headers with stored token
   Future<Map<String, String>> _getAuthHeaders() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
-    
+
     final headers = <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     };
-    
+
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
     }
-    
+
     return headers;
   }
 
@@ -29,7 +30,7 @@ class ApiService {
     final headers = await _getAuthHeaders();
     print('getCategories: businessId=$businessId');
     print('getCategories: headers=$headers');
-    
+
     final response = await http.get(
       Uri.parse('$baseUrl/api/categories/?business_id=$businessId'),
       headers: headers,
@@ -40,7 +41,8 @@ class ApiService {
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
-      List<ItemCategory> categories = body.map((dynamic item) => ItemCategory.fromJson(item)).toList();
+      List<ItemCategory> categories =
+          body.map((dynamic item) => ItemCategory.fromJson(item)).toList();
       return categories;
     } else {
       throw Exception('Failed to load categories');
@@ -59,17 +61,20 @@ class ApiService {
     if (response.statusCode == 200) {
       return ItemCategory.fromJson(jsonDecode(response.body));
     } else {
-      print('Error creating category: ${response.statusCode} - ${response.body}');
+      print(
+          'Error creating category: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to create category.');
     }
   }
 
   Future<List<Dish>> getItems(String categoryId) async {
-    final response = await http.get(Uri.parse('$baseUrl/categories/$categoryId/items'));
+    final response =
+        await http.get(Uri.parse('$baseUrl/categories/$categoryId/items'));
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
-      List<Dish> items = body.map((dynamic item) => Dish.fromJson(item)).toList();
+      List<Dish> items =
+          body.map((dynamic item) => Dish.fromJson(item)).toList();
       return items;
     } else {
       throw Exception('Failed to load items');
@@ -123,11 +128,11 @@ class ApiService {
       'POST',
       Uri.parse('$baseUrl/api/items/$itemId/upload-image/'),
     );
-    
+
     // Add auth headers
     final headers = await _getAuthHeaders();
     request.headers.addAll(headers);
-    
+
     request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
     var response = await request.send();
@@ -141,13 +146,14 @@ class ApiService {
       throw Exception('Failed to upload image.');
     }
   }
-  
+
   // Notification Management Methods
-  
+
   /// Get notification history for a business
-  Future<List<NotificationModel>> getNotificationHistory(String businessId) async {
+  Future<List<NotificationModel>> getNotificationHistory(
+      String businessId) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.get(
       Uri.parse('$baseUrl/notifications/history/$businessId'),
       headers: headers,
@@ -155,16 +161,19 @@ class ApiService {
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
-      return body.map((dynamic item) => NotificationModel.fromJson(item)).toList();
+      return body
+          .map((dynamic item) => NotificationModel.fromJson(item))
+          .toList();
     } else {
       throw Exception('Failed to load notification history');
     }
   }
 
   /// Mark a notification as read
-  Future<void> markNotificationAsRead(String businessId, String notificationId) async {
+  Future<void> markNotificationAsRead(
+      String businessId, String notificationId) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.post(
       Uri.parse('$baseUrl/notifications/mark-read/$businessId/$notificationId'),
       headers: headers,
@@ -178,7 +187,7 @@ class ApiService {
   /// Send a test notification
   Future<void> sendTestNotification(String businessId) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.post(
       Uri.parse('$baseUrl/notifications/test/$businessId'),
       headers: headers,
@@ -196,11 +205,12 @@ class ApiService {
   }
 
   // Order Management Methods
-  
+
   /// Create a new order (typically called by customer app)
-  Future<Map<String, dynamic>> createOrder(String businessId, Map<String, dynamic> orderData) async {
+  Future<Map<String, dynamic>> createOrder(
+      String businessId, Map<String, dynamic> orderData) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.post(
       Uri.parse('$baseUrl/api/orders?business_id=$businessId'),
       headers: headers,
@@ -215,14 +225,15 @@ class ApiService {
   }
 
   /// Get orders for a business
-  Future<List<Map<String, dynamic>>> getOrders(String businessId, {String? status}) async {
+  Future<List<Map<String, dynamic>>> getOrders(String businessId,
+      {String? status}) async {
     final headers = await _getAuthHeaders();
-    
+
     String url = '$baseUrl/api/orders/$businessId';
     if (status != null) {
       url += '?status=$status';
     }
-    
+
     final response = await http.get(
       Uri.parse(url),
       headers: headers,
@@ -237,9 +248,10 @@ class ApiService {
   }
 
   /// Update order status
-  Future<Map<String, dynamic>> updateOrderStatus(String orderId, String status) async {
+  Future<Map<String, dynamic>> updateOrderStatus(
+      String orderId, String status) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.put(
       Uri.parse('$baseUrl/api/orders/$orderId/status'),
       headers: headers,
@@ -257,11 +269,11 @@ class ApiService {
   }
 
   // POS Settings Management Methods
-  
+
   /// Get supported POS systems
   Future<List<Map<String, dynamic>>> getSupportedPosSystems() async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.get(
       Uri.parse('$baseUrl/api/pos/systems'),
       headers: headers,
@@ -278,7 +290,7 @@ class ApiService {
   /// Get POS settings for a business
   Future<Map<String, dynamic>> getPosSettings(String businessId) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.get(
       Uri.parse('$baseUrl/api/pos/$businessId/settings'),
       headers: headers,
@@ -292,9 +304,10 @@ class ApiService {
   }
 
   /// Create POS settings for a business
-  Future<Map<String, dynamic>> createPosSettings(String businessId, Map<String, dynamic> settings) async {
+  Future<Map<String, dynamic>> createPosSettings(
+      String businessId, Map<String, dynamic> settings) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.post(
       Uri.parse('$baseUrl/api/pos/$businessId/settings'),
       headers: headers,
@@ -309,9 +322,10 @@ class ApiService {
   }
 
   /// Update POS settings for a business
-  Future<Map<String, dynamic>> updatePosSettings(String businessId, Map<String, dynamic> settings) async {
+  Future<Map<String, dynamic>> updatePosSettings(
+      String businessId, Map<String, dynamic> settings) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.put(
       Uri.parse('$baseUrl/api/pos/$businessId/settings'),
       headers: headers,
@@ -328,7 +342,7 @@ class ApiService {
   /// Delete POS settings for a business
   Future<void> deletePosSettings(String businessId) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.delete(
       Uri.parse('$baseUrl/api/pos/$businessId/settings'),
       headers: headers,
@@ -340,9 +354,10 @@ class ApiService {
   }
 
   /// Test POS connection
-  Future<Map<String, dynamic>> testPosConnection(String businessId, Map<String, dynamic> testConfig) async {
+  Future<Map<String, dynamic>> testPosConnection(
+      String businessId, Map<String, dynamic> testConfig) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.post(
       Uri.parse('$baseUrl/api/pos/$businessId/test-connection'),
       headers: headers,
@@ -357,11 +372,13 @@ class ApiService {
   }
 
   /// Get POS sync logs for a business
-  Future<List<Map<String, dynamic>>> getPosSyncLogs(String businessId, {int limit = 50, int skip = 0}) async {
+  Future<List<Map<String, dynamic>>> getPosSyncLogs(String businessId,
+      {int limit = 50, int skip = 0}) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.get(
-      Uri.parse('$baseUrl/api/pos/$businessId/sync-logs?limit=$limit&skip=$skip'),
+      Uri.parse(
+          '$baseUrl/api/pos/$businessId/sync-logs?limit=$limit&skip=$skip'),
       headers: headers,
     );
 
@@ -374,9 +391,10 @@ class ApiService {
   }
 
   /// Manually sync an order to POS
-  Future<Map<String, dynamic>> syncOrderToPos(String businessId, String orderId) async {
+  Future<Map<String, dynamic>> syncOrderToPos(
+      String businessId, String orderId) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.post(
       Uri.parse('$baseUrl/api/pos/$businessId/sync-order'),
       headers: headers,
@@ -395,7 +413,7 @@ class ApiService {
   /// Get POS system health status
   Future<Map<String, dynamic>> getPosSystemHealth(String businessId) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.get(
       Uri.parse('$baseUrl/api/pos/$businessId/health'),
       headers: headers,
@@ -409,9 +427,10 @@ class ApiService {
   }
 
   /// Retry failed POS sync
-  Future<Map<String, dynamic>> retryPosSync(String businessId, String syncLogId) async {
+  Future<Map<String, dynamic>> retryPosSync(
+      String businessId, String syncLogId) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.post(
       Uri.parse('$baseUrl/api/pos/$businessId/retry-sync'),
       headers: headers,
@@ -430,7 +449,7 @@ class ApiService {
   /// Get POS integration statistics
   Future<Map<String, dynamic>> getPosIntegrationStats(String businessId) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.get(
       Uri.parse('$baseUrl/api/pos/$businessId/stats'),
       headers: headers,
@@ -444,9 +463,10 @@ class ApiService {
   }
 
   /// Bulk sync multiple orders to POS
-  Future<Map<String, dynamic>> bulkSyncOrdersToPos(String businessId, List<String> orderIds) async {
+  Future<Map<String, dynamic>> bulkSyncOrdersToPos(
+      String businessId, List<String> orderIds) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.post(
       Uri.parse('$baseUrl/api/pos/$businessId/bulk-sync'),
       headers: headers,
@@ -463,9 +483,10 @@ class ApiService {
   }
 
   /// Update POS webhook configuration
-  Future<Map<String, dynamic>> updatePosWebhookConfig(String businessId, Map<String, dynamic> webhookConfig) async {
+  Future<Map<String, dynamic>> updatePosWebhookConfig(
+      String businessId, Map<String, dynamic> webhookConfig) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.put(
       Uri.parse('$baseUrl/api/pos/$businessId/webhook'),
       headers: headers,
@@ -480,9 +501,10 @@ class ApiService {
   }
 
   /// Validate POS API credentials
-  Future<Map<String, dynamic>> validatePosCredentials(String businessId, Map<String, dynamic> credentials) async {
+  Future<Map<String, dynamic>> validatePosCredentials(
+      String businessId, Map<String, dynamic> credentials) async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.post(
       Uri.parse('$baseUrl/api/pos/$businessId/validate-credentials'),
       headers: headers,
@@ -499,7 +521,7 @@ class ApiService {
   /// Get user's businesses
   Future<List<Map<String, dynamic>>> getUserBusinesses() async {
     final headers = await _getAuthHeaders();
-    
+
     final response = await http.get(
       Uri.parse('$baseUrl/businesses/my-businesses'),
       headers: headers,
@@ -510,6 +532,72 @@ class ApiService {
       return body.cast<Map<String, dynamic>>();
     } else {
       throw Exception('Failed to load user businesses');
+    }
+  }
+
+  /// Search items for a business with filtering options
+  Future<Map<String, dynamic>> searchItems(
+    String businessId, {
+    String? query,
+    String? categoryId,
+    String? itemType,
+    String? status,
+    bool? isAvailable,
+    double? minPrice,
+    double? maxPrice,
+    bool inStockOnly = false,
+    String sortBy = 'name',
+    String sortOrder = 'asc',
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    // Build query parameters
+    final queryParams = <String, String>{
+      'business_id': businessId,
+      'sort_by': sortBy,
+      'sort_order': sortOrder,
+      'page': page.toString(),
+      'page_size': pageSize.toString(),
+    };
+
+    if (query != null && query.isNotEmpty) {
+      queryParams['query'] = query;
+    }
+    if (categoryId != null && categoryId.isNotEmpty) {
+      queryParams['category_id'] = categoryId;
+    }
+    if (itemType != null && itemType.isNotEmpty) {
+      queryParams['item_type'] = itemType;
+    }
+    if (status != null && status.isNotEmpty) {
+      queryParams['status'] = status;
+    }
+    if (isAvailable != null) {
+      queryParams['is_available'] = isAvailable.toString();
+    }
+    if (minPrice != null) {
+      queryParams['min_price'] = minPrice.toString();
+    }
+    if (maxPrice != null) {
+      queryParams['max_price'] = maxPrice.toString();
+    }
+    if (inStockOnly) {
+      queryParams['in_stock_only'] = 'true';
+    }
+
+    // Build URI with query parameters
+    final uri =
+        Uri.parse('$baseUrl/api/items/').replace(queryParameters: queryParams);
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('Error searching items: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to search items');
     }
   }
 }

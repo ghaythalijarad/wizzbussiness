@@ -72,7 +72,7 @@ class WelcomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.store, size: 80, color: Colors.blue),
+              const Icon(Icons.store, size: 80, color: Color(0xFF007fff)),
               const SizedBox(height: 24),
               Text(loc.welcomeToOrderReceiver,
                   style: const TextStyle(

@@ -1,4 +1,3 @@
-
 import 'dish.dart';
 
 class ItemCategory {
@@ -18,7 +17,7 @@ class ItemCategory {
     // Handle items list - it might be nested in a separate API call
     var itemsList = json['items'] as List? ?? [];
     List<Dish> items = itemsList.map((i) => Dish.fromJson(i)).toList();
-    
+
     return ItemCategory(
       id: json['id'],
       name: json['name'],

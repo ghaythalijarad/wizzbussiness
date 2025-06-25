@@ -236,6 +236,12 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settings;
 
+  /// No description provided for @dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get dashboard;
+
   /// No description provided for @online.
   ///
   /// In en, this message translates to:
@@ -247,6 +253,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Offline'**
   String get offline;
+
+  /// No description provided for @quickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Actions'**
+  String get quickActions;
+
+  /// No description provided for @goOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Go Online'**
+  String get goOnline;
+
+  /// No description provided for @goOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Go Offline'**
+  String get goOffline;
 
   /// No description provided for @businessIsNowOnline.
   ///
@@ -343,6 +367,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Business Address'**
   String get businessAddressLabel;
+
+  /// No description provided for @rating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get rating;
 
   /// No description provided for @changePassword.
   ///
@@ -907,6 +937,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Free Delivery'**
   String get freeDelivery;
+
+  /// No description provided for @others.
+  ///
+  /// In en, this message translates to:
+  /// **'Others'**
+  String get others;
 
   /// No description provided for @value.
   ///
@@ -1933,6 +1969,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unknown Status'**
   String get unknownStatus;
+
+  /// No description provided for @discountCombinationWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This discount type cannot be combined with existing active discounts'**
+  String get discountCombinationWarning;
+
+  /// No description provided for @freeDeliveryCombinable.
+  ///
+  /// In en, this message translates to:
+  /// **'Free Delivery can be combined with other discounts'**
+  String get freeDeliveryCombinable;
+
+  /// No description provided for @discountCreatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount created successfully'**
+  String get discountCreatedSuccessfully;
+
+  /// No description provided for @discountUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount updated successfully'**
+  String get discountUpdatedSuccessfully;
+
+  /// No description provided for @combinableDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Combinable'**
+  String get combinableDiscount;
+
+  /// No description provided for @discountApplicability.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount Applicability'**
+  String get discountApplicability;
+
+  /// No description provided for @allItems.
+  ///
+  /// In en, this message translates to:
+  /// **'All Items'**
+  String get allItems;
+
+  /// No description provided for @specificItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Specific Items'**
+  String get specificItems;
+
+  /// No description provided for @specificCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Specific Categories'**
+  String get specificCategories;
+
+  /// No description provided for @selectItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Items'**
+  String get selectItems;
+
+  /// No description provided for @selectCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Categories'**
+  String get selectCategories;
+
+  /// No description provided for @noItemsSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No items selected'**
+  String get noItemsSelected;
+
+  /// No description provided for @noCategoriesSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories selected'**
+  String get noCategoriesSelected;
+
+  /// No description provided for @categories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categories;
+
+  /// No description provided for @conflictingDiscounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Some selected items or categories already have active discounts. Each item can only have one discount at a time.'**
+  String get conflictingDiscounts;
 
   /// No description provided for @wizzBusiness.
   ///

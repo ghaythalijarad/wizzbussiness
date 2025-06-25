@@ -1,0 +1,1744 @@
+{
+  "@@locale": "en",
+  "appTitle": "Hadhir Business",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "login": "Login",
+  "@login": {
+    "description": "Login button text"
+  },
+  "username": "Username",
+  "@username": {
+    "description": "Username field label"
+  },
+  "invalidCredentials": "Invalid username or password",
+  "@invalidCredentials": {
+    "description": "Error message for invalid login credentials"
+  },
+  "loginInProgress": "Logging in...",
+  "@loginInProgress": {
+    "description": "Login loading message"
+  },
+  "register": "Register",
+  "@register": {
+    "description": "Register button text"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Email field label"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password field label"
+  },
+  "businessType": "Business Type",
+  "@businessType": {
+    "description": "Business type selection label"
+  },
+  "store": "Store",
+  "@store": {
+    "description": "Store business type"
+  },
+  "restaurant": "Restaurant",
+  "@restaurant": {
+    "description": "Restaurant business type"
+  },
+  "pharmacy": "Pharmacy",
+  "@pharmacy": {
+    "description": "Pharmacy business type"
+  },
+  "kitchen": "Kitchen",
+  "@kitchen": {
+    "description": "Kitchen business type"
+  },
+  "dashboard": "Dashboard",
+  "@dashboard": {
+    "description": "Dashboard page title"
+  },
+  "orders": "Orders",
+  "@orders": {
+    "description": "Orders page title"
+  },
+  "menu": "Menu",
+  "@menu": {
+    "description": "Menu page title"
+  },
+  "menus": "Menus",
+  "@menus": {
+    "description": "Menus page title"
+  },
+  "items": "Items",
+  "@items": {
+    "description": "Items page title"
+  },
+  "analytics": "Analytics",
+  "@analytics": {
+    "description": "Analytics page title"
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile page title"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings page title"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Language setting label"
+  },
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Notifications setting label"
+  },
+  "theme": "Theme",
+  "@theme": {
+    "description": "Theme setting label"
+  },
+  "newOrder": "New Order",
+  "@newOrder": {
+    "description": "New order notification title"
+  },
+  "newOrderFrom": "New Order from {customerName}",
+  "@newOrderFrom": {
+    "description": "New order notification with customer name",
+    "placeholders": {
+      "customerName": {
+        "type": "String",
+        "example": "John Doe"
+      }
+    }
+  },
+  "orderConfirmed": "Order Confirmed",
+  "@orderConfirmed": {
+    "description": "Order confirmed status"
+  },
+  "orderPreparing": "Preparing",
+  "@orderPreparing": {
+    "description": "Order preparing status"
+  },
+  "orderReady": "Ready",
+  "@orderReady": {
+    "description": "Order ready status"
+  },
+  "orderDelivered": "Delivered",
+  "@orderDelivered": {
+    "description": "Order delivered status"
+  },
+  "orderCancelled": "Cancelled",
+  "@orderCancelled": {
+    "description": "Order cancelled status"
+  },
+  "orderReturned": "Returned",
+  "@orderReturned": {
+    "description": "Order returned status"
+  },
+  "returnOrder": "Return Order",
+  "@returnOrder": {
+    "description": "Return order button text"
+  },
+  "returnOrderTitle": "Return Order",
+  "@returnOrderTitle": {
+    "description": "Return order dialog title"
+  },
+  "enterOrderNumber": "Enter Order Number",
+  "@enterOrderNumber": {
+    "description": "Enter order number field label"
+  },
+  "orderNotFound": "Order not found",
+  "@orderNotFound": {
+    "description": "Order not found error message"
+  },
+  "orderReturnedSuccessfully": "Order returned successfully",
+  "@orderReturnedSuccessfully": {
+    "description": "Order returned success message"
+  },
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "Confirm button text"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save button text"
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit button text"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button text"
+  },
+  "add": "Add",
+  "@add": {
+    "description": "Add button text"
+  },
+  "search": "Search",
+  "@search": {
+    "description": "Search placeholder text"
+  },
+  "name": "Name",
+  "@name": {
+    "description": "Name field label"
+  },
+  "description": "Description",
+  "@description": {
+    "description": "Description field label"
+  },
+  "price": "Price",
+  "@price": {
+    "description": "Price field label"
+  },
+  "category": "Category",
+  "@category": {
+    "description": "Category field label"
+  },
+  "available": "Available",
+  "@available": {
+    "description": "Available status"
+  },
+  "unavailable": "Unavailable",
+  "@unavailable": {
+    "description": "Unavailable status"
+  },
+  "todaysSales": "Today's Sales",
+  "@todaysSales": {
+    "description": "Today's sales label"
+  },
+  "totalOrders": "Total Orders",
+  "@totalOrders": {
+    "description": "Total orders label"
+  },
+  "averageOrderValue": "Average Order Value",
+  "@averageOrderValue": {
+    "description": "Average order value label"
+  },
+  "recentOrders": "Recent Orders",
+  "@recentOrders": {
+    "description": "Recent orders section title"
+  },
+  "viewAll": "View All",
+  "@viewAll": {
+    "description": "View all button text"
+  },
+  "customerName": "Customer Name",
+  "@customerName": {
+    "description": "Customer name label"
+  },
+  "orderTotal": "Order Total",
+  "@orderTotal": {
+    "description": "Order total label"
+  },
+  "itemsCount": "{count} items",
+  "@itemsCount": {
+    "description": "Items count in order",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "all": "All",
+  "@all": {
+    "description": "All filter option"
+  },
+  "pending": "Pending",
+  "@pending": {
+    "description": "Pending status"
+  },
+  "addItem": "Add Item",
+  "@addItem": {
+    "description": "Add item button text"
+  },
+  "editItem": "Edit Item",
+  "@editItem": {
+    "description": "Edit item button text"
+  },
+  "addCategory": "Add Category",
+  "@addCategory": {
+    "description": "Add category button text"
+  },
+  "manageItems": "Manage Items",
+  "@manageItems": {
+    "description": "Manage items page title"
+  },
+  "businessHours": "Business Hours",
+  "@businessHours": {
+    "description": "Business hours setting"
+  },
+  "manageOperatingHours": "Manage your operating hours",
+  "@manageOperatingHours": {
+    "description": "Business hours description"
+  },
+  "monday": "Monday",
+  "@monday": {
+    "description": "Monday weekday"
+  },
+  "tuesday": "Tuesday",
+  "@tuesday": {
+    "description": "Tuesday weekday"
+  },
+  "wednesday": "Wednesday",
+  "@wednesday": {
+    "description": "Wednesday weekday"
+  },
+  "thursday": "Thursday",
+  "@thursday": {
+    "description": "Thursday weekday"
+  },
+  "friday": "Friday",
+  "@friday": {
+    "description": "Friday weekday"
+  },
+  "saturday": "Saturday",
+  "@saturday": {
+    "description": "Saturday weekday"
+  },
+  "sunday": "Sunday",
+  "@sunday": {
+    "description": "Sunday weekday"
+  },
+  "paymentSettings": "Payment Settings",
+  "@paymentSettings": {
+    "description": "Payment settings"
+  },
+  "appPreferences": "App Preferences",
+  "@appPreferences": {
+    "description": "App preferences setting"
+  },
+  "selectLanguage": "Select Language",
+  "@selectLanguage": {
+    "description": "Language selection dialog title"
+  },
+  "welcomeToOrderReceiver": "Welcome to Order Receiver",
+  "@welcomeToOrderReceiver": {
+    "description": "Main welcome title"
+  },
+  "welcomeDescription": "Easily manage and receive orders for your store or restaurant.",
+  "@welcomeDescription": {
+    "description": "Welcome page description"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Get started button text"
+  },
+  "selectLanguage": "Select Language",
+  "@selectLanguage": {
+    "description": "Language selection dialog title"
+  },
+  "demoCredentialsAvailable": "Demo Credentials Available:",
+  "@demoCredentialsAvailable": {
+    "description": "Info message about demo credentials"
+  },
+  "demoCredentialsList": "Pharmacy: user1/password1 • Store: user2/password2 • Restaurant: user3/password3 • Cloud Kitchen: user4/password4",
+  "@demoCredentialsList": {
+    "description": "List of demo credentials for testing"
+  },
+  "username": "Username",
+  "@username": {
+    "description": "Username field label"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password field label"
+  },
+  "demoCredentialsAvailable": "Demo Credentials Available:",
+  "@demoCredentialsAvailable": {
+    "description": "Info message about demo credentials"
+  },
+  "demoCredentialsList": "Pharmacy: user1/password1 • Store: user2/password2 • Restaurant: user3/password3 • Cloud Kitchen: user4/password4",
+  "@demoCredentialsList": {
+    "description": "List of demo credentials for testing"
+  },
+  "registerAs": "Register as:",
+  "@registerAs": {
+    "description": "Registration type selection label"
+  },
+  "uploadHealthLicense": "Upload Health License:",
+  "@uploadHealthLicense": {
+    "description": "Health license upload label for pharmacy"
+  },
+  "chooseFile": "Choose File",
+  "@chooseFile": {
+    "description": "File selection button text"
+  },
+  "fileSelected": "File Selected",
+  "@fileSelected": {
+    "description": "File selected confirmation text"
+  },
+  "dontHaveAccount": "Don't have an account? Register",
+  "@dontHaveAccount": {
+    "description": "Registration link text"
+  },
+  "details": "Details",
+  "@details": {
+    "description": "Details button text"
+  },
+  "startPreparing": "Start Preparing",
+  "@startPreparing": {
+    "description": "Start preparing order button"
+  },
+  "markReady": "Mark Ready",
+  "@markReady": {
+    "description": "Mark order ready button"
+  },
+  "pickedUp": "Picked Up",
+  "@pickedUp": {
+    "description": "Order picked up status"
+  },
+  "markDelivered": "Mark Delivered",
+  "@markDelivered": {
+    "description": "Mark delivered button"
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Close button text"
+  },
+  "orderNotifications": "Order Notifications",
+  "@orderNotifications": {
+    "description": "Order notifications channel name"
+  },
+  "notificationsForNewOrders": "Notifications for new orders",
+  "@notificationsForNewOrders": {
+    "description": "Order notifications channel description"
+  },
+  "orderBeingPrepared": "Order Being Prepared",
+  "@orderBeingPrepared": {
+    "description": "Order being prepared notification title"
+  },
+  "orderReadyExclamation": "Order Ready!",
+  "@orderReadyExclamation": {
+    "description": "Order ready notification title with exclamation"
+  },
+  "orderReadyForPickup": "Order #{orderId} is ready for pickup/delivery",
+  "@orderReadyForPickup": {
+    "description": "Order ready notification body",
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "orderStatusUpdates": "Order Status Updates",
+  "@orderStatusUpdates": {
+    "description": "Order status updates channel name"
+  },
+  "updatesOnOrderStatusChanges": "Updates on order status changes",
+  "@updatesOnOrderStatusChanges": {
+    "description": "Order status updates channel description"
+  },
+  "orderAcceptedMessage": "Order #{orderId} has been accepted and will be prepared.",
+  "@orderAcceptedMessage": {
+    "description": "Order accepted confirmation message",
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "orderRejectedMessage": "Order #{orderId} has been rejected.",
+  "@orderRejectedMessage": {
+    "description": "Order rejected confirmation message",
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "orderActions": "Order Actions",
+  "@orderActions": {
+    "description": "Order actions channel name"
+  },
+  "confirmationsForOrderActions": "Confirmations for order actions",
+  "@confirmationsForOrderActions": {
+    "description": "Order actions channel description"
+  },
+  "quickLogin": "Quick Login",
+  "@quickLogin": {
+    "description": "Quick login title"
+  },
+  "emailOptional": "Email (Optional)",
+  "@emailOptional": {
+    "description": "Email optional field label"
+  },
+  "passwordOptional": "Password (Optional)",
+  "@passwordOptional": {
+    "description": "Password optional field label"
+  },
+  "itemName": "Item Name",
+  "@itemName": {
+    "description": "Item name field label"
+  },
+  "priceDollar": "Price ($)",
+  "@priceDollar": {
+    "description": "Price field label with dollar sign"
+  },
+  "helloWorld": "Hello World!",
+  "@helloWorld": {
+    "description": "A simple greeting."
+  },
+  "getOrderStatusText": "Get Order Status",
+  "simulateNewOrder": "Simulate New Order",
+  "businessLocation": "Business Location",
+  "@businessLocation": {
+    "description": "Title for the business location settings section."
+  },
+  "latitude": "Latitude",
+  "@latitude": {
+    "description": "Label for the latitude coordinate."
+  },
+  "longitude": "Longitude",
+  "@longitude": {
+    "description": "Label for the longitude coordinate."
+  },
+  "locationSaved": "Location Saved",
+  "@locationSaved": {
+    "description": "Snackbar message when location is saved."
+  },
+  "updateLocation": "Update Location",
+  "@updateLocation": {
+    "description": "Button text to update the existing location."
+  },
+  "chooseLocationOnMap": "Choose your business location on the map.",
+  "@chooseLocationOnMap": {
+    "description": "Instructional text to select location on map."
+  },
+  "selectLocation": "Select Location",
+  "@selectLocation": {
+    "description": "Button text to initially select a location."
+  },
+  "locationSet": "Location Set: Lat: {lat}, Lng: {lng}",
+  "@locationSet": {
+    "description": "Indicator that the business location has been successfully set on the map.",
+    "placeholders": {
+      "lat": {
+        "type": "double"
+      },
+      "lng": {
+        "type": "double"
+      }
+    }
+  },
+  "noLocationSet": "No location set. Please set your business location.",
+  "@noLocationSet": {
+    "description": "Indicator that the business location has not been set yet."
+  },
+  "itemCount": "{count,plural, =0{No items} =1{1 item} other{{count} items}}",
+  "@itemCount": {
+    "description": "Indicates the number of items",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hadhirBusiness": "Hadhir Business",
+  "@hadhirBusiness": {
+    "description": "App title"
+  },
+  "welcome": "Welcome",
+  "@welcome": {
+    "description": "Welcome message"
+  },
+  "english": "English",
+  "@english": {
+    "description": "English language option"
+  },
+  "arabic": "Arabic",
+  "@arabic": {
+    "description": "Arabic language option"
+  },
+  "orderFromCustomer": "New order #{orderId} from {customerName}.",
+  "@orderFromCustomer": {
+    "description": "Notification message for a new order.",
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      },
+      "customerName": {
+        "type": "String"
+      }
+    }
+  },
+  "preparingOrder": "Order #{orderId} is being prepared.",
+  "@preparingOrder": {
+    "description": "Notification message for an order being prepared.",
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "orderPickedUpMessageBody": "Order #{orderId} has been picked up.",
+  "@orderPickedUpMessageBody": {
+    "description": "Notification message for an order that has been picked up.",
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "accept": "Accept",
+  "@accept": {
+    "description": "Accept button text"
+  },
+  "reject": "Reject",
+  "@reject": {
+    "description": "Reject button text"
+  },
+  "orderChannelName": "Order Notifications",
+  "orderChannelDescription": "This channel is used for order notifications.",
+  "orderAcceptedTitle": "Order #{orderId} Accepted",
+  "@orderAcceptedTitle": {
+    "description": "Title for order accepted confirmation.",
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "orderAcceptedBody": "The order has been successfully accepted.",
+  "orderRejectedTitle": "Order #{orderId} Rejected",
+  "@orderRejectedTitle": {
+    "description": "Title for order rejected confirmation.",
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "orderRejectedBody": "The order has been rejected.",
+  "confirmed": "Confirmed",
+  "@confirmed": {
+    "description": "Confirmed status"
+  },
+  "cancelled": "Cancelled",
+  "@cancelled": {
+    "description": "Cancelled status"
+  },
+  "expired": "Expired",
+  "@expired": {
+    "description": "Expired status"
+  },
+  "autoExpireIn": "Auto-expire in {seconds} seconds",
+  "@autoExpireIn": {
+    "description": "Auto-expire countdown message",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "acceptOrRejectNow": "Accept or reject now",
+  "@acceptOrRejectNow": {
+    "description": "Prompt to accept or reject order"
+  },
+  "orderAccepted": "Order accepted",
+  "@orderAccepted": {
+    "description": "Order accepted message"
+  },
+  "orderIsReady": "Order is ready",
+  "@orderIsReady": {
+    "description": "Order ready message"
+  },
+  "orderPickedUp": "Order picked up",
+  "@orderPickedUp": {
+    "description": "Order picked up message"
+  },
+  "orderStatusUpdated": "Order status updated",
+  "@orderStatusUpdated": {
+    "description": "Order status updated message"
+  },
+  "customer": "Customer",
+  "@customer": {
+    "description": "Customer label"
+  },
+  "phone": "Phone",
+  "@phone": {
+    "description": "Phone label"
+  },
+  "address": "Address",
+  "@address": {
+    "description": "Address label"
+  },
+  "status": "Status",
+  "@status": {
+    "description": "Status label"
+  },
+  "orderTime": "Order Time",
+  "@orderTime": {
+    "description": "Order time label"
+  },
+  "preparationTime": "Preparation Time",
+  "@preparationTime": {
+    "description": "Preparation time label"
+  },
+  "prepTime": "{minutes} min",
+  "@prepTime": {
+    "description": "Preparation time in minutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "estimatedCompletionTime": "Estimated Completion Time",
+  "@estimatedCompletionTime": {
+    "description": "Estimated completion time label"
+  },
+  "itemsLabel": "Items",
+  "@itemsLabel": {
+    "description": "Items section label"
+  },
+  "total": "Total",
+  "@total": {
+    "description": "Total label"
+  },
+  "notes": "Notes",
+  "@notes": {
+    "description": "Notes label"
+  },
+  "updateStatus": "Update Status",
+  "@updateStatus": {
+    "description": "Update status button"
+  },
+  "updateOrder": "Update Order #{orderId}",
+  "@updateOrder": {
+    "description": "Update order dialog title",
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "acceptOrder": "Accept Order",
+  "@acceptOrder": {
+    "description": "Accept order option"
+  },
+  "markAsPickedUp": "Mark as Picked Up",
+  "@markAsPickedUp": {
+    "description": "Mark as picked up option"
+  },
+  "cancelOrder": "Cancel Order",
+  "@cancelOrder": {
+    "description": "Cancel order option"
+  },
+  "areYouSureCancelOrder": "Are you sure you want to cancel order #{orderId}?",
+  "@areYouSureCancelOrder": {
+    "description": "Cancel order confirmation",
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "no": "No",
+  "@no": {
+    "description": "No button"
+  },
+  "yesCancelOrder": "Yes, Cancel",
+  "@yesCancelOrder": {
+    "description": "Yes cancel order button"
+  },
+  "orderCompleted": "Order completed",
+  "@orderCompleted": {
+    "description": "Order completed status message"
+  },
+  "orderCancelledMessage": "Order cancelled",
+  "@orderCancelledMessage": {
+    "description": "Order cancelled status message"
+  },
+  "orderExpired": "Order expired",
+  "@orderExpired": {
+    "description": "Order expired status message"
+  },
+  "orderReadyForPickupMessage": "Order ready for pickup",
+  "@orderReadyForPickupMessage": {
+    "description": "Order ready for pickup message"
+  },
+  "orderOverdue": "Order overdue",
+  "@orderOverdue": {
+    "description": "Order overdue status message"
+  },
+  "readyIn": "Ready in {minutes} min",
+  "@readyIn": {
+    "description": "Ready in minutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "orderExpiredNotAccepted": "Order #{orderId} has expired and was not accepted",
+  "@orderExpiredNotAccepted": {
+    "description": "Order expired notification",
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "editItemDialog": "Edit Item",
+  "@editItemDialog": {
+    "description": "Edit item dialog title"
+  },
+  "addNewItem": "Add New Item",
+  "@addNewItem": {
+    "description": "Add new item dialog title"
+  },
+  "itemNameField": "Item Name",
+  "@itemNameField": {
+    "description": "Item name field label"
+  },
+  "enterItemName": "Enter item name",
+  "@enterItemName": {
+    "description": "Enter item name placeholder"
+  },
+  "descriptionField": "Description",
+  "@descriptionField": {
+    "description": "Description field label"
+  },
+  "enterDescription": "Enter description",
+  "@enterDescription": {
+    "description": "Enter description placeholder"
+  },
+  "priceField": "Price",
+  "@priceField": {
+    "description": "Price field label"
+  },
+  "enterPrice": "Enter price",
+  "@enterPrice": {
+    "description": "Enter price placeholder"
+  },
+  "categoryField": "Category",
+  "@categoryField": {
+    "description": "Category field label"
+  },
+  "itemAvailable": "Available",
+  "@itemAvailable": {
+    "description": "Item available status"
+  },
+  "itemNotAvailable": "Not Available",
+  "@itemNotAvailable": {
+    "description": "Item not available status"
+  },
+  "update": "Update",
+  "@update": {
+    "description": "Update button"
+  },
+  "deleteItem": "Delete Item",
+  "@deleteItem": {
+    "description": "Delete item dialog title"
+  },
+  "areYouSureDeleteItem": "Are you sure you want to delete this item?",
+  "@areYouSureDeleteItem": {
+    "description": "Delete item confirmation"
+  },
+  "manageMenus": "Manage Menus",
+  "@manageMenus": {
+    "description": "Manage menus page title"
+  },
+  "createMenu": "Create Menu",
+  "@createMenu": {
+    "description": "Create menu button"
+  },
+  "customPrice": "Custom Price",
+  "@customPrice": {
+    "description": "Custom price label"
+  },
+  "noMenusCreated": "No Menus Created",
+  "@noMenusCreated": {
+    "description": "No menus created message"
+  },
+  "itemsInMenu": "{count} items in menu",
+  "@itemsInMenu": {
+    "description": "Items in menu count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "createYourFirstMenu": "Create your first menu to get started",
+  "@createYourFirstMenu": {
+    "description": "Create first menu prompt"
+  },
+  "menuPrice": "Menu Price",
+  "@menuPrice": {
+    "description": "Menu price label"
+  },
+  "editMenu": "Edit Menu",
+  "@editMenu": {
+    "description": "Edit menu button"
+  },
+  "deleteMenu": "Delete Menu",
+  "@deleteMenu": {
+    "description": "Delete menu button"
+  },
+  "menuName": "Menu Name",
+  "@menuName": {
+    "description": "Menu name field label"
+  },
+  "enterMenuName": "Enter menu name",
+  "@enterMenuName": {
+    "description": "Enter menu name placeholder"
+  },
+  "menuDescription": "Menu Description",
+  "@menuDescription": {
+    "description": "Menu description field label"
+  },
+  "enterMenuDescription": "Enter menu description",
+  "@enterMenuDescription": {
+    "description": "Enter menu description placeholder"
+  },
+  "menuPricing": "Menu Pricing",
+  "@menuPricing": {
+    "description": "Menu pricing section title"
+  },
+  "enterMenuPrice": "Enter menu price",
+  "@enterMenuPrice": {
+    "description": "Enter menu price placeholder"
+  },
+  "individualItemsTotal": "Use individual items total",
+  "@individualItemsTotal": {
+    "description": "Individual items total option"
+  },
+  "selectItems": "Select Items",
+  "@selectItems": {
+    "description": "Select items section title"
+  },
+  "originalPrice": "Original Price",
+  "@originalPrice": {
+    "description": "Original price label"
+  },
+  "setCustomPrice": "Set Custom Price",
+  "@setCustomPrice": {
+    "description": "Set custom price button"
+  },
+  "pleaseEnterMenuName": "Please enter a menu name",
+  "@pleaseEnterMenuName": {
+    "description": "Menu name validation error"
+  },
+  "pleaseSelectAtLeastOneItem": "Please select at least one item",
+  "@pleaseSelectAtLeastOneItem": {
+    "description": "Item selection validation error"
+  },
+  "pleaseEnterMenuPrice": "Please enter a menu price",
+  "@pleaseEnterMenuPrice": {
+    "description": "Menu price validation error"
+  },
+  "menuCreatedSuccessfully": "Menu created successfully",
+  "@menuCreatedSuccessfully": {
+    "description": "Menu created success message"
+  },
+  "customerRating": "Customer Rating",
+  "@customerRating": {
+    "description": "Customer rating label"
+  },
+  "reviewsCount": "{count} reviews",
+  "@reviewsCount": {
+    "description": "Reviews count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "totalSales": "Total Sales",
+  "@totalSales": {
+    "description": "Total sales label"
+  },
+  "topSellingItems": "Top Selling Items",
+  "@topSellingItems": {
+    "description": "Top selling items label"
+  },
+  "ordersByStatus": "Orders by Status",
+  "@ordersByStatus": {
+    "description": "Orders by status label"
+  },
+  "completed": "Completed",
+  "@completed": {
+    "description": "Completed status"
+  },
+  "editBusinessHours": "Edit Business Hours",
+  "@editBusinessHours": {
+    "description": "Edit business hours dialog title"
+  },
+  "businessHoursUpdated": "Business hours updated",
+  "@businessHoursUpdated": {
+    "description": "Business hours updated message"
+  },
+  "changePassword": "Change Password",
+  "@changePassword": {
+    "description": "Change password dialog title"
+  },
+  "currentPassword": "Current Password",
+  "@currentPassword": {
+    "description": "Current password field label"
+  },
+  "pleaseEnterCurrentPassword": "Please enter current password",
+  "@pleaseEnterCurrentPassword": {
+    "description": "Current password validation error"
+  },
+  "newPassword": "New Password",
+  "@newPassword": {
+    "description": "New password field label"
+  },
+  "passwordMustBe6Characters": "Password must be at least 6 characters",
+  "@passwordMustBe6Characters": {
+    "description": "Password length validation error"
+  },
+  "confirmNewPassword": "Confirm New Password",
+  "@confirmNewPassword": {
+    "description": "Confirm new password field label"
+  },
+  "passwordsDoNotMatch": "Passwords do not match",
+  "@passwordsDoNotMatch": {
+    "description": "Password match validation error"
+  },
+  "passwordChangedSuccessfully": "Password changed successfully",
+  "@passwordChangedSuccessfully": {
+    "description": "Password changed success message"
+  },
+  "notificationSettings": "Notification Settings",
+  "@notificationSettings": {
+    "description": "Notification settings dialog title"
+  },
+  "receiveNotificationsForNewOrders": "Receive notifications for new orders",
+  "@receiveNotificationsForNewOrders": {
+    "description": "Order notifications setting description"
+  },
+  "emailNotifications": "Email Notifications",
+  "@emailNotifications": {
+    "description": "Email notifications setting title"
+  },
+  "receiveOrderUpdatesViaEmail": "Receive order updates via email",
+  "@receiveOrderUpdatesViaEmail": {
+    "description": "Email notifications setting description"
+  },
+  "soundEnabled": "Sound Enabled",
+  "@soundEnabled": {
+    "description": "Sound enabled setting title"
+  },
+  "playSoundForNotifications": "Play sound for notifications",
+  "@playSoundForNotifications": {
+    "description": "Sound enabled setting description"
+  },
+  "vibrationEnabled": "Vibration Enabled",
+  "@vibrationEnabled": {
+    "description": "Vibration enabled setting title"
+  },
+  "vibrateForNotifications": "Vibrate for notifications",
+  "@vibrateForNotifications": {
+    "description": "Vibration enabled setting description"
+  },
+  "notificationSettingsUpdated": "Notification settings updated",
+  "@notificationSettingsUpdated": {
+    "description": "Notification settings updated message"
+  },
+  "confirmSignOut": "Confirm Sign Out",
+  "@confirmSignOut": {
+    "description": "Sign out confirmation dialog title"
+  },
+  "areYouSureSignOut": "Are you sure you want to sign out?",
+  "@areYouSureSignOut": {
+    "description": "Sign out confirmation message"
+  },
+  "signOut": "Sign Out",
+  "@signOut": {
+    "description": "Sign out button"
+  },
+  "basicInformation": "Basic Information",
+  "@basicInformation": {
+    "description": "Basic information section title"
+  },
+  "businessName": "Business Name",
+  "@businessName": {
+    "description": "Business name field label"
+  },
+  "pleaseEnterBusinessName": "Please enter business name",
+  "@pleaseEnterBusinessName": {
+    "description": "Business name validation error"
+  },
+  "emailAddress": "Email Address",
+  "@emailAddress": {
+    "description": "Email address field label"
+  },
+  "pleaseEnterEmailAddress": "Please enter email address",
+  "@pleaseEnterEmailAddress": {
+    "description": "Email address validation error"
+  },
+  "pleaseEnterValidEmail": "Please enter a valid email address",
+  "@pleaseEnterValidEmail": {
+    "description": "Valid email validation error"
+  },
+  "phoneNumber": "Phone Number",
+  "@phoneNumber": {
+    "description": "Phone number field label"
+  },
+  "pleaseEnterPhoneNumber": "Please enter phone number",
+  "@pleaseEnterPhoneNumber": {
+    "description": "Phone number validation error"
+  },
+  "businessAddress": "Business Address",
+  "@businessAddress": {
+    "description": "Business address field label"
+  },
+  "pleaseEnterBusinessAddress": "Please enter business address",
+  "@pleaseEnterBusinessAddress": {
+    "description": "Business address validation error"
+  },
+  "businessDescription": "Business Description",
+  "@businessDescription": {
+    "description": "Business description field label"
+  },
+  "websiteOptional": "Website (Optional)",
+  "@websiteOptional": {
+    "description": "Website optional field label"
+  },
+  "configureNotificationPreferences": "Configure notification preferences",
+  "@configureNotificationPreferences": {
+    "description": "Notification preferences description"
+  },
+  "updateAccountPassword": "Update your account password",
+  "@updateAccountPassword": {
+    "description": "Change password description"
+  },
+  "configurePaymentMethodsAndTaxes": "Configure payment methods and taxes",
+  "@configurePaymentMethodsAndTaxes": {
+    "description": "Payment settings description"
+  },
+  "themeLanguageAndDisplaySettings": "Theme, language and display settings",
+  "@themeLanguageAndDisplaySettings": {
+    "description": "App preferences description"
+  },
+  "cashOnDelivery": "Cash on Delivery",
+  "@cashOnDelivery": {
+    "description": "Cash on delivery payment method"
+  },
+  "acceptCashPayments": "Accept cash payments",
+  "@acceptCashPayments": {
+    "description": "Cash payment setting description"
+  },
+  "creditDebitCards": "Credit/Debit Cards",
+  "@creditDebitCards": {
+    "description": "Card payment method"
+  },
+  "acceptCardPayments": "Accept card payments",
+  "@acceptCardPayments": {
+    "description": "Card payment setting description"
+  },
+  "digitalWallets": "Digital Wallets",
+  "@digitalWallets": {
+    "description": "Digital wallet payment method"
+  },
+  "acceptDigitalWalletPayments": "Accept digital wallet payments",
+  "@acceptDigitalWalletPayments": {
+    "description": "Digital wallet payment setting description"
+  },
+  "bankTransfer": "Bank Transfer",
+  "@bankTransfer": {
+    "description": "Bank transfer payment method"
+  },
+  "acceptBankTransferPayments": "Accept bank transfer payments",
+  "@acceptBankTransferPayments": {
+    "description": "Bank transfer payment setting description"
+  },
+  "deliveryFee": "Delivery Fee",
+  "@deliveryFee": {
+    "description": "Delivery fee setting"
+  },
+  "minimumOrderAmount": "Minimum Order Amount",
+  "@minimumOrderAmount": {
+    "description": "Minimum order amount setting"
+  },
+  "paymentSettingsUpdated": "Payment settings updated",
+  "@paymentSettingsUpdated": {
+    "description": "Payment settings updated message"
+  },
+  "autoAcceptOrders": "Auto Accept Orders",
+  "@autoAcceptOrders": {
+    "description": "Auto accept orders setting"
+  },
+  "automaticallyAcceptIncomingOrders": "Automatically accept incoming orders",
+  "@automaticallyAcceptIncomingOrders": {
+    "description": "Auto accept orders setting description"
+  },
+  "showOrderAnalytics": "Show Order Analytics",
+  "@showOrderAnalytics": {
+    "description": "Show analytics setting"
+  },
+  "displayAnalyticsOnDashboard": "Display analytics on dashboard",
+  "@displayAnalyticsOnDashboard": {
+    "description": "Show analytics setting description"
+  },
+  "hour24Format": "24 Hour Format",
+  "@hour24Format": {
+    "description": "24 hour format setting"
+  },
+  "use24HourTimeFormat": "Use 24 hour time format",
+  "@use24HourTimeFormat": {
+    "description": "24 hour format setting description"
+  },
+  "offlineMode": "Offline Mode",
+  "@offlineMode": {
+    "description": "Offline mode setting"
+  },
+  "continueOperatingWhenOffline": "Continue operating when offline",
+  "@continueOperatingWhenOffline": {
+    "description": "Offline mode setting description"
+  },
+  "appPreferencesUpdated": "App preferences updated",
+  "@appPreferencesUpdated": {
+    "description": "App preferences updated message"
+  },
+  "setDeliveryFee": "Set Delivery Fee",
+  "@setDeliveryFee": {
+    "description": "Set delivery fee dialog title"
+  },
+  "deliveryFeeDollar": "Delivery Fee ($)",
+  "@deliveryFeeDollar": {
+    "description": "Delivery fee field label"
+  },
+  "deliveryFeeUpdated": "Delivery fee updated",
+  "@deliveryFeeUpdated": {
+    "description": "Delivery fee updated message"
+  },
+  "setMinimumOrderAmount": "Set Minimum Order Amount",
+  "@setMinimumOrderAmount": {
+    "description": "Set minimum order dialog title"
+  },
+  "minimumOrderDollar": "Minimum Order ($)",
+  "@minimumOrderDollar": {
+    "description": "Minimum order field label"
+  },
+  "minimumOrderAmountUpdated": "Minimum order amount updated",
+  "@minimumOrderAmountUpdated": {
+    "description": "Minimum order amount updated message"
+  },
+  "selectTheme": "Select Theme",
+  "@selectTheme": {
+    "description": "Select theme dialog title"
+  },
+  "system": "System",
+  "@system": {
+    "description": "System theme option"
+  },
+  "light": "Light",
+  "@light": {
+    "description": "Light theme option"
+  },
+  "dark": "Dark",
+  "@dark": {
+    "description": "Dark theme option"
+  },
+  "themeUpdated": "Theme updated",
+  "@themeUpdated": {
+    "description": "Theme updated message"
+  },
+  "languageUpdated": "Language updated",
+  "@languageUpdated": {
+<<<<<<< HEAD
+    "description": "Language updated message"
+=======
+    "description": "Language update success message"
+  },
+  "update": "Update",
+  "@update": {
+    "description": "Update button text"
+  },
+  "confirmSignOut": "Confirm Sign Out",
+  "@confirmSignOut": {
+    "description": "Confirm sign out dialog title"
+  },
+  "areYouSureSignOut": "Are you sure you want to sign out?",
+  "@areYouSureSignOut": {
+    "description": "Sign out confirmation message"
+  },
+  "basicInformation": "Basic Information",
+  "@basicInformation": {
+    "description": "Basic information section title"
+  },
+  "createMenu": "Create Menu",
+  "@createMenu": {
+    "description": "Create menu button text"
+  },
+  "menuName": "Menu Name",
+  "@menuName": {
+    "description": "Menu name field label"
+  },
+  "enterMenuName": "Enter menu name",
+  "@enterMenuName": {
+    "description": "Menu name field hint"
+  },
+  "menuDescription": "Menu Description",
+  "@menuDescription": {
+    "description": "Menu description field label"
+  },
+  "enterMenuDescription": "Enter menu description",
+  "@enterMenuDescription": {
+    "description": "Menu description field hint"
+  },
+  "selectItems": "Select Items",
+  "@selectItems": {
+    "description": "Select items section title"
+  },
+  "selectedItems": "Selected Items",
+  "@selectedItems": {
+    "description": "Selected items section title"
+  },
+  "customPrice": "Custom Price",
+  "@customPrice": {
+    "description": "Custom price field label"
+  },
+  "originalPrice": "Original Price",
+  "@originalPrice": {
+    "description": "Original price label"
+  },
+  "setCustomPrice": "Set Custom Price",
+  "@setCustomPrice": {
+    "description": "Set custom price button text"
+  },
+  "menuCreatedSuccessfully": "Menu created successfully!",
+  "@menuCreatedSuccessfully": {
+    "description": "Menu creation success message"
+  },
+  "editMenu": "Edit Menu",
+  "@editMenu": {
+    "description": "Edit menu button text"
+  },
+  "deleteMenu": "Delete Menu",
+  "@deleteMenu": {
+    "description": "Delete menu button text"
+  },
+  "areYouSureDeleteMenu": "Are you sure you want to delete this menu?",
+  "@areYouSureDeleteMenu": {
+    "description": "Delete menu confirmation message"
+  },
+  "menuDeletedSuccessfully": "Menu deleted successfully!",
+  "@menuDeletedSuccessfully": {
+    "description": "Menu deletion success message"
+  },
+  "noItemsSelected": "No items selected",
+  "@noItemsSelected": {
+    "description": "No items selected message"
+  },
+  "pleaseSelectAtLeastOneItem": "Please select at least one item",
+  "@pleaseSelectAtLeastOneItem": {
+    "description": "Validation message for item selection"
+  },
+  "pleaseEnterMenuName": "Please enter menu name",
+  "@pleaseEnterMenuName": {
+    "description": "Menu name validation message"
+  },
+  "addToMenu": "Add to Menu",
+  "@addToMenu": {
+    "description": "Add to menu button text"
+  },
+  "removeFromMenu": "Remove from Menu",
+  "@removeFromMenu": {
+    "description": "Remove from menu button text"
+  },
+  "manageMenus": "Manage Menus",
+  "@manageMenus": {
+    "description": "Manage menus page title"
+  },
+  "noMenusCreated": "No menus created yet",
+  "@noMenusCreated": {
+    "description": "No menus message"
+  },
+  "createYourFirstMenu": "Create your first menu to get started",
+  "@createYourFirstMenu": {
+    "description": "Create first menu message"
+  },
+  "itemsInMenu": "{count} items",
+  "@itemsInMenu": {
+    "description": "Items count in menu",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "offers": "Offers",
+  "@offers": {
+    "description": "Offers navigation tab label"
+  },
+  "manageOffers": "Manage Offers",
+  "@manageOffers": {
+    "description": "Manage offers page title"
+  },
+  "createOffer": "Create Offer",
+  "@createOffer": {
+    "description": "Create offer button text"
+  },
+  "offerTitle": "Offer Title",
+  "@offerTitle": {
+    "description": "Offer title field label"
+  },
+  "enterOfferTitle": "Enter offer title",
+  "@enterOfferTitle": {
+    "description": "Offer title field hint"
+  },
+  "offerDescription": "Offer Description",
+  "@offerDescription": {
+    "description": "Offer description field label"
+  },
+  "enterOfferDescription": "Enter offer description",
+  "@enterOfferDescription": {
+    "description": "Offer description field hint"
+  },
+  "selectItemsForOffer": "Select Items for Offer",
+  "@selectItemsForOffer": {
+    "description": "Select items section title for offers"
+  },
+  "discountType": "Discount Type",
+  "@discountType": {
+    "description": "Discount type selection label"
+  },
+  "percentage": "Percentage",
+  "@percentage": {
+    "description": "Percentage discount option"
+  },
+  "fixedAmount": "Fixed Amount",
+  "@fixedAmount": {
+    "description": "Fixed amount discount option"
+  },
+  "discountValue": "Discount Value",
+  "@discountValue": {
+    "description": "Discount value field label"
+  },
+  "enterDiscountValue": "Enter discount value",
+  "@enterDiscountValue": {
+    "description": "Discount value field hint"
+  },
+  "validFrom": "Valid From",
+  "@validFrom": {
+    "description": "Offer valid from date label"
+  },
+  "validTo": "Valid To",
+  "@validTo": {
+    "description": "Offer valid to date label"
+  },
+  "selectDate": "Select Date",
+  "@selectDate": {
+    "description": "Date picker button text"
+  },
+  "originalTotal": "Original Total",
+  "@originalTotal": {
+    "description": "Original total price label"
+  },
+  "discountedPrice": "Discounted Price",
+  "@discountedPrice": {
+    "description": "Discounted price label"
+  },
+  "savings": "Savings",
+  "@savings": {
+    "description": "Savings amount label"
+  },
+  "offerCreatedSuccessfully": "Offer created successfully!",
+  "@offerCreatedSuccessfully": {
+    "description": "Offer creation success message"
+  },
+  "editOffer": "Edit Offer",
+  "@editOffer": {
+    "description": "Edit offer button text"
+  },
+  "deleteOffer": "Delete Offer",
+  "@deleteOffer": {
+    "description": "Delete offer button text"
+  },
+  "areYouSureDeleteOffer": "Are you sure you want to delete this offer?",
+  "@areYouSureDeleteOffer": {
+    "description": "Delete offer confirmation message"
+  },
+  "offerDeletedSuccessfully": "Offer deleted successfully!",
+  "@offerDeletedSuccessfully": {
+    "description": "Offer deletion success message"
+  },
+  "noOffersCreated": "No offers created yet",
+  "@noOffersCreated": {
+    "description": "No offers message"
+  },
+  "createYourFirstOffer": "Create your first offer to boost sales",
+  "@createYourFirstOffer": {
+    "description": "Create first offer message"
+  },
+  "itemsInOffer": "{count} items",
+  "@itemsInOffer": {
+    "description": "Items count in offer",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "activeOffer": "Active",
+  "@activeOffer": {
+    "description": "Active offer status"
+  },
+  "expiredOffer": "Expired",
+  "@expiredOffer": {
+    "description": "Expired offer status"
+  },
+  "upcomingOffer": "Upcoming",
+  "@upcomingOffer": {
+    "description": "Upcoming offer status"
+  },
+  "pleaseEnterOfferTitle": "Please enter offer title",
+  "@pleaseEnterOfferTitle": {
+    "description": "Offer title validation message"
+  },
+  "pleaseSelectItemsForOffer": "Please select at least one item for the offer",
+  "@pleaseSelectItemsForOffer": {
+    "description": "Offer items validation message"
+  },
+  "pleaseEnterValidDiscount": "Please enter a valid discount value",
+  "@pleaseEnterValidDiscount": {
+    "description": "Discount validation message"
+  },
+  "menuPrice": "Menu Price",
+  "@menuPrice": {
+    "description": "Menu price field label"
+  },
+  "enterMenuPrice": "Enter overall menu price",
+  "@enterMenuPrice": {
+    "description": "Menu price field hint"
+  },
+  "menuPricing": "Menu Pricing",
+  "@menuPricing": {
+    "description": "Menu pricing section title"
+  },
+  "individualItemsTotal": "Individual Items Total",
+  "@individualItemsTotal": {
+    "description": "Individual items total label"
+  },
+  "pleaseEnterMenuPrice": "Please enter a menu price",
+  "@pleaseEnterMenuPrice": {
+    "description": "Menu price validation message"
+  },
+  "menuPriceTooHigh": "Menu price should be lower than individual items total for savings",
+  "@menuPriceTooHigh": {
+    "description": "Menu price validation message when too high"
+  },
+  "customerRating": "Customer Rating",
+  "@customerRating": {
+    "description": "Customer rating label"
+  },
+  "totalReviews": "Total Reviews",
+  "@totalReviews": {
+    "description": "Total reviews count label"
+  },
+  "reviewsCount": "{count} reviews",
+  "@reviewsCount": {
+    "description": "Reviews count text",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noReviewsYet": "No reviews yet",
+  "@noReviewsYet": {
+    "description": "No reviews message"
+  },
+  "totalSales": "Total Sales",
+  "@totalSales": {
+    "description": "Total sales label"
+  },
+  "totalOrders": "Total Orders",
+  "@totalOrders": {
+    "description": "Total orders label"
+  },
+  "averageOrderValue": "Average Order Value",
+  "@averageOrderValue": {
+    "description": "Average order value label"
+  },
+  "topSellingItems": "Top Selling Items",
+  "@topSellingItems": {
+    "description": "Top selling items label"
+  },
+  "recentOrders": "Recent Orders",
+  "@recentOrders": {
+    "description": "Recent orders label"
+  },
+  "thisMonth": "This Month",
+  "@thisMonth": {
+    "description": "This month period label"
+  },
+  "lastMonth": "Last Month",
+  "@lastMonth": {
+    "description": "Last month period label"
+  },
+  "salesTrend": "Sales Trend",
+  "@salesTrend": {
+    "description": "Sales trend label"
+  },
+  "ordersByStatus": "Orders by Status",
+  "@ordersByStatus": {
+    "description": "Orders by status label"
+  },
+  "revenue": "Revenue",
+  "@revenue": {
+    "description": "Revenue label"
+  },
+  "completed": "Completed",
+  "@completed": {
+    "description": "Completed status label"
+  },
+  "pending": "Pending",
+  "@pending": {
+    "description": "Pending status label"
+  },
+  "cancelled": "Cancelled",
+  "@cancelled": {
+    "description": "Cancelled status label"
+  },
+  "estimatedCompletionTime": "Estimated Completion Time",
+  "@estimatedCompletionTime": {
+    "description": "Estimated completion time label"
+  },
+  "preparationTime": "Preparation Time",
+  "@preparationTime": {
+    "description": "Preparation time label"
+  },
+  "minutes": "minutes",
+  "@minutes": {
+    "description": "Minutes unit label"
+  },
+  "min": "min",
+  "@min": {
+    "description": "Minutes abbreviated"
+  },
+  "estimatedReady": "Estimated ready: {time}",
+  "@estimatedReady": {
+    "description": "Estimated ready time message",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "2:30 PM"
+      }
+    }
+  },
+  "prepTime": "Prep time: {minutes} min",
+  "@prepTime": {
+    "description": "Preparation time with minutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "15"
+      }
+    }
+  },
+  "readyIn": "Ready in {minutes} min",
+  "@readyIn": {
+    "description": "Ready in X minutes message",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "15"
+      }
+    }
+  },
+  "autoExpireIn": "Auto-expire in {seconds}s",
+  "@autoExpireIn": {
+    "description": "Timer countdown message showing seconds remaining",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "30"
+      }
+    }
+  },
+  "acceptOrRejectNow": "Accept or reject now!",
+  "@acceptOrRejectNow": {
+    "description": "Urgent message to accept or reject order before timer expires"
+  },
+  "orderExpiredNotAccepted": "Order #{orderId} expired - not accepted in time",
+  "@orderExpiredNotAccepted": {
+    "description": "Message shown when order expires due to timeout",
+    "placeholders": {
+      "orderId": {
+        "type": "String",
+        "example": "ORD001"
+      }
+    }
+  },
+  "expired": "Expired",
+  "@expired": {
+    "description": "Status label for expired orders"
+  },
+  "orderExpired": "Order expired",
+  "@orderExpired": {
+    "description": "Message when an order has expired"
+  },
+  "orderCompleted": "Order completed",
+  "@orderCompleted": {
+    "description": "Message when an order is completed"
+  },
+  "orderCancelledMessage": "Order cancelled",
+  "@orderCancelledMessage": {
+    "description": "Message when an order is cancelled"
+  },
+  "orderReadyForPickupMessage": "Order ready for pickup",
+  "@orderReadyForPickupMessage": {
+    "description": "Message when an order is ready for pickup"
+  },
+  "orderOverdue": "Order overdue",
+  "@orderOverdue": {
+    "description": "Message when an order is overdue"
+  },
+  "selectLocation": "Select Location",
+  "@selectLocation": {
+    "description": "Button text to select location"
+  },
+  "chooseLocationOnMap": "Choose location on map",
+  "@chooseLocationOnMap": {
+    "description": "Instruction text for location selection"
+  },
+  "businessLocation": "Business Location",
+  "@businessLocation": {
+    "description": "Section title for business location settings"
+  },
+  "latitude": "Latitude",
+  "@latitude": {
+    "description": "Latitude coordinate label"
+  },
+  "longitude": "Longitude",
+  "@longitude": {
+    "description": "Longitude coordinate label"
+  },
+  "updateLocation": "Update Location",
+  "@updateLocation": {
+    "description": "Button text to update location"
+  },
+  "locationSaved": "Location saved successfully!",
+  "@locationSaved": {
+    "description": "Success message when location is saved"
+  },
+  "confirmLocation": "Confirm Location",
+  "@confirmLocation": {
+    "description": "Button text to confirm selected location"
+  },
+  "tapToSelectLocation": "Tap on the map to select a location",
+  "@tapToSelectLocation": {
+    "description": "Instruction text for map interaction"
+  },
+  "enableLocationServices": "Please enable location services",
+  "@enableLocationServices": {
+    "description": "Error message when location services are disabled"
+  },
+  "locationNotSelected": "Please select a location",
+  "@locationNotSelected": {
+    "description": "Error message when no location is selected"
+>>>>>>> ec632ae (Save UI improvements: Remove blue bar from profile page and update order filters color to #00c1e8)
+  }
+}

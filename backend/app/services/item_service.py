@@ -3,7 +3,7 @@ Item service layer for business logic.
 """
 from typing import Optional, List, Dict, Any, Tuple
 from beanie import PydanticObjectId
-from beanie.operators import In, And, Or, Text
+from beanie.operators import In, And, Or, RegEx, Exists
 from datetime import datetime
 import logging
 
@@ -194,15 +194,25 @@ class ItemService:
             
             # Text search
             if search_params.query:
-                query_conditions.append(
-                    Or(
-                        Text(search_params.query),
-                        Item.name.regex(search_params.query, "i"),
-                        Item.description.regex(search_params.query, "i"),
-                        In(search_params.query.lower(), Item.tags),
-                        In(search_params.query.lower(), Item.search_keywords)
+                # Use regex-based search with case-insensitive matching
+                query_text = search_params.query.strip()
+                
+                # Build text search conditions
+                text_conditions = [
+                    RegEx(Item.name, query_text, "i"),
+                    In(Item.tags, [query_text.lower()]),
+                    In(Item.search_keywords, [query_text.lower()])
+                ]
+                
+                # Add description search only if the field exists and is not None
+                text_conditions.append(
+                    And(
+                        Exists(Item.description, True),
+                        RegEx(Item.description, query_text, "i")
                     )
                 )
+                
+                query_conditions.append(Or(*text_conditions))
             
             # Category filter
             if search_params.category_id:
@@ -241,7 +251,7 @@ class ItemService:
             # Tags filter
             if search_params.tags:
                 for tag in search_params.tags:
-                    query_conditions.append(In(tag.lower(), Item.tags))
+                    query_conditions.append(In(Item.tags, [tag.lower()]))
             
             # Combine all conditions
             query = And(*query_conditions) if len(query_conditions) > 1 else query_conditions[0]
@@ -250,14 +260,16 @@ class ItemService:
             total = await Item.find(query).count()
             
             # Apply sorting
-            sort_field = getattr(Item, search_params.sort_by, Item.name)
+            sort_by = search_params.sort_by or "name"
             if search_params.sort_order == "desc":
-                sort_field = -sort_field
+                sort_key = f"-{sort_by}"
+            else:
+                sort_key = sort_by
             
             # Apply pagination
             skip = (search_params.page - 1) * search_params.page_size
             items = await Item.find(query)\
-                .sort(sort_field)\
+                .sort(sort_key)\
                 .skip(skip)\
                 .limit(search_params.page_size)\
                 .to_list()

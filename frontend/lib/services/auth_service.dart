@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Provides authentication related services such as login, logout, and password reset.
 class AuthService {
   static const String baseUrl =
-      'http://192.168.31.7:8000'; // Updated to use current local IP for iOS simulator
+      'http://localhost:8000'; // Updated to use localhost for iOS simulator
 
   static String _parseError(dynamic detail) {
     if (detail is String) {
@@ -60,10 +60,10 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final accessToken = data['access_token'];
-        
+
         // Store the token for future requests
         await _storeToken(accessToken);
-        
+
         return {
           'success': true,
           'message': 'Login successful',
@@ -205,10 +205,10 @@ class AuthService {
       } else {
         // Handle error responses
         String errorMessage = 'Registration failed';
-        
+
         try {
           final errorData = jsonDecode(response.body);
-          
+
           // Handle FastAPI validation errors (422)
           if (response.statusCode == 422 && errorData.containsKey('detail')) {
             if (errorData['detail'] is List) {

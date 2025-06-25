@@ -14,6 +14,7 @@ class UserRead(schemas.BaseUser[Union[str, PydanticObjectId]]):
     phone_number: Optional[str] = None
     business_name: Optional[str] = None
     business_type: Optional[str] = None
+    owner_name: Optional[str] = None
     
     @field_serializer('id')
     def serialize_id(self, value: Union[str, PydanticObjectId]) -> str:

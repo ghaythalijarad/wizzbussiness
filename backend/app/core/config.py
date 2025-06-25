@@ -60,6 +60,41 @@ class CORSConfig:
         ]
 
 
+class CentralizedPlatformConfig:
+    """Centralized platform integration configuration."""
+    
+    def __init__(self):
+        # Platform URL - will be updated when platform is deployed
+        self.centralized_platform_url = os.getenv(
+            "CENTRALIZED_PLATFORM_URL", 
+            "https://api.heroku.com"  # Heroku API endpoint
+        )
+        
+        # API key for authenticating with the platform
+        self.centralized_platform_api_key = os.getenv(
+            "CENTRALIZED_PLATFORM_API_KEY",
+            "your-heroku-api-key"  # Default placeholder
+        )
+        
+        # Webhook secret for verifying incoming webhooks from platform
+        self.centralized_platform_webhook_secret = os.getenv(
+            "CENTRALIZED_PLATFORM_WEBHOOK_SECRET",
+            "webhook-secret"  # Default placeholder
+        )
+        
+        # Heroku app name for the centralized platform
+        self.heroku_app_name = os.getenv(
+            "HEROKU_APP_NAME",
+            "delivery-platform-central"  # Default app name
+        )
+        
+        # Timeout for API calls to platform
+        self.platform_timeout = int(os.getenv("PLATFORM_TIMEOUT", "10"))
+        
+        # Retry attempts for failed platform calls
+        self.platform_retry_attempts = int(os.getenv("PLATFORM_RETRY_ATTEMPTS", "3"))
+
+
 class AppConfig:
     """Main application configuration class."""
     
@@ -75,6 +110,7 @@ class AppConfig:
         self.database = DatabaseConfig()
         self.security = SecurityConfig()
         self.cors = CORSConfig()
+        self.centralized_platform = CentralizedPlatformConfig()
         
         # App settings
         self.title = "Order Receiver API"

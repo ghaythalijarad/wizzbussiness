@@ -30,8 +30,8 @@ class NotificationModel {
       message: json['message'] ?? '',
       data: Map<String, dynamic>.from(json['data'] ?? {}),
       priority: json['priority'] ?? 'normal',
-      timestamp: json['timestamp'] != null 
-          ? DateTime.parse(json['timestamp']) 
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
           : DateTime.now(),
       isRead: json['is_read'] ?? false,
     );

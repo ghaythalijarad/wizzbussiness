@@ -192,7 +192,7 @@ class PosService {
                   'quantity': item['quantity'].toString(),
                   'base_price_money': {
                     'amount': (item['price'] * 100).round(), // Convert to cents
-                    'currency': 'KWD',
+                    'currency': 'IQD',
                   },
                 })
             ?.toList(),

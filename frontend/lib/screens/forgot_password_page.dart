@@ -135,7 +135,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: const Icon(Icons.email_outlined),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return loc.pleaseEnterEmailAddress;
+                    if (value == null || value.isEmpty) {
+                      return loc.pleaseEnterEmailAddress;
+                    }
                     return null;
                   },
                 ),
@@ -145,7 +147,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   labelText: loc.enterOtp,
                   keyboardType: TextInputType.number,
                   prefixIcon: const Icon(Icons.lock_outline),
-                  validator: (value) => (value == null || value.isEmpty) ? loc.pleaseEnterOtp : null,
+                  validator: (value) => (value == null || value.isEmpty)
+                      ? loc.pleaseEnterOtp
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 WizzBusinessTextFormField(
@@ -153,7 +157,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   labelText: loc.newPassword,
                   obscureText: true,
                   prefixIcon: const Icon(Icons.lock),
-                  validator: (value) => (value==null||value.isEmpty) ? loc.pleaseEnterPassword : null,
+                  validator: (value) => (value == null || value.isEmpty)
+                      ? loc.pleaseEnterPassword
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 WizzBusinessTextFormField(
@@ -161,7 +167,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   labelText: loc.confirmNewPassword,
                   obscureText: true,
                   prefixIcon: const Icon(Icons.lock),
-                  validator: (value) => (value==null||value.isEmpty) ? loc.pleaseConfirmPassword : null,
+                  validator: (value) => (value == null || value.isEmpty)
+                      ? loc.pleaseConfirmPassword
+                      : null,
                 ),
               ],
               const SizedBox(height: 24),

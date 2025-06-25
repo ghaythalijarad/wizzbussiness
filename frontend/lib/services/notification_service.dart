@@ -24,7 +24,7 @@ class NotificationService {
 
   static final FlutterLocalNotificationsPlugin
       _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  
+
   // WebSocket connection
   WebSocketChannel? _channel;
   StreamController<NotificationModel>? _notificationController;
@@ -32,17 +32,19 @@ class NotificationService {
   bool _isConnected = false;
   String? _currentBusinessId;
   String? _authToken;
-  
+
   // Audio player for notification sounds
   final AudioPlayer _audioPlayer = AudioPlayer();
-  
+
   // Notification history
   final List<NotificationModel> _notifications = [];
-  
+
   // Getters
   bool get isConnected => _isConnected;
-  List<NotificationModel> get notifications => List.unmodifiable(_notifications);
-  Stream<NotificationModel>? get notificationStream => _notificationController?.stream;
+  List<NotificationModel> get notifications =>
+      List.unmodifiable(_notifications);
+  Stream<NotificationModel>? get notificationStream =>
+      _notificationController?.stream;
 
   static Future<void> init() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -117,24 +119,26 @@ class NotificationService {
   }
 
   // Connect to WebSocket
-  Future<void> connectToNotifications(String businessId, String authToken) async {
+  Future<void> connectToNotifications(
+      String businessId, String authToken) async {
     _currentBusinessId = businessId;
     _authToken = authToken;
-    
+
     await _disconnectWebSocket();
-    
+
     try {
       _notificationController = StreamController<NotificationModel>.broadcast();
-      
+
       // Connect to WebSocket
-      final wsUrl = 'ws://localhost:8000/notifications/ws/notifications/$businessId';
+      final wsUrl =
+          'ws://localhost:8000/notifications/ws/notifications/$businessId';
       _channel = WebSocketChannel.connect(
         Uri.parse(wsUrl),
         protocols: ['Bearer', authToken],
       );
 
       _isConnected = true;
-      
+
       // Listen to incoming messages
       _channel!.stream.listen(
         _handleWebSocketMessage,
@@ -145,10 +149,9 @@ class NotificationService {
       if (kDebugMode) {
         print('Connected to notification WebSocket for business: $businessId');
       }
-      
+
       // Load notification history
       await _loadNotificationHistory();
-      
     } catch (e) {
       if (kDebugMode) {
         print('Failed to connect to WebSocket: $e');
@@ -173,20 +176,19 @@ class NotificationService {
     try {
       final data = jsonDecode(message);
       final notification = NotificationModel.fromJson(data);
-      
+
       // Add to history
       _notifications.insert(0, notification);
       _saveNotificationHistory();
-      
+
       // Show local notification
       _showLocalNotification(notification);
-      
+
       // Play notification sound
       _playNotificationSound(notification);
-      
+
       // Emit to stream
       _notificationController?.add(notification);
-      
     } catch (e) {
       if (kDebugMode) {
         print('Error parsing notification message: $e');
@@ -224,7 +226,8 @@ class NotificationService {
 
   // Show local notification
   Future<void> _showLocalNotification(NotificationModel notification) async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
       'orders_channel',
       'Order Notifications',
       channelDescription: 'Notifications for new orders and order updates',
@@ -258,7 +261,7 @@ class NotificationService {
   Future<void> _playNotificationSound(NotificationModel notification) async {
     try {
       String soundFile = 'sounds/default_notification.mp3';
-      
+
       switch (notification.type) {
         case 'new_order':
           soundFile = 'sounds/new_order.mp3';
@@ -270,7 +273,7 @@ class NotificationService {
           soundFile = 'sounds/urgent_notification.mp3';
           break;
       }
-      
+
       await _audioPlayer.play(AssetSource(soundFile));
     } catch (e) {
       if (kDebugMode) {
@@ -284,13 +287,12 @@ class NotificationService {
     try {
       final data = jsonDecode(payload);
       final notification = NotificationModel.fromJson(data);
-      
+
       // Mark as read
       markAsRead(notification.id);
-      
+
       // Handle navigation based on notification type
       _navigateToNotificationContent(notification);
-      
     } catch (e) {
       if (kDebugMode) {
         print('Error handling notification tap: $e');
@@ -310,7 +312,7 @@ class NotificationService {
   // Mark notification as read
   Future<void> markAsRead(String notificationId) async {
     if (_currentBusinessId == null) return;
-    
+
     try {
       // Update locally
       final index = _notifications.indexWhere((n) => n.id == notificationId);
@@ -318,11 +320,11 @@ class NotificationService {
         _notifications[index] = _notifications[index].copyWith(isRead: true);
         _saveNotificationHistory();
       }
-      
+
       // Update on server
       final apiService = ApiService();
-      await apiService.markNotificationAsRead(_currentBusinessId!, notificationId);
-      
+      await apiService.markNotificationAsRead(
+          _currentBusinessId!, notificationId);
     } catch (e) {
       if (kDebugMode) {
         print('Error marking notification as read: $e');
@@ -333,15 +335,15 @@ class NotificationService {
   // Get notification history from server
   Future<void> _loadNotificationHistory() async {
     if (_currentBusinessId == null) return;
-    
+
     try {
       final apiService = ApiService();
-      final history = await apiService.getNotificationHistory(_currentBusinessId!);
-      
+      final history =
+          await apiService.getNotificationHistory(_currentBusinessId!);
+
       _notifications.clear();
       _notifications.addAll(history);
       _saveNotificationHistory();
-      
     } catch (e) {
       if (kDebugMode) {
         print('Error loading notification history: $e');
@@ -354,7 +356,8 @@ class NotificationService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final notificationsJson = _notifications.map((n) => n.toJson()).toList();
-      await prefs.setString('notification_history', jsonEncode(notificationsJson));
+      await prefs.setString(
+          'notification_history', jsonEncode(notificationsJson));
     } catch (e) {
       if (kDebugMode) {
         print('Error saving notification history: $e');
@@ -367,7 +370,7 @@ class NotificationService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final historyJson = prefs.getString('notification_history');
-      
+
       if (historyJson != null) {
         final List<dynamic> notificationsData = jsonDecode(historyJson);
         _notifications.clear();
@@ -420,7 +423,7 @@ class NotificationService {
   // Send test notification (for testing purposes)
   Future<void> sendTestNotification() async {
     if (_currentBusinessId == null) return;
-    
+
     try {
       final apiService = ApiService();
       await apiService.sendTestNotification(_currentBusinessId!);

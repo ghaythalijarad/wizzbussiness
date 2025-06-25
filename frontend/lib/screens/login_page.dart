@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
           try {
             final apiService = ApiService();
             final businesses = await apiService.getUserBusinesses();
-            
+
             if (businesses.isNotEmpty) {
               // Use the first business (users should have at least one business)
               final businessData = businesses[0];
@@ -67,14 +67,17 @@ class _LoginPageState extends State<LoginPage> {
                 email: businessData['email'] ?? email,
                 phone: businessData['phone_number'] ?? '',
                 address: businessData['address']?['street'] ?? '',
-                latitude: businessData['address']?['latitude']?.toDouble() ?? 0.0,
-                longitude: businessData['address']?['longitude']?.toDouble() ?? 0.0,
+                latitude:
+                    businessData['address']?['latitude']?.toDouble() ?? 0.0,
+                longitude:
+                    businessData['address']?['longitude']?.toDouble() ?? 0.0,
                 offers: [],
                 businessHours: {},
                 settings: {},
-                businessType: _getBusinessTypeFromString(businessData['business_type']),
+                businessType:
+                    _getBusinessTypeFromString(businessData['business_type']),
               );
-              
+
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
@@ -87,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
             } else {
               // User has no businesses - this shouldn't happen but handle it
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('No business found for this user'),
                   backgroundColor: Colors.orange,
                 ),

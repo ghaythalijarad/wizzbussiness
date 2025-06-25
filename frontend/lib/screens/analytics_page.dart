@@ -88,26 +88,33 @@ class AnalyticsPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildMetricCard(
-                    context,
-                    loc.totalSales,
-                    analytics.totalSales.toStringAsFixed(2),
-                    Icons.attach_money,
-                    Colors.green),
-                _buildMetricCard(
-                    context,
-                    loc.totalOrders,
-                    analytics.totalOrders.toString(),
-                    Icons.shopping_cart,
-                    Colors.blue),
-                _buildMetricCard(
-                    context,
-                    loc.averageOrderValue,
-                    analytics.averageOrderValue.toStringAsFixed(2),
-                    Icons.analytics,
-                    Colors.orange),
+                Expanded(
+                  child: _buildMetricCard(
+                      context,
+                      loc.totalSales,
+                      analytics.totalSales.toStringAsFixed(2),
+                      Icons.attach_money,
+                      Colors.green),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildMetricCard(
+                      context,
+                      loc.totalOrders,
+                      analytics.totalOrders.toString(),
+                      Icons.shopping_cart,
+                      const Color(0xFF007fff)),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildMetricCard(
+                      context,
+                      loc.averageOrderValue,
+                      analytics.averageOrderValue.toStringAsFixed(2),
+                      Icons.analytics,
+                      Colors.orange),
+                ),
               ],
             ),
             const SizedBox(height: 24),

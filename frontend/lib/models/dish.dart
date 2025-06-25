@@ -27,8 +27,8 @@ class Dish {
       price: (json['price'] as num).toDouble(),
       categoryId: json['category_id'] ?? '',
       isAvailable: json['is_available'] ?? true,
-      imageUrl: json['images'] != null && json['images'].isNotEmpty 
-          ? json['images'][0] 
+      imageUrl: json['images'] != null && json['images'].isNotEmpty
+          ? json['images'][0]
           : json['thumbnail'],
       businessId: json['business_id'],
     );

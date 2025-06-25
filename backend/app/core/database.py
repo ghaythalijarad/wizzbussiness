@@ -28,9 +28,9 @@ class DatabaseManager:
             logger.info("Attempting to connect to MongoDB Atlas...")
             self._client = motor.motor_asyncio.AsyncIOMotorClient(
                 atlas_uri,
-                serverSelectionTimeoutMS=5000,  # Quick timeout for Atlas
-                connectTimeoutMS=5000,
-                socketTimeoutMS=5000,
+                serverSelectionTimeoutMS=30000,  # Extended timeout for Atlas
+                connectTimeoutMS=30000,
+                socketTimeoutMS=30000,
                 tlsAllowInvalidCertificates=True,
                 tlsAllowInvalidHostnames=True,
             )
@@ -53,9 +53,9 @@ class DatabaseManager:
             logger.info("Falling back to local MongoDB...")
             self._client = motor.motor_asyncio.AsyncIOMotorClient(
                 local_uri,
-                serverSelectionTimeoutMS=5000,
-                connectTimeoutMS=5000,
-                socketTimeoutMS=5000,
+                serverSelectionTimeoutMS=30000,
+                connectTimeoutMS=30000,
+                socketTimeoutMS=30000,
             )
             
             # Test the connection

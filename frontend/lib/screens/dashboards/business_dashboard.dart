@@ -6,6 +6,7 @@ import '../items_management_page.dart';
 import '../analytics_page.dart';
 import '../discount_management_page.dart';
 import '../profile_settings_page.dart';
+import '../centralized_platform_page.dart';
 import '../../models/order.dart';
 import '../../models/order_item.dart';
 import '../../widgets/top_app_bar.dart';
@@ -418,6 +419,11 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
           orders: _orders,
           onLanguageChanged: widget.onLanguageChanged,
         );
+      case 5:
+        return CentralizedPlatformPage(
+          business: widget.business,
+          orders: _orders,
+        );
       default:
         return const Center(child: Text('Error'));
     }
@@ -428,7 +434,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
     final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: TopAppBar(
-        title: widget.business.name,
+        title: '',
         isOnline: _isOnline,
         onToggleStatus: _onToggleStatus,
         onReturnOrder: _onReturnOrder,

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../services/notification_service.dart';
 import '../models/notification.dart';
-import '../services/api_service.dart';
 
 class NotificationPanel extends StatefulWidget {
   final String businessId;
@@ -42,7 +40,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
         setState(() {
           _notifications = _notificationService.notifications;
         });
-        
+
         // Show a snackbar for new high-priority notifications
         if (notification.isHighPriority) {
           _showNotificationSnackBar(notification);
@@ -77,7 +75,8 @@ class _NotificationPanelState extends State<NotificationPanel> {
             Text(notification.message),
           ],
         ),
-        backgroundColor: notification.isHighPriority ? Colors.red : Colors.blue,
+        backgroundColor:
+            notification.isHighPriority ? Colors.red : const Color(0xFF007fff),
         duration: const Duration(seconds: 5),
         action: SnackBarAction(
           label: 'View',
@@ -91,7 +90,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
   void _viewNotification(NotificationModel notification) {
     // Mark as read
     _notificationService.markAsRead(notification.id);
-    
+
     // Navigate to relevant screen based on notification type
     if (notification.isNewOrder) {
       _navigateToOrderDetails(notification.data['order_id']);
@@ -135,7 +134,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications'),
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color(0xFF007fff),
         foregroundColor: Colors.white,
         actions: [
           // Connection status indicator
@@ -188,12 +187,13 @@ class _NotificationPanelState extends State<NotificationPanel> {
                   SizedBox(width: 8),
                   Text(
                     'Not connected to real-time notifications',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
-          
+
           // Notification statistics
           Container(
             padding: const EdgeInsets.all(16),
@@ -204,7 +204,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
                     'Total',
                     _notifications.length.toString(),
                     Icons.notifications,
-                    Colors.blue,
+                    const Color(0xFF007fff),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -220,7 +220,10 @@ class _NotificationPanelState extends State<NotificationPanel> {
                 Expanded(
                   child: _buildStatCard(
                     'High Priority',
-                    _notifications.where((n) => n.isHighPriority).length.toString(),
+                    _notifications
+                        .where((n) => n.isHighPriority)
+                        .length
+                        .toString(),
                     Icons.priority_high,
                     Colors.orange,
                   ),
@@ -228,7 +231,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
               ],
             ),
           ),
-          
+
           // Notifications list
           Expanded(
             child: _notifications.isEmpty
@@ -283,7 +286,8 @@ class _NotificationPanelState extends State<NotificationPanel> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -327,7 +331,8 @@ class _NotificationPanelState extends State<NotificationPanel> {
         title: Text(
           notification.title,
           style: TextStyle(
-            fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+            fontWeight:
+                notification.isRead ? FontWeight.normal : FontWeight.bold,
           ),
         ),
         subtitle: Column(
@@ -337,7 +342,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
             const SizedBox(height: 4),
             Row(
               children: [
-                Icon(Icons.access_time, size: 12, color: Colors.grey),
+                const Icon(Icons.access_time, size: 12, color: Colors.grey),
                 const SizedBox(width: 4),
                 Text(
                   _formatTime(notification.timestamp),
@@ -345,7 +350,8 @@ class _NotificationPanelState extends State<NotificationPanel> {
                 ),
                 const SizedBox(width: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: _getPriorityColor(notification.priority),
                     borderRadius: BorderRadius.circular(8),
@@ -383,7 +389,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
       case 'new_order':
         return Colors.green;
       case 'payment_received':
-        return Colors.blue;
+        return const Color(0xFF007fff);
       case 'order_update':
         return Colors.orange;
       case 'urgent':
@@ -415,7 +421,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
       case 'high':
         return Colors.orange;
       case 'normal':
-        return Colors.blue;
+        return const Color(0xFF007fff);
       case 'low':
         return Colors.green;
       default:

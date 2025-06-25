@@ -4,6 +4,7 @@ enum DiscountType {
   fixedAmount,
   conditional,
   freeDelivery,
+  others,
 }
 
 /// Applicability rules for discounts

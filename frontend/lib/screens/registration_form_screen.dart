@@ -80,7 +80,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
       return 'Please enter your email address';
     }
     // Correct email validation pattern
-    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    final emailRegex =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     if (!emailRegex.hasMatch(value)) {
       return 'Please enter a valid email address';
     }
@@ -111,7 +112,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     final mobileRegex = RegExp(r'^(77[0-9]|78[0-9]|79[0-9])[0-9]{7}$');
     final landlineRegex = RegExp(r'^[1-9][0-9]{6,9}$');
 
-    if (!mobileRegex.hasMatch(cleanPhone) && !landlineRegex.hasMatch(cleanPhone)) {
+    if (!mobileRegex.hasMatch(cleanPhone) &&
+        !landlineRegex.hasMatch(cleanPhone)) {
       return 'Please enter a valid Iraqi number (77X/78X/79X for mobile)';
     }
     return null;
@@ -341,8 +343,9 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                     ? AppLocalizations.of(context)!.changeFile
                     : AppLocalizations.of(context)!.selectFile),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      file != null ? Colors.blue : const Color(0xFF00C1E8),
+                  backgroundColor: file != null
+                      ? const Color(0xFF007fff)
+                      : const Color(0xFF00C1E8),
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -369,7 +372,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
   void _submitForm() async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     // Debug: Check individual field validation
     print('=== FORM VALIDATION DEBUG ===');
     print('Current Locale: ${Localizations.localeOf(context)}');
@@ -382,8 +385,9 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     print('Phone validation: ${_validateIraqiPhone(_phoneController.text)}');
     print('Password: ${_passwordController.text.isNotEmpty}');
     print('Confirm Password: ${_confirmPasswordController.text.isNotEmpty}');
-    print('Password match: ${_passwordController.text == _confirmPasswordController.text}');
-    
+    print(
+        'Password match: ${_passwordController.text == _confirmPasswordController.text}');
+
     // Additional business type debugging
     print('Business Type Display Values:');
     print('  Restaurant: ${l10n.restaurant}');
@@ -391,7 +395,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     print('  Pharmacy: ${l10n.pharmacy}');
     print('  Kitchen: ${l10n.cloudKitchen}');
     print('================================');
-    
+
     // Check form validation and provide feedback
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -418,7 +422,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         'password': _passwordController.text,
         'business_name': _businessNameController.text.trim(),
         'business_type': _selectedBusinessType,
-        'phone_number': '+964${_phoneController.text.trim()}', // Changed from 'phone' to 'phone_number'
+        'phone_number':
+            '+964${_phoneController.text.trim()}', // Changed from 'phone' to 'phone_number'
         'owner_name': _ownerNameController.text.trim(),
         'address': {
           'country': _businessCountryController.text.trim(),
@@ -942,7 +947,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                   title: l10n.ownerNationalId,
                   subtitle: l10n.ownerNationalIdSubtitle,
                   file: _identityFile,
-                  onPressed: () => _pickDocument((file) => _identityFile = file),
+                  onPressed: () =>
+                      _pickDocument((file) => _identityFile = file),
                   icon: Icons.badge,
                   isRequired: false,
                 ),
@@ -968,7 +974,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                   title: l10n.healthCertificate,
                   subtitle: l10n.healthCertificateSubtitle,
                   file: _healthCertificateFile,
-                  onPressed: () => _pickDocument((file) => _healthCertificateFile = file),
+                  onPressed: () =>
+                      _pickDocument((file) => _healthCertificateFile = file),
                   icon: Icons.health_and_safety,
                   isRequired: false,
                 ),

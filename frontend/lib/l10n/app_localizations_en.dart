@@ -78,10 +78,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings => 'Settings';
 
   @override
+  String get dashboard => 'Dashboard';
+
+  @override
   String get online => 'Online';
 
   @override
   String get offline => 'Offline';
+
+  @override
+  String get quickActions => 'Quick Actions';
+
+  @override
+  String get goOnline => 'Go Online';
+
+  @override
+  String get goOffline => 'Go Offline';
 
   @override
   String get businessIsNowOnline => 'Business is now online';
@@ -130,6 +142,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get businessAddressLabel => 'Business Address';
+
+  @override
+  String get rating => 'Rating';
 
   @override
   String get changePassword => 'Change Password';
@@ -417,6 +432,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get freeDelivery => 'Free Delivery';
+
+  @override
+  String get others => 'Others';
 
   @override
   String get value => 'Value';
@@ -952,6 +970,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unknownStatus => 'Unknown Status';
+
+  @override
+  String get discountCombinationWarning =>
+      'This discount type cannot be combined with existing active discounts';
+
+  @override
+  String get freeDeliveryCombinable =>
+      'Free Delivery can be combined with other discounts';
+
+  @override
+  String get discountCreatedSuccessfully => 'Discount created successfully';
+
+  @override
+  String get discountUpdatedSuccessfully => 'Discount updated successfully';
+
+  @override
+  String get combinableDiscount => 'Combinable';
+
+  @override
+  String get discountApplicability => 'Discount Applicability';
+
+  @override
+  String get allItems => 'All Items';
+
+  @override
+  String get specificItems => 'Specific Items';
+
+  @override
+  String get specificCategories => 'Specific Categories';
+
+  @override
+  String get selectItems => 'Select Items';
+
+  @override
+  String get selectCategories => 'Select Categories';
+
+  @override
+  String get noItemsSelected => 'No items selected';
+
+  @override
+  String get noCategoriesSelected => 'No categories selected';
+
+  @override
+  String get categories => 'Categories';
+
+  @override
+  String get conflictingDiscounts =>
+      'Some selected items or categories already have active discounts. Each item can only have one discount at a time.';
 
   @override
   String get wizzBusiness => 'Wizz Business';

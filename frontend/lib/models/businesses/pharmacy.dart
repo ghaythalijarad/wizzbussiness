@@ -119,6 +119,7 @@ class Pharmacy implements Business {
   List<Discount> getActiveDiscounts() =>
       discounts.where((d) => d.isActive).toList();
 
+  @override
   double calculateOrderDiscount(double orderTotal, List<OrderItem> items) {
     double total = 0;
     for (final d in getActiveDiscounts()) {

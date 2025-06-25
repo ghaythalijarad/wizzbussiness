@@ -21,8 +21,11 @@ from .controllers.auth_controller import auth_controller
 from .controllers.business_controller import business_controller, admin_business_controller
 from .controllers.item_controller import item_controller, category_controller
 from .controllers.order_controller import order_controller
+from .controllers.webhook_controller import webhook_controller
+from .controllers.customer_tracking_controller import customer_tracking_controller
 from .controllers.notification_controller import notification_ws_controller
 from .controllers.pos_controller import pos_controller
+from .controllers.centralized_platform_controller import centralized_platform_controller
 from .services.auth_service import auth_service
 
 
@@ -174,6 +177,18 @@ def create_app() -> FastAPI:
         tags=["orders"],
     )
     
+    # Webhook routes for centralized platform integration
+    app.include_router(
+        webhook_controller.router,
+        tags=["webhooks"],
+    )
+    
+    # Customer tracking routes
+    app.include_router(
+        customer_tracking_controller.router,
+        tags=["customer-tracking"],
+    )
+    
     # Notification routes (WebSocket and HTTP)
     app.include_router(
         notification_ws_controller.router,
@@ -187,6 +202,12 @@ def create_app() -> FastAPI:
         prefix="/api",
         tags=["pos"],
     )
+    
+    # Centralized Platform routes
+    app.include_router(
+        centralized_platform_controller,
+        tags=["centralized-platform"],
+    )
 
     # Configure logging
     logging.basicConfig(
@@ -195,7 +216,3 @@ def create_app() -> FastAPI:
     )
     
     return app
-
-
-# Create the app instance
-app = create_app()

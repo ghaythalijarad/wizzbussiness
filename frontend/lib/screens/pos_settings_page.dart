@@ -476,7 +476,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
                   : const Icon(Icons.wifi_tethering),
               label: Text(_isTesting ? loc.testing : loc.testConnection),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
@@ -698,7 +698,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(loc.orderSyncRetryInitiated),
-          backgroundColor: Colors.blue,
+          backgroundColor: Theme.of(context).primaryColor,
         ),
       );
     } catch (e) {
@@ -847,7 +847,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
               leading: const Icon(Icons.security),
               title: Text(loc.encryptionStatus),
               subtitle: Text(loc.encryptionEnabled),
-              trailing: Icon(Icons.check_circle, color: Colors.green),
+              trailing: const Icon(Icons.check_circle, color: Colors.green),
             ),
             ListTile(
               leading: const Icon(Icons.vpn_key),
@@ -982,7 +982,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
             ListTile(
               leading: const Icon(Icons.email),
               title: Text(loc.emailSupport),
-              subtitle: Text('support@orderreceiver.com'),
+              subtitle: const Text('support@orderreceiver.com'),
               onTap: () => _openEmailSupport(),
             ),
           ],

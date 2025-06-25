@@ -17,10 +17,8 @@ class AccountSettingsPage extends StatefulWidget {
 class _AccountSettingsPageState extends State<AccountSettingsPage> {
   late TextEditingController _businessNameController;
   late TextEditingController _ownerNameController;
-  late TextEditingController _emailController;
-  late TextEditingController _phoneController;
   late TextEditingController _addressController;
-  
+
   Map<String, dynamic>? _userData;
   bool _isLoadingUserData = true;
   String? _errorMessage;
@@ -31,10 +29,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     // Initialize controllers with empty text - will be populated after loading user data
     _businessNameController = TextEditingController();
     _ownerNameController = TextEditingController();
-    _emailController = TextEditingController();
-    _phoneController = TextEditingController();
     _addressController = TextEditingController();
-    
+
     _loadUserData();
   }
 
@@ -50,13 +46,13 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         setState(() {
           _userData = response['user'];
           _isLoadingUserData = false;
-          
+
           // Update controllers with real user data
           _businessNameController.text = _userData?['business_name'] ?? '';
-          _ownerNameController.text = _userData?['email'] ?? ''; // Using email as owner name for now
-          _emailController.text = _userData?['email'] ?? '';
-          _phoneController.text = _userData?['phone_number'] ?? '';
-          _addressController.text = ''; // Address not available in user model yet
+          _ownerNameController.text =
+              _userData?['owner_name'] ?? ''; // Now using actual owner name from business data
+          _addressController.text =
+              ''; // Address not available in user model yet
         });
       } else {
         setState(() {
@@ -76,8 +72,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   void dispose() {
     _businessNameController.dispose();
     _ownerNameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
     _addressController.dispose();
     super.dispose();
   }
@@ -148,7 +142,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                               children: [
                                 Text(
                                   'User Information',
-                                  style: Theme.of(context).textTheme.titleMedium,
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
                                 ),
                                 const SizedBox(height: 16),
                                 TextFormField(
@@ -163,23 +158,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                                   controller: _ownerNameController,
                                   decoration: InputDecoration(
                                     labelText: l10n.ownerName,
-                                    border: const OutlineInputBorder(),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _emailController,
-                                  decoration: InputDecoration(
-                                    labelText: l10n.email,
-                                    border: const OutlineInputBorder(),
-                                  ),
-                                  enabled: false, // Email should not be editable
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _phoneController,
-                                  decoration: InputDecoration(
-                                    labelText: l10n.phoneNumber,
                                     border: const OutlineInputBorder(),
                                   ),
                                 ),
@@ -205,7 +183,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                               children: [
                                 Text(
                                   'Security',
-                                  style: Theme.of(context).textTheme.titleMedium,
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
                                 ),
                                 const SizedBox(height: 16),
                                 ElevatedButton.icon(
@@ -213,14 +192,16 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => ChangePasswordScreen(),
+                                        builder: (context) =>
+                                            const ChangePasswordScreen(),
                                       ),
                                     );
                                   },
                                   icon: const Icon(Icons.lock),
                                   label: Text(l10n.changePassword),
                                   style: ElevatedButton.styleFrom(
-                                    minimumSize: const Size(double.infinity, 48),
+                                    minimumSize:
+                                        const Size(double.infinity, 48),
                                   ),
                                 ),
                               ],

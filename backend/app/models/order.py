@@ -135,6 +135,12 @@ class Order(Document):
     business_notes: Optional[str] = None
     estimated_ready_time: Optional[datetime] = None
     
+    # Driver assignment (managed by centralized platform)
+    assigned_driver_info: Optional[Dict[str, Any]] = None  # Driver info from centralized platform
+    driver_assigned_at: Optional[datetime] = None
+    picked_up_at: Optional[datetime] = None
+    delivered_at: Optional[datetime] = None
+    
     class Settings:
         name = "WB_orders"
         indexes = [

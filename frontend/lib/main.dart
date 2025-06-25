@@ -77,7 +77,42 @@ class _MyAppState extends State<MyApp> {
           Locale('ar', ''),
         ],
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          primarySwatch: const MaterialColor(
+            0xFF3399FF,
+            <int, Color>{
+              50: Color(0xFFE0F2FF),
+              100: Color(0xFFB3DEFF),
+              200: Color(0xFF80C9FF),
+              300: Color(0xFF4DB3FF),
+              400: Color(0xFF26A3FF),
+              500: Color(0xFF3399FF),
+              600: Color(0xFF0077FF),
+              700: Color(0xFF006CFF),
+              800: Color(0xFF0062FF),
+              900: Color(0xFF004FFF),
+            },
+          ),
+          primaryColor: const Color(0xFF3399FF),
+          colorScheme: ColorScheme.fromSwatch(
+            primarySwatch: const MaterialColor(
+              0xFF3399FF,
+              <int, Color>{
+                50: Color(0xFFE0F2FF),
+                100: Color(0xFFB3DEFF),
+                200: Color(0xFF80C9FF),
+                300: Color(0xFF4DB3FF),
+                400: Color(0xFF26A3FF),
+                500: Color(0xFF3399FF),
+                600: Color(0xFF0077FF),
+                700: Color(0xFF006CFF),
+                800: Color(0xFF0062FF),
+                900: Color(0xFF004FFF),
+              },
+            ),
+          ).copyWith(
+            primary: const Color(0xFF3399FF),
+            secondary: const Color(0xFF030e8e),
+          ),
           fontFamily: GoogleFonts.cairo().fontFamily,
         ),
         home: WizzBusinessSplashPage(onLanguageChanged: _setLocale),

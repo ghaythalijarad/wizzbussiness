@@ -75,7 +75,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 Navigator.of(context).pop(); // Close dialog
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
-                    builder: (context) => LoginPage(onLanguageChanged: widget.onLanguageChanged),
+                    builder: (context) =>
+                        LoginPage(onLanguageChanged: widget.onLanguageChanged),
                   ),
                   (route) => false, // Remove all previous routes
                 );
@@ -196,18 +197,19 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: const Color(0xFF007fff).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue[200]!),
+                  border: Border.all(
+                      color: const Color(0xFF007fff).withOpacity(0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       loc.passwordRequirements,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue[700],
+                        color: Color(0xFF007fff),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -215,7 +217,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       loc.passwordRequirementsDetails,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.blue[600],
+                        color: const Color(0xFF007fff).withOpacity(0.8),
                       ),
                     ),
                   ],

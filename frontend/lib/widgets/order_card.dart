@@ -135,7 +135,7 @@ class OrderCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('${item.quantity}x ${item.dishName}'),
-                Text('KWD ${item.price.toStringAsFixed(2)}'),
+                Text('IQD ${item.price.toStringAsFixed(2)}'),
               ],
             ),
           ),
@@ -176,7 +176,7 @@ class OrderCard extends StatelessWidget {
               ),
         ),
         Text(
-          'KWD ${order.totalAmount.toStringAsFixed(2)}',
+          'IQD ${order.totalAmount.toStringAsFixed(2)}',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).primaryColor,
@@ -249,7 +249,7 @@ class OrderCard extends StatelessWidget {
       case OrderStatus.confirmed:
         return Colors.green;
       case OrderStatus.ready:
-        return Colors.blue;
+        return const Color(0xFF007fff);
       case OrderStatus.pickedUp:
         return Colors.purple;
       case OrderStatus.cancelled:

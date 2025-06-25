@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../services/notification_service.dart';
 import '../models/notification.dart';
 import '../widgets/notification_panel.dart';
@@ -35,7 +34,7 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
     try {
       // Initialize the notification system
       await NotificationService.init();
-      
+
       // Connect to business-specific notifications
       await _notificationService.connectToNotifications(
         widget.businessId,
@@ -45,9 +44,8 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
       // Listen to real-time notifications
       _notificationService.notificationStream?.listen((notification) {
         setState(() {
-          _unreadNotifications = _notificationService.notifications
-              .where((n) => !n.isRead)
-              .length;
+          _unreadNotifications =
+              _notificationService.notifications.where((n) => !n.isRead).length;
           _isConnected = _notificationService.isConnected;
         });
 
@@ -57,11 +55,9 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
 
       setState(() {
         _isConnected = _notificationService.isConnected;
-        _unreadNotifications = _notificationService.notifications
-            .where((n) => !n.isRead)
-            .length;
+        _unreadNotifications =
+            _notificationService.notifications.where((n) => !n.isRead).length;
       });
-
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -88,7 +84,7 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Row(
+          title: const Row(
             children: [
               Icon(Icons.shopping_cart, color: Colors.green),
               SizedBox(width: 8),
@@ -100,29 +96,30 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(notification.message),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text(
                 'Customer: ${notification.data['customer_name'] ?? 'Unknown'}',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               if (notification.data['order_total'] != null)
                 Text(
                   'Total: \$${notification.data['order_total']}',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.green),
                 ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Later'),
+              child: const Text('Later'),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _viewOrderDetails(notification.data['order_id']);
               },
-              child: Text('View Order'),
+              child: const Text('View Order'),
             ),
           ],
         );
@@ -135,13 +132,13 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.payment, color: Colors.white),
-            SizedBox(width: 8),
+            const Icon(Icons.payment, color: Colors.white),
+            const SizedBox(width: 8),
             Expanded(child: Text(notification.message)),
           ],
         ),
         backgroundColor: Colors.green,
-        duration: Duration(seconds: 3),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -153,7 +150,7 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.red[50],
-          title: Row(
+          title: const Row(
             children: [
               Icon(Icons.warning, color: Colors.red),
               SizedBox(width: 8),
@@ -165,7 +162,7 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Understood'),
+              child: const Text('Understood'),
             ),
           ],
         );
@@ -202,13 +199,13 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mario\'s Pizza Palace'),
-        backgroundColor: Colors.blue,
+        title: const Text('Mario\'s Pizza Palace'),
+        backgroundColor: const Color(0xFF007fff),
         foregroundColor: Colors.white,
         actions: [
           // Connection status indicator
           Container(
-            margin: EdgeInsets.symmetric(horizontal: 8),
+            margin: const EdgeInsets.symmetric(horizontal: 8),
             child: Center(
               child: Icon(
                 _isConnected ? Icons.wifi : Icons.wifi_off,
@@ -217,12 +214,12 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
               ),
             ),
           ),
-          
+
           // Notification button with badge
           Stack(
             children: [
               IconButton(
-                icon: Icon(Icons.notifications),
+                icon: const Icon(Icons.notifications),
                 onPressed: _openNotificationPanel,
               ),
               if (_unreadNotifications > 0)
@@ -230,18 +227,18 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
                   right: 8,
                   top: 8,
                   child: Container(
-                    padding: EdgeInsets.all(2),
+                    padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: Colors.red,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    constraints: BoxConstraints(
+                    constraints: const BoxConstraints(
                       minWidth: 16,
                       minHeight: 16,
                     ),
                     child: Text(
                       '$_unreadNotifications',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -260,75 +257,77 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
           if (!_isConnected)
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               color: Colors.orange,
-              child: Row(
+              child: const Row(
                 children: [
                   Icon(Icons.warning, color: Colors.white),
                   SizedBox(width: 8),
                   Text(
                     'Not connected to real-time notifications',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
-          
+
           // Your existing business app content goes here
           Expanded(
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.store, size: 64, color: Colors.blue),
-                  SizedBox(height: 16),
+                  const Icon(Icons.store, size: 64, color: Color(0xFF007fff)),
+                  const SizedBox(height: 16),
                   Text(
                     'Welcome to Your Business Dashboard',
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     'You\'ll receive instant notifications when customers place orders',
                     style: TextStyle(color: Colors.grey[600]),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 32),
-                  
+                  const SizedBox(height: 32),
+
                   // Quick stats
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatCard('Connected', _isConnected ? 'Yes' : 'No', 
+                      _buildStatCard('Connected', _isConnected ? 'Yes' : 'No',
                           _isConnected ? Colors.green : Colors.red),
-                      _buildStatCard('Unread', '$_unreadNotifications', Colors.blue),
+                      _buildStatCard('Unread', '$_unreadNotifications',
+                          const Color(0xFF007fff)),
                       _buildStatCard('Status', 'Active', Colors.green),
                     ],
                   ),
-                  
-                  SizedBox(height: 32),
-                  
+
+                  const SizedBox(height: 32),
+
                   // Test notification button
                   ElevatedButton.icon(
                     onPressed: () async {
                       try {
                         await _notificationService.sendTestNotification();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                             content: Text('Test notification sent!'),
                             backgroundColor: Colors.green,
                           ),
                         );
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                             content: Text('Failed to send test notification'),
                             backgroundColor: Colors.red,
                           ),
                         );
                       }
                     },
-                    icon: Icon(Icons.send),
-                    label: Text('Send Test Notification'),
+                    icon: const Icon(Icons.send),
+                    label: const Text('Send Test Notification'),
                   ),
                 ],
               ),
@@ -341,24 +340,24 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
         tooltip: 'Open Notifications',
         child: Stack(
           children: [
-            Icon(Icons.notifications),
+            const Icon(Icons.notifications),
             if (_unreadNotifications > 0)
               Positioned(
                 right: 0,
                 top: 0,
                 child: Container(
-                  padding: EdgeInsets.all(1),
+                  padding: const EdgeInsets.all(1),
                   decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  constraints: BoxConstraints(
+                  constraints: const BoxConstraints(
                     minWidth: 12,
                     minHeight: 12,
                   ),
                   child: Text(
                     '$_unreadNotifications',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 8,
                     ),
@@ -375,7 +374,7 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
   Widget _buildStatCard(String title, String value, Color color) {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Text(
@@ -407,7 +406,24 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Business App',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(
+        primarySwatch: MaterialColor(
+          0xFF007fff,
+          const <int, Color>{
+            50: Color(0xFFE0F2FF),
+            100: Color(0xFFB3DEFF),
+            200: Color(0xFF80C9FF),
+            300: Color(0xFF4DB3FF),
+            400: Color(0xFF26A3FF),
+            500: Color(0xFF007fff),
+            600: Color(0xFF0077FF),
+            700: Color(0xFF006CFF),
+            800: Color(0xFF0062FF),
+            900: Color(0xFF004FFF),
+          },
+        ),
+        primaryColor: const Color(0xFF007fff),
+      ),
       home: BusinessMainScreen(
         businessId: "YOUR_BUSINESS_ID_HERE",
         authToken: "YOUR_AUTH_TOKEN_HERE",

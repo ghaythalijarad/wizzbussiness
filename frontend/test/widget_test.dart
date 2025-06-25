@@ -17,13 +17,13 @@ void main() {
 
     // Verify that the splash screen loads
     expect(find.byType(MaterialApp), findsOneWidget);
-    
+
     // Verify splash screen is showing
     await tester.pump();
-    
+
     // Skip the 3-second timer by pumping with a specific duration
     await tester.pump(const Duration(seconds: 4));
-    
+
     // Verify the app navigated successfully
     await tester.pumpAndSettle();
   });

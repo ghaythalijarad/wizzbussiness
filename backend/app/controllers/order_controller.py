@@ -7,12 +7,15 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from beanie import PydanticObjectId
 from pydantic import BaseModel, Field
+from beanie.operators import In
+from pymongo import DESCENDING
 
 from ..models.order import Order, OrderStatus, OrderItem, DeliveryAddress, PaymentInfo, DeliveryType
 from ..models.business import Business
 from ..models.user import User
 from ..services.auth_service import current_active_user
 from ..services.notification_service import notification_service
+from ..services.order_service import OrderService
 
 
 class OrderCreateSchema(BaseModel):
@@ -25,7 +28,7 @@ class OrderCreateSchema(BaseModel):
     customer_id: Optional[str] = None
     
     # Order items
-    items: List[OrderItem] = Field(..., min_items=1)
+    items: List[OrderItem] = Field(..., min_length=1)
     
     # Delivery information
     delivery_type: DeliveryType = DeliveryType.DELIVERY
@@ -153,6 +156,8 @@ class OrderController:
                 if not business:
                     raise HTTPException(status_code=404, detail="Business not found")
                 
+                # Type guard: business is now guaranteed to exist
+                assert business is not None
                 if business.owner_id != current_user.id:
                     raise HTTPException(status_code=403, detail="Access denied")
                 
@@ -163,7 +168,7 @@ class OrderController:
                     query = query.find(Order.status == status)
                 
                 # Get orders with pagination
-                orders = await query.sort(-Order.created_at).skip(skip).limit(limit).to_list()
+                orders = await query.sort("-created_at").skip(skip).limit(limit).to_list()
                 
                 return [OrderResponseSchema(**order.to_dict()) for order in orders]
                 
@@ -188,6 +193,11 @@ class OrderController:
                 
                 # Verify user has access to this order's business
                 business = await Business.get(order.business_id)
+                if not business:
+                    raise HTTPException(status_code=404, detail="Business not found")
+                
+                # Type guard: business is now guaranteed to exist
+                assert business is not None
                 if business.owner_id != current_user.id:
                     raise HTTPException(status_code=403, detail="Access denied")
                 
@@ -199,64 +209,57 @@ class OrderController:
                 logging.error(f"Error getting order: {e}")
                 raise HTTPException(status_code=500, detail="Internal server error")
         
-        @self.router.put("/{order_id}/status", response_model=OrderResponseSchema)
-        async def update_order_status(
+        # New PATCH endpoint for accepting/rejecting orders
+        @self.router.patch("/{order_id}/status", response_model=OrderResponseSchema)
+        async def change_order_status(
             order_id: str,
-            update_data: OrderUpdateSchema,
+            payload: OrderUpdateSchema,
+            business_id: str = Query(..., description="Business ID"),
             background_tasks: BackgroundTasks = BackgroundTasks(),
             current_user: User = Depends(current_active_user)
         ):
-            """Update order status."""
+            """Accept, reject, or update an order's status by the merchant."""
+            # Validate business ID
+            bid = PydanticObjectId(business_id)
+            # Delegate update to service (verifies ownership)
             try:
-                order_obj_id = PydanticObjectId(order_id)
-                
-                order = await Order.get(order_obj_id)
-                if not order:
-                    raise HTTPException(status_code=404, detail="Order not found")
-                
-                # Verify user has access to this order's business
-                business = await Business.get(order.business_id)
-                if business.owner_id != current_user.id:
-                    raise HTTPException(status_code=403, detail="Access denied")
-                
-                # Update order
-                old_status = order.status
-                order.update_status(update_data.status, update_data.business_notes)
-                
-                if update_data.estimated_ready_time:
-                    order.estimated_ready_time = update_data.estimated_ready_time
-                
-                if update_data.preparation_time_minutes:
-                    order.preparation_time_minutes = update_data.preparation_time_minutes
-                
-                await order.save()
-                
-                # Send notification for status change
-                if old_status != update_data.status:
-                    if update_data.status == OrderStatus.CANCELLED:
-                        background_tasks.add_task(
-                            notification_service.notify_order_cancelled,
-                            order,
-                            business,
-                            update_data.business_notes or ""
-                        )
-                    else:
-                        background_tasks.add_task(
-                            notification_service.notify_order_update,
-                            order,
-                            business,
-                            update_data.status
-                        )
-                
-                logging.info(f"Order {order.order_number} status updated to {update_data.status}")
-                
-                return OrderResponseSchema(**order.to_dict())
-                
-            except ValueError:
-                raise HTTPException(status_code=400, detail="Invalid order ID")
+                updated_order = await OrderService.update_order_status(
+                    bid,
+                    PydanticObjectId(order_id),
+                    payload.status,
+                    payload.business_notes,
+                    payload.estimated_ready_time,
+                    payload.preparation_time_minutes
+                )
+            except ValueError as e:
+                raise HTTPException(status_code=404, detail=str(e))
+            except HTTPException:
+                raise
             except Exception as e:
                 logging.error(f"Error updating order status: {e}")
                 raise HTTPException(status_code=500, detail="Internal server error")
+
+            # Fetch business for notifications
+            business = await Business.get(bid)
+            if not business:
+                raise HTTPException(status_code=404, detail="Business not found")
+
+            # Send notifications
+            if payload.status == OrderStatus.CANCELLED:
+                background_tasks.add_task(
+                    notification_service.notify_order_cancelled,
+                    updated_order,
+                    business,
+                    payload.business_notes or ""
+                )
+            else:
+                background_tasks.add_task(
+                    notification_service.notify_order_update,
+                    updated_order,
+                    business,
+                    payload.status
+                )
+            return OrderResponseSchema(**updated_order.to_dict())
         
         @self.router.get("/stats/{business_id}")
         async def get_order_stats(
@@ -272,6 +275,8 @@ class OrderController:
                 if not business:
                     raise HTTPException(status_code=404, detail="Business not found")
                 
+                # Type guard: business is now guaranteed to exist
+                assert business is not None
                 if business.owner_id != current_user.id:
                     raise HTTPException(status_code=403, detail="Access denied")
                 
@@ -287,7 +292,7 @@ class OrderController:
                 ).count()
                 completed_orders = await Order.find(
                     Order.business_id == business_obj_id,
-                    Order.status.in_([OrderStatus.DELIVERED, OrderStatus.COMPLETED])
+                    In(Order.status, [OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.REFUNDED])
                 ).count()
                 
                 return {

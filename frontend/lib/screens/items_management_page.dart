@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import 'dart:io';
+import 'dart:async';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,21 +34,25 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
   List<ItemCategory> _categories = [];
   final ApiService _apiService = ApiService();
   Map<String, dynamic>? _userData;
+  bool _isSearching = false;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
     super.initState();
     _loadCategories();
     _loadUserData();
-    _searchController.addListener(_filterItems);
+    _searchController.addListener(_onSearchChanged);
   }
 
   Future<void> _loadCategories() async {
     try {
       final categories = await _apiService.getCategories(widget.business.id);
-      setState(() {
-        _categories = categories;
-      });
+      if (mounted) {
+        setState(() {
+          _categories = categories;
+        });
+      }
     } catch (e) {
       // Handle error
       print(e);
@@ -57,7 +62,7 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
   Future<void> _loadUserData() async {
     try {
       final response = await AuthService.getCurrentUser();
-      if (response['success'] == true) {
+      if (response['success'] == true && mounted) {
         setState(() {
           _userData = response['user'];
         });
@@ -68,8 +73,85 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
     }
   }
 
-  void _filterItems() {
-    setState(() {});
+  void _onSearchChanged() {
+    // Cancel previous timer if it exists
+    _debounceTimer?.cancel();
+
+    // Set a new timer for debounced search
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _performSearch();
+    });
+  }
+
+  Future<void> _performSearch() async {
+    final query = _searchController.text.trim();
+
+    if (mounted) {
+      setState(() {
+        _isSearching = true;
+      });
+    }
+
+    try {
+      if (query.isEmpty) {
+        // If no search query, load all categories normally
+        await _loadCategories();
+      } else {
+        // Perform backend search
+        final searchResult = await _apiService.searchItems(
+          widget.business.id,
+          query: query,
+          pageSize: 100, // Get more items for search
+        );
+
+        // Process search results and group by categories
+        final items = searchResult['items'] as List<dynamic>;
+        final categoryMap = <String, ItemCategory>{};
+
+        for (var itemData in items) {
+          final item = Dish.fromJson(itemData);
+          final categoryId = item.categoryId;
+          final categoryName =
+              itemData['category_name'] as String? ?? 'Uncategorized';
+          final finalCategoryId =
+              categoryId.isNotEmpty ? categoryId : 'uncategorized';
+
+          if (!categoryMap.containsKey(finalCategoryId)) {
+            categoryMap[finalCategoryId] = ItemCategory(
+              id: finalCategoryId,
+              name: categoryName,
+              businessId: widget.business.id,
+              items: [],
+            );
+          }
+
+          categoryMap[finalCategoryId]!.items.add(item);
+        }
+
+        if (mounted) {
+          setState(() {
+            _categories = categoryMap.values.toList();
+          });
+        }
+      }
+    } catch (e) {
+      print('Error performing search: $e');
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Search failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
+        });
+      }
+    }
   }
 
   void _showAddItemDialog() {
@@ -116,6 +198,7 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -154,8 +237,26 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
               controller: _searchController,
               decoration: InputDecoration(
                 labelText: loc.search,
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: _isSearching
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : const Icon(Icons.search),
                 border: const OutlineInputBorder(),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          _performSearch(); // Reload all categories
+                        },
+                      )
+                    : null,
               ),
             ),
           ),
@@ -181,11 +282,10 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
   }
 
   Widget _buildCategorySection(ItemCategory category) {
-    final query = _searchController.text.toLowerCase();
-    final items = category.items.where((item) {
-      return item.name.toLowerCase().contains(query);
-    }).toList();
+    // Items are already filtered by the backend search
+    final items = category.items;
     if (items.isEmpty) return const SizedBox.shrink();
+
     final loc = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,16 +407,17 @@ class _AddItemDialogState extends State<AddItemDialog> {
 
   Future<void> _loadCategories() async {
     try {
-      print('AddItemDialog: Loading categories for business: ${widget.business.id}');
-      
+      print(
+          'AddItemDialog: Loading categories for business: ${widget.business.id}');
+
       // Check if user is logged in first
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('access_token');
-      
+
       if (token == null) {
         throw Exception('User not logged in. Please log in first.');
       }
-      
+
       final categories =
           await widget.apiService.getCategories(widget.business.id);
       print('AddItemDialog: Loaded ${categories.length} categories');
@@ -440,7 +541,9 @@ class _AddItemDialogState extends State<AddItemDialog> {
                             _selectedCategoryId = value;
                           });
                         },
-                        validator: (value) => value == null && !_showNewCategoryField && _categories.isNotEmpty
+                        validator: (value) => value == null &&
+                                !_showNewCategoryField &&
+                                _categories.isNotEmpty
                             ? loc.pleaseSelectCategory
                             : null,
                       ),
@@ -493,7 +596,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
                 decoration: InputDecoration(
                   labelText: loc.price,
                   border: const OutlineInputBorder(),
-                  prefixText: 'KWD ',
+                  prefixText: 'IQD ',
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
@@ -562,7 +665,9 @@ class _AddItemDialogState extends State<AddItemDialog> {
           price: double.parse(_priceController.text),
           categoryId: category.id,
           isAvailable: _isAvailable,
-          imageUrl: _imageUrlController.text.isEmpty ? null : _imageUrlController.text,
+          imageUrl: _imageUrlController.text.isEmpty
+              ? null
+              : _imageUrlController.text,
           businessId: widget.business.id,
         );
 
@@ -726,7 +831,7 @@ class _EditItemDialogState extends State<EditItemDialog> {
                 decoration: InputDecoration(
                   labelText: loc.price,
                   border: const OutlineInputBorder(),
-                  prefixText: 'KWD ',
+                  prefixText: 'IQD ',
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
@@ -792,7 +897,8 @@ class _EditItemDialogState extends State<EditItemDialog> {
       );
 
       try {
-        final item = await widget.apiService.updateItem(widget.business.id, updatedDish);
+        final item =
+            await widget.apiService.updateItem(widget.business.id, updatedDish);
         widget.onItemUpdated(item);
         Navigator.of(context).pop();
       } catch (e) {

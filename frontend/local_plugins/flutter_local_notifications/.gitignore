@@ -1,0 +1,9 @@
+pubspec.lock
+.vscode
+*.idea
+*.DS_Store
+.dart_tool
+*.dll
+
+# Melos
+pubspec_overrides.yaml

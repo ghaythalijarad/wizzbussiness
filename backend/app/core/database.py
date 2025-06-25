@@ -35,11 +35,10 @@ class DatabaseManager:
                 socketTimeoutMS=10000,
             )
             
-            # Test the connection
+            # Ping the database to test connection (non-blocking)
             await self._client.admin.command('ping')
             self._database = self._client.get_default_database()
             logger.info("✅ Successfully connected to MongoDB Atlas")
-            return
             
         except Exception as e:
             logger.error(f"MongoDB Atlas connection failed: {e}")
@@ -48,7 +47,6 @@ class DatabaseManager:
                 self._client = None
             logger.warning("Continuing without database connection")
             # Swallow exception to prevent crash on startup
-            return
     
     async def disconnect(self) -> None:
         """Close database connection."""

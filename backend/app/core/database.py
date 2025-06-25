@@ -18,24 +18,21 @@ class DatabaseManager:
         self._database = None
     
     async def connect(self) -> None:
-        """Establish database connection with optimized settings for Heroku."""
+        """Establish database connection optimized for Heroku deployment."""
         atlas_uri = config.database.mongo_uri
         
-        # Try MongoDB Atlas with optimized settings for Heroku
         try:
             logger.info("Attempting to connect to MongoDB Atlas...")
+            
+            # Simple connection for Heroku deployment
             self._client = motor.motor_asyncio.AsyncIOMotorClient(
                 atlas_uri,
-                serverSelectionTimeoutMS=10000,  # Reduced timeout for Heroku
-                connectTimeoutMS=10000,
-                socketTimeoutMS=10000,
-                tlsAllowInvalidCertificates=True,
-                tlsAllowInvalidHostnames=True,
-                retryWrites=True,
-                w='majority'
+                serverSelectionTimeoutMS=3000,
+                connectTimeoutMS=3000,
+                socketTimeoutMS=3000
             )
             
-            # Test the connection with shorter timeout
+            # Test the connection
             await self._client.admin.command('ping')
             self._database = self._client.get_default_database()
             logger.info("✅ Successfully connected to MongoDB Atlas")
@@ -46,27 +43,7 @@ class DatabaseManager:
             if self._client:
                 self._client.close()
                 self._client = None
-            
-            # For Heroku deployment, we need Atlas to work - no local fallback
             raise Exception(f"Database connection failed: {e}")
-        try:
-            logger.info("Falling back to local MongoDB...")
-            self._client = motor.motor_asyncio.AsyncIOMotorClient(
-                local_uri,
-                serverSelectionTimeoutMS=30000,
-                connectTimeoutMS=30000,
-                socketTimeoutMS=30000,
-            )
-            
-            # Test the connection
-            await self._client.admin.command('ping')
-            self._database = self._client.get_default_database()
-            logger.info("✅ Successfully connected to local MongoDB")
-            return
-            
-        except Exception as local_error:
-            logger.error(f"Local MongoDB connection failed: {local_error}")
-            raise Exception(f"Failed to connect to both Atlas and local MongoDB. Atlas: {atlas_error}, Local: {local_error}")
     
     async def disconnect(self) -> None:
         """Close database connection."""

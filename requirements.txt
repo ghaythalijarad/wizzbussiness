@@ -1,6 +1,6 @@
 fastapi==0.111.0
 uvicorn[standard]==0.29.0
-motor==3.4.0
+motor==3.6.0
 python-dotenv==1.0.1
 # Added ODM, auth, hashing and JWT support
 beanie==1.26.0
@@ -12,7 +12,7 @@ email-validator>=2.1.1
 pydantic<3.0,>=2.0
 # HTTP client for POS integration
 aiohttp==3.9.5
-# Fix PyMongo version compatibility - updated for TLS 1.2 support
-pymongo>=4.7.0
+# Fix PyMongo version compatibility - use compatible versions
+pymongo==4.10.1
 dnspython>=2.6.1
 certifi>=2023.7.22

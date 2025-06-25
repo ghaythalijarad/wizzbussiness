@@ -22,31 +22,43 @@ class DatabaseManager:
         """Establish database connection optimized for Heroku deployment with TLS fallback."""
         atlas_uri = config.database.mongo_uri
         
-        # Try multiple connection strategies
+        # Try multiple connection strategies optimized for Heroku
         connection_strategies = [
+            {
+                "name": "TLS with relaxed verification",
+                "config": {
+                    "tls": True,
+                    "tlsAllowInvalidCertificates": True,
+                    "tlsAllowInvalidHostnames": True,
+                    "serverSelectionTimeoutMS": 5000,
+                    "connectTimeoutMS": 10000,
+                    "socketTimeoutMS": 10000,
+                    "retryWrites": True,
+                    "w": 'majority',
+                    "maxPoolSize": 1
+                }
+            },
             {
                 "name": "Standard TLS with certifi",
                 "config": {
                     "tls": True,
                     "tlsCAFile": certifi.where(),
-                    "serverSelectionTimeoutMS": 30000,
-                    "connectTimeoutMS": 30000,
-                    "socketTimeoutMS": 30000,
+                    "serverSelectionTimeoutMS": 8000,
+                    "connectTimeoutMS": 12000,
+                    "socketTimeoutMS": 12000,
                     "retryWrites": True,
-                    "w": 'majority'
+                    "w": 'majority',
+                    "maxPoolSize": 1
                 }
             },
             {
-                "name": "TLS without cert verification (fallback)",
+                "name": "Basic connection with timeout",
                 "config": {
-                    "tls": True,
-                    "tlsAllowInvalidCertificates": True,
-                    "tlsAllowInvalidHostnames": True,
-                    "serverSelectionTimeoutMS": 15000,
-                    "connectTimeoutMS": 15000,
-                    "socketTimeoutMS": 15000,
+                    "serverSelectionTimeoutMS": 3000,
+                    "connectTimeoutMS": 5000,
+                    "socketTimeoutMS": 5000,
                     "retryWrites": True,
-                    "w": 'majority'
+                    "maxPoolSize": 1
                 }
             }
         ]
@@ -73,10 +85,23 @@ class DatabaseManager:
                     self._client = None
                 continue
         
+        # If all strategies failed, try one more time with a completely minimal config
+        try:
+            logger.info("Final attempt: minimal configuration")
+            self._client = motor.motor_asyncio.AsyncIOMotorClient(atlas_uri)
+            await self._client.admin.command('ping')
+            self._database = self._client.get_default_database()
+            logger.info("✅ Successfully connected with minimal configuration")
+            return
+        except Exception as e:
+            logger.error(f"❌ Final attempt failed: {e}")
+            if self._client:
+                self._client.close()
+                self._client = None
+        
         # If all strategies failed
         logger.error("All MongoDB connection strategies failed")
-        self._database = None
-        logger.warning("Continuing without database connection")
+        raise Exception("Database connection failed: All connection strategies exhausted")
     
     async def disconnect(self) -> None:
         """Close database connection."""

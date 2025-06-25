@@ -67,28 +67,23 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def startup_event():
         """Initialize database and other services on startup."""
-        try:
-            # Try to initialize database connection
-            await db_manager.connect()
-            logger.info("Database connected successfully")
-            
-            # Drop any conflicting index to allow re-creation with case-insensitive collation
+        # Initialize database connection (non-blocking)
+        await db_manager.connect()
+        if db_manager._client:
+            logging.info("Database connected successfully")
+            # Drop any conflicting index
             db = db_manager.database
             users_coll = db.get_collection("WB_users")
             try:
                 await users_coll.drop_index("unique_email_idx")
             except Exception:
                 pass
-            
             # Initialize Beanie ODM
             await init_beanie(database=db, document_models=[User, Business, Restaurant, Store, Pharmacy, Kitchen, Item, ItemCategory, Order, BusinessPosSettings, PosOrderSyncLog])
-            
-            logging.info("✅ Application startup completed successfully with database")
-        except Exception as e:
-            logging.error(f"❌ Database connection failed during startup: {e}")
-            logging.warning("⚠️ Application starting without database connection - some features may be limited")
+            logging.info("✅ Application startup completed with database")
+        else:
+            logging.warning("⚠️ Starting application without database connection - some features may be limited")
             # Don't raise the exception - allow app to start without database
-            logging.error(f"Startup failed: {e}")
     
     @app.on_event("shutdown")
     async def shutdown_event():

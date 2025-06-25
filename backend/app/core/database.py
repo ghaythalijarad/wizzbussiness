@@ -6,6 +6,7 @@ from beanie import init_beanie
 from typing import Optional
 import logging
 from app.core.config import config
+import certifi  # add CA file for Atlas TLS validation
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +25,14 @@ class DatabaseManager:
         try:
             logger.info("Attempting to connect to MongoDB Atlas...")
             
-            # Simple connection for Heroku deployment
+            # Secure TLS connection using Atlas CA bundle and longer timeouts
             self._client = motor.motor_asyncio.AsyncIOMotorClient(
                 atlas_uri,
-                serverSelectionTimeoutMS=3000,
-                connectTimeoutMS=3000,
-                socketTimeoutMS=3000
+                tls=True,
+                tlsCAFile=certifi.where(),
+                serverSelectionTimeoutMS=10000,
+                connectTimeoutMS=10000,
+                socketTimeoutMS=10000,
             )
             
             # Test the connection
@@ -44,6 +47,7 @@ class DatabaseManager:
                 self._client.close()
                 self._client = None
             logger.warning("Continuing without database connection")
+            # Swallow exception to prevent crash on startup
             return
     
     async def disconnect(self) -> None:

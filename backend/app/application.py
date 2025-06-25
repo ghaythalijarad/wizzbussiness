@@ -82,8 +82,11 @@ def create_app() -> FastAPI:
             # Initialize Beanie ODM
             await init_beanie(database=db, document_models=[User, Business, Restaurant, Store, Pharmacy, Kitchen, Item, ItemCategory, Order, BusinessPosSettings, PosOrderSyncLog])
             
-            logging.info("Application startup completed successfully")
+            logging.info("✅ Application startup completed successfully with database")
         except Exception as e:
+            logging.error(f"❌ Database connection failed during startup: {e}")
+            logging.warning("⚠️ Application starting without database connection - some features may be limited")
+            # Don't raise the exception - allow app to start without database
             logging.error(f"Startup failed: {e}")
             raise
     

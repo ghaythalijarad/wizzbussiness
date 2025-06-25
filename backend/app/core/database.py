@@ -18,37 +18,37 @@ class DatabaseManager:
         self._database = None
     
     async def connect(self) -> None:
-        """Establish database connection with fallback from Atlas to local."""
+        """Establish database connection with optimized settings for Heroku."""
         atlas_uri = config.database.mongo_uri
-        local_uri = "mongodb://localhost:27017/order_receiver_local"
-        atlas_error = None
         
-        # Try MongoDB Atlas first
+        # Try MongoDB Atlas with optimized settings for Heroku
         try:
             logger.info("Attempting to connect to MongoDB Atlas...")
             self._client = motor.motor_asyncio.AsyncIOMotorClient(
                 atlas_uri,
-                serverSelectionTimeoutMS=30000,  # Extended timeout for Atlas
-                connectTimeoutMS=30000,
-                socketTimeoutMS=30000,
+                serverSelectionTimeoutMS=10000,  # Reduced timeout for Heroku
+                connectTimeoutMS=10000,
+                socketTimeoutMS=10000,
                 tlsAllowInvalidCertificates=True,
                 tlsAllowInvalidHostnames=True,
+                retryWrites=True,
+                w='majority'
             )
             
-            # Test the connection
+            # Test the connection with shorter timeout
             await self._client.admin.command('ping')
             self._database = self._client.get_default_database()
             logger.info("✅ Successfully connected to MongoDB Atlas")
             return
             
         except Exception as e:
-            atlas_error = e
-            logger.warning(f"MongoDB Atlas connection failed: {e}")
+            logger.error(f"MongoDB Atlas connection failed: {e}")
             if self._client:
                 self._client.close()
                 self._client = None
-        
-        # Fallback to local MongoDB
+            
+            # For Heroku deployment, we need Atlas to work - no local fallback
+            raise Exception(f"Database connection failed: {e}")
         try:
             logger.info("Falling back to local MongoDB...")
             self._client = motor.motor_asyncio.AsyncIOMotorClient(

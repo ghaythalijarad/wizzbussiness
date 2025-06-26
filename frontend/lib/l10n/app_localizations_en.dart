@@ -1091,4 +1091,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tapToSelectLocation => 'Tap to Select Location';
+
+  @override
+  String get registrationDate => 'Registration Date';
 }

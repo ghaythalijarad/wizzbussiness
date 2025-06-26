@@ -169,7 +169,6 @@
   "changePassword": "تغيير كلمة المرور",
   "languageSettings": "إعدادات اللغة",
   "posSettings": "إعدادات نقاط البيع",
-  "logout": "تسجيل الخروج",
   "currentPassword": "كلمة المرور الحالية",
   "newPassword": "كلمة المرور الجديدة",
   "confirmPassword": "تأكيد كلمة المرور",
@@ -309,7 +308,6 @@
   "taxes": "الضرائب",
   "discounts": "الخصومات",
   "discountType": "نوع الخصم",
-  "percentage": "نسبة مئوية",
   "fixedAmount": "مبلغ ثابت",
   "conditional": "مشروط",
   "freeDelivery": "توصيل مجاني",
@@ -346,7 +344,6 @@
   "suggestion": "الاقتراح",
   "complaint": "الشكوى",
   "compliment": "المجاملة",
-  "posSettings": "إعدادات نقاط البيع",
   "posIntegration": "تكامل نقاط البيع",
   "integrationStatus": "حالة التكامل",
   "posSystem": "نظام نقاط البيع",
@@ -491,5 +488,8 @@
   "availableWeekdays": "متاح أيام الأسبوع من 9 صباحاً - 6 مساءً",
   "emailSupport": "دعم البريد الإلكتروني",
   "liveChatComingSoon": "ميزة المحادثة المباشرة قريباً",
-  "emailSupportOpened": "تم فتح دعم البريد الإلكتروني"
+  "emailSupportOpened": "تم فتح دعم البريد الإلكتروني",
+  "confirmLocation": "تأكيد الموقع",
+  "tapToSelectLocation": "انقر لتحديد الموقع",
+  "registrationDate": "تاريخ التسجيل"
 }

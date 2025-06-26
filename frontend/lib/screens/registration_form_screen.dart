@@ -74,6 +74,39 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     super.dispose();
   }
 
+  Future<void> _autoFillAddress() async {
+    setState(() {
+      _isLoadingLocation = true;
+    });
+
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(position.latitude, position.longitude);
+
+      if (placemarks.isNotEmpty) {
+        final placemark = placemarks[0];
+        _businessCityController.text = placemark.locality ?? '';
+        _businessDistrictController.text = placemark.subAdministrativeArea ?? '';
+        _businessCountryController.text = placemark.country ?? '';
+        _businessZipCodeController.text = placemark.postalCode ?? '';
+        _businessNeighborhoodController.text = placemark.subLocality ?? '';
+        _businessStreetController.text = placemark.street ?? '';
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error getting location: $e')),
+        );
+      }
+    } finally {
+      setState(() {
+        _isLoadingLocation = false;
+      });
+    }
+  }
+
   // Enhanced Validation Methods
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -373,29 +406,6 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
   void _submitForm() async {
     final l10n = AppLocalizations.of(context)!;
 
-    // Debug: Check individual field validation
-    print('=== FORM VALIDATION DEBUG ===');
-    print('Current Locale: ${Localizations.localeOf(context)}');
-    print('Business Type: $_selectedBusinessType');
-    print('Email: ${_emailController.text}');
-    print('Email validation: ${_validateEmail(_emailController.text)}');
-    print('Business Name: ${_businessNameController.text}');
-    print('Owner Name: ${_ownerNameController.text}');
-    print('Phone: ${_phoneController.text}');
-    print('Phone validation: ${_validateIraqiPhone(_phoneController.text)}');
-    print('Password: ${_passwordController.text.isNotEmpty}');
-    print('Confirm Password: ${_confirmPasswordController.text.isNotEmpty}');
-    print(
-        'Password match: ${_passwordController.text == _confirmPasswordController.text}');
-
-    // Additional business type debugging
-    print('Business Type Display Values:');
-    print('  Restaurant: ${l10n.restaurant}');
-    print('  Store: ${l10n.store}');
-    print('  Pharmacy: ${l10n.pharmacy}');
-    print('  Kitchen: ${l10n.cloudKitchen}');
-    print('================================');
-
     // Check form validation and provide feedback
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -422,37 +432,45 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         'password': _passwordController.text,
         'business_name': _businessNameController.text.trim(),
         'business_type': _selectedBusinessType,
-        'phone_number':
-            '+964${_phoneController.text.trim()}', // Changed from 'phone' to 'phone_number'
         'owner_name': _ownerNameController.text.trim(),
+        'phone_number': '+964${_phoneController.text.trim()}',
         'address': {
-          'country': _businessCountryController.text.trim(),
           'city': _businessCityController.text.trim(),
           'district': _businessDistrictController.text.trim(),
+          'country': _businessCountryController.text.trim(),
+          'zip_code': _businessZipCodeController.text.trim(),
           'neighborhood': _businessNeighborhoodController.text.trim(),
           'street': _businessStreetController.text.trim(),
-          'building_number': _businessHomeController.text.trim(),
-          'zip_code': _businessZipCodeController.text.trim(),
+          'home_address': _businessHomeController.text.trim(),
         },
-        'national_id': _ownerNationalIdController.text.trim(),
-        'date_of_birth': _ownerDateOfBirthController.text.trim(),
+        'owner_national_id': _ownerNationalIdController.text.trim(),
+        'owner_date_of_birth': _ownerDateOfBirthController.text.trim(),
       };
 
-      // Submit to backend
-      print('Submitting registration data: $registrationData');
-      final response = await AuthService.register(registrationData);
-      print('Registration response: $response');
+      // Call the registration service
+      final response = await AuthService.register(
+        registrationData,
+        _licenseFile,
+        _identityFile,
+        _healthCertificateFile,
+        _ownerPhotoFile,
+      );
 
-      // Close loading dialog
+      // Close the loading dialog
       Navigator.of(context).pop();
 
-      if (response['success'] == true) {
-        print('Registration successful, showing success dialog');
-        // Show success dialog
-        _showSuccessDialog();
+      if (response['success']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.registrationSuccessLogin),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Navigate to a success screen or login screen
+        Navigator.of(context).pushReplacementNamed('/login');
       } else {
-        print('Registration failed: ${response['message']}');
-        // Show error message
+        // It's good practice to check if the widget is still in the tree
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(response['message'] ?? l10n.registrationFailed),
@@ -461,90 +479,20 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         );
       }
     } catch (e) {
-      // Close loading dialog
+      // Close the loading dialog
       Navigator.of(context).pop();
-
-      // Show error message
+      // Ensure the widget is still mounted before showing a SnackBar
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Registration failed: ${e.toString()}'),
+          content: Text('An unexpected error occurred: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );
     }
   }
 
-  void _showSuccessDialog() {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(l10n.registrationSubmitted),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(l10n.registrationSubmittedMessage),
-                const SizedBox(height: 16),
-                Text('${l10n.businessInformation}:',
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text('${l10n.nameLabel}: ${_businessNameController.text}'),
-                Text(
-                    '${l10n.typeLabel}: ${_selectedBusinessType ?? l10n.notSelected}'),
-                Text('${l10n.phoneLabel}: +964${_phoneController.text}'),
-                Text('${l10n.email}: ${_emailController.text}'),
-                const SizedBox(height: 4),
-                Text('${l10n.addressLabel}:',
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                Text(
-                    '  ${l10n.countryLabel}: ${_businessCountryController.text}'),
-                Text('  ${l10n.cityLabel}: ${_businessCityController.text}'),
-                Text(
-                    '  ${l10n.districtLabel}: ${_businessDistrictController.text}'),
-                Text(
-                    '  ${l10n.neighbourhoodLabel}: ${_businessNeighborhoodController.text}'),
-                if (_businessStreetController.text.isNotEmpty)
-                  Text(
-                      '  ${l10n.streetLabel}: ${_businessStreetController.text}'),
-                if (_businessHomeController.text.isNotEmpty)
-                  Text(
-                      '  ${l10n.buildingHomeLabel}: ${_businessHomeController.text}'),
-                Text(
-                    '  ${l10n.zipCodeLabel}: ${_businessZipCodeController.text}'),
-                const SizedBox(height: 8),
-                Text('${l10n.businessOwnerInformation}:',
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text('${l10n.nameLabel}: ${_ownerNameController.text}'),
-                Text(
-                    '${l10n.nationalIdLabel}: ${_ownerNationalIdController.text}'),
-                Text(
-                    '${l10n.dateOfBirthLabel}: ${_ownerDateOfBirthController.text}'),
-                const SizedBox(height: 8),
-                Text(l10n.registrationSuccessLogin,
-                    style: const TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                    )),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop(); // Go back to previous screen
-              },
-              child: Text(l10n.close),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _autoFillAddress() async {
+  Future<void> _getCurrentLocation() async {
     final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isLoadingLocation = true;
@@ -612,19 +560,6 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         _isLoadingLocation = false;
       });
     }
-  }
-
-  // Test function to verify business type validation
-  void _testBusinessTypeValidation() {
-    print('=== BUSINESS TYPE VALIDATION TEST ===');
-    final testValues = ['restaurant', 'store', 'pharmacy', 'kitchen'];
-    for (String value in testValues) {
-      setState(() {
-        _selectedBusinessType = value;
-      });
-      print('Testing value: $value - Valid: ${_selectedBusinessType != null}');
-    }
-    print('=====================================');
   }
 
   @override
@@ -999,25 +934,6 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Debug button for testing
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _testBusinessTypeValidation,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Debug: Test Business Type Validation',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),

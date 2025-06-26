@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -180,23 +181,59 @@ class AuthService {
 
   /// Register a new user account
   static Future<Map<String, dynamic>> register(
-      Map<String, dynamic> userData) async {
+    Map<String, dynamic> userData,
+    File? licenseFile,
+    File? identityFile,
+    File? healthCertificateFile,
+    File? ownerPhotoFile,
+  ) async {
     try {
-      final response = await http.post(
+      var request = http.MultipartRequest(
+        'POST',
         Uri.parse('$baseUrl/auth/register'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        // Send full registration payload
-        body: jsonEncode(userData),
       );
 
-      print('Registration response status: ${response.statusCode}');
-      print('Registration response body: ${response.body}');
+      // Add user data as fields
+      userData.forEach((key, value) {
+        if (value is Map) {
+          request.fields[key] = jsonEncode(value);
+        } else {
+          request.fields[key] = value.toString();
+        }
+      });
+
+      // Add files
+      if (licenseFile != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'license_file',
+          licenseFile.path,
+        ));
+      }
+      if (identityFile != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'identity_file',
+          identityFile.path,
+        ));
+      }
+      if (healthCertificateFile != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'health_certificate_file',
+          healthCertificateFile.path,
+        ));
+      }
+      if (ownerPhotoFile != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'owner_photo_file',
+          ownerPhotoFile.path,
+        ));
+      }
+
+      var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
 
       if (response.statusCode == 201) {
         // Registration successful - backend returns user object
-        final userData = jsonDecode(response.body);
+        final userData = jsonDecode(responseBody);
         return {
           'success': true,
           'message': 'Registration successful',
@@ -207,7 +244,7 @@ class AuthService {
         String errorMessage = 'Registration failed';
 
         try {
-          final errorData = jsonDecode(response.body);
+          final errorData = jsonDecode(responseBody);
 
           // Handle FastAPI validation errors (422)
           if (response.statusCode == 422 && errorData.containsKey('detail')) {
@@ -246,7 +283,6 @@ class AuthService {
         };
       }
     } catch (e) {
-      print('Registration network error: $e');
       return {
         'success': false,
         'message': 'Network error: ${e.toString()}',

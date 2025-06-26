@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
+import 'package:intl/intl.dart';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
@@ -49,10 +51,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
           // Update controllers with real user data
           _businessNameController.text = _userData?['business_name'] ?? '';
-          _ownerNameController.text = _userData?['owner_name'] ??
-              ''; // Now using actual owner name from business data
-          _addressController.text =
-              ''; // Address not available in user model yet
+          _ownerNameController.text = _userData?['owner_name'] ?? '';
+          _addressController.text = _formatAddress(_userData?['address']);
         });
       } else {
         setState(() {
@@ -66,6 +66,15 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         _isLoadingUserData = false;
       });
     }
+  }
+
+  String _formatAddress(Map<String, dynamic>? address) {
+    if (address == null) {
+      return '';
+    }
+    // Construct a formatted address string from the address map
+    return 
+        '${address['home_address'] ?? ''}, ${address['street'] ?? ''}, ${address['neighborhood'] ?? ''}, ${address['district'] ?? ''}, ${address['city'] ?? ''}, ${address['country'] ?? ''}';
   }
 
   @override
@@ -134,23 +143,12 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                   child: Form(
                     child: ListView(
                       children: [
-                        TextFormField(
-                          controller: _businessNameController,
-                          decoration:
-                              InputDecoration(labelText: l10n.businessName),
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _ownerNameController,
-                          decoration:
-                              InputDecoration(labelText: l10n.ownerName),
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _addressController,
-                          decoration: InputDecoration(
-                              labelText: l10n.businessAddressLabel),
-                        ),
+                        _buildInfoTile(l10n.ownerName, _userData?['owner_name'] ?? ''),
+                        _buildInfoTile(l10n.emailAddress, _userData?['email'] ?? ''),
+                        _buildInfoTile(l10n.phoneNumber, _userData?['phone_number'] ?? '', isLtr: true),
+                        _buildInfoTile(l10n.businessAddressLabel, _formatAddress(_userData?['address'])),
+                        _buildInfoTile(l10n.businessType, _userData?['business_type'] ?? ''),
+                        _buildInfoTile(l10n.registrationDate, _formatDate(_userData?['created_at'])),
                         const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () {
@@ -169,5 +167,27 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                   ),
                 ),
     );
+  }
+
+  Widget _buildInfoTile(String title, String subtitle, {bool isLtr = false}) {
+    return ListTile(
+      title: Text(title),
+      subtitle: Text(
+        subtitle,
+        textDirection: isLtr ? ui.TextDirection.ltr : null,
+      ),
+    );
+  }
+
+  String _formatDate(String? dateString) {
+    if (dateString == null) {
+      return '';
+    }
+    try {
+      final dateTime = DateTime.parse(dateString);
+      return DateFormat.yMMMd().format(dateTime);
+    } catch (e) {
+      return dateString;
+    }
   }
 }

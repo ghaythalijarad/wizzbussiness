@@ -411,5 +411,6 @@
   "enableLocationServices": "Enable Location Services",
   "locationNotSelected": "Location Not Selected",
   "confirmLocation": "Confirm Location",
-  "tapToSelectLocation": "Tap to Select Location"
+  "tapToSelectLocation": "Tap to Select Location",
+  "registrationDate": "Registration Date"
 }

@@ -422,7 +422,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get discountType => 'نوع الخصم';
 
   @override
-  String get percentage => 'نسبة مئوية';
+  String get percentage => 'النسبة المئوية';
 
   @override
   String get fixedAmount => 'مبلغ ثابت';
@@ -1087,8 +1087,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get locationNotSelected => 'Location Not Selected';
 
   @override
-  String get confirmLocation => 'Confirm Location';
+  String get confirmLocation => 'تأكيد الموقع';
 
   @override
-  String get tapToSelectLocation => 'Tap to Select Location';
+  String get tapToSelectLocation => 'انقر لتحديد الموقع';
+
+  @override
+  String get registrationDate => 'تاريخ التسجيل';
 }

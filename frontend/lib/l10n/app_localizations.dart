@@ -2203,6 +2203,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to Select Location'**
   String get tapToSelectLocation;
+
+  /// No description provided for @registrationDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration Date'**
+  String get registrationDate;
 }
 
 class _AppLocalizationsDelegate

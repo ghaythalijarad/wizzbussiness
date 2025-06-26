@@ -52,6 +52,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
         _notifications = _notificationService.notifications;
       });
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to connect to notifications: $e'),
@@ -62,6 +63,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
   }
 
   void _showNotificationSnackBar(NotificationModel notification) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Column(
@@ -107,6 +109,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
   Future<void> _sendTestNotification() async {
     try {
       await _notificationService.sendTestNotification();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Test notification sent successfully'),
@@ -114,6 +117,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
         ),
       );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to send test notification: $e'),

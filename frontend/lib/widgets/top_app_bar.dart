@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../utils/responsive_helper.dart';
-import 'package:hadhir_business/components/innovative_sidebar.dart';
+import '../components/innovative_sidebar.dart';
 
 class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -131,7 +131,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
             size: 20,
           ),
         ),
-        tooltip: 'Quick Actions',
+        tooltip: loc.quickActions,
       ),
     ];
   }
@@ -159,7 +159,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF3399FF).withOpacity(0.3),
+                    color: const Color(0xFF3399FF).withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -175,7 +175,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Quick Actions',
+                    loc.quickActions,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,

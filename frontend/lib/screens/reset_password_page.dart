@@ -197,10 +197,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF007fff).withOpacity(0.1),
+                  color: const Color(0xFF007fff).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: const Color(0xFF007fff).withOpacity(0.3)),
+                      color: const Color(0xFF007fff).withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,7 +217,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       loc.passwordRequirementsDetails,
                       style: TextStyle(
                         fontSize: 12,
-                        color: const Color(0xFF007fff).withOpacity(0.8),
+                        color: const Color(0xFF007fff).withValues(alpha: 0.8),
                       ),
                     ),
                   ],

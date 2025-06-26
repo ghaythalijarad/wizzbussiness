@@ -33,7 +33,8 @@ class CentralizedPlatformService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to test platform connection: ${response.statusCode}');
+        throw Exception(
+            'Failed to test platform connection: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error testing platform connection: $e');
@@ -60,7 +61,8 @@ class CentralizedPlatformService {
   }
 
   /// Deploy or update the centralized platform app
-  Future<Map<String, dynamic>> deployCentralizedApp(Map<String, dynamic> appConfig) async {
+  Future<Map<String, dynamic>> deployCentralizedApp(
+      Map<String, dynamic> appConfig) async {
     try {
       final headers = await _getAuthHeaders();
       final response = await http.post(
@@ -72,7 +74,8 @@ class CentralizedPlatformService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to deploy centralized app: ${response.statusCode}');
+        throw Exception(
+            'Failed to deploy centralized app: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error deploying centralized app: $e');
@@ -91,7 +94,8 @@ class CentralizedPlatformService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to sync business to platform: ${response.statusCode}');
+        throw Exception(
+            'Failed to sync business to platform: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error syncing business to platform: $e');
@@ -110,7 +114,8 @@ class CentralizedPlatformService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to sync all businesses to platform: ${response.statusCode}');
+        throw Exception(
+            'Failed to sync all businesses to platform: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error syncing all businesses to platform: $e');
@@ -129,7 +134,8 @@ class CentralizedPlatformService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to get platform sync status: ${response.statusCode}');
+        throw Exception(
+            'Failed to get platform sync status: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error getting platform sync status: $e');
@@ -137,7 +143,8 @@ class CentralizedPlatformService {
   }
 
   /// Set up the complete centralized platform integration
-  Future<Map<String, dynamic>> setupCentralizedPlatform(Map<String, dynamic> setupConfig) async {
+  Future<Map<String, dynamic>> setupCentralizedPlatform(
+      Map<String, dynamic> setupConfig) async {
     try {
       final headers = await _getAuthHeaders();
       final response = await http.post(
@@ -149,7 +156,8 @@ class CentralizedPlatformService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to setup centralized platform: ${response.statusCode}');
+        throw Exception(
+            'Failed to setup centralized platform: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error setting up centralized platform: $e');

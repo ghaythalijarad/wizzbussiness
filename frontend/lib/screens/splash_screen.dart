@@ -183,8 +183,8 @@ class _SplashScreenState extends State<SplashScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFF2196F3).withOpacity(0.1 - index * 0.03),
-                    const Color(0xFF00E5FF).withOpacity(0.05 - index * 0.01),
+                    const Color(0xFF2196F3).withValues(alpha: 0.1 - index * 0.03),
+                    const Color(0xFF00E5FF).withValues(alpha: 0.05 - index * 0.01),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(100),
@@ -217,13 +217,13 @@ class _SplashScreenState extends State<SplashScreen>
               shape: BoxShape.circle,
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF00E5FF).withOpacity(0.8),
-                  const Color(0xFF2196F3).withOpacity(0.6),
+                  const Color(0xFF00E5FF).withValues(alpha: 0.8),
+                  const Color(0xFF2196F3).withValues(alpha: 0.6),
                 ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF00E5FF).withOpacity(0.3),
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),

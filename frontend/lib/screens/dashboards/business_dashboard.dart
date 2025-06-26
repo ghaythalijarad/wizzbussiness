@@ -10,6 +10,7 @@ import '../centralized_platform_page.dart';
 import '../../models/order.dart';
 import '../../models/order_item.dart';
 import '../../widgets/top_app_bar.dart';
+import '../../services/app_state.dart';
 
 class BusinessDashboard extends StatefulWidget {
   final Business business;
@@ -28,12 +29,25 @@ class BusinessDashboard extends StatefulWidget {
 class _BusinessDashboardState extends State<BusinessDashboard> {
   int _selectedIndex = 0;
   List<Order> _orders = [];
-  bool _isOnline = true; // Business online/offline status
+  final AppState _appState = AppState();
 
   @override
   void initState() {
     super.initState();
     _generateDemoOrders();
+    _appState.addListener(_onAppStateChanged);
+  }
+
+  @override
+  void dispose() {
+    _appState.removeListener(_onAppStateChanged);
+    super.dispose();
+  }
+
+  void _onAppStateChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _generateDemoOrders() {
@@ -351,9 +365,8 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
 
   // TopAppBar callback methods
   void _onToggleStatus(bool isOnline) {
-    setState(() {
-      _isOnline = isOnline;
-    });
+    // Update global app state instead of local state
+    _appState.setOnline(isOnline);
 
     final loc = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -435,7 +448,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
     return Scaffold(
       appBar: TopAppBar(
         title: '',
-        isOnline: _isOnline,
+        isOnline: _appState.isOnline,
         onToggleStatus: _onToggleStatus,
         onReturnOrder: _onReturnOrder,
         onNavigate: _onNavigate,

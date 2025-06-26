@@ -81,7 +81,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 3,
                   offset: const Offset(0, 1),
@@ -146,10 +146,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       child: Material(
         elevation: isSelected ? 2 : 0.5,
         borderRadius: BorderRadius.circular(16),
-        color: isSelected ? const Color(0xFF027DFF) : const Color(0xFF001133).withOpacity(0.05),
+        color: isSelected ? const Color(0xFF027DFF) : const Color(0xFF001133).withValues(alpha: 0.05),
         shadowColor: isSelected
-            ? const Color(0xFF027DFF).withOpacity(0.3)
-            : const Color(0xFF001133).withOpacity(0.1),
+            ? const Color(0xFF027DFF).withValues(alpha: 0.3)
+            : const Color(0xFF001133).withValues(alpha: 0.1),
         child: InkWell(
           onTap: () => setState(() {
             _selectedFilter = value;
@@ -162,7 +162,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
               border: Border.all(
                 color: isSelected 
                     ? const Color(0xFF027DFF) 
-                    : const Color(0xFF001133).withOpacity(0.3),
+                    : const Color(0xFF001133).withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -189,13 +189,13 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
           Icon(
             Icons.local_offer_outlined,
             size: 64,
-            color: const Color(0xFF001133).withOpacity(0.4),
+            color: const Color(0xFF001133).withValues(alpha: 0.4),
           ),
           const SizedBox(height: 16),
           Text(
             AppLocalizations.of(context)!.noDiscountsCreated,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: const Color(0xFF001133).withOpacity(0.7),
+                  color: const Color(0xFF001133).withValues(alpha: 0.7),
                 ),
           ),
           const SizedBox(height: 8),
@@ -203,7 +203,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
             AppLocalizations.of(context)!.createYourFirstDiscount,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF001133).withOpacity(0.5),
+                  color: const Color(0xFF001133).withValues(alpha: 0.5),
                 ),
           ),
         ],
@@ -226,7 +226,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: const Color(0xFF001133).withOpacity(0.1)),
+          side: BorderSide(color: const Color(0xFF001133).withValues(alpha: 0.1)),
         ),
         title: Text(
           AppLocalizations.of(context)!.deleteDiscount,
@@ -234,13 +234,13 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         ),
         content: Text(
           AppLocalizations.of(context)!.areYouSureYouWantToDeleteThisDiscount,
-          style: TextStyle(color: const Color(0xFF001133).withOpacity(0.7)),
+          style: TextStyle(color: const Color(0xFF001133).withValues(alpha: 0.7)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF001133).withOpacity(0.7),
+              foregroundColor: const Color(0xFF001133).withValues(alpha: 0.7),
             ),
             child: Text(AppLocalizations.of(context)!.cancel),
           ),
@@ -295,7 +295,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: const Color(0xFF001133).withOpacity(0.1)),
+            side: BorderSide(color: const Color(0xFF001133).withValues(alpha: 0.1)),
           ),
           title: Text(
             isEditing
@@ -414,9 +414,9 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF027DFF).withOpacity(0.05),
+                          color: const Color(0xFF027DFF).withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF027DFF).withOpacity(0.2)),
+                          border: Border.all(color: const Color(0xFF027DFF).withValues(alpha: 0.2)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1078,7 +1078,7 @@ class DiscountCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 2),
@@ -1112,7 +1112,7 @@ class DiscountCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
+                        color: statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(

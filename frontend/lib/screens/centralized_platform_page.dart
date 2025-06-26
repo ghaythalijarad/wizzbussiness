@@ -6,7 +6,7 @@ import '../models/order.dart';
 class CentralizedPlatformPage extends StatefulWidget {
   final Business business;
   final List<Order> orders;
-  
+
   const CentralizedPlatformPage({
     Key? key,
     required this.business,
@@ -14,17 +14,19 @@ class CentralizedPlatformPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<CentralizedPlatformPage> createState() => _CentralizedPlatformPageState();
+  State<CentralizedPlatformPage> createState() =>
+      _CentralizedPlatformPageState();
 }
 
 class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
-  final CentralizedPlatformService _platformService = CentralizedPlatformService();
-  
+  final CentralizedPlatformService _platformService =
+      CentralizedPlatformService();
+
   bool _isLoading = false;
   Map<String, dynamic>? _connectionStatus;
   Map<String, dynamic>? _syncStatus;
   List<dynamic> _platformApps = [];
-  
+
   @override
   void initState() {
     super.initState();
@@ -33,20 +35,19 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
 
   Future<void> _loadPlatformStatus() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Test connection
       final connectionTest = await _platformService.testConnection();
       setState(() => _connectionStatus = connectionTest);
-      
+
       // Get sync status
       final syncStatus = await _platformService.getPlatformSyncStatus();
       setState(() => _syncStatus = syncStatus);
-      
+
       // Get platform apps
       final appsResult = await _platformService.getPlatformApps();
       setState(() => _platformApps = appsResult['apps'] ?? []);
-      
     } catch (e) {
       _showError('Failed to load platform status: $e');
     } finally {
@@ -56,17 +57,15 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
 
   Future<void> _setupPlatform() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final setupConfig = {
-        "app_config": {
-          "name": "delivery-platform-central",
-          "region": "us"
-        }
+        "app_config": {"name": "delivery-platform-central", "region": "us"}
       };
-      
-      final result = await _platformService.setupCentralizedPlatform(setupConfig);
-      
+
+      final result =
+          await _platformService.setupCentralizedPlatform(setupConfig);
+
       if (result['success'] == true) {
         _showSuccess('Platform setup completed successfully!');
         await _loadPlatformStatus();
@@ -82,7 +81,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
 
   Future<void> _syncAllBusinesses() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final result = await _platformService.syncAllBusinessesToPlatform();
       _showSuccess(result['message'] ?? 'All businesses synced successfully!');
@@ -120,32 +119,32 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
         backgroundColor: const Color(0xFF3399FF),
         foregroundColor: Colors.white,
       ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : RefreshIndicator(
-            onRefresh: _loadPlatformStatus,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildConnectionStatusCard(),
-                  const SizedBox(height: 16),
-                  _buildSyncStatusCard(),
-                  const SizedBox(height: 16),
-                  _buildPlatformAppsCard(),
-                  const SizedBox(height: 16),
-                  _buildActionsCard(),
-                ],
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadPlatformStatus,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildConnectionStatusCard(),
+                    const SizedBox(height: 16),
+                    _buildSyncStatusCard(),
+                    const SizedBox(height: 16),
+                    _buildPlatformAppsCard(),
+                    const SizedBox(height: 16),
+                    _buildActionsCard(),
+                  ],
+                ),
               ),
             ),
-          ),
     );
   }
 
   Widget _buildConnectionStatusCard() {
     final isConnected = _connectionStatus?['result']?['status'] == 'connected';
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -162,8 +161,8 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
                 Text(
                   'Platform Connection',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -174,13 +173,15 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
                 color: isConnected ? Colors.green.shade50 : Colors.red.shade50,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isConnected ? Colors.green.shade200 : Colors.red.shade200,
+                  color:
+                      isConnected ? Colors.green.shade200 : Colors.red.shade200,
                 ),
               ),
               child: Text(
                 isConnected ? 'Connected' : 'Disconnected',
                 style: TextStyle(
-                  color: isConnected ? Colors.green.shade700 : Colors.red.shade700,
+                  color:
+                      isConnected ? Colors.green.shade700 : Colors.red.shade700,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -212,16 +213,19 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
                 Text(
                   'Sync Status',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             if (_syncStatus != null) ...[
-              _buildSyncStatusRow('Platform Apps', _syncStatus!['platform_apps_count'].toString()),
-              _buildSyncStatusRow('Local Businesses', _syncStatus!['local_businesses_count'].toString()),
-              _buildSyncStatusRow('Sync Recommended', _syncStatus!['sync_recommended'] ? 'Yes' : 'No'),
+              _buildSyncStatusRow('Platform Apps',
+                  _syncStatus!['platform_apps_count'].toString()),
+              _buildSyncStatusRow('Local Businesses',
+                  _syncStatus!['local_businesses_count'].toString()),
+              _buildSyncStatusRow('Sync Recommended',
+                  _syncStatus!['sync_recommended'] ? 'Yes' : 'No'),
             ],
           ],
         ),
@@ -259,8 +263,8 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
                 Text(
                   'Platform Apps (${_platformApps.length})',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -269,26 +273,28 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
               const Text('No apps found')
             else
               ...(_platformApps.take(5).map((app) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: app['state'] == 'up' ? Colors.green : Colors.grey,
-                        shape: BoxShape.circle,
-                      ),
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: app['state'] == 'up'
+                                ? Colors.green
+                                : Colors.grey,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(app['name'] ?? 'Unknown')),
+                        Text(
+                          app['state']?.toString().toUpperCase() ?? 'UNKNOWN',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(app['name'] ?? 'Unknown')),
-                    Text(
-                      app['state']?.toString().toUpperCase() ?? 'UNKNOWN',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ],
-                ),
-              ))),
+                  ))),
             if (_platformApps.length > 5)
               Text('... and ${_platformApps.length - 5} more'),
           ],
@@ -307,8 +313,8 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
             Text(
               'Actions',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             SizedBox(

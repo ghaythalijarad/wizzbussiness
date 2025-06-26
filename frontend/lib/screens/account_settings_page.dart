@@ -49,8 +49,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
           // Update controllers with real user data
           _businessNameController.text = _userData?['business_name'] ?? '';
-          _ownerNameController.text =
-              _userData?['owner_name'] ?? ''; // Now using actual owner name from business data
+          _ownerNameController.text = _userData?['owner_name'] ??
+              ''; // Now using actual owner name from business data
           _addressController.text =
               ''; // Address not available in user model yet
         });
@@ -157,7 +157,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const ChangePasswordScreen(),
+                                builder: (context) =>
+                                    const ChangePasswordScreen(),
                               ),
                             );
                           },

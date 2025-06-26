@@ -713,17 +713,16 @@ class _PosSettingsPageState extends State<PosSettingsPage>
 
   // Advanced settings tab
   Widget _buildAdvancedSettingsTab() {
-    return Padding(
+    return ListView(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          _buildAdvancedConfigCard(),
-          const SizedBox(height: 16),
-          _buildWebhooksCard(),
-          const SizedBox(height: 16),
-          _buildSecurityCard(),
-        ],
-      ),
+      children: [
+        _buildAdvancedConfigCard(),
+        const SizedBox(height: 16),
+        _buildWebhooksCard(),
+        const SizedBox(height: 16),
+        _buildSecurityCard(),
+        const SizedBox(height: 24), // Extra padding at bottom
+      ],
     );
   }
 
@@ -866,17 +865,16 @@ class _PosSettingsPageState extends State<PosSettingsPage>
 
   // Help and configuration guides tab
   Widget _buildHelpTab() {
-    return Padding(
+    return ListView(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          _buildSystemGuideCard(),
-          const SizedBox(height: 16),
-          _buildTroubleshootingCard(),
-          const SizedBox(height: 16),
-          _buildSupportCard(),
-        ],
-      ),
+      children: [
+        _buildSystemGuideCard(),
+        const SizedBox(height: 16),
+        _buildTroubleshootingCard(),
+        const SizedBox(height: 16),
+        _buildSupportCard(),
+        const SizedBox(height: 24), // Extra padding at bottom
+      ],
     );
   }
 
@@ -1081,30 +1079,82 @@ class _PosSettingsPageState extends State<PosSettingsPage>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.posSettings),
+        title: Text(
+          loc.posSettings,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: loc.generalSettings),
-            Tab(text: loc.syncLogs),
-            Tab(text: loc.advancedSettings),
-            Tab(text: loc.help),
-          ],
+        elevation: 2,
+        shadowColor: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Theme.of(context).primaryColor,
+              unselectedLabelColor: Colors.grey[600],
+              indicatorColor: Theme.of(context).primaryColor,
+              indicatorWeight: 3,
+              labelStyle: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).primaryColor,
+              ),
+              unselectedLabelStyle: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[600],
+              ),
+              indicatorPadding: const EdgeInsets.symmetric(horizontal: 8),
+              tabs: [
+                Tab(
+                  text: loc.generalSettings,
+                  icon: const Icon(Icons.settings, size: 18),
+                ),
+                Tab(
+                  text: loc.syncLogs,
+                  icon: const Icon(Icons.sync, size: 18),
+                ),
+                Tab(
+                  text: loc.advancedSettings,
+                  icon: const Icon(Icons.tune, size: 18),
+                ),
+                Tab(
+                  text: loc.help,
+                  icon: const Icon(Icons.help_outline, size: 18),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       body: _isLoadingSettings
           ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildGeneralSettingsTab(),
-                _buildSyncLogsTab(),
-                _buildAdvancedSettingsTab(),
-                _buildHelpTab(),
-              ],
+          : Container(
+              color: Colors.grey[50],
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildGeneralSettingsTab(),
+                  _buildSyncLogsTab(),
+                  _buildAdvancedSettingsTab(),
+                  _buildHelpTab(),
+                ],
+              ),
             ),
     );
   }

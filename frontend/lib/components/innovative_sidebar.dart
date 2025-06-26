@@ -33,7 +33,7 @@ class InnovativeSidebar extends StatelessWidget {
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 20,
                 offset: const Offset(-5, 0),
               ),
@@ -61,7 +61,7 @@ class InnovativeSidebar extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
@@ -87,7 +87,7 @@ class InnovativeSidebar extends StatelessWidget {
                               Text(
                                 'Smart business controls',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                   fontSize: 12,
                                 ),
                               ),
@@ -171,6 +171,9 @@ class InnovativeSidebar extends StatelessWidget {
                         value: isOnline,
                         onChanged: onToggleStatus,
                         activeColor: Colors.green,
+                        activeTrackColor: Colors.green.shade300,
+                        inactiveThumbColor: Colors.red,
+                        inactiveTrackColor: Colors.red.shade300,
                       ),
                     ),
                   ],
@@ -273,7 +276,7 @@ class InnovativeSidebar extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3399FF).withOpacity(0.1),
+                        color: const Color(0xFF3399FF).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
@@ -317,16 +320,16 @@ class InnovativeSidebar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.05),
+            color: color.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withOpacity(0.2)),
+            border: Border.all(color: color.withValues(alpha: 0.2)),
           ),
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
+                  color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(

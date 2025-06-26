@@ -5,6 +5,8 @@ import motor.motor_asyncio
 from beanie import init_beanie
 from typing import Optional
 import logging
+import ssl
+import os
 from app.core.config import config
 import certifi  # add CA file for Atlas TLS validation
 
@@ -22,8 +24,28 @@ class DatabaseManager:
         """Establish database connection optimized for Heroku deployment with TLS fallback."""
         atlas_uri = config.database.mongo_uri
         
+        # Check if TLS_INSECURE is set in environment for Heroku
+        tls_insecure = os.getenv('TLS_INSECURE', 'false').lower() == 'true'
+        
         # Try multiple connection strategies optimized for Heroku
-        connection_strategies = [
+        connection_strategies = []
+        
+        if tls_insecure:
+            # Strategy for Heroku with relaxed TLS
+            connection_strategies.append({
+                "name": "Insecure TLS for Heroku",
+                "config": {
+                    "ssl": True,
+                    "ssl_cert_reqs": ssl.CERT_NONE,
+                    "serverSelectionTimeoutMS": 5000,
+                    "connectTimeoutMS": 10000,
+                    "socketTimeoutMS": 10000,
+                    "retryWrites": True,
+                    "maxPoolSize": 1
+                }
+            })
+        
+        connection_strategies.extend([
             {
                 "name": "TLS with relaxed verification",
                 "config": {
@@ -61,7 +83,7 @@ class DatabaseManager:
                     "maxPoolSize": 1
                 }
             }
-        ]
+        ])
         
         for strategy in connection_strategies:
             try:

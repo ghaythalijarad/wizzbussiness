@@ -12,3 +12,5 @@ email-validator>=2.1.1
 pydantic<3.0,>=2.0
 # Fix PyMongo version compatibility
 pymongo>=4.5.0,<4.7.0
+# HTTP client for centralized platform service
+aiohttp>=3.8.0

@@ -69,23 +69,27 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def startup_event():
         """Initialize database and other services on startup."""
-        # Initialize database connection (non-blocking)
-        await db_manager.connect()
-        if db_manager._client:
-            logging.info("Database connected successfully")
-            # Drop any conflicting index
-            db = db_manager.database
-            users_coll = db.get_collection("WB_users")
-            try:
-                await users_coll.drop_index("unique_email_idx")
-            except Exception:
-                pass
-            # Initialize Beanie ODM
-            await init_beanie(database=db, document_models=[User, Business, Restaurant, Store, Pharmacy, Kitchen, Item, ItemCategory, Order, BusinessPosSettings, PosOrderSyncLog, SimpleNotification])
-            logging.info("✅ Application startup completed with database")
-        else:
-            logging.warning("⚠️ Starting application without database connection - some features may be limited")
-            # Don't raise the exception - allow app to start without database
+        try:
+            # Initialize database connection (non-blocking)
+            await db_manager.connect()
+            if db_manager._client:
+                logging.info("Database connected successfully")
+                # Drop any conflicting index
+                db = db_manager.database
+                users_coll = db.get_collection("WB_users")
+                try:
+                    await users_coll.drop_index("unique_email_idx")
+                except Exception:
+                    pass
+                # Initialize Beanie ODM
+                await init_beanie(database=db, document_models=[User, Business, Restaurant, Store, Pharmacy, Kitchen, Item, ItemCategory, Order, BusinessPosSettings, PosOrderSyncLog, SimpleNotification])
+                logging.info("✅ Application startup completed with database")
+            else:
+                logging.warning("⚠️ Starting application without database connection - some features may be limited")
+        except Exception as e:
+            logging.error(f"⚠️ Database connection failed during startup: {e}")
+            logging.warning("🚀 Continuing startup without database - health and simplified endpoints will still work")
+            # Allow app to start without database for testing purposes
     
     @app.on_event("shutdown")
     async def shutdown_event():

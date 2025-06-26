@@ -35,8 +35,8 @@ class DatabaseManager:
             connection_strategies.append({
                 "name": "Insecure TLS for Heroku",
                 "config": {
-                    "ssl": True,
-                    "ssl_cert_reqs": ssl.CERT_NONE,
+                    "tls": True,
+                    "tlsInsecure": True,
                     "serverSelectionTimeoutMS": 5000,
                     "connectTimeoutMS": 10000,
                     "socketTimeoutMS": 10000,

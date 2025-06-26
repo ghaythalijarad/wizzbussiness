@@ -15,6 +15,7 @@ from ..models.business import Business
 from ..models.user import User
 from ..services.auth_service import current_active_user
 from ..services.notification_service import notification_service
+from ..services.simple_notification_service import simple_notification_service
 from ..services.order_service import OrderService
 
 
@@ -122,9 +123,16 @@ class OrderController:
                 # Save order
                 await order.insert()
                 
-                # Send notification in background
+                # Send notification in background (both systems)
                 background_tasks.add_task(
                     notification_service.notify_new_order,
+                    order,
+                    business
+                )
+                
+                # Also send simplified notification (Heroku-friendly)
+                background_tasks.add_task(
+                    simple_notification_service.send_new_order_notification,
                     order,
                     business
                 )

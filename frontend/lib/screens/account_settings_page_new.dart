@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
-import './change_password_screen.dart';
 
 class AccountSettingsPage extends StatefulWidget {
   final Business business;
@@ -187,21 +186,10 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                                       Theme.of(context).textTheme.titleMedium,
                                 ),
                                 const SizedBox(height: 16),
-                                ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const ChangePasswordScreen(),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.lock),
-                                  label: Text(l10n.changePassword),
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize:
-                                        const Size(double.infinity, 48),
+                                Text(
+                                  'Password change is available in the main Settings page.',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.grey.shade600,
                                   ),
                                 ),
                               ],

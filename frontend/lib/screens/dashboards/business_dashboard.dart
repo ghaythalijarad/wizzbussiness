@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import '../../models/business.dart';
 import '../../l10n/app_localizations.dart';
 import '../orders_page.dart';
-import '../items_management_page.dart';
-import '../analytics_page.dart';
-import '../discount_management_page.dart';
 import '../profile_settings_page.dart';
-import '../centralized_platform_page.dart';
+import '../items_management_page.dart';
+import '../discount_management_page.dart';
 import '../../models/order.dart';
 import '../../widgets/top_app_bar.dart';
 import '../../services/app_state.dart';
@@ -99,27 +97,28 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
         return ItemsManagementPage(
           business: widget.business,
           orders: _orders,
+          onNavigateToOrders: () => setState(() => _selectedIndex = 0),
+          onOrderUpdated: (orderId, status) {
+            final orderIndex =
+                _orders.indexWhere((order) => order.id == orderId);
+            if (orderIndex != -1) {
+              setState(() {
+                _orders[orderIndex] =
+                    _orders[orderIndex].copyWith(status: status);
+              });
+            }
+          },
         );
       case 2:
-        return AnalyticsPage(
-          business: widget.business,
-          orders: _orders,
-        );
-      case 3:
         return DiscountManagementPage(
           business: widget.business,
           orders: _orders,
         );
-      case 4:
+      case 3:
         return ProfileSettingsPage(
           business: widget.business,
           orders: _orders,
           onLanguageChanged: widget.onLanguageChanged,
-        );
-      case 5:
-        return CentralizedPlatformPage(
-          business: widget.business,
-          orders: _orders,
         );
       default:
         return const Center(child: Text('Error'));
@@ -139,6 +138,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
       ),
       body: _buildDashboardBody(),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
         items: [
@@ -147,16 +147,12 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
             label: loc.orders,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.store),
-            label: loc.items,
+            icon: const Icon(Icons.inventory_2),
+            label: 'Items',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.analytics),
-            label: loc.analytics,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.discount),
-            label: loc.discounts,
+            icon: const Icon(Icons.local_offer),
+            label: 'Discounts',
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings),

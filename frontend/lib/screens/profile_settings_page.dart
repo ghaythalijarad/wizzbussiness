@@ -7,7 +7,6 @@ import '../models/business.dart';
 import '../models/order.dart';
 import '../services/app_state.dart';
 import '../services/auth_service.dart';
-import '../services/language_service.dart';
 import '../screens/login_page.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
@@ -97,19 +96,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
       default:
         return businessType;
     }
-  }
-
-  String _formatPhoneNumber(String? phoneNumber) {
-    if (phoneNumber == null || phoneNumber.isEmpty) {
-      return 'Not provided';
-    }
-
-    // If it doesn't start with +964, add it
-    if (!phoneNumber.startsWith('+964')) {
-      return '+964 $phoneNumber';
-    }
-
-    return phoneNumber;
   }
 
   Widget _buildUserProfileHeader() {
@@ -423,73 +409,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     );
   }
 
-  Widget _buildQuickInfoCards() {
-    if (_userData == null) return const SizedBox.shrink();
-
-    return Column(
-      children: [
-        _buildInfoCard(
-          'Email Address',
-          _userData?['email'] ?? 'Not provided',
-          Icons.email,
-          const Color(0xFF2196F3),
-        ),
-        const SizedBox(height: 12),
-        _buildInfoCard(
-          'Phone Number',
-          _formatPhoneNumber(_userData?['phone_number']),
-          Icons.phone,
-          const Color(0xFFFF9800),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoCard(
-      String title, String value, IconData icon, Color color) {
-    return Card(
-      elevation: 2,
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<void> _signOut() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -520,98 +439,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         (route) => false,
       );
     }
-  }
-
-  void _showLanguageDialog(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              const Icon(Icons.language, size: 24, color: Color(0xFF00C1E8)),
-              const SizedBox(width: 8),
-              Text(
-                loc.selectLanguage,
-                style: const TextStyle(fontSize: 18),
-              ),
-            ],
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildLanguageTile(
-                context: context,
-                flag: '🇺🇸',
-                name: loc.english,
-                locale: const Locale('en'),
-              ),
-              const Divider(height: 1),
-              _buildLanguageTile(
-                context: context,
-                flag: '🇸🇦',
-                name: loc.arabic,
-                locale: const Locale('ar'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                loc.cancel,
-                style: const TextStyle(color: Color(0xFF00C1E8)),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildLanguageTile({
-    required BuildContext context,
-    required String flag,
-    required String name,
-    required Locale locale,
-  }) {
-    final currentLocale = Localizations.localeOf(context);
-    final isSelected = currentLocale.languageCode == locale.languageCode;
-
-    return ListTile(
-      leading: Text(flag, style: const TextStyle(fontSize: 24)),
-      title: Text(name),
-      trailing:
-          isSelected ? const Icon(Icons.check, color: Colors.green) : null,
-      onTap: () async {
-        if (widget.onLanguageChanged != null) {
-          widget.onLanguageChanged!(locale);
-        }
-
-        // Save the language preference
-        await LanguageService.setLanguage(locale.languageCode);
-
-        Navigator.of(context).pop();
-
-        // Show confirmation
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                locale.languageCode == 'ar'
-                    ? 'تم تغيير اللغة إلى العربية'
-                    : 'Language changed to English',
-              ),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      },
-    );
   }  @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -630,10 +457,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
             children: [
               // User Profile Header
               _buildUserProfileHeader(),
-              const SizedBox(height: 24),
-
-              // Quick Info Cards
-              _buildQuickInfoCards(),
               const SizedBox(height: 24),
 
               // Settings Cards
@@ -698,21 +521,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                     );
                   },
                 ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  _showLanguageDialog(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Theme.of(context).primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: Text(loc.languageSettings),
               ),
               const SizedBox(height: 16),
               ElevatedButton(

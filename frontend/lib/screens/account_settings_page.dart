@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
-import './change_password_screen.dart';
 
 class AccountSettingsPage extends StatefulWidget {
   final Business business;
@@ -73,8 +72,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
       return '';
     }
     // Construct a formatted address string from the address map
-    return 
-        '${address['home_address'] ?? ''}, ${address['street'] ?? ''}, ${address['neighborhood'] ?? ''}, ${address['district'] ?? ''}, ${address['city'] ?? ''}, ${address['country'] ?? ''}';
+    return '${address['home_address'] ?? ''}, ${address['street'] ?? ''}, ${address['neighborhood'] ?? ''}, ${address['district'] ?? ''}, ${address['city'] ?? ''}, ${address['country'] ?? ''}';
   }
 
   @override
@@ -143,25 +141,20 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                   child: Form(
                     child: ListView(
                       children: [
-                        _buildInfoTile(l10n.ownerName, _userData?['owner_name'] ?? ''),
-                        _buildInfoTile(l10n.emailAddress, _userData?['email'] ?? ''),
-                        _buildInfoTile(l10n.phoneNumber, _userData?['phone_number'] ?? '', isLtr: true),
-                        _buildInfoTile(l10n.businessAddressLabel, _formatAddress(_userData?['address'])),
-                        _buildInfoTile(l10n.businessType, _userData?['business_type'] ?? ''),
-                        _buildInfoTile(l10n.registrationDate, _formatDate(_userData?['created_at'])),
+                        _buildInfoTile(
+                            l10n.ownerName, _userData?['owner_name'] ?? ''),
+                        _buildInfoTile(
+                            l10n.emailAddress, _userData?['email'] ?? ''),
+                        _buildInfoTile(
+                            l10n.phoneNumber, _userData?['phone_number'] ?? '',
+                            isLtr: true),
+                        _buildInfoTile(l10n.businessAddressLabel,
+                            _formatAddress(_userData?['address'])),
+                        _buildInfoTile(l10n.businessType,
+                            _userData?['business_type'] ?? ''),
+                        _buildInfoTile(l10n.registrationDate,
+                            _formatDate(_userData?['created_at'])),
                         const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const ChangePasswordScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(l10n.changePassword),
-                        ),
                       ],
                     ),
                   ),

@@ -151,7 +151,6 @@
     "submitRegistration",
     "emailSent",
     "passwordResetLinkSent",
-    "ok",
     "enterOtp",
     "pleaseEnterOtp",
     "resetYourPassword",

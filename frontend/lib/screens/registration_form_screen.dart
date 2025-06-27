@@ -88,7 +88,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
       if (placemarks.isNotEmpty) {
         final placemark = placemarks[0];
         _businessCityController.text = placemark.locality ?? '';
-        _businessDistrictController.text = placemark.subAdministrativeArea ?? '';
+        _businessDistrictController.text =
+            placemark.subAdministrativeArea ?? '';
         _businessCountryController.text = placemark.country ?? '';
         _businessZipCodeController.text = placemark.postalCode ?? '';
         _businessNeighborhoodController.text = placemark.subLocality ?? '';

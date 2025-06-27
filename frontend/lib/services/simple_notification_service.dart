@@ -12,11 +12,12 @@ import '../models/notification.dart';
 import 'api_service.dart';
 
 /// Simplified notification service for Heroku deployment
-/// 
+///
 /// This service uses HTTP polling instead of WebSockets to be more compatible
 /// with Heroku's ephemeral environment and avoid connection management complexity.
 class SimpleNotificationService {
-  static final SimpleNotificationService _instance = SimpleNotificationService._internal();
+  static final SimpleNotificationService _instance =
+      SimpleNotificationService._internal();
 
   factory SimpleNotificationService() {
     return _instance;
@@ -31,35 +32,37 @@ class SimpleNotificationService {
   Timer? _pollingTimer;
   String? _currentBusinessId;
   String? _authToken;
-  
+
   // Audio player for notification sounds
   final AudioPlayer _audioPlayer = AudioPlayer();
-  
+
   // Notification history
   List<NotificationModel> _notifications = [];
   int _lastUnreadCount = 0;
-  
+
   // Stream controller for notification updates
   StreamController<NotificationModel>? _notificationController;
   StreamController<int>? _unreadCountController;
-  
+
   // Polling interval (adjustable based on needs)
   Duration _pollingInterval = const Duration(seconds: 30);
-  
+
   // Getters
-  List<NotificationModel> get notifications => List.unmodifiable(_notifications);
-  Stream<NotificationModel>? get notificationStream => _notificationController?.stream;
+  List<NotificationModel> get notifications =>
+      List.unmodifiable(_notifications);
+  Stream<NotificationModel>? get notificationStream =>
+      _notificationController?.stream;
   Stream<int>? get unreadCountStream => _unreadCountController?.stream;
   bool get isPolling => _pollingTimer != null && _pollingTimer!.isActive;
 
   /// Initialize the notification service
   static Future<void> init() async {
     await _createNotificationChannels();
-    
+
     // Initialize local notification plugin
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    
+
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -81,7 +84,7 @@ class SimpleNotificationService {
         }
       },
     );
-    
+
     if (kDebugMode) {
       print('Simple notification service initialized');
     }
@@ -118,17 +121,17 @@ class SimpleNotificationService {
   Future<void> startPolling(String businessId, String authToken) async {
     _currentBusinessId = businessId;
     _authToken = authToken;
-    
+
     // Initialize stream controllers
     _notificationController ??= StreamController<NotificationModel>.broadcast();
     _unreadCountController ??= StreamController<int>.broadcast();
-    
+
     // Load stored notifications
     await _loadNotificationHistory();
-    
+
     // Start polling
     _startPollingTimer();
-    
+
     if (kDebugMode) {
       print('Started polling notifications for business: $businessId');
     }
@@ -138,15 +141,15 @@ class SimpleNotificationService {
   Future<void> stopPolling() async {
     _pollingTimer?.cancel();
     _pollingTimer = null;
-    
+
     await _notificationController?.close();
     await _unreadCountController?.close();
     _notificationController = null;
     _unreadCountController = null;
-    
+
     _currentBusinessId = null;
     _authToken = null;
-    
+
     if (kDebugMode) {
       print('Stopped polling notifications');
     }
@@ -173,7 +176,7 @@ class SimpleNotificationService {
     _pollingTimer = Timer.periodic(_pollingInterval, (timer) {
       _pollForNotifications();
     });
-    
+
     // Initial poll
     _pollForNotifications();
   }
@@ -183,10 +186,11 @@ class SimpleNotificationService {
 
     try {
       final apiService = ApiService();
-      
+
       // Get latest notifications
       final response = await http.get(
-        Uri.parse('http://localhost:8000/api/simple/notifications/$_currentBusinessId?limit=50'),
+        Uri.parse(
+            'http://localhost:8001/api/simple/notifications/$_currentBusinessId?limit=50'),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -197,35 +201,34 @@ class SimpleNotificationService {
         final data = jsonDecode(response.body);
         final List<dynamic> notificationsJson = data['notifications'] ?? [];
         final int unreadCount = data['unread_count'] ?? 0;
-        
+
         // Convert to notification models
         final List<NotificationModel> newNotifications = notificationsJson
             .map((json) => NotificationModel.fromJson(json))
             .toList();
-        
+
         // Check for new notifications
         final Set<String> existingIds = _notifications.map((n) => n.id).toSet();
-        final List<NotificationModel> trulyNewNotifications = newNotifications
-            .where((n) => !existingIds.contains(n.id))
-            .toList();
-        
+        final List<NotificationModel> trulyNewNotifications =
+            newNotifications.where((n) => !existingIds.contains(n.id)).toList();
+
         // Update notifications list
         _notifications = newNotifications;
         await _saveNotificationHistory();
-        
+
         // Show local notifications for new ones
         for (final notification in trulyNewNotifications) {
           await _showLocalNotification(notification);
           await _playNotificationSound(notification);
           _notificationController?.add(notification);
         }
-        
+
         // Update unread count if changed
         if (unreadCount != _lastUnreadCount) {
           _lastUnreadCount = unreadCount;
           _unreadCountController?.add(unreadCount);
         }
-        
+
         if (kDebugMode && trulyNewNotifications.isNotEmpty) {
           print('Received ${trulyNewNotifications.length} new notifications');
         }
@@ -247,7 +250,8 @@ class SimpleNotificationService {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8000/api/simple/notifications/$_currentBusinessId/$notificationId/mark-read'),
+        Uri.parse(
+            'http://localhost:8001/api/simple/notifications/$_currentBusinessId/$notificationId/mark-read'),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -261,7 +265,7 @@ class SimpleNotificationService {
           _notifications[index] = _notifications[index].copyWith(isRead: true);
           await _saveNotificationHistory();
         }
-        
+
         // Refresh to get updated unread count
         await _pollForNotifications();
       }
@@ -278,7 +282,8 @@ class SimpleNotificationService {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8000/api/simple/notifications/$_currentBusinessId/mark-all-read'),
+        Uri.parse(
+            'http://localhost:8001/api/simple/notifications/$_currentBusinessId/mark-all-read'),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -287,9 +292,10 @@ class SimpleNotificationService {
 
       if (response.statusCode == 200) {
         // Update local notifications
-        _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
+        _notifications =
+            _notifications.map((n) => n.copyWith(isRead: true)).toList();
         await _saveNotificationHistory();
-        
+
         // Update unread count
         _lastUnreadCount = 0;
         _unreadCountController?.add(0);
@@ -307,7 +313,8 @@ class SimpleNotificationService {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8000/api/simple/notifications/$_currentBusinessId/test'),
+        Uri.parse(
+            'http://localhost:8001/api/simple/notifications/$_currentBusinessId/test'),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -332,7 +339,8 @@ class SimpleNotificationService {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:8000/api/simple/notifications/$_currentBusinessId/unread-count'),
+        Uri.parse(
+            'http://localhost:8001/api/simple/notifications/$_currentBusinessId/unread-count'),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -348,24 +356,32 @@ class SimpleNotificationService {
         print('Error getting unread count: $e');
       }
     }
-    
+
     return 0;
   }
 
   Future<void> _showLocalNotification(NotificationModel notification) async {
     String channelId = 'system_channel';
-    if (notification.type == 'new_order' || notification.type == 'order_update') {
+    if (notification.type == 'new_order' ||
+        notification.type == 'order_update') {
       channelId = 'orders_channel';
     }
 
-    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    final AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
       channelId,
-      channelId == 'orders_channel' ? 'Order Notifications' : 'System Notifications',
-      channelDescription: channelId == 'orders_channel' 
+      channelId == 'orders_channel'
+          ? 'Order Notifications'
+          : 'System Notifications',
+      channelDescription: channelId == 'orders_channel'
           ? 'Notifications for new orders and order updates'
           : 'System messages and updates',
-      importance: notification.priority == 'high' ? Importance.max : Importance.defaultImportance,
-      priority: notification.priority == 'high' ? Priority.high : Priority.defaultPriority,
+      importance: notification.priority == 'high'
+          ? Importance.max
+          : Importance.defaultImportance,
+      priority: notification.priority == 'high'
+          ? Priority.high
+          : Priority.defaultPriority,
       showWhen: true,
       styleInformation: BigTextStyleInformation(
         notification.message,
@@ -396,13 +412,13 @@ class SimpleNotificationService {
   Future<void> _playNotificationSound(NotificationModel notification) async {
     try {
       String soundFile = 'sounds/default_notification.mp3';
-      
+
       if (notification.type == 'new_order') {
         soundFile = 'sounds/new_order.mp3';
       } else if (notification.priority == 'high') {
         soundFile = 'sounds/urgent_notification.mp3';
       }
-      
+
       await _audioPlayer.play(AssetSource(soundFile), volume: 0.8);
     } catch (e) {
       if (kDebugMode) {
@@ -414,8 +430,9 @@ class SimpleNotificationService {
   Future<void> _loadNotificationHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final String? historyJson = prefs.getString('simple_notification_history_$_currentBusinessId');
-      
+      final String? historyJson =
+          prefs.getString('simple_notification_history_$_currentBusinessId');
+
       if (historyJson != null) {
         final List<dynamic> historyList = jsonDecode(historyJson);
         _notifications = historyList
@@ -432,10 +449,10 @@ class SimpleNotificationService {
   Future<void> _saveNotificationHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final String historyJson = jsonEncode(
-        _notifications.map((n) => n.toJson()).toList()
-      );
-      await prefs.setString('simple_notification_history_$_currentBusinessId', historyJson);
+      final String historyJson =
+          jsonEncode(_notifications.map((n) => n.toJson()).toList());
+      await prefs.setString(
+          'simple_notification_history_$_currentBusinessId', historyJson);
     } catch (e) {
       if (kDebugMode) {
         print('Error saving notification history: $e');

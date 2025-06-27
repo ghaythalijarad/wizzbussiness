@@ -47,6 +47,20 @@ class DatabaseManager:
         
         connection_strategies.extend([
             {
+                "name": "Aggressive TLS bypass for development",
+                "config": {
+                    "tls": True,
+                    "tlsInsecure": True,
+                    "tlsAllowInvalidCertificates": True,
+                    "tlsAllowInvalidHostnames": True,
+                    "serverSelectionTimeoutMS": 3000,
+                    "connectTimeoutMS": 8000,
+                    "socketTimeoutMS": 8000,
+                    "retryWrites": True,
+                    "maxPoolSize": 1
+                }
+            },
+            {
                 "name": "TLS with relaxed verification",
                 "config": {
                     "tls": True,

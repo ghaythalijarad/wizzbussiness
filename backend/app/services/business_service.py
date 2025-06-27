@@ -28,15 +28,18 @@ class BusinessService:
         return self._business_models.get(business_type, Business)
     
     async def create_business(self, business_data: BusinessCreate, owner: User) -> Business:
-        """Create a new business with dual-storage approach."""
+        """Create a new business with dual-storage approach and separate address collection."""
         try:
             # Get the appropriate business model
             BusinessModel = self._get_business_model(business_data.business_type)
             
-            # Create address
-            address = Address(**business_data.address.dict())
+            # Step 1: Create address in separate collection
+            from ..models.address import Address as AddressDocument
+            address_data = business_data.address.dict()
+            address_doc = AddressDocument(**address_data)
+            await address_doc.save()
             
-            # Create business settings with defaults
+            # Step 2: Create business settings with defaults
             settings = BusinessSettings()
             if business_data.settings:
                 if business_data.settings.pos:
@@ -46,20 +49,24 @@ class BusinessService:
                 if business_data.settings.operating_hours:
                     settings.operating_hours.update(business_data.settings.operating_hours)
             
-            # Create business data
+            # Step 3: Create business data with address reference
             business_dict = business_data.dict(exclude={"address", "settings"})
             business_dict.update({
                 "owner_id": owner.id,
-                "address": address,
+                "address_id": address_doc.id,  # Reference to separate address
                 "settings": settings,
                 "documents": business_data.documents or {}
             })
             
-            # Create business instance in specific collection
+            # Step 4: Create business instance in specific collection
             business = BusinessModel(**business_dict)
             await business.save()
             
-            # DUAL STORAGE: Also save to unified WB_businesses collection for dashboard
+            # Step 5: Update address document with business reference
+            address_doc.business_id = business.id
+            await address_doc.save()
+            
+            # Step 6: DUAL STORAGE - Also save to unified WB_businesses collection for dashboard
             unified_business_dict = business_dict.copy()
             # Use base Business model for unified collection
             unified_business = Business(**unified_business_dict)
@@ -84,7 +91,7 @@ class BusinessService:
             raise HTTPException(status_code=400, detail=f"Failed to create business: {str(e)}")
     
     async def get_business_by_id(self, business_id: str) -> Optional[Business]:
-        """Get business by ID."""
+        """Get business by ID with address data included."""
         try:
             business_obj_id = PydanticObjectId(business_id)
             
@@ -97,6 +104,22 @@ class BusinessService:
             return None
         except Exception:
             return None
+    
+    async def get_business_with_address(self, business_id: str) -> Optional[Dict[str, Any]]:
+        """Get business by ID with full address data for API responses."""
+        business = await self.get_business_by_id(business_id)
+        if not business:
+            return None
+        
+        # Get business dict
+        business_dict = business.to_dict()
+        
+        # Get full address data
+        address_data = await business.get_address_dict()
+        if address_data:
+            business_dict["address"] = address_data
+        
+        return business_dict
     
     async def get_businesses_by_owner(self, owner_id: PydanticObjectId) -> List[Business]:
         """Get all businesses owned by a specific user."""

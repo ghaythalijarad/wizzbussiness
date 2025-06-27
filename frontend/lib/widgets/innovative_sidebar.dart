@@ -134,45 +134,56 @@ class _InnovativeSidebarState extends State<InnovativeSidebar>
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color:
-                                                Colors.white.withValues(alpha: 0.2),
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                          child: const Icon(
-                                            Icons.dashboard_customize,
-                                            color: Colors.white,
-                                            size: 20,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              localizations.businessManagement,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white
+                                                  .withValues(alpha: 0.2),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
-                                            Text(
-                                              localizations.dashboard,
-                                              style: const TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: 12,
-                                              ),
+                                            child: const Icon(
+                                              Icons.dashboard_customize,
+                                              color: Colors.white,
+                                              size: 20,
                                             ),
-                                          ],
-                                        ),
-                                      ],
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  localizations
+                                                      .businessManagement,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                                Text(
+                                                  localizations.dashboard,
+                                                  style: const TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: 12,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                     Tooltip(
                                       message: localizations.close,
@@ -182,8 +193,8 @@ class _InnovativeSidebarState extends State<InnovativeSidebar>
                                         child: Container(
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color:
-                                                Colors.white.withValues(alpha: 0.2),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.2),
                                             shape: BoxShape.circle,
                                           ),
                                           child: const Icon(
@@ -216,10 +227,12 @@ class _InnovativeSidebarState extends State<InnovativeSidebar>
                                     Container(
                                       padding: const EdgeInsets.all(15),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.1),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          color: Colors.white.withValues(alpha: 0.2),
+                                          color: Colors.white
+                                              .withValues(alpha: 0.2),
                                         ),
                                       ),
                                       child: Row(
@@ -248,11 +261,11 @@ class _InnovativeSidebarState extends State<InnovativeSidebar>
                                             value: widget.isOnline,
                                             onChanged: widget.onToggleStatus,
                                             activeColor: Colors.green,
-                                            activeTrackColor:
-                                                Colors.green.withValues(alpha: 0.3),
+                                            activeTrackColor: Colors.green
+                                                .withValues(alpha: 0.3),
                                             inactiveThumbColor: Colors.red,
-                                            inactiveTrackColor:
-                                                Colors.red.withValues(alpha: 0.3),
+                                            inactiveTrackColor: Colors.red
+                                                .withValues(alpha: 0.3),
                                           ),
                                         ],
                                       ),
@@ -269,34 +282,14 @@ class _InnovativeSidebarState extends State<InnovativeSidebar>
                                   child: Column(
                                     children: [
                                       _buildMenuItem(
-                                        icon: Icons.dashboard,
-                                        title: localizations.dashboard,
-                                        onTap: () => widget.onNavigate(0),
-                                      ),
-                                      _buildMenuItem(
                                         icon: Icons.shopping_bag,
                                         title: localizations.orders,
-                                        onTap: () => widget.onNavigate(1),
-                                      ),
-                                      _buildMenuItem(
-                                        icon: Icons.inventory,
-                                        title: localizations.items,
-                                        onTap: () => widget.onNavigate(2),
-                                      ),
-                                      _buildMenuItem(
-                                        icon: Icons.analytics,
-                                        title: localizations.analytics,
-                                        onTap: () => widget.onNavigate(3),
-                                      ),
-                                      _buildMenuItem(
-                                        icon: Icons.discount,
-                                        title: localizations.discounts,
-                                        onTap: () => widget.onNavigate(4),
+                                        onTap: () => widget.onNavigate(0),
                                       ),
                                       _buildMenuItem(
                                         icon: Icons.settings,
                                         title: localizations.settings,
-                                        onTap: () => widget.onNavigate(5),
+                                        onTap: () => widget.onNavigate(1),
                                       ),
                                       const SizedBox(height: 20),
                                       _buildMenuItem(

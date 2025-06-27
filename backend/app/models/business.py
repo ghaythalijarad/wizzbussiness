@@ -24,8 +24,9 @@ class BusinessStatus(str, Enum):
     SUSPENDED = "suspended"
 
 
+# Legacy Address model for backward compatibility
 class Address(BaseModel):
-    """Address model with OOP structure."""
+    """Legacy address model with OOP structure - for backward compatibility."""
     country: str
     city: str
     district: str
@@ -84,8 +85,11 @@ class Business(Document):
     email: Optional[str] = None
     website: Optional[str] = None
     
-    # Address information
-    address: Address
+    # Address information - now references separate address collection
+    address_id: PydanticObjectId = Field(..., description="Address ID reference")
+    
+    # Legacy embedded address for backward compatibility (will be None for new businesses)
+    address: Optional[Address] = Field(None, description="Legacy embedded address")
     
     # Business status and verification
     status: BusinessStatus = BusinessStatus.PENDING
@@ -138,7 +142,8 @@ class Business(Document):
             "phone_number": self.phone_number,
             "email": self.email,
             "website": self.website,
-            "address": self.address.dict() if self.address else None,
+            "address_id": str(self.address_id),
+            "address": self.address.dict() if self.address else None,  # Legacy field
             "status": self.status.value,
             "is_verified": self.is_verified,
             "is_online": self.is_online,
@@ -147,6 +152,26 @@ class Business(Document):
             "updated_at": self.updated_at.isoformat(),
             "documents": self.documents,
         }
+    
+    async def get_address(self):
+        """Get the address document from the separate address collection."""
+        from .address import Address as AddressDocument
+        try:
+            address_doc = await AddressDocument.get(self.address_id)
+            return address_doc
+        except Exception:
+            # Fallback to legacy embedded address if separate address not found
+            return self.address
+    
+    async def get_address_dict(self) -> Optional[Dict[str, Any]]:
+        """Get address as dictionary for API responses."""
+        address = await self.get_address()
+        if address:
+            if hasattr(address, 'to_dict'):
+                return address.to_dict()
+            elif hasattr(address, 'dict'):
+                return address.dict()
+        return None
     
     def update_pos_settings(self, pos_settings: Dict[str, Any]) -> None:
         """Update POS settings."""

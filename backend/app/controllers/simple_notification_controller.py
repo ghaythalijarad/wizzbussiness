@@ -1,9 +1,9 @@
 """
-Simplified Notification Controller for Heroku Deployment
-======================================================
+Simplified Notification Controller for Heroku Deployment (Deprecated)
+=====================================================================
 
-HTTP-based notification endpoints that replace the complex WebSocket system.
-This controller provides polling-based notifications suitable for Heroku deployment.
+HTTP-based notification endpoints that were used for Heroku deployment.
+This controller is deprecated in favor of Redis/WebSocket notifications.
 """
 import logging
 from typing import Optional, Dict, Any
@@ -17,7 +17,7 @@ from ..models.business import Business
 
 
 class SimpleNotificationController:
-    """HTTP-based notification controller for Heroku deployment."""
+    """HTTP-based notification controller for Heroku deployment (deprecated)."""
     
     def __init__(self):
         self.router = APIRouter()

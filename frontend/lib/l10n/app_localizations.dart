@@ -932,6 +932,12 @@ abstract class AppLocalizations {
   /// **'Conditional'**
   String get conditional;
 
+  /// No description provided for @buyXGetY.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy X Get Y'**
+  String get buyXGetY;
+
   /// No description provided for @freeDelivery.
   ///
   /// In en, this message translates to:
@@ -2209,6 +2215,241 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Registration Date'**
   String get registrationDate;
+
+  /// No description provided for @smartBusinessControls.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart business controls'**
+  String get smartBusinessControls;
+
+  /// No description provided for @readyToReceiveOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to receive orders'**
+  String get readyToReceiveOrders;
+
+  /// No description provided for @ordersArePaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders are paused'**
+  String get ordersArePaused;
+
+  /// No description provided for @processOrderReturns.
+  ///
+  /// In en, this message translates to:
+  /// **'Process order returns'**
+  String get processOrderReturns;
+
+  /// No description provided for @managePromotionalOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage promotional offers'**
+  String get managePromotionalOffers;
+
+  /// No description provided for @viewBusinessInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'View business insights'**
+  String get viewBusinessInsights;
+
+  /// No description provided for @manageItemsAndCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage items & categories'**
+  String get manageItemsAndCategories;
+
+  /// No description provided for @platformIntegration.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform Integration'**
+  String get platformIntegration;
+
+  /// No description provided for @centralizedDeliveryPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Centralized delivery platform'**
+  String get centralizedDeliveryPlatform;
+
+  /// No description provided for @appAndAccountPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'App & account preferences'**
+  String get appAndAccountPreferences;
+
+  /// No description provided for @keyboardShortcutsTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: Use keyboard shortcuts for faster actions'**
+  String get keyboardShortcutsTip;
+
+  /// No description provided for @conditionalDiscountConfiguration.
+  ///
+  /// In en, this message translates to:
+  /// **'Conditional Discount Configuration'**
+  String get conditionalDiscountConfiguration;
+
+  /// No description provided for @buyXGetYConfiguration.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy X Get Y Configuration'**
+  String get buyXGetYConfiguration;
+
+  /// No description provided for @buyConfiguration.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy Configuration'**
+  String get buyConfiguration;
+
+  /// No description provided for @getConfiguration.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Configuration'**
+  String get getConfiguration;
+
+  /// No description provided for @quantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantity;
+
+  /// No description provided for @selectItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Item'**
+  String get selectItem;
+
+  /// No description provided for @itemSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Item Selected'**
+  String get itemSelected;
+
+  /// No description provided for @enterValidQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter valid quantity'**
+  String get enterValidQuantity;
+
+  /// No description provided for @missingItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing Items'**
+  String get missingItems;
+
+  /// No description provided for @pleasSelectBothBuyAndGetItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select both buy and get items for {discountType} discount.'**
+  String pleasSelectBothBuyAndGetItems(String discountType);
+
+  /// No description provided for @addFreeDeliveryToDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Add free delivery to this discount'**
+  String get addFreeDeliveryToDiscount;
+
+  /// No description provided for @conflictingDiscountsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Conflicting Discounts'**
+  String get conflictingDiscountsTitle;
+
+  /// No description provided for @someSelectedItemsAlreadyHaveDiscounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Some selected items or categories already have active discounts. Each item can only have one discount at a time.'**
+  String get someSelectedItemsAlreadyHaveDiscounts;
+
+  /// No description provided for @applicabilityNotConfigurable.
+  ///
+  /// In en, this message translates to:
+  /// **'Applicability is not configurable for this discount type as items are already specified in the configuration above.'**
+  String get applicabilityNotConfigurable;
+
+  /// No description provided for @noItemSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No item selected'**
+  String get noItemSelected;
+
+  /// No description provided for @appliesToAllItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to all items'**
+  String get appliesToAllItems;
+
+  /// No description provided for @appliesToSpecificItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to {count} specific items'**
+  String appliesToSpecificItems(int count);
+
+  /// No description provided for @appliesToCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to {count} categories'**
+  String appliesToCategories(int count);
+
+  /// No description provided for @appliesToOrdersAboveMinimum.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to orders above minimum amount'**
+  String get appliesToOrdersAboveMinimum;
+
+  /// No description provided for @validFromTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid: {startDay}/{startMonth}/{startYear} - {endDay}/{endMonth}/{endYear}'**
+  String validFromTo(int startDay, int startMonth, int startYear, int endDay,
+      int endMonth, int endYear);
+
+  /// No description provided for @minAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Min: \${amount}'**
+  String minAmount(String amount);
+
+  /// No description provided for @categoriesSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} categories selected'**
+  String categoriesSelected(int count);
+
+  /// No description provided for @itemsSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items selected'**
+  String itemsSelected(int count);
+
+  /// No description provided for @missingItemsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select both buy and get items for {discountType} discount.'**
+  String missingItemsMessage(String discountType);
+
+  /// No description provided for @selectBuyItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Buy Item'**
+  String get selectBuyItem;
+
+  /// No description provided for @selectGetItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Get Item'**
+  String get selectGetItem;
+
+  /// No description provided for @noCategoriesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories found. Please add categories first.'**
+  String get noCategoriesFound;
+
+  /// No description provided for @appliesToMinimumOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to orders above minimum amount'**
+  String get appliesToMinimumOrder;
 }
 
 class _AppLocalizationsDelegate

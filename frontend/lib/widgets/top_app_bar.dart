@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../utils/responsive_helper.dart';
-import '../components/innovative_sidebar.dart';
+import '../widgets/innovative_sidebar.dart';
 
 class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -19,7 +19,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.onNavigate,
   });
 
-  void _showInnovativeSidebar(BuildContext context) {
+  void _showSimpleSidebar(BuildContext context) {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -36,7 +36,8 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
       transitionDuration: const Duration(milliseconds: 200),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         return SlideTransition(
-          position: Tween(begin: const Offset(1, 0), end: Offset.zero).animate(animation),
+          position: Tween(begin: const Offset(1, 0), end: Offset.zero)
+              .animate(animation),
           child: child,
         );
       },
@@ -114,7 +115,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       // Innovative Sidebar Button
       IconButton(
-        onPressed: () => _showInnovativeSidebar(context),
+        onPressed: () => _showSimpleSidebar(context),
         icon: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -146,7 +147,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () => _showInnovativeSidebar(context),
+            onTap: () => _showSimpleSidebar(context),
             borderRadius: BorderRadius.circular(12),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

@@ -1,10 +1,12 @@
 """
 Authentication controller using OOP principles.
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from fastapi_users.exceptions import UserAlreadyExists
 import logging
 from datetime import datetime
+from typing import Optional
+import json
 
 from ..schemas.user import ChangePassword, UserCreate, UserRead, UserUpdate
 from ..schemas.business import BusinessCreate, AddressCreate
@@ -111,6 +113,145 @@ class AuthController:
                 raise HTTPException(status_code=400, detail=str(e))
             except Exception as e:
                 logging.error(f"Registration failed: {e}")
+                raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
+
+        @self.router.post("/register-multipart", response_model=UserRead, status_code=201)
+        async def register_user_multipart(
+            # Required fields
+            email: str = Form(...),
+            password: str = Form(...),
+            business_name: str = Form(...),
+            business_type: str = Form(...),
+            owner_name: str = Form(...),
+            phone_number: str = Form(...),
+            
+            # Address data as JSON string
+            address: str = Form(...),
+            
+            # Optional fields
+            owner_national_id: Optional[str] = Form(None),
+            owner_date_of_birth: Optional[str] = Form(None),
+            
+            # File uploads
+            license_file: Optional[UploadFile] = File(None),
+            identity_file: Optional[UploadFile] = File(None),
+            health_certificate_file: Optional[UploadFile] = File(None),
+            owner_photo_file: Optional[UploadFile] = File(None),
+            
+            user_manager: UserManager = Depends(get_user_manager)
+        ):
+            """Multipart form registration endpoint for handling file uploads."""
+            try:
+                # Parse address JSON
+                try:
+                    address_data = json.loads(address)
+                except json.JSONDecodeError:
+                    raise HTTPException(status_code=400, detail="Invalid address format")
+                
+                # Create UserCreate object from form data
+                user_data = UserCreate(
+                    email=email,
+                    password=password,
+                    business_name=business_name,
+                    business_type=business_type,
+                    owner_name=owner_name,
+                    phone_number=phone_number,
+                    address=address_data,
+                    national_id=owner_national_id,
+                    date_of_birth=owner_date_of_birth
+                )
+                
+                # Create the user first
+                user = await user_manager.create(user_data, safe=True)
+                logging.info(f"User created successfully: {user.id}")
+                
+                # Handle file uploads if present
+                files_info = {}
+                if license_file:
+                    files_info['license'] = license_file.filename
+                if identity_file:
+                    files_info['identity'] = identity_file.filename
+                if health_certificate_file:
+                    files_info['health_certificate'] = health_certificate_file.filename
+                if owner_photo_file:
+                    files_info['owner_photo'] = owner_photo_file.filename
+                
+                logging.info(f"Files uploaded: {files_info}")
+                
+                # Automatically create a business for the user
+                if user.business_name and user.business_type:
+                    try:
+                        # Convert date_of_birth string to datetime
+                        birth_date = datetime.now()
+                        if user_data.date_of_birth:
+                            try:
+                                # Try different date formats
+                                for fmt in ['%Y-%m-%d', '%Y-%m-%dT%H:%M:%S', '%d/%m/%Y', '%m/%d/%Y']:
+                                    try:
+                                        birth_date = datetime.strptime(user_data.date_of_birth, fmt)
+                                        break
+                                    except ValueError:
+                                        continue
+                            except:
+                                birth_date = datetime(1990, 1, 1)  # Default fallback
+                        
+                        # Extract address from user data
+                        address_create = AddressCreate(
+                            country=address_data.get('country', 'Iraq'),
+                            city=address_data.get('city', 'Baghdad'), 
+                            district=address_data.get('district', 'Central'),
+                            neighbourhood=address_data.get('neighbourhood', address_data.get('neighborhood', 'Downtown')),
+                            street=address_data.get('street', 'Main Street'),
+                            building_number=address_data.get('building_number', address_data.get('home_address', '1')),
+                            zip_code=address_data.get('zip_code', '10001'),
+                            latitude=None,
+                            longitude=None
+                        )
+                        
+                        # Convert business type string to enum
+                        business_type_enum = BusinessType(user.business_type.lower())
+                        
+                        # Create business data from user registration data
+                        business_data = BusinessCreate(
+                            # Owner information
+                            owner_name=user_data.owner_name or user.business_name or 'Business Owner',
+                            owner_national_id=user_data.national_id or '0000000000',
+                            owner_date_of_birth=birth_date,
+                            
+                            # Business information  
+                            name=user.business_name,
+                            business_type=business_type_enum,
+                            phone_number=user.phone_number or '+9641234567890',
+                            email=user.email,
+                            
+                            # Address information
+                            address=address_create
+                        )
+                        
+                        # Create the business
+                        business = await business_service.create_business(business_data, user)
+                        logging.info(f"Business created successfully for user {user.id}: {business.id}")
+                        
+                    except Exception as business_error:
+                        logging.error(f"Failed to create business for user {user.id}: {business_error}")
+                        # Don't fail the registration if business creation fails
+                
+                return UserRead(
+                    id=str(user.id),
+                    email=user.email,
+                    is_active=user.is_active,
+                    is_superuser=user.is_superuser,
+                    is_verified=user.is_verified,
+                    phone_number=user.phone_number,
+                    business_name=user.business_name,
+                    business_type=user.business_type,
+                )
+            except UserAlreadyExists:
+                raise HTTPException(status_code=400, detail="REGISTER_USER_ALREADY_EXISTS")
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
+            except Exception as e:
+                logging.error(f"Multipart registration failed: {e}")
                 raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 

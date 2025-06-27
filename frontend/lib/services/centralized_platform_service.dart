@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CentralizedPlatformService {
-  final String baseUrl = "http://localhost:8000"; // Backend server URL
+  final String baseUrl = "http://localhost:8001"; // Backend server URL
 
   /// Get authorization headers with stored token
   Future<Map<String, String>> _getAuthHeaders() async {

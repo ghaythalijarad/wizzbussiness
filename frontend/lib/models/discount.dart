@@ -4,6 +4,7 @@ enum DiscountType {
   fixedAmount,
   conditional,
   freeDelivery,
+  buyXGetY,
   others,
 }
 

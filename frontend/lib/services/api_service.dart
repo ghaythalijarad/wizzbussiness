@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   final String baseUrl =
-      "http://localhost:8000"; // Backend server URL (localhost for iOS simulator)
+      "http://localhost:8001"; // Backend server URL (localhost for iOS simulator)
 
   /// Get authorization headers with stored token
   Future<Map<String, String>> _getAuthHeaders() async {
@@ -598,6 +598,389 @@ class ApiService {
     } else {
       print('Error searching items: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to search items');
+    }
+  }
+
+  // Discount Management Methods
+
+  /// Create a new discount for a business
+  Future<Map<String, dynamic>> createDiscount(
+      String businessId, Map<String, dynamic> discountData) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/discounts?business_id=$businessId'),
+      headers: headers,
+      body: jsonEncode(discountData),
+    );
+
+    if (response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      print('Error creating discount: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to create discount');
+    }
+  }
+
+  /// Get discounts for a business
+  Future<List<Map<String, dynamic>>> getDiscounts(String businessId,
+      {String? status, String? type}) async {
+    final headers = await _getAuthHeaders();
+
+    String url = '$baseUrl/api/discounts/$businessId';
+    List<String> queryParams = [];
+    
+    if (status != null) {
+      queryParams.add('status=$status');
+    }
+    if (type != null) {
+      queryParams.add('type=$type');
+    }
+    
+    if (queryParams.isNotEmpty) {
+      url += '?${queryParams.join('&')}';
+    }
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> body = jsonDecode(response.body);
+      return body.cast<Map<String, dynamic>>();
+    } else {
+      throw Exception('Failed to load discounts');
+    }
+  }
+
+  /// Update an existing discount
+  Future<Map<String, dynamic>> updateDiscount(
+      String businessId, String discountId, Map<String, dynamic> discountData) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/api/discounts/$discountId?business_id=$businessId'),
+      headers: headers,
+      body: jsonEncode(discountData),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('Error updating discount: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to update discount');
+    }
+  }
+
+  /// Delete a discount
+  Future<void> deleteDiscount(String businessId, String discountId) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.delete(
+      Uri.parse('$baseUrl/api/discounts/$discountId?business_id=$businessId'),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      print('Error deleting discount: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to delete discount');
+    }
+  }
+
+  /// Apply discount to order
+  Future<Map<String, dynamic>> applyDiscountToOrder(
+      String businessId, String orderId, String discountId) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/discounts/$discountId/apply?business_id=$businessId'),
+      headers: headers,
+      body: jsonEncode({
+        'order_id': orderId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to apply discount to order');
+    }
+  }
+
+  /// Validate Buy X Get Y discount eligibility
+  Future<Map<String, dynamic>> validateBuyXGetYDiscount(
+      String businessId, String discountId, List<Map<String, dynamic>> orderItems) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/discounts/$discountId/validate-buyxgety?business_id=$businessId'),
+      headers: headers,
+      body: jsonEncode({
+        'order_items': orderItems,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to validate Buy X Get Y discount');
+    }
+  }
+
+  /// Get discount usage statistics
+  Future<Map<String, dynamic>> getDiscountStats(String businessId, String discountId) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/discounts/$discountId/stats?business_id=$businessId'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load discount statistics');
+    }
+  }
+
+  // Analytics and Reporting Methods
+
+  /// Get comprehensive business analytics
+  Future<Map<String, dynamic>> getBusinessAnalytics(String businessId, {
+    String timeRange = 'month', // day, week, month, year
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final queryParams = <String, String>{
+      'time_range': timeRange,
+    };
+
+    if (startDate != null) {
+      queryParams['start_date'] = startDate.toIso8601String();
+    }
+    if (endDate != null) {
+      queryParams['end_date'] = endDate.toIso8601String();
+    }
+
+    final uri = Uri.parse('$baseUrl/api/analytics/$businessId')
+        .replace(queryParameters: queryParams);
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load business analytics');
+    }
+  }
+
+  /// Get revenue analytics with detailed breakdown
+  Future<Map<String, dynamic>> getRevenueAnalytics(String businessId, {
+    String timeRange = 'month',
+    bool includeComparison = true,
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final queryParams = <String, String>{
+      'time_range': timeRange,
+      'include_comparison': includeComparison.toString(),
+    };
+
+    final uri = Uri.parse('$baseUrl/api/analytics/$businessId/revenue')
+        .replace(queryParameters: queryParams);
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load revenue analytics');
+    }
+  }
+
+  /// Get top selling items analytics
+  Future<List<Map<String, dynamic>>> getTopSellingItems(String businessId, {
+    String timeRange = 'month',
+    int limit = 10,
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final queryParams = <String, String>{
+      'time_range': timeRange,
+      'limit': limit.toString(),
+    };
+
+    final uri = Uri.parse('$baseUrl/api/analytics/$businessId/top-items')
+        .replace(queryParameters: queryParams);
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      List<dynamic> body = jsonDecode(response.body);
+      return body.cast<Map<String, dynamic>>();
+    } else {
+      throw Exception('Failed to load top selling items');
+    }
+  }
+
+  /// Get performance metrics
+  Future<Map<String, dynamic>> getPerformanceMetrics(String businessId, {
+    String timeRange = 'month',
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final queryParams = <String, String>{
+      'time_range': timeRange,
+    };
+
+    final uri = Uri.parse('$baseUrl/api/analytics/$businessId/performance')
+        .replace(queryParameters: queryParams);
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load performance metrics');
+    }
+  }
+
+  /// Get order analytics and trends
+  Future<Map<String, dynamic>> getOrderAnalytics(String businessId, {
+    String timeRange = 'month',
+    bool includeStatusBreakdown = true,
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final queryParams = <String, String>{
+      'time_range': timeRange,
+      'include_status_breakdown': includeStatusBreakdown.toString(),
+    };
+
+    final uri = Uri.parse('$baseUrl/api/analytics/$businessId/orders')
+        .replace(queryParameters: queryParams);
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load order analytics');
+    }
+  }
+
+  /// Get customer analytics
+  Future<Map<String, dynamic>> getCustomerAnalytics(String businessId, {
+    String timeRange = 'month',
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final queryParams = <String, String>{
+      'time_range': timeRange,
+    };
+
+    final uri = Uri.parse('$baseUrl/api/analytics/$businessId/customers')
+        .replace(queryParameters: queryParams);
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load customer analytics');
+    }
+  }
+
+  /// Get revenue chart data for visualization
+  Future<List<Map<String, dynamic>>> getRevenueChartData(String businessId, {
+    String timeRange = 'month',
+    String chartType = 'line', // line, bar, area
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final queryParams = <String, String>{
+      'time_range': timeRange,
+      'chart_type': chartType,
+    };
+
+    final uri = Uri.parse('$baseUrl/api/analytics/$businessId/revenue-chart')
+        .replace(queryParameters: queryParams);
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      List<dynamic> body = jsonDecode(response.body);
+      return body.cast<Map<String, dynamic>>();
+    } else {
+      throw Exception('Failed to load revenue chart data');
+    }
+  }
+
+  /// Export analytics report
+  Future<Map<String, dynamic>> exportAnalyticsReport(String businessId, {
+    String format = 'pdf', // pdf, excel, csv
+    String timeRange = 'month',
+    List<String> sections = const ['revenue', 'orders', 'customers', 'performance'],
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/analytics/$businessId/export'),
+      headers: headers,
+      body: jsonEncode({
+        'format': format,
+        'time_range': timeRange,
+        'sections': sections,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to export analytics report');
+    }
+  }
+
+  /// Get real-time analytics dashboard data
+  Future<Map<String, dynamic>> getRealTimeAnalytics(String businessId) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/analytics/$businessId/realtime'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load real-time analytics');
+    }
+  }
+
+  /// Get comparative analytics (vs previous period)
+  Future<Map<String, dynamic>> getComparativeAnalytics(String businessId, {
+    String timeRange = 'month',
+    String comparisonType = 'previous_period', // previous_period, same_period_last_year
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final queryParams = <String, String>{
+      'time_range': timeRange,
+      'comparison_type': comparisonType,
+    };
+
+    final uri = Uri.parse('$baseUrl/api/analytics/$businessId/comparison')
+        .replace(queryParameters: queryParams);
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load comparative analytics');
     }
   }
 }

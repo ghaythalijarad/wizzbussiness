@@ -22,353 +22,229 @@ class InnovativeSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Material(
-        elevation: 8,
-        color: Colors.transparent,
-        child: Container(
-          width: 350,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 20,
-                offset: const Offset(-5, 0),
-              ),
-            ],
+    return Stack(
+      children: [
+        // Background overlay
+        GestureDetector(
+          onTap: onClose,
+          child: Container(
+            color: Colors.black54,
+            width: double.infinity,
+            height: double.infinity,
           ),
-          child: Column(
-            children: [
-              Container(
-                height: 100,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF3399FF),
-                      Color(0xFF030e8e),
-                    ],
-                  ),
-                ),
+        ),
+        // Sidebar
+        Align(
+          alignment: Alignment.centerRight,
+          child: GestureDetector(
+            onTap: () {}, // Prevent closing when tapping sidebar
+            child: Material(
+              elevation: 16,
+              child: Container(
+                width: 320,
+                height: double.infinity,
+                color: Colors.white,
                 child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.dashboard_customize,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
+                  child: Column(
+                    children: [
+                      // Header
+                      Container(
+                        width: double.infinity,
+                        color: Theme.of(context).primaryColor,
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.menu,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
                                 loc.quickActions,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              Text(
-                                'Smart business controls',
+                            ),
+                            IconButton(
+                              onPressed: onClose,
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Status section
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isOnline ? Colors.green.shade50 : Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isOnline ? Colors.green.shade200 : Colors.red.shade200,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              isOnline ? Icons.wifi : Icons.wifi_off,
+                              color: isOnline ? Colors.green : Colors.red,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isOnline ? loc.online : loc.offline,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: isOnline ? Colors.green.shade700 : Colors.red.shade700,
+                                    ),
+                                  ),
+                                  Text(
+                                    isOnline ? 'Ready to receive orders' : 'Orders are paused',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Switch(
+                              value: isOnline,
+                              onChanged: onToggleStatus,
+                              activeColor: Colors.green,
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Menu items
+                      Expanded(
+                        child: ListView(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          children: [
+                            _buildMenuItem(
+                              icon: Icons.shopping_bag,
+                              title: 'Orders',
+                              onTap: () {
+                                onNavigate(0);
+                                onClose();
+                              },
+                            ),
+                            _buildMenuItem(
+                              icon: Icons.inventory_2,
+                              title: 'Items',
+                              onTap: () {
+                                onNavigate(1);
+                                onClose();
+                              },
+                            ),
+                            _buildMenuItem(
+                              icon: Icons.local_offer,
+                              title: 'Discounts',
+                              onTap: () {
+                                onNavigate(2);
+                                onClose();
+                              },
+                            ),
+                            _buildMenuItem(
+                              icon: Icons.settings,
+                              title: 'Settings',
+                              onTap: () {
+                                onNavigate(3);
+                                onClose();
+                              },
+                            ),
+                            const Divider(),
+                            _buildMenuItem(
+                              icon: Icons.undo,
+                              title: 'Return Order',
+                              onTap: () {
+                                onReturnOrder();
+                                onClose();
+                              },
+                              isDestructive: true,
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Footer
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          border: Border(
+                            top: BorderSide(color: Colors.grey.shade200),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: Colors.grey.shade600,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Tap outside to close',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.8),
                                   fontSize: 12,
+                                  color: Colors.grey.shade600,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: onClose,
-                          icon: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.all(20),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isOnline 
-                      ? Colors.green.shade50 
-                      : Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isOnline 
-                        ? Colors.green.shade200 
-                        : Colors.red.shade200,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: isOnline 
-                            ? Colors.green.shade100 
-                            : Colors.red.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        isOnline ? Icons.wifi : Icons.wifi_off,
-                        color: isOnline 
-                            ? Colors.green.shade700 
-                            : Colors.red.shade700,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isOnline ? loc.online : loc.offline,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: isOnline 
-                                  ? Colors.green.shade700 
-                                  : Colors.red.shade700,
                             ),
-                          ),
-                          Text(
-                            isOnline 
-                                ? 'Ready to receive orders'
-                                : 'Orders are paused',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isOnline 
-                                  ? Colors.green.shade600 
-                                  : Colors.red.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Material(
-                      color: Colors.transparent,
-                      child: Switch(
-                        value: isOnline,
-                        onChanged: onToggleStatus,
-                        activeColor: Colors.green,
-                        activeTrackColor: Colors.green.shade300,
-                        inactiveThumbColor: Colors.red,
-                        inactiveTrackColor: Colors.red.shade300,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Quick Actions',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade800,
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildActionCard(
-                        icon: Icons.undo,
-                        title: loc.returnOrder,
-                        subtitle: 'Process order returns',
-                        color: Colors.orange,
-                        onTap: () {
-                          onReturnOrder();
-                          onClose();
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildActionCard(
-                        icon: Icons.local_offer,
-                        title: loc.discounts,
-                        subtitle: 'Manage promotional offers',
-                        color: const Color(0xFF3399FF),
-                        onTap: () {
-                          onNavigate(3);
-                          onClose();
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildActionCard(
-                        icon: Icons.analytics,
-                        title: 'Analytics',
-                        subtitle: 'View business insights',
-                        color: Colors.purple,
-                        onTap: () {
-                          onNavigate(2);
-                          onClose();
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildActionCard(
-                        icon: Icons.inventory_2,
-                        title: 'Inventory',
-                        subtitle: 'Manage items & categories',
-                        color: Colors.green,
-                        onTap: () {
-                          onNavigate(1);
-                          onClose();
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildActionCard(
-                        icon: Icons.cloud_sync,
-                        title: 'Platform Integration',
-                        subtitle: 'Centralized delivery platform',
-                        color: const Color(0xFF9C27B0),
-                        onTap: () {
-                          onNavigate(5);
-                          onClose();
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildActionCard(
-                        icon: Icons.settings,
-                        title: 'Settings',
-                        subtitle: 'App & account preferences',
-                        color: Colors.grey.shade600,
-                        onTap: () {
-                          onNavigate(4);
-                          onClose();
-                        },
                       ),
                     ],
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  border: Border(
-                    top: BorderSide(color: Colors.grey.shade200),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3399FF).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.lightbulb,
-                        color: Color(0xFF3399FF),
-                        size: 16,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Tip: Use keyboard shortcuts for faster actions',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildActionCard({
+  Widget _buildMenuItem({
     required IconData icon,
     required String title,
-    required String subtitle,
-    required Color color,
     required VoidCallback onTap,
+    bool isDestructive = false,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withValues(alpha: 0.2)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 14,
-                color: Colors.grey.shade400,
-              ),
-            ],
-          ),
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isDestructive ? Colors.orange : Colors.grey.shade700,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isDestructive ? Colors.orange : Colors.grey.shade800,
+          fontWeight: FontWeight.w500,
         ),
       ),
+      onTap: onTap,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
     );
   }
 }

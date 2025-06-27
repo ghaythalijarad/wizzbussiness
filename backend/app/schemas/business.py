@@ -106,7 +106,8 @@ class BusinessRead(BaseModel):
     phone_number: str
     email: Optional[str] = None
     website: Optional[str] = None
-    address: AddressRead
+    address_id: Optional[str] = None  # New address reference field
+    address: Optional[AddressRead] = None  # Address data (populated from separate collection)
     status: str
     is_verified: bool
     is_online: bool

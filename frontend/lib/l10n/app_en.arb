@@ -148,6 +148,7 @@
   "percentage": "Percentage",
   "fixedAmount": "Fixed Amount",
   "conditional": "Conditional",
+  "buyXGetY": "Buy X Get Y",
   "freeDelivery": "Free Delivery",
   "others": "Others",
   "value": "Value",
@@ -412,5 +413,108 @@
   "locationNotSelected": "Location Not Selected",
   "confirmLocation": "Confirm Location",
   "tapToSelectLocation": "Tap to Select Location",
-  "registrationDate": "Registration Date"
+  "registrationDate": "Registration Date",
+  
+  "smartBusinessControls": "Smart business controls",
+  "readyToReceiveOrders": "Ready to receive orders",
+  "ordersArePaused": "Orders are paused",
+  "processOrderReturns": "Process order returns",
+  
+  "managePromotionalOffers": "Manage promotional offers",
+  "viewBusinessInsights": "View business insights",
+  "manageItemsAndCategories": "Manage items & categories",
+  "platformIntegration": "Platform Integration",
+  "centralizedDeliveryPlatform": "Centralized delivery platform",
+  "appAndAccountPreferences": "App & account preferences",
+  "keyboardShortcutsTip": "Tip: Use keyboard shortcuts for faster actions",
+  
+  "conditionalDiscountConfiguration": "Conditional Discount Configuration",
+  "buyXGetYConfiguration": "Buy X Get Y Configuration",
+  "buyConfiguration": "Buy Configuration",
+  "getConfiguration": "Get Configuration",
+  "quantity": "Quantity",
+  "selectItem": "Select Item",
+  "itemSelected": "Item Selected",
+  "enterValidQuantity": "Enter valid quantity",
+  "missingItems": "Missing Items",
+  "pleasSelectBothBuyAndGetItems": "Please select both buy and get items for {discountType} discount.",
+  "@pleasSelectBothBuyAndGetItems": {
+    "placeholders": {
+      "discountType": {
+        "type": "String"
+      }
+    }
+  },
+  "ok": "OK",
+  "addFreeDeliveryToDiscount": "Add free delivery to this discount",
+  "conflictingDiscountsTitle": "Conflicting Discounts",
+  "someSelectedItemsAlreadyHaveDiscounts": "Some selected items or categories already have active discounts. Each item can only have one discount at a time.",
+  "applicabilityNotConfigurable": "Applicability is not configurable for this discount type as items are already specified in the configuration above.",
+  "noItemSelected": "No item selected",
+  "appliesToAllItems": "Applies to all items",
+  "appliesToSpecificItems": "Applies to {count} specific items",
+  "@appliesToSpecificItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appliesToCategories": "Applies to {count} categories",
+  "@appliesToCategories": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appliesToOrdersAboveMinimum": "Applies to orders above minimum amount",
+  "validFromTo": "Valid: {startDay}/{startMonth}/{startYear} - {endDay}/{endMonth}/{endYear}",
+  "@validFromTo": {
+    "placeholders": {
+      "startDay": {"type": "int"},
+      "startMonth": {"type": "int"},
+      "startYear": {"type": "int"},
+      "endDay": {"type": "int"},
+      "endMonth": {"type": "int"},
+      "endYear": {"type": "int"}
+    }
+  },
+  "minAmount": "Min: ${amount}",
+  "@minAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "categoriesSelected": "{count} categories selected",
+  "@categoriesSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "itemsSelected": "{count} items selected",
+  "@itemsSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "missingItemsMessage": "Please select both buy and get items for {discountType} discount.",
+  "@missingItemsMessage": {
+    "placeholders": {
+      "discountType": {
+        "type": "String"
+      }
+    }
+  },
+  "selectBuyItem": "Select Buy Item",
+  "selectGetItem": "Select Get Item",
+  "noCategoriesFound": "No categories found. Please add categories first.",
+  "appliesToMinimumOrder": "Applies to orders above minimum amount"
 }

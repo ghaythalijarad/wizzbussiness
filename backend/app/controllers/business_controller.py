@@ -33,7 +33,9 @@ class BusinessController:
         ):
             """Create a new business."""
             business = await business_service.create_business(business_data, current_user)
-            return BusinessRead(**business.to_dict())
+            # Get business with address data for response
+            business_with_address = await business_service.get_business_with_address(business.id)
+            return BusinessRead(**business_with_address)
         
         @self.router.post("/restaurant", response_model=BusinessRead)
         async def create_restaurant(

@@ -20,7 +20,6 @@ from .core.production_database import create_production_database, test_database_
 from .core.database import init_beanie
 
 # Import controllers
-from .controllers.simple_notification_controller import simple_notification_controller
 from .controllers.order_controller import order_controller
 
 # Configure logging
@@ -107,10 +106,9 @@ def create_production_app() -> FastAPI:
     allowed_hosts = ["*"]  # Configure this based on your domains
     if is_production:
         allowed_hosts = [
-            "wizz-9fa6547f0499.herokuapp.com",
-            "your-domain.com",  # Add your production domain
+            "your-domain.com",
         ]
-    
+
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=allowed_hosts
@@ -120,10 +118,9 @@ def create_production_app() -> FastAPI:
     allowed_origins = ["*"]  # Configure this for production
     if is_production:
         allowed_origins = [
-            "https://your-frontend-domain.com",  # Add your frontend URL
-            "https://wizz-9fa6547f0499.herokuapp.com"
+            "https://your-frontend-domain.com"  # Add your frontend URL
         ]
-    
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
@@ -291,11 +288,6 @@ def create_production_app() -> FastAPI:
         }
     
     # Include routers
-    app.include_router(
-        simple_notification_controller.router, 
-        prefix="/api/v1", 
-        tags=["notifications"]
-    )
     app.include_router(
         order_controller.router, 
         prefix="/api/v1", 

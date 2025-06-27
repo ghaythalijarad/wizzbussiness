@@ -10,7 +10,6 @@ from beanie.operators import And
 from ..models.order import Order, OrderStatus
 from .centralized_platform_service import centralized_platform_service
 from .customer_notification_service import customer_notification_service
-from .simple_notification_service import simple_notification_service
 
 
 class OrderService:
@@ -55,10 +54,6 @@ class OrderService:
                     # Notify customer about order confirmation
                     await customer_notification_service.notify_order_confirmed(order, business, notes)
                     
-                    # Send simplified notification (Heroku-friendly)
-                    await simple_notification_service.send_order_update_notification(
-                        order, business, new_status, notes
-                    )
                 else:
                     logging.warning(f"Business {business_id} not found for order {order_id}")
                 
@@ -75,11 +70,6 @@ class OrderService:
                         order, business, estimated_ready_time
                     )
                     
-                    # Send simplified notification (Heroku-friendly)
-                    await simple_notification_service.send_order_update_notification(
-                        order, business, new_status, notes
-                    )
-                    
             except Exception as e:
                 logging.error(f"Error notifying customer for preparing order {order_id}: {e}")
         
@@ -90,15 +80,9 @@ class OrderService:
                 if business:
                     # Notify centralized platform
                     await centralized_platform_service.notify_order_ready(order, business, notes)
-                    
                     # Notify customer that order is ready
                     await customer_notification_service.notify_order_ready(order, business)
-                    
-                    # Send simplified notification (Heroku-friendly)
-                    await simple_notification_service.send_order_update_notification(
-                        order, business, new_status, notes
-                    )
-                    
+            
             except Exception as e:
                 logging.error(f"Error notifying centralized platform for ready order {order_id}: {e}")
         
@@ -109,17 +93,11 @@ class OrderService:
                 if business:
                     # Notify centralized platform
                     await centralized_platform_service.notify_order_cancelled(order, business, notes or "Cancelled by merchant")
-                    
                     # Notify customer about cancellation
                     await customer_notification_service.notify_order_cancelled(
                         order, business, notes or "Cancelled by merchant"
                     )
-                    
-                    # Send simplified notification (Heroku-friendly)
-                    await simple_notification_service.send_order_update_notification(
-                        order, business, new_status, notes or "Cancelled by merchant"
-                    )
-                    
+                
             except Exception as e:
                 logging.error(f"Error notifying centralized platform for cancelled order {order_id}: {e}")
 

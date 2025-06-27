@@ -431,6 +431,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conditional => 'Conditional';
 
   @override
+  String get buyXGetY => 'Buy X Get Y';
+
+  @override
   String get freeDelivery => 'Free Delivery';
 
   @override
@@ -1094,4 +1097,144 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get registrationDate => 'Registration Date';
+
+  @override
+  String get smartBusinessControls => 'Smart business controls';
+
+  @override
+  String get readyToReceiveOrders => 'Ready to receive orders';
+
+  @override
+  String get ordersArePaused => 'Orders are paused';
+
+  @override
+  String get processOrderReturns => 'Process order returns';
+
+  @override
+  String get managePromotionalOffers => 'Manage promotional offers';
+
+  @override
+  String get viewBusinessInsights => 'View business insights';
+
+  @override
+  String get manageItemsAndCategories => 'Manage items & categories';
+
+  @override
+  String get platformIntegration => 'Platform Integration';
+
+  @override
+  String get centralizedDeliveryPlatform => 'Centralized delivery platform';
+
+  @override
+  String get appAndAccountPreferences => 'App & account preferences';
+
+  @override
+  String get keyboardShortcutsTip =>
+      'Tip: Use keyboard shortcuts for faster actions';
+
+  @override
+  String get conditionalDiscountConfiguration =>
+      'Conditional Discount Configuration';
+
+  @override
+  String get buyXGetYConfiguration => 'Buy X Get Y Configuration';
+
+  @override
+  String get buyConfiguration => 'Buy Configuration';
+
+  @override
+  String get getConfiguration => 'Get Configuration';
+
+  @override
+  String get quantity => 'Quantity';
+
+  @override
+  String get selectItem => 'Select Item';
+
+  @override
+  String get itemSelected => 'Item Selected';
+
+  @override
+  String get enterValidQuantity => 'Enter valid quantity';
+
+  @override
+  String get missingItems => 'Missing Items';
+
+  @override
+  String pleasSelectBothBuyAndGetItems(String discountType) {
+    return 'Please select both buy and get items for $discountType discount.';
+  }
+
+  @override
+  String get addFreeDeliveryToDiscount => 'Add free delivery to this discount';
+
+  @override
+  String get conflictingDiscountsTitle => 'Conflicting Discounts';
+
+  @override
+  String get someSelectedItemsAlreadyHaveDiscounts =>
+      'Some selected items or categories already have active discounts. Each item can only have one discount at a time.';
+
+  @override
+  String get applicabilityNotConfigurable =>
+      'Applicability is not configurable for this discount type as items are already specified in the configuration above.';
+
+  @override
+  String get noItemSelected => 'No item selected';
+
+  @override
+  String get appliesToAllItems => 'Applies to all items';
+
+  @override
+  String appliesToSpecificItems(int count) {
+    return 'Applies to $count specific items';
+  }
+
+  @override
+  String appliesToCategories(int count) {
+    return 'Applies to $count categories';
+  }
+
+  @override
+  String get appliesToOrdersAboveMinimum =>
+      'Applies to orders above minimum amount';
+
+  @override
+  String validFromTo(int startDay, int startMonth, int startYear, int endDay,
+      int endMonth, int endYear) {
+    return 'Valid: $startDay/$startMonth/$startYear - $endDay/$endMonth/$endYear';
+  }
+
+  @override
+  String minAmount(String amount) {
+    return 'Min: \$$amount';
+  }
+
+  @override
+  String categoriesSelected(int count) {
+    return '$count categories selected';
+  }
+
+  @override
+  String itemsSelected(int count) {
+    return '$count items selected';
+  }
+
+  @override
+  String missingItemsMessage(String discountType) {
+    return 'Please select both buy and get items for $discountType discount.';
+  }
+
+  @override
+  String get selectBuyItem => 'Select Buy Item';
+
+  @override
+  String get selectGetItem => 'Select Get Item';
+
+  @override
+  String get noCategoriesFound =>
+      'No categories found. Please add categories first.';
+
+  @override
+  String get appliesToMinimumOrder => 'Applies to orders above minimum amount';
 }

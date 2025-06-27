@@ -431,6 +431,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get conditional => 'مشروط';
 
   @override
+  String get buyXGetY => 'اشتري X واحصل على Y';
+
+  @override
   String get freeDelivery => 'توصيل مجاني';
 
   @override
@@ -867,7 +870,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'A password reset link has been sent to your email';
 
   @override
-  String get ok => 'OK';
+  String get ok => 'موافق';
 
   @override
   String get enterOtp => 'Enter OTP';
@@ -1094,4 +1097,143 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get registrationDate => 'تاريخ التسجيل';
+
+  @override
+  String get smartBusinessControls => 'عناصر التحكم الذكية في الأعمال';
+
+  @override
+  String get readyToReceiveOrders => 'مستعد لاستقبال الطلبات';
+
+  @override
+  String get ordersArePaused => 'الطلبات متوقفة';
+
+  @override
+  String get processOrderReturns => 'معالجة إرجاع الطلبات';
+
+  @override
+  String get managePromotionalOffers => 'إدارة العروض الترويجية';
+
+  @override
+  String get viewBusinessInsights => 'عرض رؤى الأعمال';
+
+  @override
+  String get manageItemsAndCategories => 'إدارة العناصر والفئات';
+
+  @override
+  String get platformIntegration => 'تكامل المنصة';
+
+  @override
+  String get centralizedDeliveryPlatform => 'منصة توصيل مركزية';
+
+  @override
+  String get appAndAccountPreferences => 'تفضيلات التطبيق والحساب';
+
+  @override
+  String get keyboardShortcutsTip =>
+      'نصيحة: استخدم اختصارات لوحة المفاتيح للإجراءات الأسرع';
+
+  @override
+  String get conditionalDiscountConfiguration => 'إعداد الخصم المشروط';
+
+  @override
+  String get buyXGetYConfiguration => 'إعداد اشتري X واحصل على Y';
+
+  @override
+  String get buyConfiguration => 'إعداد الشراء';
+
+  @override
+  String get getConfiguration => 'إعداد الحصول';
+
+  @override
+  String get quantity => 'الكمية';
+
+  @override
+  String get selectItem => 'اختر عنصراً';
+
+  @override
+  String get itemSelected => 'تم اختيار العنصر';
+
+  @override
+  String get enterValidQuantity => 'أدخل كمية صحيحة';
+
+  @override
+  String get missingItems => 'عناصر مفقودة';
+
+  @override
+  String pleasSelectBothBuyAndGetItems(String discountType) {
+    return 'يرجى اختيار عناصر الشراء والحصول للخصم $discountType.';
+  }
+
+  @override
+  String get addFreeDeliveryToDiscount => 'إضافة توصيل مجاني لهذا الخصم';
+
+  @override
+  String get conflictingDiscountsTitle => 'خصومات متعارضة';
+
+  @override
+  String get someSelectedItemsAlreadyHaveDiscounts =>
+      'بعض العناصر أو الفئات المختارة لديها خصومات نشطة بالفعل. كل عنصر يمكن أن يحتوي على خصم واحد فقط في المرة الواحدة.';
+
+  @override
+  String get applicabilityNotConfigurable =>
+      'لا يمكن تكوين القابلية للتطبيق لهذا النوع من الخصم حيث أن العناصر محددة مسبقاً في الإعداد أعلاه.';
+
+  @override
+  String get noItemSelected => 'لم يتم اختيار عنصر';
+
+  @override
+  String get appliesToAllItems => 'يطبق على جميع العناصر';
+
+  @override
+  String appliesToSpecificItems(int count) {
+    return 'يطبق على $count عناصر محددة';
+  }
+
+  @override
+  String appliesToCategories(int count) {
+    return 'يطبق على $count فئات';
+  }
+
+  @override
+  String get appliesToOrdersAboveMinimum => 'يطبق على الطلبات فوق الحد الأدنى';
+
+  @override
+  String validFromTo(int startDay, int startMonth, int startYear, int endDay,
+      int endMonth, int endYear) {
+    return 'صالح من: $startDay/$startMonth/$startYear - $endDay/$endMonth/$endYear';
+  }
+
+  @override
+  String minAmount(String amount) {
+    return 'الحد الأدنى: \$$amount';
+  }
+
+  @override
+  String categoriesSelected(int count) {
+    return '$count فئات مختارة';
+  }
+
+  @override
+  String itemsSelected(int count) {
+    return '$count عناصر مختارة';
+  }
+
+  @override
+  String missingItemsMessage(String discountType) {
+    return 'يرجى اختيار عناصر الشراء والحصول لخصم $discountType.';
+  }
+
+  @override
+  String get selectBuyItem => 'اختر عنصر الشراء';
+
+  @override
+  String get selectGetItem => 'اختر عنصر الحصول';
+
+  @override
+  String get noCategoriesFound =>
+      'لم يتم العثور على فئات. يرجى إضافة فئات أولاً.';
+
+  @override
+  String get appliesToMinimumOrder =>
+      'ينطبق على الطلبات التي تزيد عن الحد الأدنى للمبلغ';
 }

@@ -310,6 +310,7 @@
   "discountType": "نوع الخصم",
   "fixedAmount": "مبلغ ثابت",
   "conditional": "مشروط",
+  "buyXGetY": "اشتري X واحصل على Y",
   "freeDelivery": "توصيل مجاني",
   "others": "أخرى",
   "discountCombinationWarning": "لا يمكن دمج هذا النوع من الخصم مع الخصومات النشطة الموجودة",
@@ -491,5 +492,107 @@
   "emailSupportOpened": "تم فتح دعم البريد الإلكتروني",
   "confirmLocation": "تأكيد الموقع",
   "tapToSelectLocation": "انقر لتحديد الموقع",
-  "registrationDate": "تاريخ التسجيل"
+  "registrationDate": "تاريخ التسجيل",
+  
+  "smartBusinessControls": "عناصر التحكم الذكية في الأعمال",
+  "readyToReceiveOrders": "مستعد لاستقبال الطلبات",
+  "ordersArePaused": "الطلبات متوقفة",
+  "processOrderReturns": "معالجة إرجاع الطلبات",
+  
+  "managePromotionalOffers": "إدارة العروض الترويجية",
+  "viewBusinessInsights": "عرض رؤى الأعمال",
+  "manageItemsAndCategories": "إدارة العناصر والفئات",
+  "platformIntegration": "تكامل المنصة",
+  "centralizedDeliveryPlatform": "منصة توصيل مركزية",
+  "appAndAccountPreferences": "تفضيلات التطبيق والحساب",
+  "keyboardShortcutsTip": "نصيحة: استخدم اختصارات لوحة المفاتيح للإجراءات الأسرع",
+  
+  "conditionalDiscountConfiguration": "إعداد الخصم المشروط",
+  "buyXGetYConfiguration": "إعداد اشتري X واحصل على Y",
+  "buyConfiguration": "إعداد الشراء",
+  "getConfiguration": "إعداد الحصول",
+  "selectItem": "اختر عنصراً",
+  "itemSelected": "تم اختيار العنصر",
+  "enterValidQuantity": "أدخل كمية صحيحة",
+  "missingItems": "عناصر مفقودة",
+  "pleasSelectBothBuyAndGetItems": "يرجى اختيار عناصر الشراء والحصول للخصم {discountType}.",
+  "@pleasSelectBothBuyAndGetItems": {
+    "placeholders": {
+      "discountType": {
+        "type": "String"
+      }
+    }
+  },
+  "ok": "موافق",
+  "addFreeDeliveryToDiscount": "إضافة توصيل مجاني لهذا الخصم",
+  "conflictingDiscountsTitle": "خصومات متعارضة",
+  "someSelectedItemsAlreadyHaveDiscounts": "بعض العناصر أو الفئات المختارة لديها خصومات نشطة بالفعل. كل عنصر يمكن أن يحتوي على خصم واحد فقط في المرة الواحدة.",
+  "applicabilityNotConfigurable": "لا يمكن تكوين القابلية للتطبيق لهذا النوع من الخصم حيث أن العناصر محددة مسبقاً في الإعداد أعلاه.",
+  "noItemSelected": "لم يتم اختيار عنصر",
+  "appliesToAllItems": "يطبق على جميع العناصر",
+  "appliesToSpecificItems": "يطبق على {count} عناصر محددة",
+  "@appliesToSpecificItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appliesToCategories": "يطبق على {count} فئات",
+  "@appliesToCategories": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appliesToOrdersAboveMinimum": "يطبق على الطلبات فوق الحد الأدنى",
+  "validFromTo": "صالح من: {startDay}/{startMonth}/{startYear} - {endDay}/{endMonth}/{endYear}",
+  "@validFromTo": {
+    "placeholders": {
+      "startDay": {"type": "int"},
+      "startMonth": {"type": "int"},
+      "startYear": {"type": "int"},
+      "endDay": {"type": "int"},
+      "endMonth": {"type": "int"},
+      "endYear": {"type": "int"}
+    }
+  },
+  "minAmount": "الحد الأدنى: ${amount}",
+  "@minAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "categoriesSelected": "{count} فئات مختارة",
+  "@categoriesSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "itemsSelected": "{count} عناصر مختارة",
+  "@itemsSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "missingItemsMessage": "يرجى اختيار عناصر الشراء والحصول لخصم {discountType}.",
+  "@missingItemsMessage": {
+    "placeholders": {
+      "discountType": {
+        "type": "String"
+      }
+    }
+  },
+  "selectBuyItem": "اختر عنصر الشراء",
+  "selectGetItem": "اختر عنصر الحصول",
+  "noCategoriesFound": "لم يتم العثور على فئات. يرجى إضافة فئات أولاً.",
+  "appliesToMinimumOrder": "ينطبق على الطلبات التي تزيد عن الحد الأدنى للمبلغ"
 }

@@ -10,7 +10,18 @@
 - FastAPI framework
 - Dual notification systems (WebSocket + HTTP polling)
 
+**Three separate front-end clients:**
+
+- Merchant App (receives new orders, updates status)
+- Customer App (places orders, tracks status)
+- Driver App (deliveries and status updates)
+
+**Central Platform Service:**
+
+- Independent microservice that consumes order events, assigns drivers, and notifies the Driver App
+
 **🚀 Production Goals:**
+
 - Handle 10,000+ concurrent users
 - Real-time notifications (<100ms latency)
 - 99.9% uptime
@@ -24,7 +35,13 @@
 
 ### 1.1 Cloud Infrastructure Migration
 
-**Move from Heroku to AWS/GCP for better control:**
+**Current POC (Heroku):**
+
+Heroku + Heroku Redis can host a single FastAPI backend (Order Orchestrator + Notification Service) that serves all three clients plus a lightweight Central Platform API.
+
+**Long-term (AWS/GCP):**
+
+- Docker Compose (local or ECS):
 
 ```yaml
 # docker-compose.prod.yml
@@ -39,12 +56,12 @@ services:
     depends_on:
       - redis
       - mongodb
-    
+
   redis:
     image: redis:7-alpine
     volumes:
       - redis_data:/data
-    
+
   nginx:
     image: nginx:alpine
     ports:
@@ -54,6 +71,11 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./ssl:/etc/nginx/ssl
 ```
+
+- Kubernetes (EKS/GKE):
+  scale each service (Orchestrator, Notifications, Central Platform) independently with Redis (ElastiCache/MemoryStore) and MongoDB Atlas.
+
+---
 
 ### 1.2 Container Orchestration
 

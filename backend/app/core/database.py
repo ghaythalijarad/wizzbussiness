@@ -47,16 +47,15 @@ class DatabaseManager:
         
         connection_strategies.extend([
             {
-                "name": "Aggressive TLS bypass for development",
+                "name": "Standard TLS with certifi",
                 "config": {
                     "tls": True,
-                    "tlsInsecure": True,
-                    "tlsAllowInvalidCertificates": True,
-                    "tlsAllowInvalidHostnames": True,
-                    "serverSelectionTimeoutMS": 3000,
-                    "connectTimeoutMS": 8000,
-                    "socketTimeoutMS": 8000,
+                    "tlsCAFile": certifi.where(),
+                    "serverSelectionTimeoutMS": 8000,
+                    "connectTimeoutMS": 12000,
+                    "socketTimeoutMS": 12000,
                     "retryWrites": True,
+                    "w": 'majority',
                     "maxPoolSize": 1
                 }
             },
@@ -69,19 +68,6 @@ class DatabaseManager:
                     "serverSelectionTimeoutMS": 5000,
                     "connectTimeoutMS": 10000,
                     "socketTimeoutMS": 10000,
-                    "retryWrites": True,
-                    "w": 'majority',
-                    "maxPoolSize": 1
-                }
-            },
-            {
-                "name": "Standard TLS with certifi",
-                "config": {
-                    "tls": True,
-                    "tlsCAFile": certifi.where(),
-                    "serverSelectionTimeoutMS": 8000,
-                    "connectTimeoutMS": 12000,
-                    "socketTimeoutMS": 12000,
                     "retryWrites": True,
                     "w": 'majority',
                     "maxPoolSize": 1

@@ -5,10 +5,13 @@ import '../models/item_category.dart';
 import '../models/notification.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 
 class ApiService {
-  final String baseUrl =
-      "http://localhost:8001"; // Backend server URL (localhost for iOS simulator)
+  /// Base URL adjusts for Android emulator (10.0.2.2) vs iOS simulator (127.0.0.1)
+  final String baseUrl = Platform.isAndroid
+      ? "http://10.0.2.2:8000"
+      : "http://127.0.0.1:8000";
 
   /// Get authorization headers with stored token
   Future<Map<String, String>> _getAuthHeaders() async {
@@ -981,6 +984,59 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to load comparative analytics');
+    }
+  }
+
+  /// Login user and store access token
+  Future<void> login(String email, String password) async {
+    // Use the real JWT login endpoint
+    final uri = Uri.parse('$baseUrl/auth/jwt/login');
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {
+        'username': email,
+        'password': password,
+      },
+    );
+    // Debug logging
+    print('ApiService.login -> POST $uri, status=${response.statusCode}');
+    print('ApiService.login -> response=${response.body}');
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('access_token', data['access_token']);
+      print('✅ Login successful, token saved');
+    } else if (response.statusCode == 400) {
+      // Handle specific login errors
+      final errorData = jsonDecode(response.body);
+      if (errorData['detail'] == 'LOGIN_USER_NOT_VERIFIED') {
+        throw Exception('Please verify your email address before logging in. Check your email for verification instructions.');
+      } else if (errorData['detail'] == 'LOGIN_BAD_CREDENTIALS') {
+        throw Exception('Invalid email or password. Please check your credentials and try again.');
+      } else {
+        throw Exception('Login failed: ${errorData['detail']}');
+      }
+    } else {
+      throw Exception('Login failed: ${response.statusCode} ${response.body}');
+    }
+  }
+
+  /// Register a new user
+  Future<void> register(Map<String, dynamic> userData) async {
+    final uri = Uri.parse('$baseUrl/auth/register');
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(userData),
+    );
+    // Debug logging
+    print('ApiService.register -> POST $uri, status=${response.statusCode}');
+    print('ApiService.register -> response=${response.body}');
+
+    if (response.statusCode != 201) {
+      throw Exception('Registration failed: ${response.statusCode} ${response.body}');
     }
   }
 }

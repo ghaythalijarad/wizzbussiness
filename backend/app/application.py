@@ -91,7 +91,6 @@ def create_app() -> FastAPI:
             # Allow app to start without database for testing purposes
             # Initialize models without database connection for schema validation
             try:
-                from beanie import init_beanie
                 import motor.motor_asyncio
                 # Create a temporary in-memory client for model initialization
                 temp_client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017", serverSelectionTimeoutMS=1000)
@@ -242,3 +241,7 @@ def create_app() -> FastAPI:
     )
     
     return app
+
+
+# Create the app instance
+app = create_app()

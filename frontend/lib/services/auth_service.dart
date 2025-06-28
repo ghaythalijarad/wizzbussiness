@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Provides authentication related services such as login, logout, and password reset.
 class AuthService {
   static const String baseUrl =
-      'http://localhost:8001'; // Updated to use localhost for iOS simulator
+      'http://127.0.0.1:8000'; // Updated to match backend port
 
   static String _parseError(dynamic detail) {
     if (detail is String) {
@@ -47,10 +47,9 @@ class AuthService {
   static Future<Map<String, dynamic>> login(
       String email, String password) async {
     try {
-      // TEMPORARY: Use test authentication endpoint while database is unavailable
-      // TODO: Switch back to '/auth/jwt/login' once database connectivity is fixed
+      // Use the real JWT login endpoint
       final response = await http.post(
-        Uri.parse('$baseUrl/test-auth/login'),
+        Uri.parse('$baseUrl/auth/jwt/login'),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -67,18 +66,11 @@ class AuthService {
         // Store the token for future requests
         await _storeToken(accessToken);
 
-        // Check if we're in test mode
-        final isTestMode = data['test_mode'] == true;
-        final successMessage = isTestMode
-            ? 'Login successful (Test Mode - Database Offline)'
-            : 'Login successful';
-
         return {
           'success': true,
-          'message': successMessage,
+          'message': 'Login successful',
           'access_token': accessToken,
           'token_type': data['token_type'],
-          'test_mode': isTestMode,
         };
       } else {
         final errorData = jsonDecode(response.body);
@@ -106,24 +98,8 @@ class AuthService {
         };
       }
 
-      // Check if we're in test mode by trying to decode the token
-      bool isTestMode = false;
-      try {
-        // Simple check for test token (contains test-user-id)
-        final parts = token.split('.');
-        if (parts.length == 3) {
-          final payload = parts[1];
-          // Add padding if needed for base64 decoding
-          final normalizedPayload = payload.padRight((payload.length + 3) ~/ 4 * 4, '=');
-          final decoded = utf8.decode(base64Decode(normalizedPayload));
-          isTestMode = decoded.contains('test-user-id');
-        }
-      } catch (e) {
-        // If token decode fails, assume not test mode
-      }
-
-      // Choose endpoint based on test mode
-      final endpoint = isTestMode ? '$baseUrl/test-auth/me' : '$baseUrl/users/me';
+      // Use the real users/me endpoint  
+      final endpoint = '$baseUrl/users/me';
 
       final response = await http.get(
         Uri.parse(endpoint),

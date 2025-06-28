@@ -68,7 +68,7 @@ class AuthenticationService:
     def get_auth_backend(self) -> AuthenticationBackend:
         """Authentication backend configuration."""
         if self._auth_backend is None:
-            bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
+            bearer_transport = BearerTransport(tokenUrl="/auth/jwt/login")
             self._auth_backend = AuthenticationBackend(
                 name="jwt",
                 transport=bearer_transport,

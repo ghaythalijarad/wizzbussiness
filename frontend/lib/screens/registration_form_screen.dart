@@ -467,8 +467,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        // Navigate to a success screen or login screen
-        Navigator.of(context).pushReplacementNamed('/login');
+        // Navigate back to login screen
+        Navigator.of(context).pop();
       } else {
         // It's good practice to check if the widget is still in the tree
         if (!mounted) return;

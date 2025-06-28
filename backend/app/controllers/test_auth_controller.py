@@ -102,3 +102,34 @@ async def test_verify():
             "password": "Use the provided password"
         }
     }
+
+@test_auth_router.post("/verify-user/{email}")
+async def verify_test_user(email: str):
+    """
+    Test endpoint to manually verify a user for testing purposes.
+    This bypasses the normal email verification process.
+    """
+    try:
+        from ..models.user import User
+        
+        # Find user by email
+        user = await User.find_one(User.email == email)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Verify the user
+        user.is_verified = True
+        await user.save()
+        
+        logging.info(f"✅ User {email} has been manually verified for testing")
+        
+        return {
+            "message": f"User {email} has been verified successfully",
+            "user_id": str(user.id),
+            "is_verified": user.is_verified,
+            "test_mode": True
+        }
+        
+    except Exception as e:
+        logging.error(f"💥 Failed to verify user {email}: {e}")
+        raise HTTPException(status_code=500, detail=f"Verification failed: {str(e)}")

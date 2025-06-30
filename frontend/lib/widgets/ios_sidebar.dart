@@ -25,48 +25,8 @@ class IOSSidebar extends StatefulWidget {
   State<IOSSidebar> createState() => _IOSSidebarState();
 }
 
-class _IOSSidebarState extends State<IOSSidebar>
-    with TickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _slideAnimation;
-  late Animation<double> _fadeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 250),
-      vsync: this,
-    );
-
-    _slideAnimation = Tween<double>(
-      begin: -1,
-      end: 0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-
-    _fadeAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-
-    _animationController.forward();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  void _closeWithAnimation() async {
-    await _animationController.reverse();
+class _IOSSidebarState extends State<IOSSidebar> {
+  void _close() {
     widget.onClose();
   }
 
@@ -75,7 +35,7 @@ class _IOSSidebarState extends State<IOSSidebar>
     final localizations = AppLocalizations.of(context)!;
 
     return GestureDetector(
-      onTap: _closeWithAnimation,
+      onTap: _close,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Focus(
@@ -83,7 +43,7 @@ class _IOSSidebarState extends State<IOSSidebar>
           onKeyEvent: (node, event) {
             if (event is KeyDownEvent &&
                 event.logicalKey == LogicalKeyboardKey.escape) {
-              _closeWithAnimation();
+              _close();
               return KeyEventResult.handled;
             }
             return KeyEventResult.ignored;
@@ -91,53 +51,37 @@ class _IOSSidebarState extends State<IOSSidebar>
           child: Stack(
             children: [
               // Backdrop
-              AnimatedBuilder(
-                animation: _fadeAnimation,
-                builder: (context, child) {
-                  return Container(
-                    color: Colors.black.withValues(alpha: _fadeAnimation.value * 0.4),
-                  );
-                },
+              Container(
+                color: Colors.black.withValues(alpha: 0.4),
               ),
               // Sidebar
-              AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(
-                      _slideAnimation.value * MediaQuery.of(context).size.width * 0.85,
-                      0,
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.85,
+                  height: MediaQuery.of(context).size.height,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(16),
+                      bottomRight: Radius.circular(16),
                     ),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.85,
-                        height: MediaQuery.of(context).size.height,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(16),
-                            bottomRight: Radius.circular(16),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color.fromRGBO(0, 0, 0, 0.15),
-                              blurRadius: 20,
-                              offset: Offset(5, 0),
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: GestureDetector(
-                            onTap: () {}, // Prevent closing when tapping sidebar
-                            child: _buildSidebarContent(context, localizations),
-                          ),
-                        ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.15),
+                        blurRadius: 20,
+                        offset: Offset(5, 0),
                       ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: GestureDetector(
+                      onTap: () {}, // Prevent closing when tapping sidebar
+                      child: _buildSidebarContent(context, localizations),
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
             ],
           ),
@@ -203,7 +147,7 @@ class _IOSSidebarState extends State<IOSSidebar>
           
           // Close button
           GestureDetector(
-            onTap: _closeWithAnimation,
+            onTap: _close,
             child: Container(
               width: 32,
               height: 32,
@@ -362,7 +306,7 @@ class _IOSSidebarState extends State<IOSSidebar>
                   title: localizations.returnOrder,
                   onTap: () {
                     widget.onReturnOrder();
-                    _closeWithAnimation();
+                    _close();
                   },
                   isDestructive: true,
                 )),
@@ -428,7 +372,7 @@ class _IOSSidebarState extends State<IOSSidebar>
 
   void _navigateAndClose(int index) {
     widget.onNavigate(index);
-    _closeWithAnimation();
+    _close();
   }
 
   void _showLanguageDialog(BuildContext context) {

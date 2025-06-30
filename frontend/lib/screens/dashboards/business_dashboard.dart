@@ -76,11 +76,22 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
     });
   }
 
+  Future<void> _refreshOrders() async {
+    // This would typically fetch fresh orders from the API
+    // For now, we'll just trigger a rebuild to show new orders
+    // In a real implementation, you'd call the API service to fetch latest orders
+    setState(() {
+      // The orders will be refreshed through the normal flow
+      // when new orders are created via simulation
+    });
+  }
+
   Widget _buildDashboardBody() {
     switch (_selectedIndex) {
       case 0:
         return OrdersPage(
           orders: _orders,
+          businessId: widget.business.id,
           onOrderUpdated: (orderId, status) {
             // Handle order status updates
             final orderIndex =
@@ -92,6 +103,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
               });
             }
           },
+          onOrdersRefresh: _refreshOrders,
         );
       case 1:
         return ItemsManagementPage(
@@ -121,7 +133,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
           onLanguageChanged: widget.onLanguageChanged,
         );
       default:
-        return const Center(child: Text('Error'));
+        return Center(child: Text(AppLocalizations.of(context)!.error));
     }
   }
 
@@ -135,6 +147,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
         onToggleStatus: _onToggleStatus,
         onReturnOrder: _onReturnOrder,
         onNavigate: _onNavigate,
+        onLanguageChanged: widget.onLanguageChanged,
       ),
       body: _buildDashboardBody(),
       bottomNavigationBar: BottomNavigationBar(

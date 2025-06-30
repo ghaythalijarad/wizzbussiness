@@ -11,10 +11,10 @@ import '../models/order.dart';
 import '../models/notification.dart';
 import 'api_service.dart';
 
-/// Simplified notification service for Heroku deployment
+/// Simplified notification service for cloud deployment
 ///
 /// This service uses HTTP polling instead of WebSockets to be more compatible
-/// with Heroku's ephemeral environment and avoid connection management complexity.
+/// with cloud environments and avoid connection management complexity.
 class SimpleNotificationService {
   static final SimpleNotificationService _instance =
       SimpleNotificationService._internal();
@@ -467,7 +467,7 @@ class SimpleNotificationService {
       businessId: '',
       type: 'new_order',
       title: loc.newOrderReceived(order.customerName),
-      message: 'Order #${order.orderNumber} - \$${order.totalAmount}',
+      message: 'Order #${order.id} - \$${order.totalAmount}',
       data: {'order_id': order.id, 'customer_name': order.customerName},
       priority: 'high',
       timestamp: DateTime.now(),

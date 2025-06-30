@@ -21,7 +21,7 @@ class InnovativeSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    
+
     return Stack(
       children: [
         // Background overlay
@@ -80,17 +80,21 @@ class InnovativeSidebar extends StatelessWidget {
                           ],
                         ),
                       ),
-                      
+
                       // Status section
                       Container(
                         width: double.infinity,
                         margin: const EdgeInsets.all(16),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: isOnline ? Colors.green.shade50 : Colors.red.shade50,
+                          color: isOnline
+                              ? Colors.green.shade50
+                              : Colors.red.shade50,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: isOnline ? Colors.green.shade200 : Colors.red.shade200,
+                            color: isOnline
+                                ? Colors.green.shade200
+                                : Colors.red.shade200,
                           ),
                         ),
                         child: Row(
@@ -108,11 +112,15 @@ class InnovativeSidebar extends StatelessWidget {
                                     isOnline ? loc.online : loc.offline,
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
-                                      color: isOnline ? Colors.green.shade700 : Colors.red.shade700,
+                                      color: isOnline
+                                          ? Colors.green.shade700
+                                          : Colors.red.shade700,
                                     ),
                                   ),
                                   Text(
-                                    isOnline ? 'Ready to receive orders' : 'Orders are paused',
+                                    isOnline
+                                        ? loc.readyToReceiveOrders
+                                        : loc.ordersArePaused,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey.shade600,
@@ -129,7 +137,7 @@ class InnovativeSidebar extends StatelessWidget {
                           ],
                         ),
                       ),
-                      
+
                       // Menu items
                       Expanded(
                         child: ListView(
@@ -137,7 +145,7 @@ class InnovativeSidebar extends StatelessWidget {
                           children: [
                             _buildMenuItem(
                               icon: Icons.shopping_bag,
-                              title: 'Orders',
+                              title: loc.orders,
                               onTap: () {
                                 onNavigate(0);
                                 onClose();
@@ -145,7 +153,7 @@ class InnovativeSidebar extends StatelessWidget {
                             ),
                             _buildMenuItem(
                               icon: Icons.inventory_2,
-                              title: 'Items',
+                              title: loc.items,
                               onTap: () {
                                 onNavigate(1);
                                 onClose();
@@ -153,7 +161,7 @@ class InnovativeSidebar extends StatelessWidget {
                             ),
                             _buildMenuItem(
                               icon: Icons.local_offer,
-                              title: 'Discounts',
+                              title: loc.discounts,
                               onTap: () {
                                 onNavigate(2);
                                 onClose();
@@ -161,7 +169,7 @@ class InnovativeSidebar extends StatelessWidget {
                             ),
                             _buildMenuItem(
                               icon: Icons.settings,
-                              title: 'Settings',
+                              title: loc.settings,
                               onTap: () {
                                 onNavigate(3);
                                 onClose();
@@ -170,7 +178,7 @@ class InnovativeSidebar extends StatelessWidget {
                             const Divider(),
                             _buildMenuItem(
                               icon: Icons.undo,
-                              title: 'Return Order',
+                              title: loc.returnOrder,
                               onTap: () {
                                 onReturnOrder();
                                 onClose();
@@ -180,7 +188,7 @@ class InnovativeSidebar extends StatelessWidget {
                           ],
                         ),
                       ),
-                      
+
                       // Footer
                       Container(
                         width: double.infinity,
@@ -201,7 +209,7 @@ class InnovativeSidebar extends StatelessWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Tap outside to close',
+                                loc.tapOutsideOrPressEscToClose,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade600,

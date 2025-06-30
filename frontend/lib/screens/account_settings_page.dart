@@ -119,7 +119,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Error loading user data',
+                        l10n.errorLoadingUserData,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
@@ -131,7 +131,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadUserData,
-                        child: const Text('Retry'),
+                        child: Text(l10n.retry),
                       ),
                     ],
                   ),

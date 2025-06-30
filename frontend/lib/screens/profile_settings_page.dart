@@ -82,23 +82,25 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   }
 
   String _getBusinessTypeDisplayName(String? businessType) {
-    if (businessType == null) return 'Not specified';
+    final loc = AppLocalizations.of(context)!;
+    if (businessType == null) return loc.notSpecified;
 
     switch (businessType.toLowerCase()) {
       case 'restaurant':
-        return 'Restaurant';
+        return loc.restaurant;
       case 'store':
-        return 'Store';
+        return loc.store;
       case 'kitchen':
-        return 'Kitchen';
+        return loc.kitchen;
       case 'pharmacy':
-        return 'Pharmacy';
+        return loc.pharmacy;
       default:
         return businessType;
     }
   }
 
   Widget _buildUserProfileHeader() {
+    final loc = AppLocalizations.of(context)!;
     if (_isLoadingUserData) {
       return Container(
         width: double.infinity,
@@ -139,9 +141,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
           children: [
             const Icon(Icons.error_outline, color: Colors.white, size: 48),
             const SizedBox(height: 16),
-            const Text(
-              'Error loading profile',
-              style: TextStyle(
+            Text(
+              loc.errorLoadingProfile,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -163,7 +165,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 backgroundColor: Colors.white,
                 foregroundColor: const Color(0xFFFF5722),
               ),
-              child: const Text('Retry'),
+              child: Text(loc.retry),
             ),
           ],
         ),
@@ -207,7 +209,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _userData?['business_name'] ?? 'Business Name',
+                      _userData?['business_name'] ?? loc.businessName,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -218,13 +220,15 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                        _getBusinessTypeDisplayName(_userData?['business_type']),
+                        _getBusinessTypeDisplayName(
+                            _userData?['business_type']),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -244,13 +248,13 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildStatusChip(
-                'Active',
+                loc.active,
                 _userData?['is_active'] ?? false,
                 _userData?['is_active'] == true ? Colors.green : Colors.orange,
               ),
               const SizedBox(width: 8),
               _buildStatusChip(
-                'Verified',
+                loc.verified,
                 _userData?['is_verified'] ?? false,
                 _userData?['is_verified'] == true
                     ? const Color(0xFF007fff)
@@ -410,19 +414,20 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   }
 
   Future<void> _signOut() async {
+    final loc = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
+        title: Text(loc.signOut),
+        content: Text(loc.signOutConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(loc.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+            child: Text(loc.signOut, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -439,7 +444,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         (route) => false,
       );
     }
-  }  @override
+  }
+
+  @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return Scaffold(

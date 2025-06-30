@@ -6,6 +6,7 @@ import '../models/order.dart';
 import '../models/item_category.dart';
 import '../services/app_state.dart';
 import '../services/api_service.dart';
+import '../utils/responsive_helper.dart';
 
 class DiscountManagementPage extends StatefulWidget {
   final Business business;
@@ -146,7 +147,9 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       child: Material(
         elevation: isSelected ? 2 : 0.5,
         borderRadius: BorderRadius.circular(16),
-        color: isSelected ? const Color(0xFF027DFF) : const Color(0xFF001133).withValues(alpha: 0.05),
+        color: isSelected
+            ? const Color(0xFF027DFF)
+            : const Color(0xFF001133).withValues(alpha: 0.05),
         shadowColor: isSelected
             ? const Color(0xFF027DFF).withValues(alpha: 0.3)
             : const Color(0xFF001133).withValues(alpha: 0.1),
@@ -160,8 +163,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isSelected 
-                    ? const Color(0xFF027DFF) 
+                color: isSelected
+                    ? const Color(0xFF027DFF)
                     : const Color(0xFF001133).withValues(alpha: 0.3),
                 width: 1,
               ),
@@ -226,7 +229,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: const Color(0xFF001133).withValues(alpha: 0.1)),
+          side:
+              BorderSide(color: const Color(0xFF001133).withValues(alpha: 0.1)),
         ),
         title: Text(
           AppLocalizations.of(context)!.deleteDiscount,
@@ -234,7 +238,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         ),
         content: Text(
           AppLocalizations.of(context)!.areYouSureYouWantToDeleteThisDiscount,
-          style: TextStyle(color: const Color(0xFF001133).withValues(alpha: 0.7)),
+          style:
+              TextStyle(color: const Color(0xFF001133).withValues(alpha: 0.7)),
         ),
         actions: [
           TextButton(
@@ -271,27 +276,33 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         TextEditingController(text: discount?.value.toString() ?? '');
     final minOrderController = TextEditingController(
         text: discount?.minimumOrderAmount.toString() ?? '');
-    
+
     // Handle free delivery checkbox state
     var includesFreeDelivery = discount?.type == DiscountType.freeDelivery;
     // If editing a free delivery discount, default the main type to percentage
-    var discountType = discount?.type == DiscountType.freeDelivery 
-        ? DiscountType.percentage 
+    var discountType = discount?.type == DiscountType.freeDelivery
+        ? DiscountType.percentage
         : (discount?.type ?? DiscountType.percentage);
-    
+
     // Handle discount applicability
-    var applicability = discount?.applicability ?? DiscountApplicability.allItems;
+    var applicability =
+        discount?.applicability ?? DiscountApplicability.allItems;
     var selectedItemIds = List<String>.from(discount?.applicableItemIds ?? []);
-    var selectedCategoryIds = List<String>.from(discount?.applicableCategoryIds ?? []);
-    
+    var selectedCategoryIds =
+        List<String>.from(discount?.applicableCategoryIds ?? []);
+
     // Buy X Get Y specific variables
     final buyXQuantityController = TextEditingController(
-        text: discount?.conditionalParameters['buyQuantity']?.toString() ?? '1');
+        text:
+            discount?.conditionalParameters['buyQuantity']?.toString() ?? '1');
     final getYQuantityController = TextEditingController(
-        text: discount?.conditionalParameters['getQuantity']?.toString() ?? '1');
-    var selectedBuyItemId = discount?.conditionalParameters['buyItemId'] as String?;
-    var selectedGetItemId = discount?.conditionalParameters['getItemId'] as String?;
-    
+        text:
+            discount?.conditionalParameters['getQuantity']?.toString() ?? '1');
+    var selectedBuyItemId =
+        discount?.conditionalParameters['buyItemId'] as String?;
+    var selectedGetItemId =
+        discount?.conditionalParameters['getItemId'] as String?;
+
     var startDate = discount?.validFrom ?? DateTime.now();
     var endDate =
         discount?.validTo ?? DateTime.now().add(const Duration(days: 7));
@@ -303,7 +314,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: const Color(0xFF001133).withValues(alpha: 0.1)),
+            side: BorderSide(
+                color: const Color(0xFF001133).withValues(alpha: 0.1)),
           ),
           title: Text(
             isEditing
@@ -311,663 +323,777 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                 : AppLocalizations.of(context)!.createDiscount,
             style: TextStyle(color: const Color(0xFF001133)),
           ),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.9,
+          content: Container(
+            width: ResponsiveHelper.isDesktop(context)
+                ? 600
+                : ResponsiveHelper.isTablet(context)
+                    ? 500
+                    : MediaQuery.of(context).size.width * 0.9,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+            ),
             child: StatefulBuilder(
               builder: (context, setState) {
                 return Form(
                   key: formKey,
                   child: SingleChildScrollView(
                     child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextFormField(
-                        controller: titleController,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.title,
-                          border: const OutlineInputBorder(),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          controller: titleController,
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!.title,
+                            border: const OutlineInputBorder(),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppLocalizations.of(context)!
+                                  .pleaseEnterTitle;
+                            }
+                            return null;
+                          },
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return AppLocalizations.of(context)!
-                                .pleaseEnterTitle;
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: descriptionController,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.description,
-                          border: const OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 16),                      Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: DropdownButtonFormField<DiscountType>(
-                              value: discountType,
-                              decoration: InputDecoration(
-                                labelText:
-                                    AppLocalizations.of(context)!.discountType,
-                                border: const OutlineInputBorder(),
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                              ),
-                              isExpanded: true,
-                              items: DiscountType.values
-                                  .where((type) => type != DiscountType.freeDelivery)
-                                  .map((type) {
-                                String label;
-                                switch (type) {
-                                  case DiscountType.percentage:
-                                    label = AppLocalizations.of(context)!
-                                        .percentage;
-                                    break;
-                                  case DiscountType.fixedAmount:
-                                    label = AppLocalizations.of(context)!
-                                        .fixedAmount;
-                                    break;
-                                  case DiscountType.conditional:
-                                    label = AppLocalizations.of(context)!
-                                        .conditional;
-                                    break;
-                                  case DiscountType.buyXGetY:
-                                    label = AppLocalizations.of(context)!.buyXGetY;
-                                    break;
-                                  case DiscountType.others:
-                                    label = AppLocalizations.of(context)!
-                                        .others;
-                                    break;
-                                  case DiscountType.freeDelivery:
-                                    // This case won't be reached since we filter it out
-                                    label = '';
-                                    break;
-                                }
-                                return DropdownMenuItem(
-                                  value: type,
-                                  child: Text(
-                                    label,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                if (value != null) {
-                                  setState(() {
-                                    discountType = value;
-                                  });
-                                }
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            flex: 1,
-                            child: TextFormField(
-                              controller: valueController,
-                              decoration: InputDecoration(
-                                labelText: AppLocalizations.of(context)!.value,
-                                border: const OutlineInputBorder(),
-                              ),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return AppLocalizations.of(context)!
-                                      .pleaseEnterValue;
-                                }
-                                if (double.tryParse(value) == null) {
-                                  return AppLocalizations.of(context)!
-                                      .pleaseEnterValidNumber;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      // Buy X Get Y Configuration Section
-                      if (discountType == DiscountType.buyXGetY || discountType == DiscountType.conditional) ...[
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF027DFF).withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFF027DFF).withValues(alpha: 0.2)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.shopping_cart, color: const Color(0xFF027DFF), size: 20),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    discountType == DiscountType.conditional 
-                                        ? AppLocalizations.of(context)!.conditionalDiscountConfiguration
-                                        : AppLocalizations.of(context)!.buyXGetYConfiguration,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: const Color(0xFF027DFF),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              
-                              // Buy X Configuration
-                              Text(
-                                AppLocalizations.of(context)!.buyConfiguration,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey.shade700,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    flex: 1,
-                                    child: TextFormField(
-                                      controller: buyXQuantityController,
-                                      decoration: InputDecoration(
-                                        labelText: AppLocalizations.of(context)!.quantity,
-                                        border: const OutlineInputBorder(),
-                                        isDense: true,
-                                      ),
-                                      keyboardType: TextInputType.number,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return AppLocalizations.of(context)!.required;
-                                        }
-                                        if (int.tryParse(value) == null || int.parse(value) <= 0) {
-                                          return AppLocalizations.of(context)!.enterValidQuantity;
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    flex: 2,
-                                    child: GestureDetector(
-                                      onTap: () => _showBuyItemSelectionDialog(selectedBuyItemId, (itemId) {
-                                        setState(() {
-                                          selectedBuyItemId = itemId;
-                                        });
-                                      }),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: Colors.grey.shade400),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                selectedBuyItemId == null 
-                                                    ? AppLocalizations.of(context)!.selectItem
-                                                    : AppLocalizations.of(context)!.itemSelected,
-                                                style: TextStyle(
-                                                  color: selectedBuyItemId == null 
-                                                      ? Colors.grey.shade600 
-                                                      : Colors.black,
-                                                ),
-                                              ),
-                                            ),
-                                            Icon(Icons.arrow_drop_down, color: Colors.grey.shade600),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              
-                              // Get Y Configuration
-                              Text(
-                                AppLocalizations.of(context)!.getConfiguration,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey.shade700,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    flex: 1,
-                                    child: TextFormField(
-                                      controller: getYQuantityController,
-                                      decoration: InputDecoration(
-                                        labelText: AppLocalizations.of(context)!.quantity,
-                                        border: const OutlineInputBorder(),
-                                        isDense: true,
-                                      ),
-                                      keyboardType: TextInputType.number,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return AppLocalizations.of(context)!.required;
-                                        }
-                                        if (int.tryParse(value) == null || int.parse(value) <= 0) {
-                                          return AppLocalizations.of(context)!.enterValidQuantity;
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    flex: 2,
-                                    child: GestureDetector(
-                                      onTap: () => _showGetItemSelectionDialog(selectedGetItemId, (itemId) {
-                                        setState(() {
-                                          selectedGetItemId = itemId;
-                                        });
-                                      }),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: Colors.grey.shade400),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                selectedGetItemId == null 
-                                                    ? AppLocalizations.of(context)!.selectItem
-                                                    : AppLocalizations.of(context)!.itemSelected,
-                                                style: TextStyle(
-                                                  color: selectedGetItemId == null 
-                                                      ? Colors.grey.shade600 
-                                                      : Colors.black,
-                                                ),
-                                              ),
-                                            ),
-                                            Icon(Icons.arrow_drop_down, color: Colors.grey.shade600),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: descriptionController,
+                          decoration: InputDecoration(
+                            labelText:
+                                AppLocalizations.of(context)!.description,
+                            border: const OutlineInputBorder(),
                           ),
                         ),
                         const SizedBox(height: 16),
-                      ],
-                      
-                      // Discount Applicability Section
-                      Opacity(
-                        opacity: (discountType == DiscountType.conditional || discountType == DiscountType.buyXGetY) ? 0.5 : 1.0,
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: (discountType == DiscountType.conditional || discountType == DiscountType.buyXGetY) 
-                                ? Colors.grey.withValues(alpha: 0.1)
-                                : const Color(0xFF027DFF).withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: (discountType == DiscountType.conditional || discountType == DiscountType.buyXGetY)
-                                  ? Colors.grey.withValues(alpha: 0.3)
-                                  : const Color(0xFF027DFF).withValues(alpha: 0.2)
-                            ),
-                          ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
                           children: [
-                            Row(
+                            Expanded(
+                              flex: 2,
+                              child: DropdownButtonFormField<DiscountType>(
+                                value: discountType,
+                                decoration: InputDecoration(
+                                  labelText: AppLocalizations.of(context)!
+                                      .discountType,
+                                  border: const OutlineInputBorder(),
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 8),
+                                ),
+                                isExpanded: true,
+                                items: DiscountType.values
+                                    .where((type) =>
+                                        type != DiscountType.freeDelivery)
+                                    .map((type) {
+                                  String label;
+                                  switch (type) {
+                                    case DiscountType.percentage:
+                                      label = AppLocalizations.of(context)!
+                                          .percentage;
+                                      break;
+                                    case DiscountType.fixedAmount:
+                                      label = AppLocalizations.of(context)!
+                                          .fixedAmount;
+                                      break;
+                                    case DiscountType.conditional:
+                                      label = AppLocalizations.of(context)!
+                                          .conditional;
+                                      break;
+                                    case DiscountType.buyXGetY:
+                                      label = AppLocalizations.of(context)!
+                                          .buyXGetY;
+                                      break;
+                                    case DiscountType.others:
+                                      label =
+                                          AppLocalizations.of(context)!.others;
+                                      break;
+                                    case DiscountType.freeDelivery:
+                                      // This case won't be reached since we filter it out
+                                      label = '';
+                                      break;
+                                  }
+                                  return DropdownMenuItem(
+                                    value: type,
+                                    child: Text(
+                                      label,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    setState(() {
+                                      discountType = value;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 1,
+                              child: TextFormField(
+                                controller: valueController,
+                                decoration: InputDecoration(
+                                  labelText:
+                                      AppLocalizations.of(context)!.value,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return AppLocalizations.of(context)!
+                                        .pleaseEnterValue;
+                                  }
+                                  if (double.tryParse(value) == null) {
+                                    return AppLocalizations.of(context)!
+                                        .pleaseEnterValidNumber;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Buy X Get Y Configuration Section
+                        if (discountType == DiscountType.buyXGetY ||
+                            discountType == DiscountType.conditional) ...[
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF027DFF)
+                                  .withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: const Color(0xFF027DFF)
+                                      .withValues(alpha: 0.2)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.category, color: const Color(0xFF027DFF), size: 20),
-                                const SizedBox(width: 8),
+                                Row(
+                                  children: [
+                                    Icon(Icons.shopping_cart,
+                                        color: const Color(0xFF027DFF),
+                                        size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      discountType == DiscountType.conditional
+                                          ? AppLocalizations.of(context)!
+                                              .conditionalDiscountConfiguration
+                                          : AppLocalizations.of(context)!
+                                              .buyXGetYConfiguration,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF027DFF),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Buy X Configuration
                                 Text(
-                                  AppLocalizations.of(context)!.discountApplicability,
+                                  AppLocalizations.of(context)!
+                                      .buyConfiguration,
                                   style: TextStyle(
                                     fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF027DFF),
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: TextFormField(
+                                        controller: buyXQuantityController,
+                                        decoration: InputDecoration(
+                                          labelText:
+                                              AppLocalizations.of(context)!
+                                                  .quantity,
+                                          border: const OutlineInputBorder(),
+                                          isDense: true,
+                                        ),
+                                        keyboardType: TextInputType.number,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return AppLocalizations.of(context)!
+                                                .required;
+                                          }
+                                          if (int.tryParse(value) == null ||
+                                              int.parse(value) <= 0) {
+                                            return AppLocalizations.of(context)!
+                                                .enterValidQuantity;
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      flex: 2,
+                                      child: GestureDetector(
+                                        onTap: () =>
+                                            _showBuyItemSelectionDialog(
+                                                selectedBuyItemId, (itemId) {
+                                          setState(() {
+                                            selectedBuyItemId = itemId;
+                                          });
+                                        }),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: Colors.grey.shade400),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  selectedBuyItemId == null
+                                                      ? AppLocalizations.of(
+                                                              context)!
+                                                          .selectItem
+                                                      : AppLocalizations.of(
+                                                              context)!
+                                                          .itemSelected,
+                                                  style: TextStyle(
+                                                    color: selectedBuyItemId ==
+                                                            null
+                                                        ? Colors.grey.shade600
+                                                        : Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                              Icon(Icons.arrow_drop_down,
+                                                  color: Colors.grey.shade600),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Get Y Configuration
+                                Text(
+                                  AppLocalizations.of(context)!
+                                      .getConfiguration,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: TextFormField(
+                                        controller: getYQuantityController,
+                                        decoration: InputDecoration(
+                                          labelText:
+                                              AppLocalizations.of(context)!
+                                                  .quantity,
+                                          border: const OutlineInputBorder(),
+                                          isDense: true,
+                                        ),
+                                        keyboardType: TextInputType.number,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return AppLocalizations.of(context)!
+                                                .required;
+                                          }
+                                          if (int.tryParse(value) == null ||
+                                              int.parse(value) <= 0) {
+                                            return AppLocalizations.of(context)!
+                                                .enterValidQuantity;
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      flex: 2,
+                                      child: GestureDetector(
+                                        onTap: () =>
+                                            _showGetItemSelectionDialog(
+                                                selectedGetItemId, (itemId) {
+                                          setState(() {
+                                            selectedGetItemId = itemId;
+                                          });
+                                        }),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: Colors.grey.shade400),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  selectedGetItemId == null
+                                                      ? AppLocalizations.of(
+                                                              context)!
+                                                          .selectItem
+                                                      : AppLocalizations.of(
+                                                              context)!
+                                                          .itemSelected,
+                                                  style: TextStyle(
+                                                    color: selectedGetItemId ==
+                                                            null
+                                                        ? Colors.grey.shade600
+                                                        : Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                              Icon(Icons.arrow_drop_down,
+                                                  color: Colors.grey.shade600),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        // Discount Applicability Section
+                        Opacity(
+                          opacity: (discountType == DiscountType.conditional ||
+                                  discountType == DiscountType.buyXGetY)
+                              ? 0.5
+                              : 1.0,
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color:
+                                  (discountType == DiscountType.conditional ||
+                                          discountType == DiscountType.buyXGetY)
+                                      ? Colors.grey.withValues(alpha: 0.1)
+                                      : const Color(0xFF027DFF)
+                                          .withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: (discountType ==
+                                              DiscountType.conditional ||
+                                          discountType == DiscountType.buyXGetY)
+                                      ? Colors.grey.withValues(alpha: 0.3)
+                                      : const Color(0xFF027DFF)
+                                          .withValues(alpha: 0.2)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.category,
+                                        color: const Color(0xFF027DFF),
+                                        size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      AppLocalizations.of(context)!
+                                          .discountApplicability,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF027DFF),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                DropdownButtonFormField<DiscountApplicability>(
+                                  value: applicability,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                    contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 8),
+                                  ),
+                                  isExpanded: true,
+                                  items: DiscountApplicability.values
+                                      .where((type) =>
+                                          type !=
+                                          DiscountApplicability.minimumOrder)
+                                      .map((applicabilityType) {
+                                    String label;
+                                    switch (applicabilityType) {
+                                      case DiscountApplicability.allItems:
+                                        label = AppLocalizations.of(context)!
+                                            .allItems;
+                                        break;
+                                      case DiscountApplicability.specificItems:
+                                        label = AppLocalizations.of(context)!
+                                            .specificItems;
+                                        break;
+                                      case DiscountApplicability
+                                          .specificCategories:
+                                        label = AppLocalizations.of(context)!
+                                            .specificCategories;
+                                        break;
+                                      case DiscountApplicability.minimumOrder:
+                                        label = AppLocalizations.of(context)!
+                                            .minimumOrder; // This won't be reached due to filter
+                                        break;
+                                    }
+                                    return DropdownMenuItem(
+                                      value: applicabilityType,
+                                      child: Text(
+                                        label,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    );
+                                  }).toList(),
+                                  // Disable for conditional and buyXGetY types
+                                  onChanged: (discountType ==
+                                              DiscountType.conditional ||
+                                          discountType == DiscountType.buyXGetY)
+                                      ? null
+                                      : (value) {
+                                          if (value != null) {
+                                            setState(() {
+                                              applicability = value;
+                                              // Clear selections when changing applicability
+                                              if (value !=
+                                                  DiscountApplicability
+                                                      .specificItems) {
+                                                selectedItemIds.clear();
+                                              }
+                                              if (value !=
+                                                  DiscountApplicability
+                                                      .specificCategories) {
+                                                selectedCategoryIds.clear();
+                                              }
+                                            });
+                                          }
+                                        },
+                                ),
+
+                                // Item Selection for Specific Items
+                                if (applicability ==
+                                    DiscountApplicability.specificItems) ...[
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade50,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                          color: Colors.grey.shade300),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(Icons.shopping_basket,
+                                                size: 16,
+                                                color: Colors.grey.shade600),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              AppLocalizations.of(context)!
+                                                  .selectItems,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.grey.shade700,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        GestureDetector(
+                                          onTap: () => _showItemSelectionDialog(
+                                              selectedItemIds, setState),
+                                          child: Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  color: Colors.grey.shade400),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    selectedItemIds.isEmpty
+                                                        ? AppLocalizations.of(
+                                                                context)!
+                                                            .noItemsSelected
+                                                        : '${selectedItemIds.length} items selected',
+                                                    style: TextStyle(
+                                                      color: selectedItemIds
+                                                              .isEmpty
+                                                          ? Colors.grey.shade600
+                                                          : Colors.black,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Icon(Icons.arrow_drop_down,
+                                                    color:
+                                                        Colors.grey.shade600),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+
+                                // Category Selection for Specific Categories
+                                if (applicability ==
+                                    DiscountApplicability
+                                        .specificCategories) ...[
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade50,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                          color: Colors.grey.shade300),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(Icons.folder,
+                                                size: 16,
+                                                color: Colors.grey.shade600),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              AppLocalizations.of(context)!
+                                                  .selectCategories,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.grey.shade700,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        GestureDetector(
+                                          onTap: () =>
+                                              _showCategorySelectionDialog(
+                                                  selectedCategoryIds,
+                                                  setState),
+                                          child: Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  color: Colors.grey.shade400),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    selectedCategoryIds.isEmpty
+                                                        ? AppLocalizations.of(
+                                                                context)!
+                                                            .noCategoriesSelected
+                                                        : '${selectedCategoryIds.length} categories selected',
+                                                    style: TextStyle(
+                                                      color: selectedCategoryIds
+                                                              .isEmpty
+                                                          ? Colors.grey.shade600
+                                                          : Colors.black,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Icon(Icons.arrow_drop_down,
+                                                    color:
+                                                        Colors.grey.shade600),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ), // Close Opacity widget
+
+                        // Add notice for disabled applicability
+                        if (discountType == DiscountType.conditional ||
+                            discountType == DiscountType.buyXGetY) ...[
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Row(
+                              children: [
+                                Icon(Icons.info_outline,
+                                    color: Colors.grey.shade600, size: 16),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    AppLocalizations.of(context)!
+                                        .applicabilityNotConfigurable,
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            DropdownButtonFormField<DiscountApplicability>(
-                              value: applicability,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                isDense: true,
-                                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                              ),
-                              isExpanded: true,
-                              items: DiscountApplicability.values
-                                  .where((type) => type != DiscountApplicability.minimumOrder)
-                                  .map((applicabilityType) {
-                                String label;
-                                switch (applicabilityType) {
-                                  case DiscountApplicability.allItems:
-                                    label = AppLocalizations.of(context)!.allItems;
-                                    break;
-                                  case DiscountApplicability.specificItems:
-                                    label = AppLocalizations.of(context)!.specificItems;
-                                    break;
-                                  case DiscountApplicability.specificCategories:
-                                    label = AppLocalizations.of(context)!.specificCategories;
-                                    break;
-                                  case DiscountApplicability.minimumOrder:
-                                    label = 'Minimum Order'; // This won't be reached due to filter
-                                    break;
-                                }
-                                return DropdownMenuItem(
-                                  value: applicabilityType,
-                                  child: Text(
-                                    label,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
+                          ),
+                        ],
+
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: minOrderController,
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!
+                                .minimumOrderAmount(''),
+                            border: const OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value != null &&
+                                value.isNotEmpty &&
+                                double.tryParse(value) == null) {
+                              return AppLocalizations.of(context)!
+                                  .pleaseEnterValidNumber;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: () async {
+                                  final pickedDate = await showDatePicker(
+                                    context: context,
+                                    initialDate: startDate,
+                                    firstDate: DateTime(2000),
+                                    lastDate: DateTime(2101),
+                                  );
+                                  if (pickedDate != null) {
+                                    setState(() {
+                                      startDate = pickedDate;
+                                    });
+                                  }
+                                },
+                                child: InputDecorator(
+                                  decoration: InputDecoration(
+                                    labelText:
+                                        AppLocalizations.of(context)!.startDate,
+                                    border: const OutlineInputBorder(),
                                   ),
-                                );
-                              }).toList(),
-                              // Disable for conditional and buyXGetY types
-                              onChanged: (discountType == DiscountType.conditional || discountType == DiscountType.buyXGetY) 
-                                  ? null 
-                                  : (value) {
-                                if (value != null) {
-                                  setState(() {
-                                    applicability = value;
-                                    // Clear selections when changing applicability
-                                    if (value != DiscountApplicability.specificItems) {
-                                      selectedItemIds.clear();
-                                    }
-                                    if (value != DiscountApplicability.specificCategories) {
-                                      selectedCategoryIds.clear();
-                                    }
-                                  });
-                                }
-                              },
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                        '${startDate.toLocal()}'.split(' ')[0]),
+                                  ),
+                                ),
+                              ),
                             ),
-                            
-                            // Item Selection for Specific Items
-                            if (applicability == DiscountApplicability.specificItems) ...[
-                              const SizedBox(height: 12),
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade50,
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: Colors.grey.shade300),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(Icons.shopping_basket, size: 16, color: Colors.grey.shade600),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          AppLocalizations.of(context)!.selectItems,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey.shade700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    GestureDetector(
-                                      onTap: () => _showItemSelectionDialog(selectedItemIds, setState),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: Colors.grey.shade400),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                selectedItemIds.isEmpty
-                                                    ? AppLocalizations.of(context)!.noItemsSelected
-                                                    : '${selectedItemIds.length} items selected',
-                                                style: TextStyle(
-                                                  color: selectedItemIds.isEmpty 
-                                                      ? Colors.grey.shade600 
-                                                      : Colors.black,
-                                                ),
-                                              ),
-                                            ),
-                                            Icon(Icons.arrow_drop_down, color: Colors.grey.shade600),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: InkWell(
+                                onTap: () async {
+                                  final pickedDate = await showDatePicker(
+                                    context: context,
+                                    initialDate: endDate,
+                                    firstDate: startDate,
+                                    lastDate: DateTime(2101),
+                                  );
+                                  if (pickedDate != null) {
+                                    setState(() {
+                                      endDate = pickedDate;
+                                    });
+                                  }
+                                },
+                                child: InputDecorator(
+                                  decoration: InputDecoration(
+                                    labelText:
+                                        AppLocalizations.of(context)!.endDate,
+                                    border: const OutlineInputBorder(),
+                                  ),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                        '${endDate.toLocal()}'.split(' ')[0]),
+                                  ),
                                 ),
                               ),
-                            ],
-                            
-                            // Category Selection for Specific Categories
-                            if (applicability == DiscountApplicability.specificCategories) ...[
-                              const SizedBox(height: 12),
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade50,
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: Colors.grey.shade300),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(Icons.folder, size: 16, color: Colors.grey.shade600),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          AppLocalizations.of(context)!.selectCategories,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey.shade700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    GestureDetector(
-                                      onTap: () => _showCategorySelectionDialog(selectedCategoryIds, setState),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: Colors.grey.shade400),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                selectedCategoryIds.isEmpty
-                                                    ? AppLocalizations.of(context)!.noCategoriesSelected
-                                                    : '${selectedCategoryIds.length} categories selected',
-                                                style: TextStyle(
-                                                  color: selectedCategoryIds.isEmpty 
-                                                      ? Colors.grey.shade600 
-                                                      : Colors.black,
-                                                ),
-                                              ),
-                                            ),
-                                            Icon(Icons.arrow_drop_down, color: Colors.grey.shade600),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                            ),
                           ],
                         ),
-                      ),
-                      ),  // Close Opacity widget
-                      
-                      // Add notice for disabled applicability
-                      if (discountType == DiscountType.conditional || discountType == DiscountType.buyXGetY) ...[
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Row(
-                            children: [
-                              Icon(Icons.info_outline, color: Colors.grey.shade600, size: 16),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  AppLocalizations.of(context)!.applicabilityNotConfigurable,
+                        const SizedBox(height: 16),
+                        // Free Delivery Checkbox
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.green.shade200),
+                          ),
+                          child: CheckboxListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            title: Row(
+                              children: [
+                                Icon(Icons.local_shipping,
+                                    color: Colors.green.shade600, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  AppLocalizations.of(context)!.freeDelivery,
                                   style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 12,
-                                    fontStyle: FontStyle.italic,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.green.shade700,
                                   ),
                                 ),
+                              ],
+                            ),
+                            subtitle: Text(
+                              AppLocalizations.of(context)!
+                                  .addFreeDeliveryToDiscount,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.green.shade600,
                               ),
-                            ],
+                            ),
+                            value: includesFreeDelivery,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                includesFreeDelivery = value ?? false;
+                              });
+                            },
                           ),
                         ),
                       ],
-                      
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: minOrderController,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!
-                              .minimumOrderAmount(''),
-                          border: const OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value != null &&
-                              value.isNotEmpty &&
-                              double.tryParse(value) == null) {
-                            return AppLocalizations.of(context)!
-                                .pleaseEnterValidNumber;
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              onTap: () async {
-                                final pickedDate = await showDatePicker(
-                                  context: context,
-                                  initialDate: startDate,
-                                  firstDate: DateTime(2000),
-                                  lastDate: DateTime(2101),
-                                );
-                                if (pickedDate != null) {
-                                  setState(() {
-                                    startDate = pickedDate;
-                                  });
-                                }
-                              },
-                              child: InputDecorator(
-                                decoration: InputDecoration(
-                                  labelText:
-                                      AppLocalizations.of(context)!.startDate,
-                                  border: const OutlineInputBorder(),
-                                ),
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                      '${startDate.toLocal()}'.split(' ')[0]),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: InkWell(
-                              onTap: () async {
-                                final pickedDate = await showDatePicker(
-                                  context: context,
-                                  initialDate: endDate,
-                                  firstDate: startDate,
-                                  lastDate: DateTime(2101),
-                                );
-                                if (pickedDate != null) {
-                                  setState(() {
-                                    endDate = pickedDate;
-                                  });
-                                }
-                              },
-                              child: InputDecorator(
-                                decoration: InputDecoration(
-                                  labelText:
-                                      AppLocalizations.of(context)!.endDate,
-                                  border: const OutlineInputBorder(),
-                                ),
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                      '${endDate.toLocal()}'.split(' ')[0]),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      // Free Delivery Checkbox
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.green.shade200),
-                        ),
-                        child: CheckboxListTile(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          title: Row(
-                            children: [
-                              Icon(Icons.local_shipping, color: Colors.green.shade600, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                AppLocalizations.of(context)!.freeDelivery,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.green.shade700,
-                                ),
-                              ),
-                            ],
-                          ),
-                          subtitle: Text(
-                            AppLocalizations.of(context)!.addFreeDeliveryToDiscount,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.green.shade600,
-                            ),
-                          ),
-                          value: includesFreeDelivery,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              includesFreeDelivery = value ?? false;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
             ),
           ),
           actions: [
@@ -979,15 +1105,20 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
               onPressed: () {
                 if (formKey.currentState!.validate()) {
                   // Check for conflicting discounts
-                  if ((applicability == DiscountApplicability.specificItems && selectedItemIds.isNotEmpty) ||
-                      (applicability == DiscountApplicability.specificCategories && selectedCategoryIds.isNotEmpty)) {
-                    
-                    if (_hasConflictingDiscounts(selectedItemIds, selectedCategoryIds, discount?.id)) {
+                  if ((applicability == DiscountApplicability.specificItems &&
+                          selectedItemIds.isNotEmpty) ||
+                      (applicability ==
+                              DiscountApplicability.specificCategories &&
+                          selectedCategoryIds.isNotEmpty)) {
+                    if (_hasConflictingDiscounts(
+                        selectedItemIds, selectedCategoryIds, discount?.id)) {
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: Text(AppLocalizations.of(context)!.conflictingDiscountsTitle),
-                          content: Text(AppLocalizations.of(context)!.someSelectedItemsAlreadyHaveDiscounts),
+                          title: Text(AppLocalizations.of(context)!
+                              .conflictingDiscountsTitle),
+                          content: Text(AppLocalizations.of(context)!
+                              .someSelectedItemsAlreadyHaveDiscounts),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(),
@@ -1003,14 +1134,21 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                   // Prepare conditional parameters for Buy X Get Y and Conditional discounts
                   Map<String, dynamic> conditionalParams = {};
                   ConditionalDiscountRule? conditionalRule;
-                  
-                  if (discountType == DiscountType.buyXGetY || discountType == DiscountType.conditional) {
-                    if (selectedBuyItemId == null || selectedGetItemId == null) {
+
+                  if (discountType == DiscountType.buyXGetY ||
+                      discountType == DiscountType.conditional) {
+                    if (selectedBuyItemId == null ||
+                        selectedGetItemId == null) {
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: Text(AppLocalizations.of(context)!.missingItems),
-                          content: Text(AppLocalizations.of(context)!.missingItemsMessage(discountType == DiscountType.conditional ? AppLocalizations.of(context)!.conditional : AppLocalizations.of(context)!.buyXGetY)),
+                          title:
+                              Text(AppLocalizations.of(context)!.missingItems),
+                          content: Text(AppLocalizations.of(context)!
+                              .missingItemsMessage(discountType ==
+                                      DiscountType.conditional
+                                  ? AppLocalizations.of(context)!.conditional
+                                  : AppLocalizations.of(context)!.buyXGetY)),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(),
@@ -1021,7 +1159,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                       );
                       return;
                     }
-                    
+
                     conditionalRule = ConditionalDiscountRule.buyXGetY;
                     conditionalParams = {
                       'buyItemId': selectedBuyItemId,
@@ -1056,9 +1194,12 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                   Discount? freeDeliveryDiscount;
                   if (includesFreeDelivery && !isEditing) {
                     freeDeliveryDiscount = Discount(
-                      id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
-                      title: '${titleController.text} - Free Delivery',
-                      description: 'Free delivery included with ${titleController.text}',
+                      id: (DateTime.now().millisecondsSinceEpoch + 1)
+                          .toString(),
+                      title: AppLocalizations.of(context)!
+                          .freeDeliveryTitle(titleController.text),
+                      description: AppLocalizations.of(context)!
+                          .freeDeliveryIncludedWith(titleController.text),
                       type: DiscountType.freeDelivery,
                       value: 0.0,
                       applicability: applicability,
@@ -1083,7 +1224,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                       }
                     } else {
                       // Check for conflicting discounts before adding
-                      if (!_hasConflictingDiscounts(selectedItemIds, selectedCategoryIds, null)) {
+                      if (!_hasConflictingDiscounts(
+                          selectedItemIds, selectedCategoryIds, null)) {
                         _business.discounts.add(newDiscount);
                         // Add free delivery discount if created
                         if (freeDeliveryDiscount != null) {
@@ -1093,7 +1235,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                         // Show error message
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(AppLocalizations.of(context)!.conflictingDiscounts),
+                            content: Text(AppLocalizations.of(context)!
+                                .conflictingDiscounts),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -1115,12 +1258,12 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
   }
 
   // Add validation method to check for conflicting discounts
-  bool _hasConflictingDiscounts(List<String> selectedItemIds, List<String> selectedCategoryIds, String? currentDiscountId) {
-    final existingDiscounts = _business.discounts.where((d) => 
-      d.id != currentDiscountId && 
-      d.status == DiscountStatus.active &&
-      d.type != DiscountType.freeDelivery
-    );
+  bool _hasConflictingDiscounts(List<String> selectedItemIds,
+      List<String> selectedCategoryIds, String? currentDiscountId) {
+    final existingDiscounts = _business.discounts.where((d) =>
+        d.id != currentDiscountId &&
+        d.status == DiscountStatus.active &&
+        d.type != DiscountType.freeDelivery);
 
     for (final discount in existingDiscounts) {
       // Check for item conflicts
@@ -1131,7 +1274,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
           }
         }
       }
-      
+
       // Check for category conflicts
       if (discount.applicability == DiscountApplicability.specificCategories) {
         for (final categoryId in selectedCategoryIds) {
@@ -1140,18 +1283,19 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
           }
         }
       }
-      
+
       // Check if existing discount applies to all items
-      if (discount.applicability == DiscountApplicability.allItems && 
+      if (discount.applicability == DiscountApplicability.allItems &&
           (selectedItemIds.isNotEmpty || selectedCategoryIds.isNotEmpty)) {
         return true;
       }
     }
-    
+
     return false;
   }
 
-  void _showItemSelectionDialog(List<String> selectedItemIds, StateSetter setState) async {
+  void _showItemSelectionDialog(
+      List<String> selectedItemIds, StateSetter setState) async {
     // Load all available items
     List<ItemCategory> categories = [];
     try {
@@ -1185,7 +1329,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       context: context,
       builder: (context) {
         List<String> tempSelected = List.from(selectedItemIds);
-        
+
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
@@ -1206,16 +1350,22 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                         itemBuilder: (context, index) {
                           final item = allItems[index];
                           final isSelected = tempSelected.contains(item['id']);
-                          
+
                           return CheckboxListTile(
                             dense: true,
                             title: Text(item['name']),
-                            subtitle: Text('${item['categoryName']} • KWD ${item['price'].toStringAsFixed(2)}'),
+                            subtitle: Text(AppLocalizations.of(context)!
+                                .categoryAndPrice(
+                                    item['categoryName'],
+                                    AppLocalizations.of(context)!.kwd,
+                                    item['price'].toStringAsFixed(2))),
                             value: isSelected,
                             onChanged: (bool? value) {
                               setDialogState(() {
-                                if (value == true) tempSelected.add(item['id']);
-                                else tempSelected.remove(item['id']);
+                                if (value == true)
+                                  tempSelected.add(item['id']);
+                                else
+                                  tempSelected.remove(item['id']);
                               });
                             },
                           );
@@ -1248,7 +1398,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     );
   }
 
-  void _showCategorySelectionDialog(List<String> selectedCategoryIds, StateSetter setState) async {
+  void _showCategorySelectionDialog(
+      List<String> selectedCategoryIds, StateSetter setState) async {
     // Load all available categories
     List<ItemCategory> categories = [];
     try {
@@ -1260,7 +1411,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
 
     if (categories.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.noCategoriesFound)),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)!.noCategoriesFound)),
       );
       return;
     }
@@ -1269,7 +1421,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       context: context,
       builder: (context) {
         List<String> tempSelected = List.from(selectedCategoryIds);
-        
+
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
@@ -1290,15 +1442,17 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                         itemBuilder: (context, index) {
                           final category = categories[index];
                           final isSelected = tempSelected.contains(category.id);
-                          
+
                           return CheckboxListTile(
                             dense: true,
                             title: Text(category.name),
                             value: isSelected,
                             onChanged: (bool? value) {
                               setDialogState(() {
-                                if (value == true) tempSelected.add(category.id);
-                                else tempSelected.remove(category.id);
+                                if (value == true)
+                                  tempSelected.add(category.id);
+                                else
+                                  tempSelected.remove(category.id);
                               });
                             },
                           );
@@ -1331,7 +1485,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     );
   }
 
-  void _showBuyItemSelectionDialog(String? selectedBuyItemId, Function(String?) onItemSelected) async {
+  void _showBuyItemSelectionDialog(
+      String? selectedBuyItemId, Function(String?) onItemSelected) async {
     _showSingleItemSelectionDialog(
       selectedBuyItemId,
       AppLocalizations.of(context)!.selectBuyItem,
@@ -1339,7 +1494,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     );
   }
 
-  void _showGetItemSelectionDialog(String? selectedGetItemId, Function(String?) onItemSelected) async {
+  void _showGetItemSelectionDialog(
+      String? selectedGetItemId, Function(String?) onItemSelected) async {
     _showSingleItemSelectionDialog(
       selectedGetItemId,
       AppLocalizations.of(context)!.selectGetItem,
@@ -1385,7 +1541,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       context: context,
       builder: (context) {
         String? tempSelected = selectedItemId;
-        
+
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
@@ -1396,7 +1552,9 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                 child: Column(
                   children: [
                     Text(
-                      tempSelected != null ? AppLocalizations.of(context)!.itemSelected : AppLocalizations.of(context)!.noItemSelected,
+                      tempSelected != null
+                          ? AppLocalizations.of(context)!.itemSelected
+                          : AppLocalizations.of(context)!.noItemSelected,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -1405,11 +1563,14 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                         itemCount: allItems.length,
                         itemBuilder: (context, index) {
                           final item = allItems[index];
-                          
                           return RadioListTile<String>(
                             dense: true,
                             title: Text(item['name']),
-                            subtitle: Text('${item['categoryName']} • KWD ${item['price'].toStringAsFixed(2)}'),
+                            subtitle: Text(AppLocalizations.of(context)!
+                                .categoryAndPrice(
+                                    item['categoryName'],
+                                    AppLocalizations.of(context)!.kwd,
+                                    item['price'].toStringAsFixed(2))),
                             value: item['id'],
                             groupValue: tempSelected,
                             onChanged: (String? value) {

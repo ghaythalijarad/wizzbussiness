@@ -98,19 +98,24 @@ class _AnalyticsPageState extends State<AnalyticsPage>
 
   AnalyticsData _generateAnalyticsData(AppLocalizations loc) {
     // Calculate real analytics from orders
-    double totalRevenue = widget.orders.fold(0.0, (sum, o) => sum + o.totalAmount);
+    double totalRevenue =
+        widget.orders.fold(0.0, (sum, o) => sum + o.totalAmount);
     double dailyRevenue = widget.orders
-        .where((o) => o.createdAt.isAfter(DateTime.now().subtract(const Duration(days: 1))))
+        .where((o) => o.createdAt
+            .isAfter(DateTime.now().subtract(const Duration(days: 1))))
         .fold(0.0, (sum, o) => sum + o.totalAmount);
     double weeklyRevenue = widget.orders
-        .where((o) => o.createdAt.isAfter(DateTime.now().subtract(const Duration(days: 7))))
+        .where((o) => o.createdAt
+            .isAfter(DateTime.now().subtract(const Duration(days: 7))))
         .fold(0.0, (sum, o) => sum + o.totalAmount);
     double monthlyRevenue = widget.orders
-        .where((o) => o.createdAt.isAfter(DateTime.now().subtract(const Duration(days: 30))))
+        .where((o) => o.createdAt
+            .isAfter(DateTime.now().subtract(const Duration(days: 30))))
         .fold(0.0, (sum, o) => sum + o.totalAmount);
 
-    double averageOrderValue = widget.orders.isEmpty ? 0.0 : totalRevenue / widget.orders.length;
-    
+    double averageOrderValue =
+        widget.orders.isEmpty ? 0.0 : totalRevenue / widget.orders.length;
+
     // Generate sample revenue chart data
     List<DailyRevenue> revenueChart = List.generate(7, (index) {
       return DailyRevenue(
@@ -127,9 +132,12 @@ class _AnalyticsPageState extends State<AnalyticsPage>
       totalOrders: widget.orders.length,
       averageOrderValue: averageOrderValue,
       topSellingItems: [
-        TopSellingItem(itemName: loc.sampleItem, soldQuantity: 25, revenue: 750),
-        TopSellingItem(itemName: "Special Dish", soldQuantity: 18, revenue: 540),
-        TopSellingItem(itemName: "Popular Item", soldQuantity: 12, revenue: 360),
+        TopSellingItem(
+            itemName: loc.sampleItem, soldQuantity: 25, revenue: 750),
+        TopSellingItem(
+            itemName: loc.specialDish, soldQuantity: 18, revenue: 540),
+        TopSellingItem(
+            itemName: loc.popularItem, soldQuantity: 12, revenue: 360),
       ],
       ordersByStatus: {
         for (var status in OrderStatus.values)
@@ -148,7 +156,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     final loc = AppLocalizations.of(context)!;
     final analytics = _generateAnalyticsData(loc);
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -167,14 +175,15 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                   ),
                 ),
                 background: Container(
-                  decoration: BoxDecoration(                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      theme.primaryColor,
-                      theme.primaryColor.withValues(alpha: 0.8),
-                    ],
-                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        theme.primaryColor,
+                        theme.primaryColor.withValues(alpha: 0.8),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -199,14 +208,14 @@ class _AnalyticsPageState extends State<AnalyticsPage>
               ),
               child: Row(
                 children: [
-                  _buildTimeRangeButton("Today", 0),
-                  _buildTimeRangeButton("Week", 1),
-                  _buildTimeRangeButton("Month", 2),
-                  _buildTimeRangeButton("Year", 3),
+                  _buildTimeRangeButton(loc.today, 0),
+                  _buildTimeRangeButton(loc.week, 1),
+                  _buildTimeRangeButton(loc.month, 2),
+                  _buildTimeRangeButton(loc.year, 3),
                 ],
               ),
             ),
-            
+
             // Tab Bar
             TabBar(
               controller: _tabController,
@@ -214,13 +223,13 @@ class _AnalyticsPageState extends State<AnalyticsPage>
               unselectedLabelColor: Colors.grey,
               indicatorColor: theme.primaryColor,
               indicatorWeight: 3,
-              tabs: const [
-                Tab(text: "Overview"),
-                Tab(text: "Revenue"),
-                Tab(text: "Performance"),
+              tabs: [
+                Tab(text: loc.overview),
+                Tab(text: loc.revenue),
+                Tab(text: loc.performance),
               ],
             ),
-            
+
             Expanded(
               child: TabBarView(
                 controller: _tabController,
@@ -245,7 +254,9 @@ class _AnalyticsPageState extends State<AnalyticsPage>
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
@@ -261,7 +272,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     );
   }
 
-  Widget _buildOverviewTab(AnalyticsData analytics, AppLocalizations loc, ThemeData theme) {
+  Widget _buildOverviewTab(
+      AnalyticsData analytics, AppLocalizations loc, ThemeData theme) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -276,28 +288,28 @@ class _AnalyticsPageState extends State<AnalyticsPage>
             crossAxisSpacing: 16,
             children: [
               _buildRevenueCard(
-                title: "Total Revenue",
+                title: loc.totalRevenue,
                 value: "\$${analytics.totalRevenue.toStringAsFixed(2)}",
                 icon: Icons.monetization_on,
                 color: const Color(0xFF4CAF50),
                 growth: "+${analytics.growthRate}%",
               ),
               _buildRevenueCard(
-                title: "Today's Revenue",
+                title: loc.todaysRevenue,
                 value: "\$${analytics.dailyRevenue.toStringAsFixed(2)}",
                 icon: Icons.today,
                 color: const Color(0xFF2196F3),
                 growth: "+8.2%",
               ),
               _buildRevenueCard(
-                title: "Total Orders",
+                title: loc.totalOrders,
                 value: "${analytics.totalOrders}",
                 icon: Icons.shopping_cart,
                 color: const Color(0xFFFF9800),
                 growth: "+15.1%",
               ),
               _buildRevenueCard(
-                title: "Avg Order Value",
+                title: loc.avgOrderValue,
                 value: "\$${analytics.averageOrderValue.toStringAsFixed(2)}",
                 icon: Icons.analytics,
                 color: const Color(0xFF9C27B0),
@@ -305,14 +317,14 @@ class _AnalyticsPageState extends State<AnalyticsPage>
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Quick Stats Row
           _buildQuickStatsCard(analytics, loc),
-          
+
           const SizedBox(height: 24),
-          
+
           // Top Selling Items
           _buildTopSellingItemsCard(analytics, loc),
         ],
@@ -320,7 +332,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     );
   }
 
-  Widget _buildRevenueTab(AnalyticsData analytics, AppLocalizations loc, ThemeData theme) {
+  Widget _buildRevenueTab(
+      AnalyticsData analytics, AppLocalizations loc, ThemeData theme) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -328,7 +341,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
           // Revenue Chart Card
           Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -338,13 +352,14 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Revenue Trend",
+                        loc.revenueTrend,
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: const Color(0xFF4CAF50).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -382,7 +397,10 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                             sideTitles: SideTitles(
                               showTitles: true,
                               getTitlesWidget: (value, meta) {
-                                final date = analytics.revenueChart[value.toInt() % analytics.revenueChart.length].date;
+                                final date = analytics
+                                    .revenueChart[value.toInt() %
+                                        analytics.revenueChart.length]
+                                    .date;
                                 return Text(
                                   '${date.day}/${date.month}',
                                   style: const TextStyle(fontSize: 12),
@@ -390,14 +408,20 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                               },
                             ),
                           ),
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
                         ),
                         borderData: FlBorderData(show: false),
                         lineBarsData: [
                           LineChartBarData(
-                            spots: analytics.revenueChart.asMap().entries.map((entry) {
-                              return FlSpot(entry.key.toDouble(), entry.value.revenue);
+                            spots: analytics.revenueChart
+                                .asMap()
+                                .entries
+                                .map((entry) {
+                              return FlSpot(
+                                  entry.key.toDouble(), entry.value.revenue);
                             }).toList(),
                             isCurved: true,
                             gradient: LinearGradient(
@@ -429,9 +453,9 @@ class _AnalyticsPageState extends State<AnalyticsPage>
               ),
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Revenue Breakdown
           _buildRevenueBreakdownCard(analytics, loc),
         ],
@@ -439,16 +463,17 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     );
   }
 
-  Widget _buildPerformanceTab(AnalyticsData analytics, AppLocalizations loc, ThemeData theme) {
+  Widget _buildPerformanceTab(
+      AnalyticsData analytics, AppLocalizations loc, ThemeData theme) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           // Performance Metrics
           _buildPerformanceMetricsCard(analytics, loc),
-          
+
           const SizedBox(height: 24),
-          
+
           // Order Status Distribution
           _buildOrderStatusChart(analytics, loc),
         ],
@@ -485,12 +510,14 @@ class _AnalyticsPageState extends State<AnalyticsPage>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(icon, color: Colors.white, size: 28),                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                Icon(icon, color: Colors.white, size: 28),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Text(
                     growth,
                     style: const TextStyle(
@@ -535,17 +562,17 @@ class _AnalyticsPageState extends State<AnalyticsPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Quick Stats",
+              loc.quickStats,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: _buildQuickStatItem(
-                    "Customers Served",
+                    loc.customersServed,
                     "${analytics.customersServed}",
                     Icons.people,
                     const Color(0xFF4CAF50),
@@ -553,7 +580,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                 ),
                 Expanded(
                   child: _buildQuickStatItem(
-                    "Cancellation Rate",
+                    loc.cancellationRate,
                     "${analytics.cancellationRate}%",
                     Icons.cancel,
                     const Color(0xFFF44336),
@@ -567,7 +594,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     );
   }
 
-  Widget _buildQuickStatItem(String title, String value, IconData icon, Color color) {
+  Widget _buildQuickStatItem(
+      String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -601,7 +629,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     );
   }
 
-  Widget _buildTopSellingItemsCard(AnalyticsData analytics, AppLocalizations loc) {
+  Widget _buildTopSellingItemsCard(
+      AnalyticsData analytics, AppLocalizations loc) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -613,8 +642,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
             Text(
               loc.topSellingItems,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             ...analytics.topSellingItems.asMap().entries.map((entry) {
@@ -681,7 +710,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                           ),
                         ),
                         Text(
-                          "Revenue",
+                          loc.revenueLabel,
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 12,
@@ -699,7 +728,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     );
   }
 
-  Widget _buildRevenueBreakdownCard(AnalyticsData analytics, AppLocalizations loc) {
+  Widget _buildRevenueBreakdownCard(
+      AnalyticsData analytics, AppLocalizations loc) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -709,15 +739,18 @@ class _AnalyticsPageState extends State<AnalyticsPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Revenue Breakdown",
+              loc.revenueBreakdown,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 20),
-            _buildRevenueBreakdownItem("Daily Revenue", analytics.dailyRevenue, const Color(0xFF2196F3)),
-            _buildRevenueBreakdownItem("Weekly Revenue", analytics.weeklyRevenue, const Color(0xFF4CAF50)),
-            _buildRevenueBreakdownItem("Monthly Revenue", analytics.monthlyRevenue, const Color(0xFFFF9800)),
+            _buildRevenueBreakdownItem(loc.dailyRevenue, analytics.dailyRevenue,
+                const Color(0xFF2196F3)),
+            _buildRevenueBreakdownItem(loc.weeklyRevenue,
+                analytics.weeklyRevenue, const Color(0xFF4CAF50)),
+            _buildRevenueBreakdownItem(loc.monthlyRevenue,
+                analytics.monthlyRevenue, const Color(0xFFFF9800)),
           ],
         ),
       ),
@@ -760,7 +793,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     );
   }
 
-  Widget _buildPerformanceMetricsCard(AnalyticsData analytics, AppLocalizations loc) {
+  Widget _buildPerformanceMetricsCard(
+      AnalyticsData analytics, AppLocalizations loc) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -770,17 +804,17 @@ class _AnalyticsPageState extends State<AnalyticsPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Performance Metrics",
+              loc.performanceMetrics,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
                   child: _buildPerformanceMetric(
-                    "Avg Prep Time",
+                    loc.avgPrepTime,
                     "${analytics.averagePreparationTime.toStringAsFixed(1)} min",
                     Icons.timer,
                     const Color(0xFF2196F3),
@@ -788,7 +822,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                 ),
                 Expanded(
                   child: _buildPerformanceMetric(
-                    "Success Rate",
+                    loc.successRate,
                     "${(100 - analytics.cancellationRate).toStringAsFixed(1)}%",
                     Icons.check_circle,
                     const Color(0xFF4CAF50),
@@ -802,7 +836,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     );
   }
 
-  Widget _buildPerformanceMetric(String title, String value, IconData icon, Color color) {
+  Widget _buildPerformanceMetric(
+      String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -848,8 +883,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
             Text(
               loc.ordersByStatus,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -894,8 +929,10 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     );
   }
 
-  List<PieChartSectionData> _buildPieChartSections(Map<OrderStatus, int> ordersByStatus) {
-    final total = ordersByStatus.values.fold<int>(0, (sum, count) => sum + count);
+  List<PieChartSectionData> _buildPieChartSections(
+      Map<OrderStatus, int> ordersByStatus) {
+    final total =
+        ordersByStatus.values.fold<int>(0, (sum, count) => sum + count);
     if (total == 0) return [];
 
     return ordersByStatus.entries.map((entry) {

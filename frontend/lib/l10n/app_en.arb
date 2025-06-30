@@ -15,6 +15,9 @@
   "pleaseEnterYourEmail": "Please enter your email",
   "pleaseEnterYourPassword": "Please enter your password",
   "errorOccurred": "An error occurred",
+  "failedToFetchProfile": "Failed to fetch profile",
+  "noBusinessFoundForUser": "No business found for this user",
+  "loginFailed": "Login failed",
   
   "demoStore": "Demo Store",
   "demoPharmacy": "Demo Pharmacy", 
@@ -209,6 +212,7 @@
   "search": "Search",
   "noItemsFound": "No items found",
   "currency": "Currency",
+  "currencyPrefix": "IQD ",
   "edit": "Edit",
   "deleteItem": "Delete Item",
   "deleteItemConfirmation": "Are you sure you want to delete this item?",
@@ -418,7 +422,15 @@
   "smartBusinessControls": "Smart business controls",
   "readyToReceiveOrders": "Ready to receive orders",
   "ordersArePaused": "Orders are paused",
-  "processOrderReturns": "Process order returns",
+  "menuItemsAndCategories": "Menu items & categories",
+  "businessInsights": "Business insights",
+  "offersAndPromotions": "Offers & promotions",
+  "appConfiguration": "App configuration",
+  "changeAppLanguage": "Change app language",
+  "cancelRecentOrder": "Cancel recent order",
+  "tapOutsideOrPressEscToClose": "Tap outside or press ESC to close",
+  "languageChangedToArabic": "تم تغيير اللغة إلى العربية",
+  "languageChangedToEnglish": "Language changed to English",
   
   "managePromotionalOffers": "Manage promotional offers",
   "viewBusinessInsights": "View business insights",
@@ -516,5 +528,321 @@
   "selectBuyItem": "Select Buy Item",
   "selectGetItem": "Select Get Item",
   "noCategoriesFound": "No categories found. Please add categories first.",
-  "appliesToMinimumOrder": "Applies to orders above minimum amount"
+  "appliesToMinimumOrder": "Applies to orders above minimum amount",
+  
+  "startSimulation": "Start Simulation",
+  "stopSimulation": "Stop Simulation",
+  "simulateNewOrder": "Simulate New Order",
+  
+  "notificationsTitle": "Notifications",
+  "live": "Live",
+  "offline": "Offline",
+  "sendTestNotification": "Send Test Notification",
+  "notConnectedToNotifications": "Not connected to real-time notifications",
+  "total": "Total",
+  "unread": "Unread",
+  "highPriority": "High Priority",
+  "noNotificationsYet": "No notifications yet",
+  "newOrderNotificationsAppearHere": "New order notifications will appear here",
+  "clearAllNotifications": "Clear All Notifications",
+  "testNotificationSentSuccessfully": "Test notification sent successfully",
+  "failedToSendTestNotification": "Failed to send test notification: {error}",
+  "@failedToSendTestNotification": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToConnectToNotifications": "Failed to connect to notifications: {error}",
+  "@failedToConnectToNotifications": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "view": "View",
+  "urgent": "urgent",
+  "high": "high",
+  "normal": "normal",
+  "low": "low",
+  "justNow": "Just now",
+  "minutesAgo": "{minutes}m ago",
+  "@minutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "{hours}h ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "{days}d ago",
+  "@daysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+
+  "today": "Today",
+  "week": "Week",
+  "month": "Month",
+  "year": "Year",
+  "overview": "Overview",
+  "revenue": "Revenue",
+  "performance": "Performance",
+  "totalRevenue": "Total Revenue",
+  "todaysRevenue": "Today's Revenue",
+  "totalOrders": "Total Orders",
+  "avgOrderValue": "Avg Order Value",
+  "quickStats": "Quick Stats",
+  "customersServed": "Customers Served",
+  "cancellationRate": "Cancellation Rate",
+  "revenueTrend": "Revenue Trend",
+  "revenueBreakdown": "Revenue Breakdown",
+  "dailyRevenue": "Daily Revenue",
+  "weeklyRevenue": "Weekly Revenue",
+  "monthlyRevenue": "Monthly Revenue",
+  "performanceMetrics": "Performance Metrics",
+  "avgPrepTime": "Avg Prep Time",
+  "successRate": "Success Rate",
+  "specialDish": "Special Dish",
+  "popularItem": "Popular Item",
+  "revenueLabel": "Revenue",
+  "errorLoadingUserData": "Error loading user data",
+  "retry": "Retry",
+  "userInformation": "User Information",
+  "security": "Security",
+  "passwordChangeAvailableInSettings": "Password change is available in the main Settings page.",
+  "notSpecified": "Not specified",
+  "kitchen": "Kitchen",
+  "errorLoadingProfile": "Error loading profile",
+  "active": "Active",
+  "verified": "Verified",
+  "centralizedPlatform": "Centralized Platform",
+  "platformConnection": "Platform Connection",
+  "connected": "Connected",
+  "disconnected": "Disconnected",
+  "account": "Account",
+  "syncStatus": "Sync Status",
+  "platformApps": "Platform Apps",
+  "localBusinesses": "Local Businesses",
+  "syncRecommended": "Sync Recommended",
+  "yes": "Yes",
+  "no": "No",
+  "noAppsFound": "No apps found",
+  "unknown": "Unknown",
+  "actions": "Actions",
+  "setupPlatform": "Setup Platform",
+  "syncAllBusinesses": "Sync All Businesses",
+  "refreshStatus": "Refresh Status",
+  "failedToLoadPlatformStatus": "Failed to load platform status",
+  "platformSetupCompletedSuccessfully": "Platform setup completed successfully!",
+  "platformSetupFailed": "Platform setup failed",
+  "errorSettingUpPlatform": "Error setting up platform",
+  "allBusinessesSyncedSuccessfully": "All businesses synced successfully!",
+  "errorSyncingBusinesses": "Error syncing businesses",
+  "failedToFetchProfile": "Failed to fetch profile",
+  "noBusinessFoundForThisUser": "No business found for this user",
+  "loginFailedMessage": "Login failed",
+  "notAvailable": "N/A",
+  "oldPassword": "Old Password",
+  "pleaseEnterOldPassword": "Please enter your old password",
+  "pleaseEnterNewPassword": "Please enter your new password",
+  "confirmNewPasswordLabel": "Confirm New Password",
+  "passwordsDoNotMatchError": "Passwords do not match",
+  "generateTestOrders": "Generate test orders to help with development and testing.",
+  "createRealisticOrders": "This will create realistic orders with random customer data, items, and pricing.",
+  "createOneOrder": "Create 1 Order",
+  "createThreeOrders": "Create 3 Orders",
+  "failedToCreateOrders": "Failed to create orders",
+  "categoriesLoaded": "Categories loaded",
+  "createFirstCategory": "Create First Category",
+  "noCategoriesFoundMessage": "No categories found. Create your first category to organize your items.",
+  "failedToDeleteItem": "Failed to delete item",
+  "failedToLoadCategories": "Failed to load categories",
+  "failedToAddItem": "Failed to add item",
+  "failedToUpdateItem": "Failed to update item",
+  "pleaseSelectCategoryOrCreate": "Please select a category or create a new one",
+  "confirmPasswordLabel": "Confirm Password",
+  "pleaseCompleteAllRequiredFields": "Please complete all required fields",
+  "documentSelectedSuccessfully": "Document selected successfully",
+  "errorGettingLocation": "Error getting location",
+  "pleaseEnterValidEmailAddress": "Please enter a valid email address",
+  "phoneNumberIsRequired": "Phone number is required",
+  "passwordIsRequired": "Password is required",
+  "passwordMustBeAtLeast8Characters": "Password must be at least 8 characters long",
+  "passwordMustContainLowercase": "Password must contain at least one lowercase letter",
+  "passwordMustContainUppercase": "Password must contain at least one uppercase letter",
+  "passwordMustContainNumber": "Password must contain at least one number",
+  "passwordMustContainSpecialCharacter": "Password must contain at least one special character",
+  "pleaseConfirmYourPassword": "Please confirm your password",
+  "passwordsDoNotMatchRegistration": "Passwords do not match",
+  "pleaseEnterExactly10Digits": "Please enter exactly 10 digits",
+  "pleaseEnterOnlyNumbers": "Please enter only numbers",
+  "pleaseEnterValidIraqiNumber": "Please enter a valid Iraqi number (77X/78X/79X for mobile)",
+  "userWithEmailAlreadyExists": "A user with this email already exists",
+  "passwordResetEmailSentSuccessfully": "Password reset email sent successfully",
+  "failedToSendPasswordResetEmail": "Failed to send password reset email",
+  "registrationFailedStatus": "Registration failed",
+  "networkError": "Network error",
+  "validationError": "Validation error",
+  "failedToFetchTestUserProfile": "Failed to fetch test user profile",
+  
+  "unknownErrorOccurred": "An unknown error occurred",
+  "loginSuccessful": "Login successful",
+  "noAccessTokenFound": "No access token found",
+  "sessionExpiredPleaseLoginAgain": "Session expired. Please login again.",
+  "loggedOutSuccessfully": "Logged out successfully",
+  "errorDuringLogout": "Error during logout",
+  "registrationSuccessful": "Registration successful",
+  "passwordResetSuccessfully": "Password reset successfully",
+  "failedToResetPassword": "Failed to reset password",
+  "passwordChangedSuccessfully": "Password changed successfully",
+  "otpSentSuccessfully": "OTP sent successfully",
+  
+  "readyToReceiveOrders": "Ready to receive orders",
+  "ordersArePaused": "Orders are paused",
+  "menuItemsAndCategories": "Menu items & categories",
+  "businessInsights": "Business insights",
+  "offersAndPromotions": "Offers & promotions",
+  "appConfiguration": "App configuration",
+  "changeAppLanguage": "Change app language",
+  "cancelRecentOrder": "Cancel recent order",
+  "tapOutsideOrPressEscToClose": "Tap outside or press ESC to close",
+  "languageChangedToArabic": "تم تغيير اللغة إلى العربية",
+  "languageChangedToEnglish": "Language changed to English",
+  
+  "viewAndManageOrders": "View and manage orders",
+  "businessDashboardVersion": "Business Dashboard v2.0",
+  "modernMaterialDesign": "Modern Material Design",
+  
+  "menu": "Menu",
+  
+  "loginSuccessful": "Login successful",
+  "sessionExpiredPleaseLoginAgain": "Session expired. Please login again.",
+  "networkError": "Network error",
+  "noAccessTokenFound": "No access token found",
+  "loggedOutSuccessfully": "Logged out successfully",
+  "errorDuringLogout": "Error during logout",
+  "passwordResetEmailSentSuccessfully": "Password reset email sent successfully",
+  "failedToSendPasswordResetEmail": "Failed to send password reset email",
+  "registrationSuccessful": "Registration successful",
+  "aUserWithThisEmailAlreadyExists": "A user with this email already exists",
+  "registrationFailed": "Registration failed",
+  "validationError": "Validation error",
+  "passwordResetSuccessfully": "Password reset successfully",
+  "failedToResetPassword": "Failed to reset password",
+  "passwordChangedSuccessfully": "Password changed successfully",
+  "otpSentSuccessfully": "OTP sent successfully",
+  "failedToFetchTestUserProfile": "Failed to fetch test user profile",
+  "anUnknownErrorOccurred": "An unknown error occurred",
+  
+  "failedToLoadCategories": "Failed to load categories",
+  "failedToCreateCategory": "Failed to create category",
+  "failedToLoadItems": "Failed to load items",
+  "failedToCreateItem": "Failed to create item",
+  "failedToUpdateItem": "Failed to update item",
+  "failedToDeleteItem": "Failed to delete item",
+  "failedToLoadNotificationHistory": "Failed to load notification history",
+  "failedToMarkNotificationAsRead": "Failed to mark notification as read",
+  "failedToSendTestNotification": "Failed to send test notification",
+  "failedToCreateOrder": "Failed to create order",
+  "failedToLoadOrders": "Failed to load orders",
+  "failedToUpdateOrderStatus": "Failed to update order status",
+  "failedToLoadSupportedPosSystems": "Failed to load supported POS systems",
+  "failedToLoadPosSettings": "Failed to load POS settings",
+  "failedToCreatePosSettings": "Failed to create POS settings",
+  "failedToUpdatePosSettings": "Failed to update POS settings",
+  "failedToDeletePosSettings": "Failed to delete POS settings",
+  "failedToTestPosConnection": "Failed to test POS connection",
+  "failedToGetPosSystemHealth": "Failed to get POS system health",
+  "failedToRetryPosSync": "Failed to retry POS sync",
+  "failedToLoadPosIntegrationStatistics": "Failed to load POS integration statistics",
+  "failedToBulkSyncOrdersToPos": "Failed to bulk sync orders to POS",
+  "failedToUpdateWebhookConfiguration": "Failed to update webhook configuration",
+  "failedToValidatePosCredentials": "Failed to validate POS credentials",
+  "failedToLoadUserBusinesses": "Failed to load user businesses",
+  "failedToLoadComparativeAnalytics": "Failed to load comparative analytics",
+  
+  "failedToTestPlatformConnection": "Failed to test platform connection",
+  "errorTestingPlatformConnection": "Error testing platform connection",
+  "failedToGetPlatformApps": "Failed to get platform apps",
+  "errorGettingPlatformApps": "Error getting platform apps",
+  "failedToDeployCentralizedApp": "Failed to deploy centralized app",
+  "errorDeployingCentralizedApp": "Error deploying centralized app",
+  "failedToSyncBusinessToPlatform": "Failed to sync business to platform",
+  "errorSyncingBusinessToPlatform": "Error syncing business to platform",
+  "failedToSyncAllBusinessesToPlatform": "Failed to sync all businesses to platform",
+  "errorSyncingAllBusinessesToPlatform": "Error syncing all businesses to platform",
+  "failedToGetPlatformSyncStatus": "Failed to get platform sync status",
+  "errorGettingPlatformSyncStatus": "Error getting platform sync status",
+  "failedToSetupCentralizedPlatform": "Failed to setup centralized platform",
+  "errorSettingUpCentralizedPlatform": "Error setting up centralized platform",
+  
+  "uncategorized": "Uncategorized",
+  "searchFailed": "Search failed",
+  "userNotLoggedIn": "User not logged in. Please log in first.",
+  
+  "signOut": "Sign Out",
+  "signOutConfirmation": "Are you sure you want to sign out?",
+  "cancel": "Cancel",
+  "showLocalNotifications": "Show Local Notifications",
+  "showLocalNotificationsDescription": "Display notifications in system notification area",
+  "playNotificationSounds": "Play Notification Sounds",
+  "playNotificationSoundsDescription": "Play sound when notifications are received",
+  "testNotifications": "Test Notifications",
+  "testNotificationDescription": "This will send a test notification to verify your settings are working correctly.",
+  "photoLibrary": "Photo Library",
+  "camera": "Camera",
+  "errorSelectingDocument": "Error selecting document",
+  "errorSelectingImage": "Error selecting image",
+  "orderSimulation": "Order Simulation",
+  "later": "Later",
+  "viewOrder": "View Order",
+  "understood": "Understood",
+  "failedToSendTestNotification": "Failed to send test notification",
+  "error": "Error",
+  
+  "minimumOrder": "Minimum Order",
+  "freeDeliveryIncludedWith": "Free delivery included with {title}",
+  "@freeDeliveryIncludedWith": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "freeDeliveryTitle": "{title} - Free Delivery",
+  "@freeDeliveryTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "kwd": "KWD",
+  "categoryAndPrice": "{category} • {currency} {price}",
+  "@categoryAndPrice": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  }
 }

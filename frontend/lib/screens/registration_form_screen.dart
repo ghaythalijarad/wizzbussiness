@@ -98,7 +98,9 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error getting location: $e')),
+          SnackBar(
+              content: Text(
+                  '${AppLocalizations.of(context)!.errorGettingLocation}: $e')),
         );
       }
     } finally {
@@ -110,21 +112,23 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
   // Enhanced Validation Methods
   String? _validateEmail(String? value) {
+    final loc = AppLocalizations.of(context)!;
     if (value == null || value.isEmpty) {
-      return 'Please enter your email address';
+      return loc.pleaseEnterEmailAddress;
     }
     // Correct email validation pattern
     final emailRegex =
         RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     if (!emailRegex.hasMatch(value)) {
-      return 'Please enter a valid email address';
+      return loc.pleaseEnterValidEmailAddress;
     }
     return null;
   }
 
   String? _validateIraqiPhone(String? value) {
+    final loc = AppLocalizations.of(context)!;
     if (value == null || value.isEmpty) {
-      return 'Phone number is required';
+      return loc.phoneNumberIsRequired;
     }
 
     // Remove all spaces, dashes, and parentheses
@@ -132,12 +136,12 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
     // Check if it's exactly 10 digits (since +964 is added automatically)
     if (cleanPhone.length != 10) {
-      return 'Please enter exactly 10 digits';
+      return loc.pleaseEnterExactly10Digits;
     }
 
     // Check if all characters are digits
     if (!RegExp(r'^[0-9]+$').hasMatch(cleanPhone)) {
-      return 'Please enter only numbers';
+      return loc.pleaseEnterOnlyNumbers;
     }
 
     // Iraqi mobile number patterns (first 3 digits after +964):
@@ -148,48 +152,50 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
     if (!mobileRegex.hasMatch(cleanPhone) &&
         !landlineRegex.hasMatch(cleanPhone)) {
-      return 'Please enter a valid Iraqi number (77X/78X/79X for mobile)';
+      return loc.pleaseEnterValidIraqiNumber;
     }
     return null;
   }
 
   String? _validatePassword(String? value) {
+    final loc = AppLocalizations.of(context)!;
     if (value == null || value.isEmpty) {
-      return 'Password is required';
+      return loc.passwordIsRequired;
     }
     if (value.length < 8) {
-      return 'Password must be at least 8 characters long';
+      return loc.passwordMustBeAtLeast8Characters;
     }
 
     // Check for lowercase letter
     if (!RegExp(r'[a-z]').hasMatch(value)) {
-      return 'Password must contain at least one lowercase letter';
+      return loc.passwordMustContainLowercase;
     }
 
     // Check for uppercase letter
     if (!RegExp(r'[A-Z]').hasMatch(value)) {
-      return 'Password must contain at least one uppercase letter';
+      return loc.passwordMustContainUppercase;
     }
 
     // Check for number
     if (!RegExp(r'[0-9]').hasMatch(value)) {
-      return 'Password must contain at least one number';
+      return loc.passwordMustContainNumber;
     }
 
     // Check for special character
     if (!RegExp(r'[!@#\$%^&*(),.?":{}|<>]').hasMatch(value)) {
-      return 'Password must contain at least one special character';
+      return loc.passwordMustContainSpecialCharacter;
     }
 
     return null;
   }
 
   String? _validateConfirmPassword(String? value) {
+    final loc = AppLocalizations.of(context)!;
     if (value == null || value.isEmpty) {
-      return 'Please confirm your password';
+      return loc.pleaseConfirmYourPassword;
     }
     if (value != _passwordController.text) {
-      return 'Passwords do not match';
+      return loc.passwordsDoNotMatchRegistration;
     }
     return null;
   }
@@ -207,14 +213,18 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Document selected successfully')),
+            SnackBar(
+                content: Text(AppLocalizations.of(context)!
+                    .documentSelectedSuccessfully)),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error selecting document')),
+          SnackBar(
+              content:
+                  Text(AppLocalizations.of(context)!.errorSelectingDocument)),
         );
       }
     }
@@ -230,7 +240,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
               children: [
                 ListTile(
                   leading: const Icon(Icons.photo_library),
-                  title: const Text('Photo Library'),
+                  title: Text(AppLocalizations.of(context)!.photoLibrary),
                   onTap: () async {
                     Navigator.of(context).pop();
                     final XFile? image = await _imagePicker.pickImage(
@@ -245,7 +255,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.photo_camera),
-                  title: const Text('Camera'),
+                  title: Text(AppLocalizations.of(context)!.camera),
                   onTap: () async {
                     Navigator.of(context).pop();
                     final XFile? image = await _imagePicker.pickImage(
@@ -265,7 +275,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error selecting image')),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorSelectingImage)),
       );
     }
   }
@@ -410,8 +421,9 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     // Check form validation and provide feedback
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please complete all required fields'),
+        SnackBar(
+          content: Text(
+              AppLocalizations.of(context)!.pleaseCompleteAllRequiredFields),
           backgroundColor: Colors.red,
         ),
       );
@@ -716,7 +728,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                   obscureText: !_confirmPasswordVisible,
                   enableInteractiveSelection: false, // Disable copy/paste
                   decoration: InputDecoration(
-                    labelText: 'Confirm Password',
+                    labelText:
+                        AppLocalizations.of(context)!.confirmPasswordLabel,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/notification_service.dart';
 import '../models/notification.dart';
+import '../l10n/app_localizations.dart';
 
 class NotificationPanel extends StatefulWidget {
   final String businessId;
@@ -53,9 +54,11 @@ class _NotificationPanelState extends State<NotificationPanel> {
       });
     } catch (e) {
       if (!mounted) return;
+      final loc = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to connect to notifications: $e'),
+          content: Text(loc.failedToConnectToNotifications
+              .replaceAll('{error}', e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -81,7 +84,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
             notification.isHighPriority ? Colors.red : const Color(0xFF007fff),
         duration: const Duration(seconds: 5),
         action: SnackBarAction(
-          label: 'View',
+          label: AppLocalizations.of(context)!.view,
           textColor: Colors.white,
           onPressed: () => _viewNotification(notification),
         ),
@@ -107,12 +110,13 @@ class _NotificationPanelState extends State<NotificationPanel> {
   }
 
   Future<void> _sendTestNotification() async {
+    final loc = AppLocalizations.of(context)!;
     try {
       await _notificationService.sendTestNotification();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Test notification sent successfully'),
+        SnackBar(
+          content: Text(loc.testNotificationSentSuccessfully),
           backgroundColor: Colors.green,
         ),
       );
@@ -120,7 +124,8 @@ class _NotificationPanelState extends State<NotificationPanel> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to send test notification: $e'),
+          content: Text(loc.failedToSendTestNotification
+              .replaceAll('{error}', e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -135,9 +140,10 @@ class _NotificationPanelState extends State<NotificationPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(loc.notificationsTitle),
         backgroundColor: const Color(0xFF007fff),
         foregroundColor: Colors.white,
         actions: [
@@ -159,7 +165,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  _isConnected ? 'Live' : 'Offline',
+                  _isConnected ? loc.live : loc.offline,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -173,7 +179,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
           IconButton(
             icon: const Icon(Icons.send),
             onPressed: _sendTestNotification,
-            tooltip: 'Send Test Notification',
+            tooltip: loc.sendTestNotification,
           ),
         ],
       ),
@@ -185,12 +191,12 @@ class _NotificationPanelState extends State<NotificationPanel> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               color: Colors.orange,
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(Icons.warning, color: Colors.white),
                   SizedBox(width: 8),
                   Text(
-                    'Not connected to real-time notifications',
+                    loc.notConnectedToNotifications,
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
@@ -205,7 +211,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
               children: [
                 Expanded(
                   child: _buildStatCard(
-                    'Total',
+                    loc.total,
                     _notifications.length.toString(),
                     Icons.notifications,
                     const Color(0xFF007fff),
@@ -214,7 +220,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildStatCard(
-                    'Unread',
+                    loc.unread,
                     _notifications.where((n) => !n.isRead).length.toString(),
                     Icons.mark_email_unread,
                     Colors.red,
@@ -223,7 +229,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildStatCard(
-                    'High Priority',
+                    loc.highPriority,
                     _notifications
                         .where((n) => n.isHighPriority)
                         .length
@@ -239,7 +245,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
           // Notifications list
           Expanded(
             child: _notifications.isEmpty
-                ? const Center(
+                ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -250,7 +256,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
                         ),
                         SizedBox(height: 16),
                         Text(
-                          'No notifications yet',
+                          loc.noNotificationsYet,
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.grey,
@@ -258,7 +264,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          'New order notifications will appear here',
+                          loc.newOrderNotificationsAppearHere,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
@@ -284,7 +290,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
             _notifications = [];
           });
         },
-        tooltip: 'Clear All Notifications',
+        tooltip: AppLocalizations.of(context)!.clearAllNotifications,
         child: const Icon(Icons.clear_all),
       ),
     );
@@ -434,17 +440,19 @@ class _NotificationPanelState extends State<NotificationPanel> {
   }
 
   String _formatTime(DateTime time) {
+    final loc = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final difference = now.difference(time);
 
     if (difference.inMinutes < 1) {
-      return 'Just now';
+      return loc.justNow;
     } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
+      return loc.minutesAgo
+          .replaceAll('{minutes}', difference.inMinutes.toString());
     } else if (difference.inHours < 24) {
-      return '${difference.inHours}h ago';
+      return loc.hoursAgo.replaceAll('{hours}', difference.inHours.toString());
     } else {
-      return '${difference.inDays}d ago';
+      return loc.daysAgo.replaceAll('{days}', difference.inDays.toString());
     }
   }
 }

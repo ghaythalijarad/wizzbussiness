@@ -5,8 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Provides authentication related services such as login, logout, and password reset.
 class AuthService {
-  static const String baseUrl =
-      'http://127.0.0.1:8000'; // Updated to match backend port
+  /// Base URL adjusts for Android emulator (10.0.2.2) vs iOS simulator (127.0.0.1)
+  static String get baseUrl =>
+      Platform.isAndroid ? 'http://10.0.2.2:8000' : 'http://127.0.0.1:8000';
 
   static String _parseError(dynamic detail) {
     if (detail is String) {
@@ -98,7 +99,7 @@ class AuthService {
         };
       }
 
-      // Use the real users/me endpoint  
+      // Use the real users/me endpoint
       final endpoint = '$baseUrl/users/me';
 
       final response = await http.get(
@@ -415,6 +416,66 @@ class AuthService {
       } else {
         final errorData = jsonDecode(response.body);
         return {'success': false, 'message': _parseError(errorData['detail'])};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Development test login endpoint for bypassing DB (for local testing)
+  static Future<Map<String, dynamic>> testLogin(
+      String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/test-auth/login'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'username': email, 'password': password},
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final token = data['access_token'];
+        await _storeToken(token);
+        return {
+          'success': true,
+          'message': data['message'],
+          'access_token': token,
+          'token_type': data['token_type'],
+          'test_mode': data['test_mode'],
+        };
+      } else {
+        final errorData = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': _parseError(errorData['detail'] ?? errorData),
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Development test get current user profile (local test-auth/me)
+  static Future<Map<String, dynamic>> testGetCurrentUser() async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        return {'success': false, 'message': 'No access token found'};
+      }
+      final response = await http.get(
+        Uri.parse('$baseUrl/test-auth/me'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {'success': true, 'user': data, 'test_mode': true};
+      } else {
+        return {
+          'success': false,
+          'message': 'Failed to fetch test user profile'
+        };
       }
     } catch (e) {
       return {'success': false, 'message': 'Network error: ${e.toString()}'};

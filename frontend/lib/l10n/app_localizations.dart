@@ -182,6 +182,24 @@ abstract class AppLocalizations {
   /// **'An error occurred'**
   String get errorOccurred;
 
+  /// No description provided for @failedToFetchProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to fetch profile'**
+  String get failedToFetchProfile;
+
+  /// No description provided for @noBusinessFoundForUser.
+  ///
+  /// In en, this message translates to:
+  /// **'No business found for this user'**
+  String get noBusinessFoundForUser;
+
+  /// No description provided for @loginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed'**
+  String get loginFailed;
+
   /// No description provided for @demoStore.
   ///
   /// In en, this message translates to:
@@ -1160,6 +1178,12 @@ abstract class AppLocalizations {
   /// **'Currency'**
   String get currency;
 
+  /// No description provided for @currencyPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'IQD '**
+  String get currencyPrefix;
+
   /// No description provided for @edit.
   ///
   /// In en, this message translates to:
@@ -2105,7 +2129,7 @@ abstract class AppLocalizations {
   /// No description provided for @networkError.
   ///
   /// In en, this message translates to:
-  /// **'Network Error'**
+  /// **'Network error'**
   String get networkError;
 
   /// No description provided for @returnOrderTitle.
@@ -2234,11 +2258,59 @@ abstract class AppLocalizations {
   /// **'Orders are paused'**
   String get ordersArePaused;
 
-  /// No description provided for @processOrderReturns.
+  /// No description provided for @menuItemsAndCategories.
   ///
   /// In en, this message translates to:
-  /// **'Process order returns'**
-  String get processOrderReturns;
+  /// **'Menu items & categories'**
+  String get menuItemsAndCategories;
+
+  /// No description provided for @businessInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Business insights'**
+  String get businessInsights;
+
+  /// No description provided for @offersAndPromotions.
+  ///
+  /// In en, this message translates to:
+  /// **'Offers & promotions'**
+  String get offersAndPromotions;
+
+  /// No description provided for @appConfiguration.
+  ///
+  /// In en, this message translates to:
+  /// **'App configuration'**
+  String get appConfiguration;
+
+  /// No description provided for @changeAppLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Change app language'**
+  String get changeAppLanguage;
+
+  /// No description provided for @cancelRecentOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel recent order'**
+  String get cancelRecentOrder;
+
+  /// No description provided for @tapOutsideOrPressEscToClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap outside or press ESC to close'**
+  String get tapOutsideOrPressEscToClose;
+
+  /// No description provided for @languageChangedToArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'تم تغيير اللغة إلى العربية'**
+  String get languageChangedToArabic;
+
+  /// No description provided for @languageChangedToEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Language changed to English'**
+  String get languageChangedToEnglish;
 
   /// No description provided for @managePromotionalOffers.
   ///
@@ -2450,6 +2522,1218 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Applies to orders above minimum amount'**
   String get appliesToMinimumOrder;
+
+  /// No description provided for @startSimulation.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Simulation'**
+  String get startSimulation;
+
+  /// No description provided for @stopSimulation.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop Simulation'**
+  String get stopSimulation;
+
+  /// No description provided for @simulateNewOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Simulate New Order'**
+  String get simulateNewOrder;
+
+  /// No description provided for @notificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsTitle;
+
+  /// No description provided for @live.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get live;
+
+  /// No description provided for @sendTestNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Test Notification'**
+  String get sendTestNotification;
+
+  /// No description provided for @notConnectedToNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Not connected to real-time notifications'**
+  String get notConnectedToNotifications;
+
+  /// No description provided for @unread.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get unread;
+
+  /// No description provided for @highPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'High Priority'**
+  String get highPriority;
+
+  /// No description provided for @noNotificationsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get noNotificationsYet;
+
+  /// No description provided for @newOrderNotificationsAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'New order notifications will appear here'**
+  String get newOrderNotificationsAppearHere;
+
+  /// No description provided for @clearAllNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All Notifications'**
+  String get clearAllNotifications;
+
+  /// No description provided for @testNotificationSentSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Test notification sent successfully'**
+  String get testNotificationSentSuccessfully;
+
+  /// No description provided for @failedToSendTestNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send test notification'**
+  String failedToSendTestNotification(String error);
+
+  /// No description provided for @failedToConnectToNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to connect to notifications: {error}'**
+  String failedToConnectToNotifications(String error);
+
+  /// No description provided for @view.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get view;
+
+  /// No description provided for @urgent.
+  ///
+  /// In en, this message translates to:
+  /// **'urgent'**
+  String get urgent;
+
+  /// No description provided for @high.
+  ///
+  /// In en, this message translates to:
+  /// **'high'**
+  String get high;
+
+  /// No description provided for @normal.
+  ///
+  /// In en, this message translates to:
+  /// **'normal'**
+  String get normal;
+
+  /// No description provided for @low.
+  ///
+  /// In en, this message translates to:
+  /// **'low'**
+  String get low;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// No description provided for @minutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m ago'**
+  String minutesAgo(int minutes);
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h ago'**
+  String hoursAgo(int hours);
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d ago'**
+  String daysAgo(int days);
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @week.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get week;
+
+  /// No description provided for @month.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get month;
+
+  /// No description provided for @year.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get year;
+
+  /// No description provided for @overview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get overview;
+
+  /// No description provided for @revenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue'**
+  String get revenue;
+
+  /// No description provided for @performance.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance'**
+  String get performance;
+
+  /// No description provided for @totalRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Revenue'**
+  String get totalRevenue;
+
+  /// No description provided for @todaysRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Revenue'**
+  String get todaysRevenue;
+
+  /// No description provided for @avgOrderValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Order Value'**
+  String get avgOrderValue;
+
+  /// No description provided for @quickStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Stats'**
+  String get quickStats;
+
+  /// No description provided for @customersServed.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers Served'**
+  String get customersServed;
+
+  /// No description provided for @cancellationRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancellation Rate'**
+  String get cancellationRate;
+
+  /// No description provided for @revenueTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue Trend'**
+  String get revenueTrend;
+
+  /// No description provided for @revenueBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue Breakdown'**
+  String get revenueBreakdown;
+
+  /// No description provided for @dailyRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Revenue'**
+  String get dailyRevenue;
+
+  /// No description provided for @weeklyRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Revenue'**
+  String get weeklyRevenue;
+
+  /// No description provided for @monthlyRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Revenue'**
+  String get monthlyRevenue;
+
+  /// No description provided for @performanceMetrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance Metrics'**
+  String get performanceMetrics;
+
+  /// No description provided for @avgPrepTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Prep Time'**
+  String get avgPrepTime;
+
+  /// No description provided for @successRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Success Rate'**
+  String get successRate;
+
+  /// No description provided for @specialDish.
+  ///
+  /// In en, this message translates to:
+  /// **'Special Dish'**
+  String get specialDish;
+
+  /// No description provided for @popularItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Item'**
+  String get popularItem;
+
+  /// No description provided for @revenueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue'**
+  String get revenueLabel;
+
+  /// No description provided for @errorLoadingUserData.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading user data'**
+  String get errorLoadingUserData;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @userInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'User Information'**
+  String get userInformation;
+
+  /// No description provided for @security.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get security;
+
+  /// No description provided for @passwordChangeAvailableInSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Password change is available in the main Settings page.'**
+  String get passwordChangeAvailableInSettings;
+
+  /// No description provided for @notSpecified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not specified'**
+  String get notSpecified;
+
+  /// No description provided for @kitchen.
+  ///
+  /// In en, this message translates to:
+  /// **'Kitchen'**
+  String get kitchen;
+
+  /// No description provided for @errorLoadingProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading profile'**
+  String get errorLoadingProfile;
+
+  /// No description provided for @verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get verified;
+
+  /// No description provided for @centralizedPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Centralized Platform'**
+  String get centralizedPlatform;
+
+  /// No description provided for @platformConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform Connection'**
+  String get platformConnection;
+
+  /// No description provided for @connected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get connected;
+
+  /// No description provided for @disconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get disconnected;
+
+  /// No description provided for @account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get account;
+
+  /// No description provided for @syncStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Status'**
+  String get syncStatus;
+
+  /// No description provided for @platformApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform Apps'**
+  String get platformApps;
+
+  /// No description provided for @localBusinesses.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Businesses'**
+  String get localBusinesses;
+
+  /// No description provided for @syncRecommended.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Recommended'**
+  String get syncRecommended;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @no.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
+
+  /// No description provided for @noAppsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No apps found'**
+  String get noAppsFound;
+
+  /// No description provided for @unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknown;
+
+  /// No description provided for @actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get actions;
+
+  /// No description provided for @setupPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup Platform'**
+  String get setupPlatform;
+
+  /// No description provided for @syncAllBusinesses.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync All Businesses'**
+  String get syncAllBusinesses;
+
+  /// No description provided for @refreshStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh Status'**
+  String get refreshStatus;
+
+  /// No description provided for @failedToLoadPlatformStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load platform status'**
+  String get failedToLoadPlatformStatus;
+
+  /// No description provided for @platformSetupCompletedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform setup completed successfully!'**
+  String get platformSetupCompletedSuccessfully;
+
+  /// No description provided for @platformSetupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform setup failed'**
+  String get platformSetupFailed;
+
+  /// No description provided for @errorSettingUpPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Error setting up platform'**
+  String get errorSettingUpPlatform;
+
+  /// No description provided for @allBusinessesSyncedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'All businesses synced successfully!'**
+  String get allBusinessesSyncedSuccessfully;
+
+  /// No description provided for @errorSyncingBusinesses.
+  ///
+  /// In en, this message translates to:
+  /// **'Error syncing businesses'**
+  String get errorSyncingBusinesses;
+
+  /// No description provided for @noBusinessFoundForThisUser.
+  ///
+  /// In en, this message translates to:
+  /// **'No business found for this user'**
+  String get noBusinessFoundForThisUser;
+
+  /// No description provided for @loginFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed'**
+  String get loginFailedMessage;
+
+  /// No description provided for @notAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get notAvailable;
+
+  /// No description provided for @oldPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Old Password'**
+  String get oldPassword;
+
+  /// No description provided for @pleaseEnterOldPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your old password'**
+  String get pleaseEnterOldPassword;
+
+  /// No description provided for @pleaseEnterNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your new password'**
+  String get pleaseEnterNewPassword;
+
+  /// No description provided for @confirmNewPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm New Password'**
+  String get confirmNewPasswordLabel;
+
+  /// No description provided for @passwordsDoNotMatchError.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatchError;
+
+  /// No description provided for @generateTestOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate test orders to help with development and testing.'**
+  String get generateTestOrders;
+
+  /// No description provided for @createRealisticOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'This will create realistic orders with random customer data, items, and pricing.'**
+  String get createRealisticOrders;
+
+  /// No description provided for @createOneOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Create 1 Order'**
+  String get createOneOrder;
+
+  /// No description provided for @createThreeOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Create 3 Orders'**
+  String get createThreeOrders;
+
+  /// No description provided for @failedToCreateOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create orders'**
+  String get failedToCreateOrders;
+
+  /// No description provided for @categoriesLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories loaded'**
+  String get categoriesLoaded;
+
+  /// No description provided for @createFirstCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Create First Category'**
+  String get createFirstCategory;
+
+  /// No description provided for @noCategoriesFoundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories found. Create your first category to organize your items.'**
+  String get noCategoriesFoundMessage;
+
+  /// No description provided for @failedToDeleteItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete item'**
+  String get failedToDeleteItem;
+
+  /// No description provided for @failedToLoadCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load categories'**
+  String get failedToLoadCategories;
+
+  /// No description provided for @failedToAddItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add item'**
+  String get failedToAddItem;
+
+  /// No description provided for @failedToUpdateItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update item'**
+  String get failedToUpdateItem;
+
+  /// No description provided for @pleaseSelectCategoryOrCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a category or create a new one'**
+  String get pleaseSelectCategoryOrCreate;
+
+  /// No description provided for @confirmPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmPasswordLabel;
+
+  /// No description provided for @pleaseCompleteAllRequiredFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Please complete all required fields'**
+  String get pleaseCompleteAllRequiredFields;
+
+  /// No description provided for @documentSelectedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Document selected successfully'**
+  String get documentSelectedSuccessfully;
+
+  /// No description provided for @errorGettingLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting location'**
+  String get errorGettingLocation;
+
+  /// No description provided for @pleaseEnterValidEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get pleaseEnterValidEmailAddress;
+
+  /// No description provided for @phoneNumberIsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number is required'**
+  String get phoneNumberIsRequired;
+
+  /// No description provided for @passwordIsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is required'**
+  String get passwordIsRequired;
+
+  /// No description provided for @passwordMustBeAtLeast8Characters.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters long'**
+  String get passwordMustBeAtLeast8Characters;
+
+  /// No description provided for @passwordMustContainLowercase.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must contain at least one lowercase letter'**
+  String get passwordMustContainLowercase;
+
+  /// No description provided for @passwordMustContainUppercase.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must contain at least one uppercase letter'**
+  String get passwordMustContainUppercase;
+
+  /// No description provided for @passwordMustContainNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must contain at least one number'**
+  String get passwordMustContainNumber;
+
+  /// No description provided for @passwordMustContainSpecialCharacter.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must contain at least one special character'**
+  String get passwordMustContainSpecialCharacter;
+
+  /// No description provided for @pleaseConfirmYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm your password'**
+  String get pleaseConfirmYourPassword;
+
+  /// No description provided for @passwordsDoNotMatchRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatchRegistration;
+
+  /// No description provided for @pleaseEnterExactly10Digits.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter exactly 10 digits'**
+  String get pleaseEnterExactly10Digits;
+
+  /// No description provided for @pleaseEnterOnlyNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter only numbers'**
+  String get pleaseEnterOnlyNumbers;
+
+  /// No description provided for @pleaseEnterValidIraqiNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid Iraqi number (77X/78X/79X for mobile)'**
+  String get pleaseEnterValidIraqiNumber;
+
+  /// No description provided for @userWithEmailAlreadyExists.
+  ///
+  /// In en, this message translates to:
+  /// **'A user with this email already exists'**
+  String get userWithEmailAlreadyExists;
+
+  /// No description provided for @passwordResetEmailSentSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset email sent successfully'**
+  String get passwordResetEmailSentSuccessfully;
+
+  /// No description provided for @failedToSendPasswordResetEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send password reset email'**
+  String get failedToSendPasswordResetEmail;
+
+  /// No description provided for @registrationFailedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration failed'**
+  String get registrationFailedStatus;
+
+  /// No description provided for @validationError.
+  ///
+  /// In en, this message translates to:
+  /// **'Validation error'**
+  String get validationError;
+
+  /// No description provided for @failedToFetchTestUserProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to fetch test user profile'**
+  String get failedToFetchTestUserProfile;
+
+  /// No description provided for @unknownErrorOccurred.
+  ///
+  /// In en, this message translates to:
+  /// **'An unknown error occurred'**
+  String get unknownErrorOccurred;
+
+  /// No description provided for @loginSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Login successful'**
+  String get loginSuccessful;
+
+  /// No description provided for @noAccessTokenFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No access token found'**
+  String get noAccessTokenFound;
+
+  /// No description provided for @sessionExpiredPleaseLoginAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Session expired. Please login again.'**
+  String get sessionExpiredPleaseLoginAgain;
+
+  /// No description provided for @loggedOutSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged out successfully'**
+  String get loggedOutSuccessfully;
+
+  /// No description provided for @errorDuringLogout.
+  ///
+  /// In en, this message translates to:
+  /// **'Error during logout'**
+  String get errorDuringLogout;
+
+  /// No description provided for @registrationSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration successful'**
+  String get registrationSuccessful;
+
+  /// No description provided for @passwordResetSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset successfully'**
+  String get passwordResetSuccessfully;
+
+  /// No description provided for @failedToResetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to reset password'**
+  String get failedToResetPassword;
+
+  /// No description provided for @passwordChangedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed successfully'**
+  String get passwordChangedSuccessfully;
+
+  /// No description provided for @otpSentSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'OTP sent successfully'**
+  String get otpSentSuccessfully;
+
+  /// No description provided for @viewAndManageOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'View and manage orders'**
+  String get viewAndManageOrders;
+
+  /// No description provided for @businessDashboardVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Dashboard v2.0'**
+  String get businessDashboardVersion;
+
+  /// No description provided for @modernMaterialDesign.
+  ///
+  /// In en, this message translates to:
+  /// **'Modern Material Design'**
+  String get modernMaterialDesign;
+
+  /// No description provided for @menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Menu'**
+  String get menu;
+
+  /// No description provided for @aUserWithThisEmailAlreadyExists.
+  ///
+  /// In en, this message translates to:
+  /// **'A user with this email already exists'**
+  String get aUserWithThisEmailAlreadyExists;
+
+  /// No description provided for @anUnknownErrorOccurred.
+  ///
+  /// In en, this message translates to:
+  /// **'An unknown error occurred'**
+  String get anUnknownErrorOccurred;
+
+  /// No description provided for @failedToCreateCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create category'**
+  String get failedToCreateCategory;
+
+  /// No description provided for @failedToLoadItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load items'**
+  String get failedToLoadItems;
+
+  /// No description provided for @failedToCreateItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create item'**
+  String get failedToCreateItem;
+
+  /// No description provided for @failedToLoadNotificationHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load notification history'**
+  String get failedToLoadNotificationHistory;
+
+  /// No description provided for @failedToMarkNotificationAsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to mark notification as read'**
+  String get failedToMarkNotificationAsRead;
+
+  /// No description provided for @failedToCreateOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create order'**
+  String get failedToCreateOrder;
+
+  /// No description provided for @failedToLoadOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load orders'**
+  String get failedToLoadOrders;
+
+  /// No description provided for @failedToUpdateOrderStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update order status'**
+  String get failedToUpdateOrderStatus;
+
+  /// No description provided for @failedToLoadSupportedPosSystems.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load supported POS systems'**
+  String get failedToLoadSupportedPosSystems;
+
+  /// No description provided for @failedToLoadPosSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load POS settings'**
+  String get failedToLoadPosSettings;
+
+  /// No description provided for @failedToCreatePosSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create POS settings'**
+  String get failedToCreatePosSettings;
+
+  /// No description provided for @failedToUpdatePosSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update POS settings'**
+  String get failedToUpdatePosSettings;
+
+  /// No description provided for @failedToDeletePosSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete POS settings'**
+  String get failedToDeletePosSettings;
+
+  /// No description provided for @failedToTestPosConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to test POS connection'**
+  String get failedToTestPosConnection;
+
+  /// No description provided for @failedToGetPosSystemHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to get POS system health'**
+  String get failedToGetPosSystemHealth;
+
+  /// No description provided for @failedToRetryPosSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to retry POS sync'**
+  String get failedToRetryPosSync;
+
+  /// No description provided for @failedToLoadPosIntegrationStatistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load POS integration statistics'**
+  String get failedToLoadPosIntegrationStatistics;
+
+  /// No description provided for @failedToBulkSyncOrdersToPos.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to bulk sync orders to POS'**
+  String get failedToBulkSyncOrdersToPos;
+
+  /// No description provided for @failedToUpdateWebhookConfiguration.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update webhook configuration'**
+  String get failedToUpdateWebhookConfiguration;
+
+  /// No description provided for @failedToValidatePosCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to validate POS credentials'**
+  String get failedToValidatePosCredentials;
+
+  /// No description provided for @failedToLoadUserBusinesses.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load user businesses'**
+  String get failedToLoadUserBusinesses;
+
+  /// No description provided for @failedToLoadComparativeAnalytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load comparative analytics'**
+  String get failedToLoadComparativeAnalytics;
+
+  /// No description provided for @failedToTestPlatformConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to test platform connection'**
+  String get failedToTestPlatformConnection;
+
+  /// No description provided for @errorTestingPlatformConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Error testing platform connection'**
+  String get errorTestingPlatformConnection;
+
+  /// No description provided for @failedToGetPlatformApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to get platform apps'**
+  String get failedToGetPlatformApps;
+
+  /// No description provided for @errorGettingPlatformApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting platform apps'**
+  String get errorGettingPlatformApps;
+
+  /// No description provided for @failedToDeployCentralizedApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to deploy centralized app'**
+  String get failedToDeployCentralizedApp;
+
+  /// No description provided for @errorDeployingCentralizedApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Error deploying centralized app'**
+  String get errorDeployingCentralizedApp;
+
+  /// No description provided for @failedToSyncBusinessToPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to sync business to platform'**
+  String get failedToSyncBusinessToPlatform;
+
+  /// No description provided for @errorSyncingBusinessToPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Error syncing business to platform'**
+  String get errorSyncingBusinessToPlatform;
+
+  /// No description provided for @failedToSyncAllBusinessesToPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to sync all businesses to platform'**
+  String get failedToSyncAllBusinessesToPlatform;
+
+  /// No description provided for @errorSyncingAllBusinessesToPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Error syncing all businesses to platform'**
+  String get errorSyncingAllBusinessesToPlatform;
+
+  /// No description provided for @failedToGetPlatformSyncStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to get platform sync status'**
+  String get failedToGetPlatformSyncStatus;
+
+  /// No description provided for @errorGettingPlatformSyncStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting platform sync status'**
+  String get errorGettingPlatformSyncStatus;
+
+  /// No description provided for @failedToSetupCentralizedPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to setup centralized platform'**
+  String get failedToSetupCentralizedPlatform;
+
+  /// No description provided for @errorSettingUpCentralizedPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Error setting up centralized platform'**
+  String get errorSettingUpCentralizedPlatform;
+
+  /// No description provided for @uncategorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncategorized'**
+  String get uncategorized;
+
+  /// No description provided for @searchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Search failed'**
+  String get searchFailed;
+
+  /// No description provided for @userNotLoggedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'User not logged in. Please log in first.'**
+  String get userNotLoggedIn;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get signOut;
+
+  /// No description provided for @signOutConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to sign out?'**
+  String get signOutConfirmation;
+
+  /// No description provided for @showLocalNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Local Notifications'**
+  String get showLocalNotifications;
+
+  /// No description provided for @showLocalNotificationsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Display notifications in system notification area'**
+  String get showLocalNotificationsDescription;
+
+  /// No description provided for @playNotificationSounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Notification Sounds'**
+  String get playNotificationSounds;
+
+  /// No description provided for @playNotificationSoundsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Play sound when notifications are received'**
+  String get playNotificationSoundsDescription;
+
+  /// No description provided for @testNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Test Notifications'**
+  String get testNotifications;
+
+  /// No description provided for @testNotificationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This will send a test notification to verify your settings are working correctly.'**
+  String get testNotificationDescription;
+
+  /// No description provided for @photoLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo Library'**
+  String get photoLibrary;
+
+  /// No description provided for @camera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get camera;
+
+  /// No description provided for @errorSelectingDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Error selecting document'**
+  String get errorSelectingDocument;
+
+  /// No description provided for @errorSelectingImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error selecting image'**
+  String get errorSelectingImage;
+
+  /// No description provided for @orderSimulation.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Simulation'**
+  String get orderSimulation;
+
+  /// No description provided for @later.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get later;
+
+  /// No description provided for @viewOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'View Order'**
+  String get viewOrder;
+
+  /// No description provided for @understood.
+  ///
+  /// In en, this message translates to:
+  /// **'Understood'**
+  String get understood;
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No description provided for @minimumOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum Order'**
+  String get minimumOrder;
+
+  /// No description provided for @freeDeliveryIncludedWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Free delivery included with {title}'**
+  String freeDeliveryIncludedWith(String title);
+
+  /// No description provided for @freeDeliveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} - Free Delivery'**
+  String freeDeliveryTitle(String title);
+
+  /// No description provided for @kwd.
+  ///
+  /// In en, this message translates to:
+  /// **'KWD'**
+  String get kwd;
+
+  /// No description provided for @categoryAndPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'{category} • {currency} {price}'**
+  String categoryAndPrice(String category, String currency, String price);
 }
 
 class _AppLocalizationsDelegate

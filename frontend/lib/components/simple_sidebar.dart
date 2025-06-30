@@ -43,7 +43,6 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
 
   @override
   Widget build(BuildContext context) {
-    
     return Stack(
       children: [
         // Background overlay
@@ -82,10 +81,10 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                               size: 24,
                             ),
                             const SizedBox(width: 12),
-                            const Expanded(
+                            Expanded(
                               child: Text(
-                                'Menu',
-                                style: TextStyle(
+                                AppLocalizations.of(context)!.menu,
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500,
@@ -102,17 +101,21 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                           ],
                         ),
                       ),
-                      
+
                       // Status section
                       Container(
                         width: double.infinity,
                         margin: const EdgeInsets.all(16),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: _isOnline ? Colors.green.shade50 : Colors.red.shade50,
+                          color: _isOnline
+                              ? Colors.green.shade50
+                              : Colors.red.shade50,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: _isOnline ? Colors.green.shade200 : Colors.red.shade200,
+                            color: _isOnline
+                                ? Colors.green.shade200
+                                : Colors.red.shade200,
                           ),
                         ),
                         child: Row(
@@ -127,14 +130,22 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    _isOnline ? 'Online' : 'Offline',
+                                    _isOnline
+                                        ? AppLocalizations.of(context)!.online
+                                        : AppLocalizations.of(context)!.offline,
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
-                                      color: _isOnline ? Colors.green.shade700 : Colors.red.shade700,
+                                      color: _isOnline
+                                          ? Colors.green.shade700
+                                          : Colors.red.shade700,
                                     ),
                                   ),
                                   Text(
-                                    _isOnline ? 'Ready for orders' : 'Orders paused',
+                                    _isOnline
+                                        ? AppLocalizations.of(context)!
+                                            .readyToReceiveOrders
+                                        : AppLocalizations.of(context)!
+                                            .ordersArePaused,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey.shade600,
@@ -159,7 +170,7 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                           ],
                         ),
                       ),
-                      
+
                       // Menu items
                       Expanded(
                         child: ListView(
@@ -167,7 +178,7 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                           children: [
                             _buildMenuItem(
                               icon: Icons.dashboard,
-                              title: 'Dashboard',
+                              title: AppLocalizations.of(context)!.dashboard,
                               onTap: () {
                                 widget.onNavigate(0);
                                 widget.onClose();
@@ -175,7 +186,7 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                             ),
                             _buildMenuItem(
                               icon: Icons.inventory_2,
-                              title: 'Items',
+                              title: AppLocalizations.of(context)!.items,
                               onTap: () {
                                 widget.onNavigate(1);
                                 widget.onClose();
@@ -183,7 +194,7 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                             ),
                             _buildMenuItem(
                               icon: Icons.analytics,
-                              title: 'Analytics',
+                              title: AppLocalizations.of(context)!.analytics,
                               onTap: () {
                                 widget.onNavigate(2);
                                 widget.onClose();
@@ -191,7 +202,7 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                             ),
                             _buildMenuItem(
                               icon: Icons.local_offer,
-                              title: 'Discounts',
+                              title: AppLocalizations.of(context)!.discounts,
                               onTap: () {
                                 widget.onNavigate(3);
                                 widget.onClose();
@@ -199,7 +210,7 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                             ),
                             _buildMenuItem(
                               icon: Icons.settings,
-                              title: 'Settings',
+                              title: AppLocalizations.of(context)!.settings,
                               onTap: () {
                                 widget.onNavigate(4);
                                 widget.onClose();
@@ -207,7 +218,7 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                             ),
                             _buildMenuItem(
                               icon: Icons.language,
-                              title: 'Language',
+                              title: AppLocalizations.of(context)!.language,
                               onTap: () {
                                 _showLanguageDialog(context);
                               },
@@ -215,7 +226,7 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                             const Divider(height: 32),
                             _buildMenuItem(
                               icon: Icons.undo,
-                              title: 'Return Order',
+                              title: AppLocalizations.of(context)!.returnOrder,
                               onTap: () {
                                 widget.onReturnOrder();
                                 widget.onClose();
@@ -225,7 +236,7 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                           ],
                         ),
                       ),
-                      
+
                       // Footer
                       Container(
                         width: double.infinity,
@@ -246,7 +257,8 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Tap outside to close',
+                                AppLocalizations.of(context)!
+                                    .tapOutsideOrPressEscToClose,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade600,
@@ -378,8 +390,8 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
             SnackBar(
               content: Text(
                 locale.languageCode == 'ar'
-                    ? 'تم تغيير اللغة إلى العربية'
-                    : 'Language changed to English',
+                    ? AppLocalizations.of(context)!.languageChangedToArabic
+                    : AppLocalizations.of(context)!.languageChangedToEnglish,
               ),
               backgroundColor: Colors.green,
             ),

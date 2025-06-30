@@ -45,21 +45,69 @@ class _LoginPageState extends State<LoginPage> {
         final email = _emailController.text.trim();
         final password = _passwordController.text.trim();
 
-        // Call the actual backend API for login
-        final response = await AuthService.login(email, password);
+        // Attempt real login
+        var response = await AuthService.login(email, password);
+        bool isTest = false;
+
+        // If real login fails, attempt test login for local development
+        if (response['success'] != true) {
+          final testResp = await AuthService.testLogin(email, password);
+          if (testResp['success'] == true) {
+            response = testResp;
+            isTest = true;
+          }
+        }
 
         if (response['success'] == true) {
-          // Login successful, store the token if needed
+          // Store and print token
           final accessToken = response['access_token'];
           print('Login successful, access token: $accessToken');
 
-          // Fetch user's businesses from backend
-          try {
+          if (isTest) {
+            // Fetch test user profile
+            final profileResp = await AuthService.testGetCurrentUser();
+            if (profileResp['success'] == true) {
+              final user = profileResp['user'];
+              // Build business from test profile
+              final business = Business(
+                id: user['id'],
+                name: user['business_name'],
+                email: user['email'],
+                phone: user['phone_number'] ?? '',
+                address: AppLocalizations.of(context)!.notAvailable,
+                latitude: 0.0,
+                longitude: 0.0,
+                offers: [],
+                businessHours: {},
+                settings: {},
+                businessType: _getBusinessTypeFromString(user['business_type']),
+              );
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BusinessDashboard(
+                    business: business,
+                    onLanguageChanged: widget.onLanguageChanged,
+                  ),
+                ),
+              );
+              return;
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(profileResp['message'] ??
+                      AppLocalizations.of(context)!.failedToFetchProfile),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          } else {
+            // Real login: fetch user's businesses
             final apiService = ApiService();
             final businesses = await apiService.getUserBusinesses();
 
             if (businesses.isNotEmpty) {
-              // Use the first business (users should have at least one business)
+              // Existing flow unchanged
               final businessData = businesses[0];
               final business = Business(
                 id: businessData['id'],
@@ -88,30 +136,22 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               );
             } else {
-              // User has no businesses - this shouldn't happen but handle it
+              // No businesses
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('No business found for this user'),
+                SnackBar(
+                  content: Text(
+                      AppLocalizations.of(context)!.noBusinessFoundForThisUser),
                   backgroundColor: Colors.orange,
                 ),
               );
             }
-          } catch (e) {
-            print('Error fetching user business: $e');
-            // Fallback to demo business if API fails
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    _createDashboard(BusinessType.restaurant, email, context),
-              ),
-            );
           }
         } else {
-          // Login failed, show error message
+          // All login attempts failed
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response['message'] ?? 'Login failed'),
+              content: Text(response['message'] ??
+                  AppLocalizations.of(context)!.loginFailedMessage),
               backgroundColor: Colors.red,
             ),
           );
@@ -144,27 +184,6 @@ class _LoginPageState extends State<LoginPage> {
       default:
         return BusinessType.restaurant; // Default fallback
     }
-  }
-
-  Widget _createDashboard(
-      BusinessType businessType, String username, BuildContext context) {
-    final business = Business(
-      id: '${businessType.name}_001',
-      name: _getDemoBusinessName(businessType, context),
-      email: username,
-      phone: '+965 1234 5678',
-      address: 'Kuwait City, Kuwait',
-      latitude: 29.3759,
-      longitude: 47.9774,
-      offers: [],
-      businessHours: {},
-      settings: {},
-      businessType: businessType,
-    );
-    return BusinessDashboard(
-      business: business,
-      onLanguageChanged: widget.onLanguageChanged,
-    );
   }
 
   String _getDemoBusinessName(BusinessType type, BuildContext context) {

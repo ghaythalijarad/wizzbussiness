@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/centralized_platform_service.dart';
 import '../models/business.dart';
 import '../models/order.dart';
+import '../l10n/app_localizations.dart';
 
 class CentralizedPlatformPage extends StatefulWidget {
   final Business business;
@@ -49,13 +50,15 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
       final appsResult = await _platformService.getPlatformApps();
       setState(() => _platformApps = appsResult['apps'] ?? []);
     } catch (e) {
-      _showError('Failed to load platform status: $e');
+      final loc = AppLocalizations.of(context)!;
+      _showError('${loc.failedToLoadPlatformStatus}: $e');
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
   Future<void> _setupPlatform() async {
+    final loc = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
 
     try {
@@ -67,27 +70,28 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
           await _platformService.setupCentralizedPlatform(setupConfig);
 
       if (result['success'] == true) {
-        _showSuccess('Platform setup completed successfully!');
+        _showSuccess(loc.platformSetupCompletedSuccessfully);
         await _loadPlatformStatus();
       } else {
-        _showError('Platform setup failed: ${result['message']}');
+        _showError('${loc.platformSetupFailed}: ${result['message']}');
       }
     } catch (e) {
-      _showError('Error setting up platform: $e');
+      _showError('${loc.errorSettingUpPlatform}: $e');
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
   Future<void> _syncAllBusinesses() async {
+    final loc = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
 
     try {
       final result = await _platformService.syncAllBusinessesToPlatform();
-      _showSuccess(result['message'] ?? 'All businesses synced successfully!');
+      _showSuccess(result['message'] ?? loc.allBusinessesSyncedSuccessfully);
       await _loadPlatformStatus();
     } catch (e) {
-      _showError('Error syncing businesses: $e');
+      _showError('${loc.errorSyncingBusinesses}: $e');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -113,9 +117,10 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Centralized Platform'),
+        title: Text(loc.centralizedPlatform),
         backgroundColor: const Color(0xFF3399FF),
         foregroundColor: Colors.white,
       ),
@@ -143,6 +148,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
   }
 
   Widget _buildConnectionStatusCard() {
+    final loc = AppLocalizations.of(context)!;
     final isConnected = _connectionStatus?['result']?['status'] == 'connected';
 
     return Card(
@@ -159,7 +165,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Platform Connection',
+                  loc.platformConnection,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -178,7 +184,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
                 ),
               ),
               child: Text(
-                isConnected ? 'Connected' : 'Disconnected',
+                isConnected ? loc.connected : loc.disconnected,
                 style: TextStyle(
                   color:
                       isConnected ? Colors.green.shade700 : Colors.red.shade700,
@@ -189,7 +195,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
             if (_connectionStatus?['result']?['account'] != null) ...[
               const SizedBox(height: 8),
               Text(
-                'Account: ${_connectionStatus!['result']['account']}',
+                '${loc.account}: ${_connectionStatus!['result']['account']}',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
@@ -200,6 +206,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
   }
 
   Widget _buildSyncStatusCard() {
+    final loc = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -211,7 +218,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
                 const Icon(Icons.sync, color: Color(0xFF3399FF)),
                 const SizedBox(width: 8),
                 Text(
-                  'Sync Status',
+                  loc.syncStatus,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -220,12 +227,12 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
             ),
             const SizedBox(height: 12),
             if (_syncStatus != null) ...[
-              _buildSyncStatusRow('Platform Apps',
+              _buildSyncStatusRow(loc.platformApps,
                   _syncStatus!['platform_apps_count'].toString()),
-              _buildSyncStatusRow('Local Businesses',
+              _buildSyncStatusRow(loc.localBusinesses,
                   _syncStatus!['local_businesses_count'].toString()),
-              _buildSyncStatusRow('Sync Recommended',
-                  _syncStatus!['sync_recommended'] ? 'Yes' : 'No'),
+              _buildSyncStatusRow(loc.syncRecommended,
+                  _syncStatus!['sync_recommended'] ? loc.yes : loc.no),
             ],
           ],
         ),
@@ -250,6 +257,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
   }
 
   Widget _buildPlatformAppsCard() {
+    final loc = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -261,7 +269,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
                 const Icon(Icons.apps, color: Color(0xFF3399FF)),
                 const SizedBox(width: 8),
                 Text(
-                  'Platform Apps (${_platformApps.length})',
+                  '${loc.platformApps} (${_platformApps.length})',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -270,7 +278,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
             ),
             const SizedBox(height: 12),
             if (_platformApps.isEmpty)
-              const Text('No apps found')
+              Text(loc.noAppsFound)
             else
               ...(_platformApps.take(5).map((app) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
@@ -287,9 +295,10 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(app['name'] ?? 'Unknown')),
+                        Expanded(child: Text(app['name'] ?? loc.unknown)),
                         Text(
-                          app['state']?.toString().toUpperCase() ?? 'UNKNOWN',
+                          app['state']?.toString().toUpperCase() ??
+                              loc.unknown.toUpperCase(),
                           style: const TextStyle(fontSize: 12),
                         ),
                       ],
@@ -304,6 +313,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
   }
 
   Widget _buildActionsCard() {
+    final loc = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -311,7 +321,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Actions',
+              loc.actions,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -322,7 +332,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
               child: ElevatedButton.icon(
                 onPressed: _setupPlatform,
                 icon: const Icon(Icons.settings),
-                label: const Text('Setup Platform'),
+                label: Text(loc.setupPlatform),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3399FF),
                   foregroundColor: Colors.white,
@@ -336,7 +346,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
               child: ElevatedButton.icon(
                 onPressed: _syncAllBusinesses,
                 icon: const Icon(Icons.sync),
-                label: const Text('Sync All Businesses'),
+                label: Text(loc.syncAllBusinesses),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
@@ -350,7 +360,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
               child: OutlinedButton.icon(
                 onPressed: _loadPlatformStatus,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Refresh Status'),
+                label: Text(loc.refreshStatus),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.all(16),
                 ),

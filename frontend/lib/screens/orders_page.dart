@@ -2,17 +2,22 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/order.dart';
 import '../services/order_timer_service.dart';
+// import '../services/order_simulation_service.dart';
 import '../widgets/order_card.dart';
 import '../utils/responsive_helper.dart';
 
 class OrdersPage extends StatefulWidget {
   final List<Order> orders;
   final Function(String, OrderStatus) onOrderUpdated;
+  final String? businessId;
+  final Function()? onOrdersRefresh;
 
   const OrdersPage({
     Key? key,
     required this.orders,
     required this.onOrderUpdated,
+    this.businessId,
+    this.onOrdersRefresh,
   }) : super(key: key);
 
   @override
@@ -21,6 +26,8 @@ class OrdersPage extends StatefulWidget {
 
 class _OrdersPageState extends State<OrdersPage> {
   String _selectedFilter = 'pending';
+  bool _isSimulating = false;
+  // final OrderSimulationService _simulationService = OrderSimulationService();
 
   OrderStatus? _getStatusFromString(String value) {
     switch (value) {
@@ -92,6 +99,37 @@ class _OrdersPageState extends State<OrdersPage> {
                   _buildFilterChip(loc.cancelled, 'cancelled'),
                   const SizedBox(width: 6),
                   _buildFilterChip(loc.orderReturned, 'returned'),
+                  // Simulation functionality temporarily disabled
+                  // if (widget.businessId != null) ...[
+                  //   const SizedBox(width: 16),
+                  //   ElevatedButton(
+                  //     onPressed: () async {
+                  //       if (_isSimulating) {
+                  //         setState(() {
+                  //           _isSimulating = false;
+                  //         });
+                  //       } else {
+                  //         await _simulationService.createSimulatedOrder(widget.businessId!);
+                  //         setState(() {
+                  //           _isSimulating = true;
+                  //         });
+                  //       }
+                  //     },
+                  //     child: Text(_isSimulating
+                  //         ? loc.stopSimulation
+                  //         : loc.startSimulation),
+                  //   ),
+                  //   const SizedBox(width: 16),
+                  //   ElevatedButton(
+                  //     onPressed: () {
+                  //       if (widget.businessId != null) {
+                  //         _simulationService
+                  //             .createSimulatedOrder(widget.businessId!);
+                  //       }
+                  //     },
+                  //     child: Text(loc.simulateNewOrder),
+                  //   ),
+                  // ],
                 ],
               ),
             ),
@@ -111,6 +149,8 @@ class _OrdersPageState extends State<OrdersPage> {
           ),
         ],
       ),
+      floatingActionButton:
+          null, // widget.businessId != null ? _buildSimulationFAB(loc) : null,
     );
   }
 
@@ -159,4 +199,181 @@ class _OrdersPageState extends State<OrdersPage> {
       },
     );
   }
+
+  Widget _buildSimulationFAB(AppLocalizations loc) {
+    return FloatingActionButton.extended(
+      onPressed: _isSimulating ? null : () => _showSimulationDialog(loc),
+      backgroundColor: _isSimulating ? Colors.grey : Colors.blue,
+      icon: _isSimulating
+          ? const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
+          : const Icon(Icons.add_shopping_cart),
+      label: Text(_isSimulating ? 'Simulating...' : 'Simulate Order'),
+    );
+  }
+
+  void _showSimulationDialog(AppLocalizations loc) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.science, color: Colors.blue),
+              SizedBox(width: 8),
+              Text(loc.orderSimulation),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.generateTestOrders,
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context)!.createRealisticOrders,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // _simulateSingleOrder();
+              },
+              child: Text(AppLocalizations.of(context)!.createOneOrder),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // _simulateMultipleOrders();
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              child: Text(AppLocalizations.of(context)!.createThreeOrders),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Simulation functionality temporarily disabled
+  /*
+  Future<void> _simulateSingleOrder() async {
+    if (widget.businessId == null) return;
+    
+    setState(() => _isSimulating = true);
+    
+    try {
+      await _simulationService.createSimulatedOrder(widget.businessId!);
+      
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('Test order created successfully!'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        
+        // Refresh orders if callback provided
+        widget.onOrdersRefresh?.call();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(child: Text('Failed to create order: $e')),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSimulating = false);
+      }
+    }
+  }
+
+  Future<void> _simulateMultipleOrders() async {
+    if (widget.businessId == null) return;
+    
+    setState(() => _isSimulating = true);
+    
+    try {
+      // Create 3 simulated orders
+      for (int i = 0; i < 3; i++) {
+        await _simulationService.createSimulatedOrder(widget.businessId!);
+      }
+      
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Text('3 test orders created successfully!'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        
+        // Refresh orders if callback provided
+        widget.onOrdersRefresh?.call();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(child: Text('${AppLocalizations.of(context)!.failedToCreateOrders}: $e')),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSimulating = false);
+      }
+    }
+  }
+  */
 }

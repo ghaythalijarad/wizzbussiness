@@ -21,19 +21,19 @@ class DatabaseManager:
         self._database = None
     
     async def connect(self) -> None:
-        """Establish database connection optimized for Heroku deployment with TLS fallback."""
+        """Establish database connection with TLS fallback."""
         atlas_uri = config.database.mongo_uri
         
-        # Check if TLS_INSECURE is set in environment for Heroku
+        # Check if TLS_INSECURE is set in environment
         tls_insecure = os.getenv('TLS_INSECURE', 'false').lower() == 'true'
         
-        # Try multiple connection strategies optimized for Heroku
+        # Try multiple connection strategies
         connection_strategies = []
         
         if tls_insecure:
-            # Strategy for Heroku with relaxed TLS
+            # Strategy with relaxed TLS
             connection_strategies.append({
-                "name": "Insecure TLS for Heroku",
+                "name": "Insecure TLS",
                 "config": {
                     "tls": True,
                     "tlsInsecure": True,

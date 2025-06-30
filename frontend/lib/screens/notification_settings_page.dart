@@ -139,7 +139,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.notificationSettings),
+        title: Text(loc.notifications),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -170,9 +170,9 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                           // Simple Notifications
                           RadioListTile<bool>(
                             title: const Text(
-                                'Simple Notifications (Heroku-Friendly)'),
+                                'Simple Notifications (Cloud-Friendly)'),
                             subtitle: const Text(
-                              'HTTP polling-based notifications. More reliable on cloud platforms like Heroku. '
+                              'HTTP polling-based notifications. More reliable on cloud platforms. '
                               'Uses less resources but may have slight delays.',
                             ),
                             value: true,
@@ -255,9 +255,9 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
                             // Local Notifications Toggle
                             SwitchListTile(
-                              title: const Text('Show Local Notifications'),
-                              subtitle: const Text(
-                                  'Display notifications in system notification area'),
+                              title: Text(loc.showLocalNotifications),
+                              subtitle:
+                                  Text(loc.showLocalNotificationsDescription),
                               value: _showLocalNotifications,
                               onChanged: (value) {
                                 setState(() => _showLocalNotifications = value);
@@ -266,9 +266,9 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
                             // Notification Sounds Toggle
                             SwitchListTile(
-                              title: const Text('Play Notification Sounds'),
-                              subtitle: const Text(
-                                  'Play sound when notifications are received'),
+                              title: Text(loc.playNotificationSounds),
+                              subtitle:
+                                  Text(loc.playNotificationSoundsDescription),
                               value: _playNotificationSounds,
                               onChanged: (value) {
                                 setState(() => _playNotificationSounds = value);
@@ -290,18 +290,18 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Test Notifications',
+                            loc.testNotifications,
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton.icon(
                             onPressed: _isLoading ? null : _testNotification,
                             icon: const Icon(Icons.notification_add),
-                            label: const Text('Send Test Notification'),
+                            label: Text(loc.sendTestNotification),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'This will send a test notification to verify your settings are working correctly.',
+                            loc.testNotificationDescription,
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
@@ -336,7 +336,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '• Simple Notifications are recommended for Heroku deployment\n'
+                            '• Simple Notifications are recommended for cloud deployment\n'
                             '• WebSocket notifications work better on dedicated servers\n'
                             '• You can switch between systems anytime\n'
                             '• Changes take effect immediately after saving',

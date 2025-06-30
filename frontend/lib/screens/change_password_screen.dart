@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -16,9 +16,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Change Password'),
+        title: Text(loc.changePassword),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -28,33 +29,34 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             children: [
               TextFormField(
                 controller: _oldPasswordController,
-                decoration: const InputDecoration(labelText: 'Old Password'),
+                decoration: InputDecoration(labelText: loc.oldPassword),
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your old password';
+                    return loc.pleaseEnterOldPassword;
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _newPasswordController,
-                decoration: const InputDecoration(labelText: 'New Password'),
+                decoration: InputDecoration(labelText: loc.newPassword),
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your new password';
+                    return loc.pleaseEnterNewPassword;
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _confirmPasswordController,
-                decoration: const InputDecoration(labelText: 'Confirm New Password'),
+                decoration:
+                    InputDecoration(labelText: loc.confirmNewPasswordLabel),
                 obscureText: true,
                 validator: (value) {
                   if (value != _newPasswordController.text) {
-                    return 'Passwords do not match';
+                    return loc.passwordsDoNotMatchError;
                   }
                   return null;
                 },
@@ -66,7 +68,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     // Implement change password logic
                   }
                 },
-                child: const Text('Change Password'),
+                child: Text(loc.changePassword),
               ),
             ],
           ),

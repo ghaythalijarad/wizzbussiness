@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../utils/responsive_helper.dart';
-import '../widgets/innovative_sidebar.dart';
+import '../widgets/modern_sidebar.dart';
 
 class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -9,6 +9,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Function(bool) onToggleStatus;
   final VoidCallback onReturnOrder;
   final Function(int) onNavigate;
+  final Function(Locale)? onLanguageChanged;
 
   const TopAppBar({
     super.key,
@@ -17,6 +18,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.onToggleStatus,
     required this.onReturnOrder,
     required this.onNavigate,
+    this.onLanguageChanged,
   });
 
   void _showSimpleSidebar(BuildContext context) {
@@ -25,11 +27,12 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
       barrierDismissible: true,
       barrierLabel: '',
       pageBuilder: (context, animation1, animation2) {
-        return InnovativeSidebar(
+        return ModernSidebar(
           isOnline: isOnline,
           onToggleStatus: onToggleStatus,
           onReturnOrder: onReturnOrder,
           onNavigate: onNavigate,
+          onLanguageChanged: onLanguageChanged,
           onClose: () => Navigator.of(context).pop(),
         );
       },

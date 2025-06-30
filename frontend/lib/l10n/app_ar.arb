@@ -4,6 +4,16 @@
   "welcome": "مرحباً",
   "login": "تسجيل الدخول",
   "register": "إنشاء حساب",
+  "forgotPassword": "نسيت كلمة المرور",
+  "forgotPasswordQuestion": "نسيت كلمة المرور؟",
+  "dontHaveAnAccount": "ليس لديك حساب؟",
+  "welcomeBack": "مرحباً بعودتك",
+  "signInToYourAccount": "سجل دخولك إلى حسابك",
+  "pleaseEnterYourEmail": "يرجى إدخال بريدك الإلكتروني",
+  "pleaseEnterYourPassword": "يرجى إدخال كلمة المرور",
+  "failedToFetchProfile": "فشل في جلب الملف الشخصي",
+  "noBusinessFoundForUser": "لم يتم العثور على نشاط تجاري لهذا المستخدم",
+  "loginFailed": "فشل تسجيل الدخول",
   "email": "البريد الإلكتروني",
   "password": "كلمة المرور",
   "businessType": "نوع النشاط التجاري",
@@ -11,6 +21,10 @@
   "restaurant": "مطعم",
   "pharmacy": "صيدلية",
   "kitchen": "مطبخ",
+  "demoStore": "متجر تجريبي",
+  "demoPharmacy": "صيدلية تجريبية",
+  "demoRestaurant": "مطعم تجريبي",
+  "demoKitchen": "مطبخ تجريبي",
   "dashboard": "لوحة التحكم",
   "orders": "الطلبات",
   "quickActions": "إجراءات سريعة",
@@ -307,6 +321,10 @@
   "handling": "المناولة",
   "taxes": "الضرائب",
   "discounts": "الخصومات",
+  "allDiscounts": "جميع الخصومات",
+  "activeDiscounts": "الخصومات النشطة",
+  "scheduledDiscounts": "الخصومات المجدولة",
+  "expiredDiscounts": "الخصومات المنتهية الصلاحية",
   "discountType": "نوع الخصم",
   "fixedAmount": "مبلغ ثابت",
   "conditional": "مشروط",
@@ -594,5 +612,57 @@
   "selectBuyItem": "اختر عنصر الشراء",
   "selectGetItem": "اختر عنصر الحصول",
   "noCategoriesFound": "لم يتم العثور على فئات. يرجى إضافة فئات أولاً.",
-  "appliesToMinimumOrder": "ينطبق على الطلبات التي تزيد عن الحد الأدنى للمبلغ"
+  "appliesToMinimumOrder": "ينطبق على الطلبات التي تزيد عن الحد الأدنى للمبلغ",
+  
+  "addNewItem": "إضافة عنصر جديد",
+  "uploadImage": "رفع صورة",
+  "selectCategory": "اختر فئة",
+  "pleaseSelectCategory": "يرجى اختيار فئة",
+  "newCategoryName": "اسم الفئة الجديدة",
+  "pleaseEnterCategoryName": "يرجى إدخال اسم الفئة",
+  "selectExistingCategory": "اختر فئة موجودة",
+  "addNewCategory": "إضافة فئة جديدة",
+  "itemName": "اسم العنصر",
+  "pleaseEnterItemName": "يرجى إدخال اسم العنصر",
+  "imageUrl": "رابط الصورة",
+  "optional": "اختياري",
+  "available": "متاح",
+  "categoriesLoaded": "تم تحميل الفئات",
+  "createFirstCategory": "إنشاء أول فئة",
+  "noCategoriesFoundMessage": "لم يتم العثور على فئات. أنشئ فئتك الأولى لتنظيم عناصرك.",
+  "pleaseSelectCategoryOrCreate": "يرجى اختيار فئة أو إنشاء فئة جديدة",
+  "currencyPrefix": "د.ع ",
+  
+  "signOut": "تسجيل الخروج",
+  "signOutConfirmation": "هل أنت متأكد من أنك تريد تسجيل الخروج؟",
+  "showLocalNotifications": "إظهار الإشعارات المحلية",
+  "showLocalNotificationsDescription": "عرض الإشعارات في منطقة إشعارات النظام",
+  "playNotificationSounds": "تشغيل أصوات الإشعارات",
+  "playNotificationSoundsDescription": "تشغيل الصوت عند استلام الإشعارات",
+  "testNotifications": "اختبار الإشعارات",
+  "testNotificationDescription": "سيرسل هذا إشعار اختبار للتحقق من أن إعداداتك تعمل بشكل صحيح.",
+  "photoLibrary": "مكتبة الصور",
+  "errorSelectingDocument": "خطأ في اختيار المستند",
+  "errorSelectingImage": "خطأ في اختيار الصورة",
+  "orderSimulation": "محاكاة الطلب",
+  "later": "لاحقاً",
+  "viewOrder": "عرض الطلب",
+  "understood": "مفهوم",
+  "failedToSendTestNotificationGeneric": "فشل في إرسال إشعار الاختبار",
+  
+  "kwd": "د.ك",
+  "categoryAndPrice": "{category} • {currency} {price}",
+  "@categoryAndPrice": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -111,7 +111,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Error loading user data',
+                        l10n.errorLoadingUserData,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
@@ -123,7 +123,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadUserData,
-                        child: const Text('Retry'),
+                        child: Text(l10n.retry),
                       ),
                     ],
                   ),
@@ -140,7 +140,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'User Information',
+                                  l10n.userInformation,
                                   style:
                                       Theme.of(context).textTheme.titleMedium,
                                 ),
@@ -181,16 +181,19 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Security',
+                                  l10n.security,
                                   style:
                                       Theme.of(context).textTheme.titleMedium,
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'Password change is available in the main Settings page.',
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Colors.grey.shade600,
-                                  ),
+                                  l10n.passwordChangeAvailableInSettings,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: Colors.grey.shade600,
+                                      ),
                                 ),
                               ],
                             ),

@@ -198,7 +198,6 @@ def create_app() -> FastAPI:
     # Order management routes
     app.include_router(
         order_controller.router,
-        prefix="/api/orders",
         tags=["orders"],
     )
     

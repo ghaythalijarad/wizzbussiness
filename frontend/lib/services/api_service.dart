@@ -9,9 +9,8 @@ import 'dart:io';
 
 class ApiService {
   /// Base URL adjusts for Android emulator (10.0.2.2) vs iOS simulator (127.0.0.1)
-  final String baseUrl = Platform.isAndroid
-      ? "http://10.0.2.2:8000"
-      : "http://127.0.0.1:8000";
+  final String baseUrl =
+      Platform.isAndroid ? "http://10.0.2.2:8000" : "http://127.0.0.1:8000";
 
   /// Get authorization headers with stored token
   Future<Map<String, String>> _getAuthHeaders() async {
@@ -215,7 +214,7 @@ class ApiService {
     final headers = await _getAuthHeaders();
 
     final response = await http.post(
-      Uri.parse('$baseUrl/api/orders?business_id=$businessId'),
+      Uri.parse('$baseUrl/api/orders/?business_id=$businessId'),
       headers: headers,
       body: jsonEncode(orderData),
     );
@@ -620,7 +619,8 @@ class ApiService {
     if (response.statusCode == 201) {
       return jsonDecode(response.body);
     } else {
-      print('Error creating discount: ${response.statusCode} - ${response.body}');
+      print(
+          'Error creating discount: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to create discount');
     }
   }
@@ -632,14 +632,14 @@ class ApiService {
 
     String url = '$baseUrl/api/discounts/$businessId';
     List<String> queryParams = [];
-    
+
     if (status != null) {
       queryParams.add('status=$status');
     }
     if (type != null) {
       queryParams.add('type=$type');
     }
-    
+
     if (queryParams.isNotEmpty) {
       url += '?${queryParams.join('&')}';
     }
@@ -658,8 +658,8 @@ class ApiService {
   }
 
   /// Update an existing discount
-  Future<Map<String, dynamic>> updateDiscount(
-      String businessId, String discountId, Map<String, dynamic> discountData) async {
+  Future<Map<String, dynamic>> updateDiscount(String businessId,
+      String discountId, Map<String, dynamic> discountData) async {
     final headers = await _getAuthHeaders();
 
     final response = await http.put(
@@ -671,7 +671,8 @@ class ApiService {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      print('Error updating discount: ${response.statusCode} - ${response.body}');
+      print(
+          'Error updating discount: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to update discount');
     }
   }
@@ -686,7 +687,8 @@ class ApiService {
     );
 
     if (response.statusCode != 200) {
-      print('Error deleting discount: ${response.statusCode} - ${response.body}');
+      print(
+          'Error deleting discount: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to delete discount');
     }
   }
@@ -697,7 +699,8 @@ class ApiService {
     final headers = await _getAuthHeaders();
 
     final response = await http.post(
-      Uri.parse('$baseUrl/api/discounts/$discountId/apply?business_id=$businessId'),
+      Uri.parse(
+          '$baseUrl/api/discounts/$discountId/apply?business_id=$businessId'),
       headers: headers,
       body: jsonEncode({
         'order_id': orderId,
@@ -712,12 +715,13 @@ class ApiService {
   }
 
   /// Validate Buy X Get Y discount eligibility
-  Future<Map<String, dynamic>> validateBuyXGetYDiscount(
-      String businessId, String discountId, List<Map<String, dynamic>> orderItems) async {
+  Future<Map<String, dynamic>> validateBuyXGetYDiscount(String businessId,
+      String discountId, List<Map<String, dynamic>> orderItems) async {
     final headers = await _getAuthHeaders();
 
     final response = await http.post(
-      Uri.parse('$baseUrl/api/discounts/$discountId/validate-buyxgety?business_id=$businessId'),
+      Uri.parse(
+          '$baseUrl/api/discounts/$discountId/validate-buyxgety?business_id=$businessId'),
       headers: headers,
       body: jsonEncode({
         'order_items': orderItems,
@@ -732,11 +736,13 @@ class ApiService {
   }
 
   /// Get discount usage statistics
-  Future<Map<String, dynamic>> getDiscountStats(String businessId, String discountId) async {
+  Future<Map<String, dynamic>> getDiscountStats(
+      String businessId, String discountId) async {
     final headers = await _getAuthHeaders();
 
     final response = await http.get(
-      Uri.parse('$baseUrl/api/discounts/$discountId/stats?business_id=$businessId'),
+      Uri.parse(
+          '$baseUrl/api/discounts/$discountId/stats?business_id=$businessId'),
       headers: headers,
     );
 
@@ -750,7 +756,8 @@ class ApiService {
   // Analytics and Reporting Methods
 
   /// Get comprehensive business analytics
-  Future<Map<String, dynamic>> getBusinessAnalytics(String businessId, {
+  Future<Map<String, dynamic>> getBusinessAnalytics(
+    String businessId, {
     String timeRange = 'month', // day, week, month, year
     DateTime? startDate,
     DateTime? endDate,
@@ -781,7 +788,8 @@ class ApiService {
   }
 
   /// Get revenue analytics with detailed breakdown
-  Future<Map<String, dynamic>> getRevenueAnalytics(String businessId, {
+  Future<Map<String, dynamic>> getRevenueAnalytics(
+    String businessId, {
     String timeRange = 'month',
     bool includeComparison = true,
   }) async {
@@ -805,7 +813,8 @@ class ApiService {
   }
 
   /// Get top selling items analytics
-  Future<List<Map<String, dynamic>>> getTopSellingItems(String businessId, {
+  Future<List<Map<String, dynamic>>> getTopSellingItems(
+    String businessId, {
     String timeRange = 'month',
     int limit = 10,
   }) async {
@@ -830,7 +839,8 @@ class ApiService {
   }
 
   /// Get performance metrics
-  Future<Map<String, dynamic>> getPerformanceMetrics(String businessId, {
+  Future<Map<String, dynamic>> getPerformanceMetrics(
+    String businessId, {
     String timeRange = 'month',
   }) async {
     final headers = await _getAuthHeaders();
@@ -852,7 +862,8 @@ class ApiService {
   }
 
   /// Get order analytics and trends
-  Future<Map<String, dynamic>> getOrderAnalytics(String businessId, {
+  Future<Map<String, dynamic>> getOrderAnalytics(
+    String businessId, {
     String timeRange = 'month',
     bool includeStatusBreakdown = true,
   }) async {
@@ -876,7 +887,8 @@ class ApiService {
   }
 
   /// Get customer analytics
-  Future<Map<String, dynamic>> getCustomerAnalytics(String businessId, {
+  Future<Map<String, dynamic>> getCustomerAnalytics(
+    String businessId, {
     String timeRange = 'month',
   }) async {
     final headers = await _getAuthHeaders();
@@ -898,7 +910,8 @@ class ApiService {
   }
 
   /// Get revenue chart data for visualization
-  Future<List<Map<String, dynamic>>> getRevenueChartData(String businessId, {
+  Future<List<Map<String, dynamic>>> getRevenueChartData(
+    String businessId, {
     String timeRange = 'month',
     String chartType = 'line', // line, bar, area
   }) async {
@@ -923,10 +936,16 @@ class ApiService {
   }
 
   /// Export analytics report
-  Future<Map<String, dynamic>> exportAnalyticsReport(String businessId, {
+  Future<Map<String, dynamic>> exportAnalyticsReport(
+    String businessId, {
     String format = 'pdf', // pdf, excel, csv
     String timeRange = 'month',
-    List<String> sections = const ['revenue', 'orders', 'customers', 'performance'],
+    List<String> sections = const [
+      'revenue',
+      'orders',
+      'customers',
+      'performance'
+    ],
   }) async {
     final headers = await _getAuthHeaders();
 
@@ -964,9 +983,11 @@ class ApiService {
   }
 
   /// Get comparative analytics (vs previous period)
-  Future<Map<String, dynamic>> getComparativeAnalytics(String businessId, {
+  Future<Map<String, dynamic>> getComparativeAnalytics(
+    String businessId, {
     String timeRange = 'month',
-    String comparisonType = 'previous_period', // previous_period, same_period_last_year
+    String comparisonType =
+        'previous_period', // previous_period, same_period_last_year
   }) async {
     final headers = await _getAuthHeaders();
 
@@ -1012,9 +1033,11 @@ class ApiService {
       // Handle specific login errors
       final errorData = jsonDecode(response.body);
       if (errorData['detail'] == 'LOGIN_USER_NOT_VERIFIED') {
-        throw Exception('Please verify your email address before logging in. Check your email for verification instructions.');
+        throw Exception(
+            'Please verify your email address before logging in. Check your email for verification instructions.');
       } else if (errorData['detail'] == 'LOGIN_BAD_CREDENTIALS') {
-        throw Exception('Invalid email or password. Please check your credentials and try again.');
+        throw Exception(
+            'Invalid email or password. Please check your credentials and try again.');
       } else {
         throw Exception('Login failed: ${errorData['detail']}');
       }
@@ -1036,7 +1059,8 @@ class ApiService {
     print('ApiService.register -> response=${response.body}');
 
     if (response.statusCode != 201) {
-      throw Exception('Registration failed: ${response.statusCode} ${response.body}');
+      throw Exception(
+          'Registration failed: ${response.statusCode} ${response.body}');
     }
   }
 }

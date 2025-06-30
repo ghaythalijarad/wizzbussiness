@@ -6,6 +6,7 @@ import '../models/business.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../utils/responsive_helper.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
@@ -111,8 +112,8 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
         for (var itemData in items) {
           final item = Dish.fromJson(itemData);
           final categoryId = item.categoryId;
-          final categoryName =
-              itemData['category_name'] as String? ?? 'Uncategorized';
+          final categoryName = itemData['category_name'] as String? ??
+              AppLocalizations.of(context)!.uncategorized;
           final finalCategoryId =
               categoryId.isNotEmpty ? categoryId : 'uncategorized';
 
@@ -140,7 +141,7 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Search failed: $e'),
+            content: Text('${AppLocalizations.of(context)!.searchFailed}: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -361,7 +362,8 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
       print(e);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to delete item: $e'),
+          content:
+              Text('${AppLocalizations.of(context)!.failedToDeleteItem}: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -415,7 +417,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
       final token = prefs.getString('access_token');
 
       if (token == null) {
-        throw Exception('User not logged in. Please log in first.');
+        throw Exception(AppLocalizations.of(context)!.userNotLoggedIn);
       }
 
       final categories =
@@ -433,10 +435,11 @@ class _AddItemDialogState extends State<AddItemDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load categories: $e'),
+            content: Text(
+                '${AppLocalizations.of(context)!.failedToLoadCategories}: $e'),
             backgroundColor: Colors.red,
             action: SnackBarAction(
-              label: 'Retry',
+              label: AppLocalizations.of(context)!.retry,
               onPressed: _loadCategories,
             ),
           ),
@@ -466,179 +469,451 @@ class _AddItemDialogState extends State<AddItemDialog> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final isTablet = ResponsiveHelper.isTablet(context);
+    final isMobile = ResponsiveHelper.isMobile(context);
 
-    return AlertDialog(
-      title: Text(loc.addNewItem),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _imageFile != null
-                  ? Image.file(File(_imageFile!.path), height: 150)
-                  : const SizedBox(height: 0),
-              TextButton.icon(
-                icon: const Icon(Icons.photo_camera),
-                label: Text(loc.uploadImage),
-                onPressed: _pickImage,
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        width: isDesktop ? 600 : (isTablet ? 500 : double.infinity),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+          maxWidth: isDesktop
+              ? 600
+              : (isTablet ? 500 : MediaQuery.of(context).size.width * 0.9),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Container(
+              padding: EdgeInsets.all(
+                  ResponsiveHelper.getResponsivePadding(context)),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
               ),
-              if (!_showNewCategoryField)
-                Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Categories loaded: ${_categories.length}'),
-                        if (_categories.isEmpty)
-                          TextButton.icon(
-                            icon: const Icon(Icons.add),
-                            label: const Text('Create First Category'),
-                            onPressed: () {
+              child: Row(
+                children: [
+                  Icon(Icons.add_shopping_cart,
+                      color: Theme.of(context).primaryColor),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      loc.addNewItem,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                    ),
+                  ),
+                  if (!isMobile)
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close),
+                    ),
+                ],
+              ),
+            ),
+            // Content
+            Flexible(
+              child: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(
+                      ResponsiveHelper.getResponsivePadding(context)),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Image upload section
+                      if (_imageFile != null)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          constraints: BoxConstraints(
+                            maxHeight: isMobile ? 120 : 150,
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.file(
+                              File(_imageFile!.path),
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            ),
+                          ),
+                        ),
+
+                      // Image upload button
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.photo_camera),
+                          label: Text(loc.uploadImage),
+                          onPressed: _pickImage,
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Category selection section
+                      if (!_showNewCategoryField) ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '${AppLocalizations.of(context)!.categoriesLoaded}: ${_categories.length}',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ),
+                            if (_categories.isEmpty)
+                              TextButton.icon(
+                                icon: const Icon(Icons.add, size: 16),
+                                label: Text(
+                                  AppLocalizations.of(context)!
+                                      .createFirstCategory,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _showNewCategoryField = true;
+                                  });
+                                },
+                              ),
+                          ],
+                        ),
+                        if (_categories.isEmpty && !_showNewCategoryField)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              border: Border.all(color: Colors.orange.shade200),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.info, color: Colors.orange),
+                                const SizedBox(height: 8),
+                                Text(
+                                  AppLocalizations.of(context)!
+                                      .noCategoriesFoundMessage,
+                                  textAlign: TextAlign.center,
+                                  style:
+                                      TextStyle(color: Colors.orange.shade700),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (_categories.isNotEmpty)
+                          DropdownButtonFormField<String>(
+                            value: _selectedCategoryId,
+                            decoration: InputDecoration(
+                              labelText: loc.selectCategory,
+                              border: const OutlineInputBorder(),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 16,
+                              ),
+                            ),
+                            isExpanded: true,
+                            items: _categories.map((category) {
+                              return DropdownMenuItem(
+                                value: category.id,
+                                child: Text(
+                                  category.name,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              print('Category selected: $value');
                               setState(() {
-                                _showNewCategoryField = true;
+                                _selectedCategoryId = value;
                               });
                             },
+                            validator: (value) => value == null &&
+                                    !_showNewCategoryField &&
+                                    _categories.isNotEmpty
+                                ? loc.pleaseSelectCategory
+                                : null,
                           ),
                       ],
-                    ),
-                    if (_categories.isEmpty && !_showNewCategoryField)
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.shade50,
-                          border: Border.all(color: Colors.orange.shade200),
-                          borderRadius: BorderRadius.circular(8),
+
+                      // New category field
+                      if (_showNewCategoryField) ...[
+                        TextFormField(
+                          controller: _newCategoryController,
+                          decoration: InputDecoration(
+                            labelText: loc.newCategoryName,
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                          validator: (value) =>
+                              value?.isEmpty == true && _showNewCategoryField
+                                  ? loc.pleaseEnterCategoryName
+                                  : null,
                         ),
-                        child: Column(
+                        const SizedBox(height: 8),
+                      ],
+
+                      // Category toggle button
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _showNewCategoryField = !_showNewCategoryField;
+                            });
+                          },
+                          icon: Icon(
+                              _showNewCategoryField ? Icons.list : Icons.add),
+                          label: Text(_showNewCategoryField
+                              ? loc.selectExistingCategory
+                              : loc.addNewCategory),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Form fields in responsive layout
+                      if (isDesktop || isTablet) ...[
+                        // Two-column layout for larger screens
+                        Row(
                           children: [
-                            const Icon(Icons.info, color: Colors.orange),
-                            const SizedBox(height: 8),
-                            Text(
-                              'No categories found. Create your first category to organize your items.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.orange.shade700),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _nameController,
+                                decoration: InputDecoration(
+                                  labelText: loc.itemName,
+                                  border: const OutlineInputBorder(),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 16,
+                                  ),
+                                ),
+                                validator: (value) => value?.isEmpty == true
+                                    ? loc.pleaseEnterItemName
+                                    : null,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _priceController,
+                                decoration: InputDecoration(
+                                  labelText: loc.price,
+                                  border: const OutlineInputBorder(),
+                                  prefixText: loc.currencyPrefix,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 16,
+                                  ),
+                                ),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value?.isEmpty == true)
+                                    return loc.pleaseEnterPrice;
+                                  if (double.tryParse(value!) == null) {
+                                    return loc.pleaseEnterValidPrice;
+                                  }
+                                  return null;
+                                },
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    if (_categories.isNotEmpty)
-                      DropdownButtonFormField<String>(
-                        value: _selectedCategoryId,
-                        decoration: InputDecoration(
-                          labelText: loc.selectCategory,
-                          border: const OutlineInputBorder(),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _descriptionController,
+                          decoration: InputDecoration(
+                            labelText: loc.description,
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                          maxLines: 3,
                         ),
-                        items: _categories.map((category) {
-                          return DropdownMenuItem(
-                            value: category.id,
-                            child: Text(category.name),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          print('Category selected: $value');
-                          setState(() {
-                            _selectedCategoryId = value;
-                          });
-                        },
-                        validator: (value) => value == null &&
-                                !_showNewCategoryField &&
-                                _categories.isNotEmpty
-                            ? loc.pleaseSelectCategory
-                            : null,
-                      ),
-                  ],
-                ),
-              if (_showNewCategoryField)
-                TextFormField(
-                  controller: _newCategoryController,
-                  decoration: InputDecoration(
-                    labelText: loc.newCategoryName,
-                    border: const OutlineInputBorder(),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _imageUrlController,
+                                decoration: InputDecoration(
+                                  labelText:
+                                      '${loc.imageUrl} (${loc.optional})',
+                                  border: const OutlineInputBorder(),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Container(
+                              width: 120,
+                              child: SwitchListTile(
+                                title: Text(
+                                  loc.available,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                value: _isAvailable,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _isAvailable = value;
+                                  });
+                                },
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ] else ...[
+                        // Single-column layout for mobile
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                            labelText: loc.itemName,
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                          validator: (value) => value?.isEmpty == true
+                              ? loc.pleaseEnterItemName
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _descriptionController,
+                          decoration: InputDecoration(
+                            labelText: loc.description,
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                          maxLines: 3,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _priceController,
+                          decoration: InputDecoration(
+                            labelText: loc.price,
+                            border: const OutlineInputBorder(),
+                            prefixText: loc.currencyPrefix,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value?.isEmpty == true)
+                              return loc.pleaseEnterPrice;
+                            if (double.tryParse(value!) == null) {
+                              return loc.pleaseEnterValidPrice;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _imageUrlController,
+                          decoration: InputDecoration(
+                            labelText: '${loc.imageUrl} (${loc.optional})',
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SwitchListTile(
+                          title: Text(loc.available),
+                          value: _isAvailable,
+                          onChanged: (value) {
+                            setState(() {
+                              _isAvailable = value;
+                            });
+                          },
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ],
                   ),
-                  validator: (value) =>
-                      value?.isEmpty == true && _showNewCategoryField
-                          ? loc.pleaseEnterCategoryName
-                          : null,
-                ),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    _showNewCategoryField = !_showNewCategoryField;
-                  });
-                },
-                child: Text(_showNewCategoryField
-                    ? loc.selectExistingCategory
-                    : loc.addNewCategory),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: loc.itemName,
-                  border: const OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value?.isEmpty == true ? loc.pleaseEnterItemName : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: InputDecoration(
-                  labelText: loc.description,
-                  border: const OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _priceController,
-                decoration: InputDecoration(
-                  labelText: loc.price,
-                  border: const OutlineInputBorder(),
-                  prefixText: 'IQD ',
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value?.isEmpty == true) return loc.pleaseEnterPrice;
-                  if (double.tryParse(value!) == null) {
-                    return loc.pleaseEnterValidPrice;
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _imageUrlController,
-                decoration: InputDecoration(
-                  labelText: '${loc.imageUrl} (${loc.optional})',
-                  border: const OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: Text(loc.available),
-                value: _isAvailable,
-                onChanged: (value) {
-                  setState(() {
-                    _isAvailable = value;
-                  });
-                },
+            ),
+            // Action buttons
+            Container(
+              padding: EdgeInsets.all(
+                  ResponsiveHelper.getResponsivePadding(context)),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Colors.grey.shade200),
+                ),
               ),
-            ],
-          ),
+              child: Row(
+                children: [
+                  if (isMobile) ...[
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(loc.cancel),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _addItem,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text(loc.add),
+                      ),
+                    ),
+                  ] else ...[
+                    const Spacer(),
+                    OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(loc.cancel),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: _addItem,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text(loc.add),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(loc.cancel),
-        ),
-        ElevatedButton(
-          onPressed: _addItem,
-          child: Text(loc.add),
-        ),
-      ],
     );
   }
 
@@ -655,7 +930,8 @@ class _AddItemDialogState extends State<AddItemDialog> {
           category = _categories.firstWhere((c) => c.id == _selectedCategoryId);
         } else {
           // This shouldn't happen due to validation, but handle gracefully
-          throw Exception('Please select a category or create a new one');
+          throw Exception(
+              AppLocalizations.of(context)!.pleaseSelectCategoryOrCreate);
         }
 
         final newItem = Dish(
@@ -693,7 +969,8 @@ class _AddItemDialogState extends State<AddItemDialog> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to add item: $e'),
+              content:
+                  Text('${AppLocalizations.of(context)!.failedToAddItem}: $e'),
               backgroundColor: Colors.red,
             ),
           );
@@ -771,113 +1048,328 @@ class _EditItemDialogState extends State<EditItemDialog> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final isTablet = ResponsiveHelper.isTablet(context);
+    final isMobile = ResponsiveHelper.isMobile(context);
 
-    return AlertDialog(
-      title: Text(loc.editItem),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                value: _selectedCategoryId,
-                decoration: InputDecoration(
-                  labelText: loc.selectCategory,
-                  border: const OutlineInputBorder(),
-                ),
-                items: _categories.map((category) {
-                  return DropdownMenuItem(
-                    value: category.id,
-                    child: Text(category.name),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedCategoryId = value;
-                  });
-                },
-                validator: (value) =>
-                    value == null ? loc.pleaseSelectCategory : null,
-              ),
-              const SizedBox(height: 16),
-
-              // Item name
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: loc.itemName,
-                  border: const OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value?.isEmpty == true ? loc.pleaseEnterItemName : null,
-              ),
-              const SizedBox(height: 16),
-
-              // Description
-              TextFormField(
-                controller: _descriptionController,
-                decoration: InputDecoration(
-                  labelText: loc.description,
-                  border: const OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-
-              // Price
-              TextFormField(
-                controller: _priceController,
-                decoration: InputDecoration(
-                  labelText: loc.price,
-                  border: const OutlineInputBorder(),
-                  prefixText: 'IQD ',
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value?.isEmpty == true) return loc.pleaseEnterPrice;
-                  if (double.tryParse(value!) == null) {
-                    return loc.pleaseEnterValidPrice;
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Image URL (optional)
-              TextFormField(
-                controller: _imageUrlController,
-                decoration: InputDecoration(
-                  labelText: '${loc.imageUrl} (${loc.optional})',
-                  border: const OutlineInputBorder(),
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        width: isDesktop ? 600 : (isTablet ? 500 : double.infinity),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+          maxWidth: isDesktop
+              ? 600
+              : (isTablet ? 500 : MediaQuery.of(context).size.width * 0.9),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Container(
+              padding: EdgeInsets.all(
+                  ResponsiveHelper.getResponsivePadding(context)),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
                 ),
               ),
-              const SizedBox(height: 16),
-
-              // Availability toggle
-              SwitchListTile(
-                title: Text(loc.available),
-                value: _isAvailable,
-                onChanged: (value) {
-                  setState(() {
-                    _isAvailable = value;
-                  });
-                },
+              child: Row(
+                children: [
+                  Icon(Icons.edit, color: Theme.of(context).primaryColor),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      loc.editItem,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                    ),
+                  ),
+                  if (!isMobile)
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close),
+                    ),
+                ],
               ),
-            ],
-          ),
+            ),
+            // Content
+            Flexible(
+              child: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(
+                      ResponsiveHelper.getResponsivePadding(context)),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Category selection
+                      DropdownButtonFormField<String>(
+                        value: _selectedCategoryId,
+                        decoration: InputDecoration(
+                          labelText: loc.selectCategory,
+                          border: const OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
+                        ),
+                        isExpanded: true,
+                        items: _categories.map((category) {
+                          return DropdownMenuItem(
+                            value: category.id,
+                            child: Text(
+                              category.name,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCategoryId = value;
+                          });
+                        },
+                        validator: (value) =>
+                            value == null ? loc.pleaseSelectCategory : null,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Form fields in responsive layout
+                      if (isDesktop || isTablet) ...[
+                        // Two-column layout for larger screens
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _nameController,
+                                decoration: InputDecoration(
+                                  labelText: loc.itemName,
+                                  border: const OutlineInputBorder(),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 16,
+                                  ),
+                                ),
+                                validator: (value) => value?.isEmpty == true
+                                    ? loc.pleaseEnterItemName
+                                    : null,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _priceController,
+                                decoration: InputDecoration(
+                                  labelText: loc.price,
+                                  border: const OutlineInputBorder(),
+                                  prefixText: loc.currencyPrefix,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 16,
+                                  ),
+                                ),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value?.isEmpty == true)
+                                    return loc.pleaseEnterPrice;
+                                  if (double.tryParse(value!) == null) {
+                                    return loc.pleaseEnterValidPrice;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _descriptionController,
+                          decoration: InputDecoration(
+                            labelText: loc.description,
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                          maxLines: 3,
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _imageUrlController,
+                                decoration: InputDecoration(
+                                  labelText:
+                                      '${loc.imageUrl} (${loc.optional})',
+                                  border: const OutlineInputBorder(),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Container(
+                              width: 120,
+                              child: SwitchListTile(
+                                title: Text(
+                                  loc.available,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                value: _isAvailable,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _isAvailable = value;
+                                  });
+                                },
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ] else ...[
+                        // Single-column layout for mobile
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                            labelText: loc.itemName,
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                          validator: (value) => value?.isEmpty == true
+                              ? loc.pleaseEnterItemName
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _descriptionController,
+                          decoration: InputDecoration(
+                            labelText: loc.description,
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                          maxLines: 3,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _priceController,
+                          decoration: InputDecoration(
+                            labelText: loc.price,
+                            border: const OutlineInputBorder(),
+                            prefixText: loc.currencyPrefix,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value?.isEmpty == true)
+                              return loc.pleaseEnterPrice;
+                            if (double.tryParse(value!) == null) {
+                              return loc.pleaseEnterValidPrice;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _imageUrlController,
+                          decoration: InputDecoration(
+                            labelText: '${loc.imageUrl} (${loc.optional})',
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SwitchListTile(
+                          title: Text(loc.available),
+                          value: _isAvailable,
+                          onChanged: (value) {
+                            setState(() {
+                              _isAvailable = value;
+                            });
+                          },
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Action buttons
+            Container(
+              padding: EdgeInsets.all(
+                  ResponsiveHelper.getResponsivePadding(context)),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Colors.grey.shade200),
+                ),
+              ),
+              child: Row(
+                children: [
+                  if (isMobile) ...[
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(loc.cancel),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _updateItem,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text(loc.update),
+                      ),
+                    ),
+                  ] else ...[
+                    const Spacer(),
+                    OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(loc.cancel),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: _updateItem,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text(loc.update),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(loc.cancel),
-        ),
-        ElevatedButton(
-          onPressed: _updateItem,
-          child: Text(loc.update),
-        ),
-      ],
     );
   }
 
@@ -905,7 +1397,8 @@ class _EditItemDialogState extends State<EditItemDialog> {
         print(e);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update item: $e'),
+            content:
+                Text('${AppLocalizations.of(context)!.failedToUpdateItem}: $e'),
             backgroundColor: Colors.red,
           ),
         );

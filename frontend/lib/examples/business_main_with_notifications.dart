@@ -112,14 +112,14 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Later'),
+              child: Text(AppLocalizations.of(context)!.later),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _viewOrderDetails(notification.data['order_id']);
               },
-              child: const Text('View Order'),
+              child: Text(AppLocalizations.of(context)!.viewOrder),
             ),
           ],
         );
@@ -162,7 +162,7 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Understood'),
+              child: Text(AppLocalizations.of(context)!.understood),
             ),
           ],
         );
@@ -320,14 +320,16 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Failed to send test notification'),
+                            content: Text(AppLocalizations.of(context)!
+                                .failedToSendTestNotificationGeneric),
                             backgroundColor: Colors.red,
                           ),
                         );
                       }
                     },
                     icon: const Icon(Icons.send),
-                    label: const Text('Send Test Notification'),
+                    label: Text(
+                        AppLocalizations.of(context)!.sendTestNotification),
                   ),
                 ],
               ),

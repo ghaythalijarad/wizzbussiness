@@ -78,6 +78,6 @@ if __name__ == "__main__":
     else:
         print("💡 Recommendations:")
         print("1. Check your MongoDB Atlas cluster is running")
-        print("2. Verify IP whitelist includes 0.0.0.0/0 or Heroku IPs")
+        print("2. Verify IP whitelist includes 0.0.0.0/0 or your deployment platform IPs")
         print("3. Confirm username/password are correct")
         print("4. Try creating a new database user with simpler password")

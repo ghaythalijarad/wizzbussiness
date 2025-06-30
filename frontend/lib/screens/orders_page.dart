@@ -83,12 +83,16 @@ class _OrdersPageState extends State<OrdersPage> {
                 ),
               ],
             ),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Row(
-                children: [
-                  _buildFilterChip(loc.pending, 'pending'),
+            child: Directionality(
+              textDirection: Localizations.localeOf(context).languageCode == 'ar' 
+                  ? TextDirection.rtl 
+                  : TextDirection.ltr,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                child: Row(
+                  children: [
+                    _buildFilterChip(loc.pending, 'pending'),
                   const SizedBox(width: 6),
                   _buildFilterChip(loc.confirmed, 'confirmed'),
                   const SizedBox(width: 6),
@@ -132,6 +136,7 @@ class _OrdersPageState extends State<OrdersPage> {
                   // ],
                 ],
               ),
+            ),
             ),
           ),
           // Orders list

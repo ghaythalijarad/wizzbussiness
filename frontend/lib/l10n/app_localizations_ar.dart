@@ -303,7 +303,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get testMode => 'وضع الاختبار';
 
   @override
-  String get testModeDescription => 'تفعيل وضع الاختبار للتطوير';
+  String get testModeDescription => 'تفعيل وضع الاختبار للتطوير والاختبار';
 
   @override
   String get webhooksIntegration => 'تكامل Webhooks';
@@ -370,13 +370,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get emailSupportOpened => 'تم فتح دعم البريد الإلكتروني';
 
   @override
-  String get generalSettings => 'الإعدادات العامة';
+  String get generalSettings => 'عام';
 
   @override
   String get syncLogs => 'سجلات المزامنة';
 
   @override
-  String get advancedSettings => 'الإعدادات المتقدمة';
+  String get advancedSettings => 'متقدم';
 
   @override
   String get help => 'مساعدة';
@@ -637,23 +637,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pending => 'قيد الانتظار';
 
   @override
-  String get confirmed => 'Confirmed';
+  String get confirmed => 'مؤكد';
 
   @override
   String get orderReady => 'الطلب جاهز';
 
   @override
-  String get pickedUp => 'Picked Up';
+  String get pickedUp => 'تم الاستلام';
 
   @override
   String get cancelled => 'ملغي';
 
   @override
-  String get orderReturned => 'Returned';
+  String get orderReturned => 'مُرجع';
 
   @override
   String noOrdersFoundFor(String filter) {
-    return 'No orders found for $filter';
+    return 'لا توجد طلبات لـ $filter';
   }
 
   @override

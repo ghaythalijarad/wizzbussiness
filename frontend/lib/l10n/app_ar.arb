@@ -154,6 +154,9 @@
   "downloading": "جارٍ التحميل...",
   "preparingOrder": "تحضير الطلب",
   "orderReady": "الطلب جاهز",
+  "confirmed": "مؤكد",
+  "pickedUp": "تم الاستلام",
+  "orderReturned": "مُرجع",
   "outForDelivery": "قيد التوصيل",
   "delivered": "تم التوصيل",
   "viewDetails": "عرض التفاصيل",
@@ -689,9 +692,12 @@
   "endpoint": "نقطة النهاية",
   "testing": "جاري الاختبار...",
   "saving": "جاري الحفظ...",
-  "generalSettings": "الإعدادات العامة",
-  "syncLogs": "سجلات المزامنة",
-  "advancedSettings": "الإعدادات المتقدمة",
-  "help": "مساعدة",
-  "testModeDescription": "تفعيل وضع الاختبار للتطوير"
+  "noOrdersFoundFor": "لا توجد طلبات لـ {filter}",
+  "@noOrdersFoundFor": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      }
+    }
+  }
 }

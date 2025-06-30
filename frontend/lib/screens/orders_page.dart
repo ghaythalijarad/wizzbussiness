@@ -26,7 +26,6 @@ class OrdersPage extends StatefulWidget {
 
 class _OrdersPageState extends State<OrdersPage> {
   String _selectedFilter = 'pending';
-  bool _isSimulating = false;
   // final OrderSimulationService _simulationService = OrderSimulationService();
 
   OrderStatus? _getStatusFromString(String value) {
@@ -200,77 +199,6 @@ class _OrdersPageState extends State<OrdersPage> {
         return OrderCard(
           order: order,
           onOrderUpdated: widget.onOrderUpdated,
-        );
-      },
-    );
-  }
-
-  Widget _buildSimulationFAB(AppLocalizations loc) {
-    return FloatingActionButton.extended(
-      onPressed: _isSimulating ? null : () => _showSimulationDialog(loc),
-      backgroundColor: _isSimulating ? Colors.grey : Colors.blue,
-      icon: _isSimulating
-          ? const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
-          : const Icon(Icons.add_shopping_cart),
-      label: Text(_isSimulating ? 'Simulating...' : 'Simulate Order'),
-    );
-  }
-
-  void _showSimulationDialog(AppLocalizations loc) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.science, color: Colors.blue),
-              SizedBox(width: 8),
-              Text(loc.orderSimulation),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.of(context)!.generateTestOrders,
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                AppLocalizations.of(context)!.createRealisticOrders,
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(AppLocalizations.of(context)!.cancel),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // _simulateSingleOrder();
-              },
-              child: Text(AppLocalizations.of(context)!.createOneOrder),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // _simulateMultipleOrders();
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: Text(AppLocalizations.of(context)!.createThreeOrders),
-            ),
-          ],
         );
       },
     );

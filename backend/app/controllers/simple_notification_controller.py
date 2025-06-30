@@ -8,12 +8,13 @@ This controller is deprecated in favor of Redis/WebSocket notifications.
 import logging
 from typing import Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query
-from beanie import PydanticObjectId
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..services.simple_notification_service import simple_notification_service
 from ..services.auth_service import current_active_user
-from ..models.user import User
-from ..models.business import Business
+from ..models.user_sql import User
+from ..models.business_sql import Business
+from ..core.db_manager import get_async_session
 
 
 class SimpleNotificationController:
@@ -31,14 +32,13 @@ class SimpleNotificationController:
             business_id: str,
             limit: int = Query(50, ge=1, le=100),
             unread_only: bool = Query(False),
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Get notifications for a business (polling endpoint)."""
             try:
-                business_obj_id = PydanticObjectId(business_id)
-                
                 # Verify business exists and user has access
-                business = await Business.get(business_obj_id)
+                business = await session.get(Business, business_id)
                 if not business:
                     raise HTTPException(status_code=404, detail="Business not found")
                 
@@ -47,10 +47,10 @@ class SimpleNotificationController:
                     raise HTTPException(status_code=403, detail="Access denied")
                 
                 notifications = await simple_notification_service.get_notifications(
-                    business_id, limit, unread_only
+                    business_id, limit, unread_only, session
                 )
                 
-                unread_count = await simple_notification_service.get_unread_count(business_id)
+                unread_count = await simple_notification_service.get_unread_count(business_id, session)
                 
                 return {
                     "notifications": notifications,
@@ -70,21 +70,20 @@ class SimpleNotificationController:
         @self.router.get("/simple/notifications/{business_id}/unread-count")
         async def get_unread_count(
             business_id: str,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Get unread notification count for a business."""
             try:
-                business_obj_id = PydanticObjectId(business_id)
-                
                 # Verify business exists and user has access
-                business = await Business.get(business_obj_id)
+                business = await session.get(Business, business_id)
                 if not business:
                     raise HTTPException(status_code=404, detail="Business not found")
                 
                 if business.owner_id != current_user.id:
                     raise HTTPException(status_code=403, detail="Access denied")
                 
-                unread_count = await simple_notification_service.get_unread_count(business_id)
+                unread_count = await simple_notification_service.get_unread_count(business_id, session)
                 
                 return {
                     "business_id": business_id,
@@ -101,14 +100,13 @@ class SimpleNotificationController:
         async def mark_notification_read(
             business_id: str,
             notification_id: str,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Mark a notification as read."""
             try:
-                business_obj_id = PydanticObjectId(business_id)
-                
                 # Verify business exists and user has access
-                business = await Business.get(business_obj_id)
+                business = await session.get(Business, business_id)
                 if not business:
                     raise HTTPException(status_code=404, detail="Business not found")
                 
@@ -116,7 +114,7 @@ class SimpleNotificationController:
                     raise HTTPException(status_code=403, detail="Access denied")
                 
                 success = await simple_notification_service.mark_notification_read(
-                    business_id, notification_id
+                    business_id, notification_id, session
                 )
                 
                 if success:
@@ -133,21 +131,20 @@ class SimpleNotificationController:
         @self.router.post("/simple/notifications/{business_id}/mark-all-read")
         async def mark_all_notifications_read(
             business_id: str,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Mark all notifications as read for a business."""
             try:
-                business_obj_id = PydanticObjectId(business_id)
-                
                 # Verify business exists and user has access
-                business = await Business.get(business_obj_id)
+                business = await session.get(Business, business_id)
                 if not business:
                     raise HTTPException(status_code=404, detail="Business not found")
                 
                 if business.owner_id != current_user.id:
                     raise HTTPException(status_code=403, detail="Access denied")
                 
-                success = await simple_notification_service.mark_all_read(business_id)
+                success = await simple_notification_service.mark_all_read(business_id, session)
                 
                 if success:
                     return {"message": "All notifications marked as read"}
@@ -164,14 +161,13 @@ class SimpleNotificationController:
         async def delete_notification(
             business_id: str,
             notification_id: str,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Delete a specific notification."""
             try:
-                business_obj_id = PydanticObjectId(business_id)
-                
                 # Verify business exists and user has access
-                business = await Business.get(business_obj_id)
+                business = await session.get(Business, business_id)
                 if not business:
                     raise HTTPException(status_code=404, detail="Business not found")
                 
@@ -179,7 +175,7 @@ class SimpleNotificationController:
                     raise HTTPException(status_code=403, detail="Access denied")
                 
                 success = await simple_notification_service.delete_notification(
-                    business_id, notification_id
+                    business_id, notification_id, session
                 )
                 
                 if success:
@@ -196,14 +192,13 @@ class SimpleNotificationController:
         @self.router.post("/simple/notifications/{business_id}/test")
         async def send_test_notification(
             business_id: str,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Send a test notification (for development/testing)."""
             try:
-                business_obj_id = PydanticObjectId(business_id)
-                
                 # Verify business exists and user has access
-                business = await Business.get(business_obj_id)
+                business = await session.get(Business, business_id)
                 if not business:
                     raise HTTPException(status_code=404, detail="Business not found")
                 
@@ -218,7 +213,8 @@ class SimpleNotificationController:
                         "test": True,
                         "sender": current_user.email,
                         "system": "simplified"
-                    }
+                    },
+                    session=session
                 )
                 
                 if success:

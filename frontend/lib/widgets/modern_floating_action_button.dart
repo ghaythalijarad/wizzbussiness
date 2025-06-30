@@ -70,21 +70,6 @@ class _ModernFloatingActionButtonState extends State<ModernFloatingActionButton>
     super.dispose();
   }
 
-  void _handleTapDown(TapDownDetails details) {
-    _scaleController.forward();
-  }
-
-  void _handleTapUp(TapUpDetails details) {
-    _scaleController.reverse();
-    _rippleController.forward().then((_) {
-      _rippleController.reset();
-    });
-  }
-
-  void _handleTapCancel() {
-    _scaleController.reverse();
-  }
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;

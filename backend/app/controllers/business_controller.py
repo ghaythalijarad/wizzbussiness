@@ -4,9 +4,11 @@ Business controller using OOP principles.
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from beanie import PydanticObjectId
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.user import User
-from ..models.business import BusinessType, BusinessStatus
+from ..models.user_sql import User
+from ..models.business_sql import BusinessType, BusinessStatus
+from ..core.db_manager import get_async_session
 from ..schemas.business import (
     BusinessCreate, BusinessRead, BusinessUpdate, 
     POSSettingsUpdate, BusinessStatusUpdate,
@@ -29,13 +31,13 @@ class BusinessController:
         @self.router.post("/", response_model=BusinessRead)
         async def create_business(
             business_data: BusinessCreate,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Create a new business."""
-            business = await business_service.create_business(business_data, current_user)
-            # Get business with address data for response
-            business_with_address = await business_service.get_business_with_address(business.id)
-            return BusinessRead(**business_with_address)
+            business = await business_service.create_business(business_data, current_user, session)
+            # Optionally fetch with address if needed
+            return BusinessRead.from_orm(business)
         
         @self.router.post("/restaurant", response_model=BusinessRead)
         async def create_restaurant(
@@ -75,26 +77,26 @@ class BusinessController:
         
         @self.router.get("/my-businesses", response_model=List[BusinessRead])
         async def get_my_businesses(
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Get all businesses owned by the current user."""
-            businesses = await business_service.get_businesses_by_owner(current_user.id)
-            return [BusinessRead(**business.to_dict()) for business in businesses]
-        
+            businesses = await business_service.get_businesses_by_owner(current_user.id, session)
+            return [BusinessRead.from_orm(business) for business in businesses]
+
         @self.router.get("/{business_id}", response_model=BusinessRead)
         async def get_business(
-            business_id: str,
-            current_user: User = Depends(current_active_user)
+            business_id: int,
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Get a specific business."""
-            business = await business_service.get_business_by_id(business_id)
+            business = await business_service.get_business_by_id(business_id, session)
             if not business:
                 raise HTTPException(status_code=404, detail="Business not found")
-            
             if business.owner_id != current_user.id:
                 raise HTTPException(status_code=403, detail="Not authorized to view this business")
-            
-            return BusinessRead(**business.to_dict())
+            return BusinessRead.from_orm(business)
         
         @self.router.put("/{business_id}", response_model=BusinessRead)
         async def update_business(

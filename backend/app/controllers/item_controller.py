@@ -3,7 +3,7 @@ Item management controller with comprehensive CRUD operations.
 """
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Path, UploadFile, File
-from beanie import PydanticObjectId
+from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 import shutil
 import os
@@ -16,7 +16,8 @@ from ..schemas.item import (
 )
 from ..services.item_service import ItemService
 from ..services.auth_service import current_active_user
-from ..models.user import User
+from ..models.user_sql import User
+from ..core.db_manager import get_async_session
 
 
 # Create router
@@ -28,17 +29,16 @@ UPLOAD_DIR = "uploads/items"
 
 @item_controller.post("/", response_model=ItemResponseSchema)
 async def create_item(
-    business_id: str = Query(..., description="Business ID"),
+    business_id: int = Query(..., description="Business ID"),
     item_data: ItemCreateSchema = ...,
-    current_user: User = Depends(current_active_user)
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Create a new item for a business."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        
         # Verify user owns the business
         from ..models.business import Business
-        business = await Business.get(business_obj_id)
+        business = await Business.get(business_id, session=session)
         if not business:
             raise HTTPException(status_code=404, detail="Business not found")
         
@@ -49,8 +49,8 @@ async def create_item(
         if not current_user.id:
             raise HTTPException(status_code=401, detail="User authentication required")
         
-        item = await ItemService.create_item(business_obj_id, item_data, current_user.id)
-        return ItemResponseSchema(**item.to_dict())
+        item = await ItemService.create_item(business_id, item_data, current_user, session)
+        return ItemResponseSchema.from_orm(item)
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -63,7 +63,7 @@ async def create_item(
 
 @item_controller.get("/", response_model=ItemListResponseSchema)
 async def get_items(
-    business_id: str = Query(..., description="Business ID"),
+    business_id: int = Query(..., description="Business ID"),
     query: Optional[str] = Query(None, description="Search query"),
     category_id: Optional[str] = Query(None, description="Category ID filter"),
     item_type: Optional[str] = Query(None, description="Item type filter"),
@@ -76,12 +76,11 @@ async def get_items(
     sort_order: str = Query("asc", regex="^(asc|desc)$", description="Sort order"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Page size"),
-    current_user: User = Depends(current_active_user)
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Get items for a business with search and filtering."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        
         # Convert string enums to proper types
         item_type_enum = None
         if item_type:
@@ -114,12 +113,12 @@ async def get_items(
             page_size=page_size
         )
         
-        items, total = await ItemService.search_items(business_obj_id, search_params)
+        items, total = await ItemService.search_items(business_id, search_params, session)
         
         total_pages = (total + page_size - 1) // page_size
         
         return ItemListResponseSchema(
-            items=[ItemResponseSchema(**item.to_dict()) for item in items],
+            items=[ItemResponseSchema.from_orm(item) for item in items],
             total=total,
             page=page,
             page_size=page_size,
@@ -135,20 +134,18 @@ async def get_items(
 
 @item_controller.get("/{item_id}", response_model=ItemResponseSchema)
 async def get_item(
-    item_id: str = Path(..., description="Item ID"),
-    business_id: str = Query(..., description="Business ID"),
-    current_user: User = Depends(current_active_user)
+    item_id: int = Path(..., description="Item ID"),
+    business_id: int = Query(..., description="Business ID"),
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Get a specific item by ID."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        item_obj_id = PydanticObjectId(item_id)
-        
-        item = await ItemService.get_item(business_obj_id, item_obj_id)
+        item = await ItemService.get_item(business_id, item_id, session)
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
         
-        return ItemResponseSchema(**item.to_dict())
+        return ItemResponseSchema.from_orm(item)
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -161,21 +158,19 @@ async def get_item(
 
 @item_controller.put("/{item_id}", response_model=ItemResponseSchema)
 async def update_item(
-    item_id: str = Path(..., description="Item ID"),
-    business_id: str = Query(..., description="Business ID"),
+    item_id: int = Path(..., description="Item ID"),
+    business_id: int = Query(..., description="Business ID"),
     update_data: ItemUpdateSchema = ...,
-    current_user: User = Depends(current_active_user)
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Update an existing item."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        item_obj_id = PydanticObjectId(item_id)
-        
-        item = await ItemService.update_item(business_obj_id, item_obj_id, update_data)
+        item = await ItemService.update_item(business_id, item_id, update_data, session)
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
         
-        return ItemResponseSchema(**item.to_dict())
+        return ItemResponseSchema.from_orm(item)
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -188,16 +183,14 @@ async def update_item(
 
 @item_controller.delete("/{item_id}")
 async def delete_item(
-    item_id: str = Path(..., description="Item ID"),
-    business_id: str = Query(..., description="Business ID"),
-    current_user: User = Depends(current_active_user)
+    item_id: int = Path(..., description="Item ID"),
+    business_id: int = Query(..., description="Business ID"),
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Delete an item."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        item_obj_id = PydanticObjectId(item_id)
-        
-        success = await ItemService.delete_item(business_obj_id, item_obj_id)
+        success = await ItemService.delete_item(business_id, item_id, session)
         if not success:
             raise HTTPException(status_code=404, detail="Item not found")
         
@@ -214,21 +207,19 @@ async def delete_item(
 
 @item_controller.put("/{item_id}/stock", response_model=ItemResponseSchema)
 async def update_item_stock(
-    item_id: str = Path(..., description="Item ID"),
-    business_id: str = Query(..., description="Business ID"),
+    item_id: int = Path(..., description="Item ID"),
+    business_id: int = Query(..., description="Business ID"),
     stock_data: ItemStockUpdateSchema = ...,
-    current_user: User = Depends(current_active_user)
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Update item stock quantity."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        item_obj_id = PydanticObjectId(item_id)
-        
-        item = await ItemService.update_item_stock(business_obj_id, item_obj_id, stock_data)
+        item = await ItemService.update_item_stock(business_id, item_id, stock_data, session)
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
         
-        return ItemResponseSchema(**item.to_dict())
+        return ItemResponseSchema.from_orm(item)
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -241,21 +232,19 @@ async def update_item_stock(
 
 @item_controller.put("/{item_id}/availability", response_model=ItemResponseSchema)
 async def update_item_availability(
-    item_id: str = Path(..., description="Item ID"),
-    business_id: str = Query(..., description="Business ID"),
+    item_id: int = Path(..., description="Item ID"),
+    business_id: int = Query(..., description="Business ID"),
     availability_data: ItemAvailabilityUpdateSchema = ...,
-    current_user: User = Depends(current_active_user)
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Update item availability status."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        item_obj_id = PydanticObjectId(item_id)
-        
-        item = await ItemService.update_item_availability(business_obj_id, item_obj_id, availability_data)
+        item = await ItemService.update_item_availability(business_id, item_id, availability_data, session)
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
         
-        return ItemResponseSchema(**item.to_dict())
+        return ItemResponseSchema.from_orm(item)
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -269,16 +258,16 @@ async def update_item_availability(
 @item_controller.get("/category/{category_id}", response_model=List[ItemResponseSchema])
 async def get_items_by_category(
     category_id: str = Path(..., description="Category ID"),
-    business_id: str = Query(..., description="Business ID"),
-    current_user: User = Depends(current_active_user)
+    business_id: int = Query(..., description="Business ID"),
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Get all items in a specific category."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
         category_obj_id = PydanticObjectId(category_id) if category_id != "uncategorized" else None
         
-        items = await ItemService.get_items_by_category(business_obj_id, category_obj_id)
-        return [ItemResponseSchema(**item.to_dict()) for item in items]
+        items = await ItemService.get_items_by_category(business_id, category_obj_id, session)
+        return [ItemResponseSchema.from_orm(item) for item in items]
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -289,15 +278,14 @@ async def get_items_by_category(
 
 @item_controller.get("/analytics/summary")
 async def get_item_analytics(
-    business_id: str = Query(..., description="Business ID"),
+    business_id: int = Query(..., description="Business ID"),
     days: int = Query(30, ge=1, le=365, description="Number of days for analytics"),
-    current_user: User = Depends(current_active_user)
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Get item analytics for a business."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        
-        analytics = await ItemService.get_item_analytics(business_obj_id, days)
+        analytics = await ItemService.get_item_analytics(business_id, days, session)
         return analytics
         
     except ValueError as e:
@@ -309,15 +297,14 @@ async def get_item_analytics(
 
 @item_controller.get("/low-stock/list", response_model=List[ItemResponseSchema])
 async def get_low_stock_items(
-    business_id: str = Query(..., description="Business ID"),
-    current_user: User = Depends(current_active_user)
+    business_id: int = Query(..., description="Business ID"),
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Get items that are low on stock."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        
-        items = await ItemService.get_low_stock_items(business_obj_id)
-        return [ItemResponseSchema(**item.to_dict()) for item in items]
+        items = await ItemService.get_low_stock_items(business_id, session)
+        return [ItemResponseSchema.from_orm(item) for item in items]
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -328,7 +315,7 @@ async def get_low_stock_items(
 
 @item_controller.post("/{item_id}/upload-image")
 async def upload_item_image(
-    item_id: str,
+    item_id: int,
     file: UploadFile = File(...),
     item_service: ItemService = Depends(),
     current_user: User = Depends(current_active_user)
@@ -359,16 +346,15 @@ async def upload_item_image(
 # Category management endpoints
 @category_controller.post("/", response_model=ItemCategoryResponseSchema)
 async def create_category(
-    business_id: str = Query(..., description="Business ID"),
+    business_id: int = Query(..., description="Business ID"),
     category_data: ItemCategoryCreateSchema = ...,
-    current_user: User = Depends(current_active_user)
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Create a new item category."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        
-        category = await ItemService.create_category(business_obj_id, category_data)
-        return ItemCategoryResponseSchema(**category.to_dict())
+        category = await ItemService.create_category(business_id, category_data, session)
+        return ItemCategoryResponseSchema.from_orm(category)
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -379,15 +365,14 @@ async def create_category(
 
 @category_controller.get("/", response_model=List[ItemCategoryResponseSchema])
 async def get_categories(
-    business_id: str = Query(..., description="Business ID"),
-    current_user: User = Depends(current_active_user)
+    business_id: int = Query(..., description="Business ID"),
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Get all categories for a business."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        
-        categories = await ItemService.get_categories(business_obj_id)
-        return [ItemCategoryResponseSchema(**category.to_dict()) for category in categories]
+        categories = await ItemService.get_categories(business_id, session)
+        return [ItemCategoryResponseSchema.from_orm(category) for category in categories]
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -398,21 +383,19 @@ async def get_categories(
 
 @category_controller.put("/{category_id}", response_model=ItemCategoryResponseSchema)
 async def update_category(
-    category_id: str = Path(..., description="Category ID"),
-    business_id: str = Query(..., description="Business ID"),
+    category_id: int = Path(..., description="Category ID"),
+    business_id: int = Query(..., description="Business ID"),
     update_data: ItemCategoryUpdateSchema = ...,
-    current_user: User = Depends(current_active_user)
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Update an existing category."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        category_obj_id = PydanticObjectId(category_id)
-        
-        category = await ItemService.update_category(business_obj_id, category_obj_id, update_data)
+        category = await ItemService.update_category(business_id, category_id, update_data, session)
         if not category:
             raise HTTPException(status_code=404, detail="Category not found")
         
-        return ItemCategoryResponseSchema(**category.to_dict())
+        return ItemCategoryResponseSchema.from_orm(category)
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -425,16 +408,14 @@ async def update_category(
 
 @category_controller.delete("/{category_id}")
 async def delete_category(
-    category_id: str = Path(..., description="Category ID"),
-    business_id: str = Query(..., description="Business ID"),
-    current_user: User = Depends(current_active_user)
+    category_id: int = Path(..., description="Category ID"),
+    business_id: int = Query(..., description="Business ID"),
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Delete a category and move items to uncategorized."""
     try:
-        business_obj_id = PydanticObjectId(business_id)
-        category_obj_id = PydanticObjectId(category_id)
-        
-        success = await ItemService.delete_category(business_obj_id, category_obj_id)
+        success = await ItemService.delete_category(business_id, category_id, session)
         if not success:
             raise HTTPException(status_code=404, detail="Category not found")
         

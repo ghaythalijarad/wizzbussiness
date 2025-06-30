@@ -1,8 +1,9 @@
 """
 Health check controller using OOP principles.
 """
-from fastapi import APIRouter, Request
-from ..core.database import db_manager
+from fastapi import APIRouter, Request, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from ..core.db_manager import get_async_session
 from ..core.config import config
 
 
@@ -26,33 +27,31 @@ class HealthController:
             }
         
         @self.router.get("/health")
-        async def health_check():
+        async def health_check(session: AsyncSession = Depends(get_async_session)):
             """Basic health check."""
-            return {"status": "healthy", "timestamp": "2025-06-25", "service": "Order Receiver API"}
+            try:
+                await session.execute("SELECT 1")
+                return {"status": "healthy", "timestamp": "2025-06-25", "service": "Order Receiver API"}
+            except Exception as e:
+                return {"status": "error", "detail": str(e)}
         
         @self.router.get("/health/detailed")
-        async def detailed_health_check():
+        async def detailed_health_check(session: AsyncSession = Depends(get_async_session)):
             """Detailed health check including database status."""
             try:
-                db_status = await db_manager.test_connection()
-                return {
-                    "status": "healthy",
-                    "timestamp": "2025-06-25",
-                    "service": "Order Receiver API",
-                    "version": config.version,
-                    "database": db_status,
-                    "environment": "production" if not config.debug else "development"
-                }
-            except Exception as e:
-                return {
-                    "status": "healthy",
-                    "timestamp": "2025-06-25", 
-                    "service": "Order Receiver API",
-                    "version": config.version,
-                    "database": {"status": "error", "message": "No database connection"},
-                    "environment": "production" if not config.debug else "development",
-                    "note": "API is running without database"
-                }
+                await session.execute("SELECT 1")
+                db_status = {"status": "up"}
+            except Exception:
+                db_status = {"status": "down", "message": "No database connection"}
+            
+            return {
+                "status": "healthy",
+                "timestamp": "2025-06-25",
+                "service": "Order Receiver API",
+                "version": config.version,
+                "database": db_status,
+                "environment": "production" if not config.debug else "development"
+            }
         
         @self.router.get("/test-mongo")
         async def test_mongo(request: Request):

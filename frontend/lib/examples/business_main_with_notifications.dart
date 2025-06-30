@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../services/notification_service.dart';
 import '../models/notification.dart';
 import '../widgets/notification_panel.dart';
@@ -319,9 +320,9 @@ class _BusinessMainScreenState extends State<BusinessMainScreen> {
                         );
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text(AppLocalizations.of(context)!
-                                .failedToSendTestNotificationGeneric),
+                                .failedToSendTestNotification('Generic error')),
                             backgroundColor: Colors.red,
                           ),
                         );

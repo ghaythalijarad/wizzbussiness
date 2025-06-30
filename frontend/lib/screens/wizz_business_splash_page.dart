@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
-import '../providers/auth_provider.dart';
 import '../screens/login_page.dart';
 
 /// Extracted WizzBusinessSplashPage from main.dart
@@ -48,7 +46,6 @@ class _WizzBusinessSplashPageState extends State<WizzBusinessSplashPage>
     await Future.delayed(const Duration(seconds: 3));
 
     if (mounted) {
-      final authProvider = Provider.of<Auth>(context, listen: false);
       // Navigate directly to LoginPage regardless of auth status
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(

@@ -83,59 +83,60 @@ class _OrdersPageState extends State<OrdersPage> {
               ],
             ),
             child: Directionality(
-              textDirection: Localizations.localeOf(context).languageCode == 'ar' 
-                  ? TextDirection.rtl 
-                  : TextDirection.ltr,
+              textDirection:
+                  Localizations.localeOf(context).languageCode == 'ar'
+                      ? TextDirection.rtl
+                      : TextDirection.ltr,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 child: Row(
                   children: [
                     _buildFilterChip(loc.pending, 'pending'),
-                  const SizedBox(width: 6),
-                  _buildFilterChip(loc.confirmed, 'confirmed'),
-                  const SizedBox(width: 6),
-                  _buildFilterChip(loc.orderReady, 'ready'),
-                  const SizedBox(width: 6),
-                  _buildFilterChip(loc.pickedUp, 'pickedUp'),
-                  const SizedBox(width: 6),
-                  _buildFilterChip(loc.cancelled, 'cancelled'),
-                  const SizedBox(width: 6),
-                  _buildFilterChip(loc.orderReturned, 'returned'),
-                  // Simulation functionality temporarily disabled
-                  // if (widget.businessId != null) ...[
-                  //   const SizedBox(width: 16),
-                  //   ElevatedButton(
-                  //     onPressed: () async {
-                  //       if (_isSimulating) {
-                  //         setState(() {
-                  //           _isSimulating = false;
-                  //         });
-                  //       } else {
-                  //         await _simulationService.createSimulatedOrder(widget.businessId!);
-                  //         setState(() {
-                  //           _isSimulating = true;
-                  //         });
-                  //       }
-                  //     },
-                  //     child: Text(_isSimulating
-                  //         ? loc.stopSimulation
-                  //         : loc.startSimulation),
-                  //   ),
-                  //   const SizedBox(width: 16),
-                  //   ElevatedButton(
-                  //     onPressed: () {
-                  //       if (widget.businessId != null) {
-                  //         _simulationService
-                  //             .createSimulatedOrder(widget.businessId!);
-                  //       }
-                  //     },
-                  //     child: Text(loc.simulateNewOrder),
-                  //   ),
-                  // ],
-                ],
+                    const SizedBox(width: 6),
+                    _buildFilterChip(loc.confirmed, 'confirmed'),
+                    const SizedBox(width: 6),
+                    _buildFilterChip(loc.orderReady, 'ready'),
+                    const SizedBox(width: 6),
+                    _buildFilterChip(loc.pickedUp, 'pickedUp'),
+                    const SizedBox(width: 6),
+                    _buildFilterChip(loc.cancelled, 'cancelled'),
+                    const SizedBox(width: 6),
+                    _buildFilterChip(loc.orderReturned, 'returned'),
+                    // Simulation functionality temporarily disabled
+                    // if (widget.businessId != null) ...[
+                    //   const SizedBox(width: 16),
+                    //   ElevatedButton(
+                    //     onPressed: () async {
+                    //       if (_isSimulating) {
+                    //         setState(() {
+                    //           _isSimulating = false;
+                    //         });
+                    //       } else {
+                    //         await _simulationService.createSimulatedOrder(widget.businessId!);
+                    //         setState(() {
+                    //           _isSimulating = true;
+                    //         });
+                    //       }
+                    //     },
+                    //     child: Text(_isSimulating
+                    //         ? loc.stopSimulation
+                    //         : loc.startSimulation),
+                    //   ),
+                    //   const SizedBox(width: 16),
+                    //   ElevatedButton(
+                    //     onPressed: () {
+                    //       if (widget.businessId != null) {
+                    //         _simulationService
+                    //             .createSimulatedOrder(widget.businessId!);
+                    //       }
+                    //     },
+                    //     child: Text(loc.simulateNewOrder),
+                    //   ),
+                    // ],
+                  ],
+                ),
               ),
-            ),
             ),
           ),
           // Orders list
@@ -160,10 +161,44 @@ class _OrdersPageState extends State<OrdersPage> {
 
   Widget _buildFilterChip(String label, String value) {
     final isSelected = _selectedFilter == value;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => setState(() => _selectedFilter = value),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      child: Material(
+        elevation: isSelected ? 2 : 0.5,
+        borderRadius: BorderRadius.circular(16),
+        color: isSelected
+            ? const Color(0xFF00C1E8)
+            : const Color(0xFF001133).withOpacity(0.05),
+        shadowColor: isSelected
+            ? const Color(0xFF00C1E8).withOpacity(0.3)
+            : const Color(0xFF001133).withOpacity(0.1),
+        child: InkWell(
+          onTap: () => setState(() => _selectedFilter = value),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected
+                    ? const Color(0xFF00C1E8)
+                    : const Color(0xFF001133).withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFF001133),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontSize: 13,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

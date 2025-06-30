@@ -1,5 +1,5 @@
 """
-Application factory using OOP principles - Clean Version.
+Application factory using OOP principles - PostgreSQL Version.
 """
 import logging
 import os
@@ -7,16 +7,9 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from beanie import init_beanie
 
 from .core.config import config
 from .core.database import db_manager
-from .models.user import User
-from .models.business import Business, Restaurant, Store, Pharmacy, Kitchen
-from .models.address import Address as AddressDocument
-from .models.item import Item, ItemCategory
-from .models.order import Order
-from .models.pos_settings import BusinessPosSettings, PosOrderSyncLog
 from .controllers.health_controller import health_controller
 from .controllers.auth_controller import auth_controller
 from .controllers.business_controller import business_controller, admin_business_controller
@@ -69,44 +62,12 @@ def create_app() -> FastAPI:
     async def startup_event():
         """Initialize database and other services on startup."""
         try:
-            # Initialize database connection (non-blocking)
+            # Initialize PostgreSQL database connection
             await db_manager.connect()
-            if db_manager._client:
-                logging.info("Database connected successfully")
-                # Drop any conflicting index
-                db = db_manager.database
-                users_coll = db.get_collection("WB_users")
-                try:
-                    await users_coll.drop_index("unique_email_idx")
-                except Exception:
-                    pass
-                # Initialize Beanie ODM
-                await init_beanie(database=db, document_models=[User, Business, Restaurant, Store, Pharmacy, Kitchen, AddressDocument, Item, ItemCategory, Order, BusinessPosSettings, PosOrderSyncLog])
-                logging.info("✅ Application startup completed with database")
-            else:
-                logging.warning("⚠️ Starting application without database connection - some features may be limited")
+            logging.info("✅ PostgreSQL database connected successfully")
         except Exception as e:
             logging.error(f"⚠️ Database connection failed during startup: {e}")
             logging.warning("🚀 Continuing startup without database - health and simplified endpoints will still work")
-            # Allow app to start without database for testing purposes
-            # Initialize models without database connection for schema validation
-            try:
-                import motor.motor_asyncio
-                # Create a temporary in-memory client for model initialization
-                temp_client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017", serverSelectionTimeoutMS=1000)
-                temp_db = temp_client.temp_db
-                try:
-                    # This will fail but will initialize the model schemas
-                    await init_beanie(database=temp_db, document_models=[User, Business, Restaurant, Store, Pharmacy, Kitchen, AddressDocument, Item, ItemCategory, Order, BusinessPosSettings, PosOrderSyncLog])
-                except Exception:
-                    # Expected to fail, but models should be initialized now
-                    pass
-                finally:
-                    temp_client.close()
-                logging.info("✅ Models initialized without database connection")
-            except Exception as model_init_error:
-                logging.warning(f"⚠️ Could not initialize models: {model_init_error}")
-                # Continue anyway
     
     @app.on_event("shutdown")
     async def shutdown_event():

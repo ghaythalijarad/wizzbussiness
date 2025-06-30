@@ -5,18 +5,17 @@ import logging
 from typing import List, Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
-from beanie import PydanticObjectId
+from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
-from beanie.operators import In
-from pymongo import DESCENDING
 
-from ..models.order import Order, OrderStatus, OrderItem, DeliveryAddress, PaymentInfo, DeliveryType
-from ..models.business import Business
-from ..models.user import User
+from ..models.order_sql import Order, OrderStatus, OrderItem, DeliveryAddress, PaymentInfo, DeliveryType
+from ..models.business_sql import Business
+from ..models.user_sql import User
 from ..services.auth_service import current_active_user
 from ..services.notification_service import notification_service
 from ..services.simple_notification_service import simple_notification_service
 from ..services.order_service import OrderService
+from ..core.db_manager import get_async_session
 
 
 class OrderCreateSchema(BaseModel):
@@ -80,69 +79,32 @@ class OrderController:
         
         @self.router.post("/", response_model=OrderResponseSchema)
         async def create_order(
-            business_id: str = Query(..., description="Business ID"),
-            order_data: OrderCreateSchema = ...,
-            background_tasks: BackgroundTasks = BackgroundTasks()
+            order_data: OrderCreateSchema,
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Create a new order (called by customer app)."""
             try:
-                business_obj_id = PydanticObjectId(business_id)
-                
-                # Verify business exists and is active
-                business = await Business.get(business_obj_id)
-                if not business:
-                    raise HTTPException(status_code=404, detail="Business not found")
-                
-                if not business.is_online:
-                    raise HTTPException(status_code=400, detail="Business is currently offline")
-                
-                # Generate order number
-                order_count = await Order.find(Order.business_id == business_obj_id).count()
-                order_number = f"{business.name[:3].upper()}{order_count + 1:04d}"
-                
-                # Create order
-                order = Order(
-                    order_number=order_number,
-                    business_id=business_obj_id,
-                    customer_name=order_data.customer_name,
-                    customer_phone=order_data.customer_phone,
-                    customer_email=order_data.customer_email,
-                    customer_id=order_data.customer_id,
-                    items=order_data.items,
-                    delivery_type=order_data.delivery_type,
-                    delivery_address=order_data.delivery_address,
-                    delivery_notes=order_data.delivery_notes,
-                    special_instructions=order_data.special_instructions,
-                    requested_delivery_time=order_data.requested_delivery_time,
-                    payment_info=order_data.payment_info
-                )
-                
-                # Calculate estimated delivery time
-                order.calculate_estimated_time()
-                
-                # Save order
-                await order.insert()
+                order = await OrderService.create_order(order_data, current_user, session)
                 
                 # Send notification in background (both systems)
-                background_tasks.add_task(
+                BackgroundTasks().add_task(
                     notification_service.notify_new_order,
                     order,
-                    business
+                    order.business
                 )
                 
                 # Also send simplified notification (Heroku-friendly)
-                background_tasks.add_task(
+                BackgroundTasks().add_task(
                     simple_notification_service.send_new_order_notification,
                     order,
-                    business
+                    order.business
                 )
                 
-                logging.info(f"New order created: {order.order_number} for business {business_id}")
+                logging.info(f"New order created: {order.order_number} for business {order.business_id}")
                 
-                return OrderResponseSchema(**order.to_dict())
+                return OrderResponseSchema.from_orm(order)
                 
-            except ValueError:
-                raise HTTPException(status_code=400, detail="Invalid business ID")
             except Exception as e:
                 logging.error(f"Error creating order: {e}")
                 raise HTTPException(status_code=500, detail="Failed to create order")
@@ -153,14 +115,13 @@ class OrderController:
             status: Optional[OrderStatus] = Query(None, description="Filter by status"),
             limit: int = Query(50, ge=1, le=100),
             skip: int = Query(0, ge=0),
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Get orders for a business."""
             try:
-                business_obj_id = PydanticObjectId(business_id)
-                
                 # Verify business exists and user has access
-                business = await Business.get(business_obj_id)
+                business = await Business.get(business_id, session=session)
                 if not business:
                     raise HTTPException(status_code=404, detail="Business not found")
                 
@@ -170,18 +131,16 @@ class OrderController:
                     raise HTTPException(status_code=403, detail="Access denied")
                 
                 # Build query
-                query = Order.find(Order.business_id == business_obj_id)
+                query = Order.find(Order.business_id == business_id)
                 
                 if status:
-                    query = query.find(Order.status == status)
+                    query = query.filter(Order.status == status)
                 
                 # Get orders with pagination
-                orders = await query.sort("-created_at").skip(skip).limit(limit).to_list()
+                orders = await query.order_by(Order.created_at.desc()).offset(skip).limit(limit).all()
                 
-                return [OrderResponseSchema(**order.to_dict()) for order in orders]
+                return [OrderResponseSchema.from_orm(order) for order in orders]
                 
-            except ValueError:
-                raise HTTPException(status_code=400, detail="Invalid business ID")
             except Exception as e:
                 logging.error(f"Error getting business orders: {e}")
                 raise HTTPException(status_code=500, detail="Internal server error")
@@ -189,18 +148,17 @@ class OrderController:
         @self.router.get("/{order_id}")
         async def get_order(
             order_id: str,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Get a specific order."""
             try:
-                order_obj_id = PydanticObjectId(order_id)
-                
-                order = await Order.get(order_obj_id)
+                order = await Order.get(order_id, session=session)
                 if not order:
                     raise HTTPException(status_code=404, detail="Order not found")
                 
                 # Verify user has access to this order's business
-                business = await Business.get(order.business_id)
+                business = await Business.get(order.business_id, session=session)
                 if not business:
                     raise HTTPException(status_code=404, detail="Business not found")
                 
@@ -211,8 +169,6 @@ class OrderController:
                 
                 return order.to_dict()
                 
-            except ValueError:
-                raise HTTPException(status_code=400, detail="Invalid order ID")
             except Exception as e:
                 logging.error(f"Error getting order: {e}")
                 raise HTTPException(status_code=500, detail="Internal server error")
@@ -224,20 +180,22 @@ class OrderController:
             payload: OrderUpdateSchema,
             business_id: str = Query(..., description="Business ID"),
             background_tasks: BackgroundTasks = BackgroundTasks(),
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Accept, reject, or update an order's status by the merchant."""
             # Validate business ID
-            bid = PydanticObjectId(business_id)
+            bid = business_id
             # Delegate update to service (verifies ownership)
             try:
                 updated_order = await OrderService.update_order_status(
                     bid,
-                    PydanticObjectId(order_id),
+                    order_id,
                     payload.status,
                     payload.business_notes,
                     payload.estimated_ready_time,
-                    payload.preparation_time_minutes
+                    payload.preparation_time_minutes,
+                    session
                 )
             except ValueError as e:
                 raise HTTPException(status_code=404, detail=str(e))
@@ -248,7 +206,7 @@ class OrderController:
                 raise HTTPException(status_code=500, detail="Internal server error")
 
             # Fetch business for notifications
-            business = await Business.get(bid)
+            business = await Business.get(bid, session=session)
             if not business:
                 raise HTTPException(status_code=404, detail="Business not found")
 
@@ -267,19 +225,18 @@ class OrderController:
                     business,
                     payload.status
                 )
-            return OrderResponseSchema(**updated_order.to_dict())
+            return OrderResponseSchema.from_orm(updated_order)
         
         @self.router.get("/stats/{business_id}")
         async def get_order_stats(
             business_id: str,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Get order statistics for a business."""
             try:
-                business_obj_id = PydanticObjectId(business_id)
-                
                 # Verify business exists and user has access
-                business = await Business.get(business_obj_id)
+                business = await Business.get(business_id, session=session)
                 if not business:
                     raise HTTPException(status_code=404, detail="Business not found")
                 
@@ -289,19 +246,19 @@ class OrderController:
                     raise HTTPException(status_code=403, detail="Access denied")
                 
                 # Get statistics
-                total_orders = await Order.find(Order.business_id == business_obj_id).count()
+                total_orders = await Order.find(Order.business_id == business_id).count(session=session)
                 pending_orders = await Order.find(
-                    Order.business_id == business_obj_id,
+                    Order.business_id == business_id,
                     Order.status == OrderStatus.PENDING
-                ).count()
+                ).count(session=session)
                 preparing_orders = await Order.find(
-                    Order.business_id == business_obj_id,
+                    Order.business_id == business_id,
                     Order.status == OrderStatus.PREPARING
-                ).count()
+                ).count(session=session)
                 completed_orders = await Order.find(
-                    Order.business_id == business_obj_id,
+                    Order.business_id == business_id,
                     In(Order.status, [OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.REFUNDED])
-                ).count()
+                ).count(session=session)
                 
                 return {
                     "business_id": business_id,
@@ -312,8 +269,6 @@ class OrderController:
                     "active_orders": pending_orders + preparing_orders
                 }
                 
-            except ValueError:
-                raise HTTPException(status_code=400, detail="Invalid business ID")
             except Exception as e:
                 logging.error(f"Error getting order stats: {e}")
                 raise HTTPException(status_code=500, detail="Internal server error")

@@ -25,7 +25,7 @@ mkdir src routes models middleware
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "deploy": "git push heroku main"
+    "deploy": "git push origin main"
   },
   "engines": {
     "node": "18.x"
@@ -422,7 +422,7 @@ MERCHANT_APP_API_KEY=merchant-app-api-key
 PLATFORM_API_KEY=your-platform-api-key
 
 # Merchant App URL (your current app)
-MERCHANT_APP_URL=https://your-merchant-app.herokuapp.com
+MERCHANT_APP_URL=https://your-merchant-app.com
 
 # Notification Services
 FIREBASE_SERVER_KEY=your-firebase-key
@@ -433,37 +433,37 @@ TWILIO_TOKEN=your-twilio-token
 PORT=5000
 ```
 
-### **9. Heroku Deployment**
+### **9. Cloud Platform Deployment**
 ```bash
-# 1. Install Heroku CLI
-# 2. Login and create app
-heroku login
-heroku create your-delivery-platform
+# 1. Install your cloud platform CLI
+# For example: AWS CLI, Google Cloud SDK, Azure CLI
+
+# 2. Create and configure your application
+# Create new application on your cloud platform
 
 # 3. Set environment variables
-heroku config:set MONGODB_URI=your-mongodb-uri
-heroku config:set JWT_SECRET=your-jwt-secret
-heroku config:set MERCHANT_APP_URL=https://your-merchant-app.com
-heroku config:set MERCHANT_APP_API_KEY=your-merchant-api-key
+# Configure database connection
+# Configure JWT secret  
+# Configure merchant app URL and API key
 
-# 4. Create Procfile
+# 4. Create Procfile (if required by platform)
 echo "web: node src/server.js" > Procfile
 
 # 5. Deploy
 git init
 git add .
 git commit -m "Initial centralized platform"
-git push heroku main
+git push origin main
 
-# 6. Open app
-heroku open
+# 6. Access your deployed app
+# Check your cloud platform dashboard for the URL
 ```
 
 ### **10. Testing the Integration**
 
 #### **Test Order Creation**
 ```bash
-curl -X POST https://your-platform.herokuapp.com/api/orders \
+curl -X POST https://your-platform.com/api/orders \
   -H "Content-Type: application/json" \
   -d '{
     "customer_id": "CUST001",

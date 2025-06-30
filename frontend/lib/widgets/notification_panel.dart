@@ -57,8 +57,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
       final loc = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(loc.failedToConnectToNotifications
-              .replaceAll('{error}', e.toString())),
+          content: Text(loc.failedToConnectToNotifications(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -124,8 +123,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(loc.failedToSendTestNotification
-              .replaceAll('{error}', e.toString())),
+          content: Text(loc.failedToSendTestNotification(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -447,12 +445,11 @@ class _NotificationPanelState extends State<NotificationPanel> {
     if (difference.inMinutes < 1) {
       return loc.justNow;
     } else if (difference.inMinutes < 60) {
-      return loc.minutesAgo
-          .replaceAll('{minutes}', difference.inMinutes.toString());
+      return loc.minutesAgo(difference.inMinutes);
     } else if (difference.inHours < 24) {
-      return loc.hoursAgo.replaceAll('{hours}', difference.inHours.toString());
+      return loc.hoursAgo(difference.inHours);
     } else {
-      return loc.daysAgo.replaceAll('{days}', difference.inDays.toString());
+      return loc.daysAgo(difference.inDays);
     }
   }
 }

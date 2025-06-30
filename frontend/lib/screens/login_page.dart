@@ -186,20 +186,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  String _getDemoBusinessName(BusinessType type, BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-    switch (type) {
-      case BusinessType.store:
-        return loc.demoStore;
-      case BusinessType.pharmacy:
-        return loc.demoPharmacy;
-      case BusinessType.restaurant:
-        return loc.demoRestaurant;
-      case BusinessType.kitchen:
-        return loc.demoKitchen;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;

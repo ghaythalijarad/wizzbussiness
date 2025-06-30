@@ -12,8 +12,8 @@ from ..schemas.user import ChangePassword, UserCreate, UserRead, UserUpdate
 from ..schemas.business import BusinessCreate, AddressCreate
 from ..services.auth_service import UserManager, get_user_manager, auth_service
 from ..services.business_service import business_service
-from ..models.user import User
-from ..models.business import BusinessType
+from ..models.user_sql import User
+from ..models.business_sql import BusinessType
 
 
 class AuthController:

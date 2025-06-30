@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
-import '../services/app_state.dart';
 
 class InnovativeSidebar extends StatefulWidget {
   final bool isOnline;
@@ -28,7 +27,6 @@ class _InnovativeSidebarState extends State<InnovativeSidebar>
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
   late Animation<double> _fadeAnimation;
-  final AppState _appState = AppState();
 
   @override
   void initState() {

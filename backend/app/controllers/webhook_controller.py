@@ -2,14 +2,17 @@
 Webhook controller for receiving updates from the centralized delivery platform.
 """
 import logging
-from fastapi import APIRouter, HTTPException, Header, Request
+from fastapi import APIRouter, HTTPException, Header, Request, Depends
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
 import hmac
 import hashlib
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..core.db_manager import get_async_session
 from ..services.centralized_platform_service import centralized_platform_service
 from ..services.customer_notification_service import customer_notification_service
+from ..services.webhook_service import webhook_service
 from ..models.order import OrderStatus
 
 
@@ -55,7 +58,8 @@ class WebhookController:
         async def receive_driver_assignment(
             webhook_data: DriverAssignmentWebhook,
             request: Request,
-            x_signature: str = Header(None, alias="X-Signature")
+            x_signature: str = Header(None, alias="X-Signature"),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """
             Receive driver assignment notification from centralized platform.
@@ -70,7 +74,7 @@ class WebhookController:
                 
                 # Process driver assignment
                 success = await centralized_platform_service.receive_driver_assignment_webhook(
-                    webhook_data.dict()
+                    webhook_data.dict(), session
                 )
                 
                 if success:
@@ -78,9 +82,9 @@ class WebhookController:
                     from ..models.order import Order
                     from ..models.business import Business
                     
-                    order = await Order.get(webhook_data.order_id)
+                    order = await Order.get(webhook_data.order_id, session=session)
                     if order:
-                        business = await Business.get(order.business_id)
+                        business = await Business.get(order.business_id, session=session)
                         if business:
                             # Notify customer about driver assignment
                             await customer_notification_service.notify_driver_assigned(
@@ -100,7 +104,8 @@ class WebhookController:
         async def receive_order_status_update(
             webhook_data: OrderStatusWebhook,
             request: Request,
-            x_signature: str = Header(None, alias="X-Signature")
+            x_signature: str = Header(None, alias="X-Signature"),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """
             Receive order status updates from centralized platform.
@@ -117,7 +122,7 @@ class WebhookController:
                 from ..models.order import Order
                 from datetime import datetime
                 
-                order = await Order.get(webhook_data.order_id)
+                order = await Order.get(webhook_data.order_id, session=session)
                 if not order:
                     raise HTTPException(status_code=404, detail="Order not found")
                 
@@ -130,11 +135,11 @@ class WebhookController:
                     order.status = OrderStatus.DELIVERED
                     order.completed_at = datetime.now()
                 
-                await order.save()
+                await order.save(session=session)
                 
                 # Send customer notifications for status updates
                 from ..models.business import Business
-                business = await Business.get(order.business_id)
+                business = await Business.get(order.business_id, session=session)
                 if business:
                     if webhook_data.status == "picked_up":
                         await customer_notification_service.notify_order_picked_up(

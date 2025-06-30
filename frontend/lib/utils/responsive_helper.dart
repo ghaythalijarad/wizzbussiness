@@ -64,8 +64,9 @@ class ResponsiveHelper {
   }
 
   static bool shouldUseCompactLayout(BuildContext context) {
-    return isMobile(context) || 
-           (isTablet(context) && MediaQuery.of(context).orientation == Orientation.portrait);
+    return isMobile(context) ||
+        (isTablet(context) &&
+            MediaQuery.of(context).orientation == Orientation.portrait);
   }
 
   static int getResponsiveItemsPerRow(BuildContext context) {

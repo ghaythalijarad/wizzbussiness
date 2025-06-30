@@ -9,7 +9,6 @@ import 'package:http/http.dart' as http;
 import '../l10n/app_localizations.dart';
 import '../models/order.dart';
 import '../models/notification.dart';
-import 'api_service.dart';
 
 /// Simplified notification service for cloud deployment
 ///
@@ -185,8 +184,6 @@ class SimpleNotificationService {
     if (_currentBusinessId == null || _authToken == null) return;
 
     try {
-      final apiService = ApiService();
-
       // Get latest notifications
       final response = await http.get(
         Uri.parse(

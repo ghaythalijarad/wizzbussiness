@@ -490,7 +490,8 @@ class _AddItemDialogState extends State<AddItemDialog> {
             // Header
             Container(
               padding: EdgeInsets.all(
-                  ResponsiveHelper.getResponsivePadding(context) * 0.8), // Reduced padding
+                  ResponsiveHelper.getResponsivePadding(context) *
+                      0.8), // Reduced padding
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor.withOpacity(0.1),
                 borderRadius: const BorderRadius.only(
@@ -526,16 +527,19 @@ class _AddItemDialogState extends State<AddItemDialog> {
                 key: _formKey,
                 child: SingleChildScrollView(
                   padding: EdgeInsets.all(
-                      ResponsiveHelper.getResponsivePadding(context) * 0.8), // Reduced padding
+                      ResponsiveHelper.getResponsivePadding(context) *
+                          0.8), // Reduced padding
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Image upload section
                       if (_imageFile != null)
                         Container(
-                          margin: const EdgeInsets.only(bottom: 12), // Reduced margin
+                          margin: const EdgeInsets.only(
+                              bottom: 12), // Reduced margin
                           constraints: BoxConstraints(
-                            maxHeight: isMobile ? 100 : 120, // Reduced image height
+                            maxHeight:
+                                isMobile ? 100 : 120, // Reduced image height
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
@@ -555,7 +559,8 @@ class _AddItemDialogState extends State<AddItemDialog> {
                           label: Text(loc.uploadImage),
                           onPressed: _pickImage,
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 10), // Reduced padding
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10), // Reduced padding
                           ),
                         ),
                       ),
@@ -565,8 +570,10 @@ class _AddItemDialogState extends State<AddItemDialog> {
                       if (!_showNewCategoryField) ...[
                         if (_categories.isEmpty && !_showNewCategoryField)
                           Container(
-                            margin: const EdgeInsets.only(bottom: 12), // Reduced from 16 to 12
-                            padding: const EdgeInsets.all(12), // Reduced from 16 to 12
+                            margin: const EdgeInsets.only(
+                                bottom: 12), // Reduced from 16 to 12
+                            padding: const EdgeInsets.all(
+                                12), // Reduced from 16 to 12
                             decoration: BoxDecoration(
                               color: Colors.orange.shade50,
                               border: Border.all(color: Colors.orange.shade200),
@@ -575,7 +582,8 @@ class _AddItemDialogState extends State<AddItemDialog> {
                             child: Column(
                               children: [
                                 const Icon(Icons.info, color: Colors.orange),
-                                const SizedBox(height: 6), // Reduced from 8 to 6
+                                const SizedBox(
+                                    height: 6), // Reduced from 8 to 6
                                 Text(
                                   AppLocalizations.of(context)!
                                       .noCategoriesFoundMessage,
@@ -838,7 +846,8 @@ class _AddItemDialogState extends State<AddItemDialog> {
             // Action buttons
             Container(
               padding: EdgeInsets.all(
-                  ResponsiveHelper.getResponsivePadding(context) * 0.8), // Reduced padding
+                  ResponsiveHelper.getResponsivePadding(context) *
+                      0.8), // Reduced padding
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(color: Colors.grey.shade200),
@@ -851,7 +860,8 @@ class _AddItemDialogState extends State<AddItemDialog> {
                       child: OutlinedButton(
                         onPressed: () => Navigator.of(context).pop(),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12), // Reduced from 14 to 12
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12), // Reduced from 14 to 12
                         ),
                         child: Text(loc.cancel),
                       ),
@@ -861,7 +871,8 @@ class _AddItemDialogState extends State<AddItemDialog> {
                       child: ElevatedButton(
                         onPressed: _addItem,
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12), // Reduced from 14 to 12
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12), // Reduced from 14 to 12
                           backgroundColor: const Color(0xff00c1e8),
                         ),
                         child: Text(loc.add),
@@ -1293,7 +1304,8 @@ class _EditItemDialogState extends State<EditItemDialog> {
             // Action buttons
             Container(
               padding: EdgeInsets.all(
-                  ResponsiveHelper.getResponsivePadding(context) * 0.8), // Reduced padding
+                  ResponsiveHelper.getResponsivePadding(context) *
+                      0.8), // Reduced padding
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(color: Colors.grey.shade200),
@@ -1306,7 +1318,8 @@ class _EditItemDialogState extends State<EditItemDialog> {
                       child: OutlinedButton(
                         onPressed: () => Navigator.of(context).pop(),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12), // Reduced from 14 to 12
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12), // Reduced from 14 to 12
                         ),
                         child: Text(loc.cancel),
                       ),
@@ -1316,7 +1329,8 @@ class _EditItemDialogState extends State<EditItemDialog> {
                       child: ElevatedButton(
                         onPressed: _updateItem,
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12), // Reduced from 14 to 12
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12), // Reduced from 14 to 12
                           backgroundColor: const Color(0xff00c1e8),
                         ),
                         child: Text(loc.update),

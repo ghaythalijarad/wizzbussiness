@@ -5,7 +5,7 @@
 
 **✅ What You Have:**
 - Basic HTTP polling notification system
-- Heroku deployment working
+- Cloud deployment ready
 - MongoDB integration (with connection issues)
 - FastAPI framework
 - Dual notification systems (WebSocket + HTTP polling)
@@ -35,9 +35,9 @@
 
 ### 1.1 Cloud Infrastructure Migration
 
-**Current POC (Heroku):**
+**Current POC (Cloud):**
 
-Heroku + Heroku Redis can host a single FastAPI backend (Order Orchestrator + Notification Service) that serves all three clients plus a lightweight Central Platform API.
+Cloud + Redis can host a single FastAPI backend (Order Orchestrator + Notification Service) that serves all three clients plus a lightweight Central Platform API.
 
 **Long-term (AWS/GCP):**
 
@@ -1095,6 +1095,6 @@ server {
 
 ---
 
-This roadmap will transform your current Heroku deployment into a production-grade, enterprise-level system capable of handling real-time notifications for thousands of concurrent users with high performance, security, and reliability.
+This roadmap will transform your current cloud deployment into a production-grade, enterprise-level system capable of handling real-time notifications for thousands of concurrent users with high performance, security, and reliability.
 
 Would you like me to start implementing any specific phase or provide more details on particular aspects?

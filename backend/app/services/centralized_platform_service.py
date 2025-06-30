@@ -1,5 +1,5 @@
 """
-Integration service for communicating with the centralized delivery platform via Heroku.
+Integration service for communicating with the centralized delivery platform.
 This service handles sending order updates to the main platform that manages drivers.
 """
 import logging
@@ -14,7 +14,7 @@ from ..core.config import config
 
 
 class CentralizedPlatformService:
-    """Service for integrating with the centralized delivery platform via Heroku."""
+    """Service for integrating with the centralized delivery platform."""
     
     def __init__(self):
         # Access centralized platform configuration
@@ -24,20 +24,20 @@ class CentralizedPlatformService:
         self.timeout = config.centralized_platform.platform_timeout
         self.retry_attempts = config.centralized_platform.platform_retry_attempts
         
-        # Heroku specific configuration
-        self.heroku_app_name = getattr(config.centralized_platform, 'heroku_app_name', None)
+        # Platform specific configuration
+        self.platform_app_name = getattr(config.centralized_platform, 'platform_app_name', None)
         
     def _get_headers(self) -> Dict[str, str]:
-        """Get common headers for Heroku API requests."""
+        """Get common headers for platform API requests."""
         return {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
-            "Accept": "application/vnd.heroku+json; version=3",
+            "Accept": "application/json",
             "X-Platform-Source": "order-receiver-app"
         }
     
     async def test_connection(self) -> Dict[str, Any]:
-        """Test connection to Heroku platform."""
+        """Test connection to the delivery platform."""
         try:
             headers = self._get_headers()
             
@@ -49,16 +49,16 @@ class CentralizedPlatformService:
                 ) as response:
                     if response.status == 200:
                         account_info = await response.json()
-                        logging.info("Successfully connected to Heroku platform")
+                        logging.info("Successfully connected to delivery platform")
                         return {
                             "status": "connected",
-                            "platform": "heroku",
+                            "platform": "delivery_service",
                             "account": account_info.get("email", "Unknown"),
                             "timestamp": datetime.now().isoformat()
                         }
                     else:
                         error_text = await response.text()
-                        logging.error(f"Failed to connect to Heroku platform. Status: {response.status}")
+                        logging.error(f"Failed to connect to delivery platform. Status: {response.status}")
                         return {
                             "status": "failed",
                             "error": f"HTTP {response.status}: {error_text}",
@@ -66,7 +66,7 @@ class CentralizedPlatformService:
                         }
                         
         except Exception as e:
-            logging.error(f"Error testing Heroku platform connection: {e}")
+            logging.error(f"Error testing delivery platform connection: {e}")
             return {
                 "status": "error",
                 "error": str(e),
@@ -74,7 +74,7 @@ class CentralizedPlatformService:
             }
     
     async def get_platform_apps(self) -> List[Dict[str, Any]]:
-        """Get list of apps from Heroku platform."""
+        """Get list of apps from the delivery platform."""
         try:
             headers = self._get_headers()
             
@@ -86,19 +86,19 @@ class CentralizedPlatformService:
                 ) as response:
                     if response.status == 200:
                         apps = await response.json()
-                        logging.info(f"Retrieved {len(apps)} apps from Heroku platform")
+                        logging.info(f"Retrieved {len(apps)} apps from delivery platform")
                         return apps
                     else:
                         error_text = await response.text()
-                        logging.error(f"Failed to get apps from Heroku platform. Status: {response.status}")
+                        logging.error(f"Failed to get apps from delivery platform. Status: {response.status}")
                         return []
                         
         except Exception as e:
-            logging.error(f"Error getting apps from Heroku platform: {e}")
+            logging.error(f"Error getting apps from delivery platform: {e}")
             return []
     
     async def deploy_centralized_app(self, app_config: Dict[str, Any]) -> Dict[str, Any]:
-        """Deploy or update the centralized platform app on Heroku."""
+        """Deploy or update the centralized platform app."""
         try:
             headers = self._get_headers()
             
@@ -106,10 +106,10 @@ class CentralizedPlatformService:
             app_data = {
                 "name": app_config.get("name", "delivery-platform-central"),
                 "region": app_config.get("region", "us"),
-                "stack": app_config.get("stack", "heroku-22"),
+                "stack": app_config.get("stack", "production"),
                 "buildpacks": [
-                    {"url": "heroku/python"},
-                    {"url": "heroku/nodejs"}
+                    {"url": "python"},
+                    {"url": "nodejs"}
                 ]
             }
             
@@ -156,7 +156,7 @@ class CentralizedPlatformService:
                     }
                         
         except Exception as e:
-            logging.error(f"Error deploying app to Heroku platform: {e}")
+            logging.error(f"Error deploying app to delivery platform: {e}")
             return {
                 "status": "error",
                 "error": str(e),
@@ -167,9 +167,9 @@ class CentralizedPlatformService:
         """Sync business data to the centralized platform."""
         try:
             # First, ensure we have a target app
-            if not self.heroku_app_name:
-                logging.warning("No Heroku app name configured for data sync")
-                return {"status": "no_target_app", "message": "Configure HEROKU_APP_NAME"}
+            if not self.platform_app_name:
+                logging.warning("No platform app name configured for data sync")
+                return {"status": "no_target_app", "message": "Configure PLATFORM_APP_NAME"}
             
             headers = self._get_headers()
             
@@ -205,7 +205,7 @@ class CentralizedPlatformService:
             
             async with aiohttp.ClientSession() as session:
                 async with session.patch(
-                    f"{self.platform_base_url}/apps/{self.heroku_app_name}/config-vars",
+                    f"{self.platform_base_url}/apps/{self.platform_app_name}/config-vars",
                     json=config_data,
                     headers=headers,
                     timeout=self.timeout
@@ -246,9 +246,9 @@ class CentralizedPlatformService:
         This allows the platform to handle driver assignment/management.
         """
         try:
-            # For Heroku integration, we'll use config vars to store order updates
-            if not self.heroku_app_name:
-                logging.warning("No Heroku app name configured for order notifications")
+            # For platform integration, we'll use config vars to store order updates
+            if not self.platform_app_name:
+                logging.warning("No platform app name configured for order notifications")
                 return False
             
             headers = self._get_headers()
@@ -284,7 +284,7 @@ class CentralizedPlatformService:
             
             async with aiohttp.ClientSession() as session:
                 async with session.patch(
-                    f"{self.platform_base_url}/apps/{self.heroku_app_name}/config-vars",
+                    f"{self.platform_base_url}/apps/{self.platform_app_name}/config-vars",
                     json=config_data,
                     headers=headers,
                     timeout=self.timeout

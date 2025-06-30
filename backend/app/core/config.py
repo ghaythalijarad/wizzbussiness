@@ -10,14 +10,19 @@ class DatabaseConfig:
     """Database configuration class."""
     
     def __init__(self):
-        self.mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/order_receiver")
+        # PostgreSQL Database URL (e.g., AWS RDS endpoint)
+        self.database_url = os.getenv("DATABASE_URL")
+        if not self.database_url:
+            raise ValueError("DATABASE_URL environment variable is required for database connection")
+        
+        # Extract database name from URL for reference
         self.database_name = self._extract_database_name()
     
     def _extract_database_name(self) -> str:
-        """Extract database name from MongoDB URI."""
-        if "/" in self.mongo_uri:
-            return self.mongo_uri.split("/")[-1]
-        return "order_receiver"
+        """Extract database name from PostgreSQL URL."""
+        if "/" in self.database_url:
+            return self.database_url.split("/")[-1].split("?")[0]
+        return "order_receiver_dev"
 
 
 class SecurityConfig:
@@ -67,13 +72,13 @@ class CentralizedPlatformConfig:
         # Platform URL - will be updated when platform is deployed
         self.centralized_platform_url = os.getenv(
             "CENTRALIZED_PLATFORM_URL", 
-            "https://api.heroku.com"  # Heroku API endpoint
+            "https://api.example.com"  # Generic API endpoint
         )
         
         # API key for authenticating with the platform
         self.centralized_platform_api_key = os.getenv(
             "CENTRALIZED_PLATFORM_API_KEY",
-            "your-heroku-api-key"  # Default placeholder
+            "your-platform-api-key"  # Default placeholder
         )
         
         # Webhook secret for verifying incoming webhooks from platform
@@ -82,9 +87,9 @@ class CentralizedPlatformConfig:
             "webhook-secret"  # Default placeholder
         )
         
-        # Heroku app name for the centralized platform
-        self.heroku_app_name = os.getenv(
-            "HEROKU_APP_NAME",
+        # Platform app name
+        self.platform_app_name = os.getenv(
+            "PLATFORM_APP_NAME",
             "delivery-platform-central"  # Default app name
         )
         

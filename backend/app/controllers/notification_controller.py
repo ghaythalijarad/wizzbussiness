@@ -5,12 +5,13 @@ import json
 import logging
 from typing import Optional
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException, Query
-from beanie import PydanticObjectId
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..services.notification_service import notification_service
 from ..services.auth_service import current_active_user
-from ..models.user import User
-from ..models.business import Business
+from ..models.user_sql import User
+from ..models.business_sql import Business
+from ..core.db_manager import get_async_session
 
 
 class NotificationWebSocketController:
@@ -91,7 +92,8 @@ class NotificationWebSocketController:
         async def get_notification_history(
             business_id: str,
             limit: int = Query(50, ge=1, le=100),
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Get notification history for a business."""
             try:
@@ -123,7 +125,8 @@ class NotificationWebSocketController:
         async def mark_notification_read(
             business_id: str,
             notification_id: str,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Mark a notification as read."""
             try:
@@ -160,7 +163,8 @@ class NotificationWebSocketController:
         @self.router.post("/notifications/test/{business_id}")
         async def send_test_notification(
             business_id: str,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Send a test notification (for development/testing)."""
             try:

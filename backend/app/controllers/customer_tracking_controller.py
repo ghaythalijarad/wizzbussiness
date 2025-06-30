@@ -3,12 +3,13 @@ Customer tracking controller for providing real-time order tracking to customer 
 """
 import logging
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Query
-from beanie import PydanticObjectId
+from fastapi import APIRouter, HTTPException, Query, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.order import Order
-from ..models.business import Business
+from ..models.order_sql import Order
+from ..models.business_sql import Business
 from ..services.customer_notification_service import customer_notification_service
+from ..core.db_manager import get_async_session
 
 
 class CustomerTrackingController:
@@ -24,7 +25,8 @@ class CustomerTrackingController:
         @self.router.get("/orders/{order_id}/tracking")
         async def get_order_tracking(
             order_id: str,
-            customer_phone: str = Query(..., description="Customer phone for verification")
+            customer_phone: str = Query(..., description="Customer phone for verification"),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """
             Get real-time tracking information for a customer's order.
@@ -34,7 +36,7 @@ class CustomerTrackingController:
                 order_obj_id = PydanticObjectId(order_id)
                 
                 # Get order
-                order = await Order.get(order_obj_id)
+                order = await Order.get(order_obj_id, session=session)
                 if not order:
                     raise HTTPException(status_code=404, detail="Order not found")
                 
@@ -43,7 +45,7 @@ class CustomerTrackingController:
                     raise HTTPException(status_code=403, detail="Access denied")
                 
                 # Get business info
-                business = await Business.get(order.business_id)
+                business = await Business.get(order.business_id, session=session)
                 if not business:
                     raise HTTPException(status_code=404, detail="Business not found")
                 
@@ -146,7 +148,8 @@ class CustomerTrackingController:
         @self.router.get("/orders/{order_id}/live-tracking")
         async def get_live_tracking(
             order_id: str,
-            customer_phone: str = Query(..., description="Customer phone for verification")
+            customer_phone: str = Query(..., description="Customer phone for verification"),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """
             Get live tracking information from centralized platform.
@@ -155,7 +158,7 @@ class CustomerTrackingController:
             try:
                 # Verify order and customer
                 order_obj_id = PydanticObjectId(order_id)
-                order = await Order.get(order_obj_id)
+                order = await Order.get(order_obj_id, session=session)
                 
                 if not order or order.customer_phone != customer_phone:
                     raise HTTPException(status_code=404, detail="Order not found")
@@ -187,14 +190,15 @@ class CustomerTrackingController:
         @self.router.post("/orders/{order_id}/request-update")
         async def request_order_update(
             order_id: str,
-            customer_phone: str = Query(..., description="Customer phone for verification")
+            customer_phone: str = Query(..., description="Customer phone for verification"),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """
             Allow customer to request an update on their order status.
             """
             try:
                 order_obj_id = PydanticObjectId(order_id)
-                order = await Order.get(order_obj_id)
+                order = await Order.get(order_obj_id, session=session)
                 
                 if not order or order.customer_phone != customer_phone:
                     raise HTTPException(status_code=404, detail="Order not found")

@@ -54,7 +54,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
     final isDesktop = ResponsiveHelper.isDesktop(context);
 
     final loc = AppLocalizations.of(context)!;
-    
+
     if (isDesktop) {
       return AppBar(
         leading: IconButton(

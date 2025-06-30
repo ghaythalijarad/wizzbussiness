@@ -1,17 +1,17 @@
 fastapi==0.111.0
 uvicorn[standard]==0.29.0
-motor==3.4.0
 python-dotenv==1.0.1
-# Added ODM, auth, hashing and JWT support
-beanie==1.26.0
-fastapi-users[beanie]==13.0.0
+# Database and ORM for PostgreSQL
+sqlalchemy>=2.0.0
+asyncpg>=0.28.0
+alembic>=1.12.0
+# Auth and security
+fastapi-users[sqlalchemy]==13.0.0
 passlib[bcrypt]==1.7.4
 python-jose[cryptography]==3.3.0
 slowapi==0.1.9
 email-validator>=2.1.1
 pydantic<3.0,>=2.0
-# Fix PyMongo version compatibility
-pymongo>=4.5.0,<4.7.0
 # HTTP client for centralized platform service
 aiohttp>=3.8.0
 # Redis for caching and real-time features

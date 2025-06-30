@@ -2,7 +2,7 @@
 # Immediate Steps to Scale Your Order Receiver Backend
 
 ## 🎯 Current Status
-- ✅ **Heroku Deployment**: Working at https://wizz-9fa6547f0499.herokuapp.com/
+- ✅ **Local Development**: Working backend and frontend
 - ✅ **HTTP Polling System**: Simplified notification system deployed
 - ✅ **Database**: MongoDB Atlas connected (with TLS issues)
 - ⚠️ **Current Issue**: MongoDB TLS handshake error needs fixing
@@ -31,13 +31,16 @@ MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/database?retryW
 
 ### Step 2: Add Redis for Real-time Performance
 
-Add Redis to your Heroku app for caching and session management:
+Add Redis to your cloud platform for caching and session management:
 
 ```bash
-# Add Redis add-on to Heroku
-heroku addons:create heroku-redis:premium-0 --app wizz
+# Add Redis service to your cloud platform
+# Example for cloud deployment:
+# - AWS: ElastiCache for Redis
+# - Google Cloud: Cloud Memorystore for Redis
+# - Azure: Azure Cache for Redis
 
-# This will automatically set REDIS_URL environment variable
+# This will provide a REDIS_URL environment variable
 ```
 
 ### Step 3: Implement Production Database Configuration
@@ -237,7 +240,7 @@ def create_production_app() -> FastAPI:
     # Security middleware
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["wizz-9fa6547f0499.herokuapp.com", "localhost", "127.0.0.1"]
+        allowed_hosts=["your-platform.com", "localhost", "127.0.0.1"]
     )
     
     # CORS configuration
@@ -313,11 +316,11 @@ app = create_production_app()
 
 ### Day 1-2: Fix Database Connection
 1. Update MongoDB connection string with proper TLS settings
-2. Test connection on Heroku
+2. Test connection on your cloud platform
 3. Deploy database fixes
 
 ### Day 3-4: Add Redis
-1. Add Redis add-on to Heroku
+1. Add Redis service to your cloud platform
 2. Implement Redis service
 3. Add caching to frequently accessed data
 
@@ -860,7 +863,7 @@ async def rate_limit_middleware(request: Request, call_next):
 
 ### Immediate (This Week)
 - [ ] Fix MongoDB TLS connection
-- [ ] Add Redis to Heroku
+- [ ] Add Redis to your cloud platform
 - [ ] Update application with production features
 - [ ] Add request logging and basic monitoring
 - [ ] Implement caching for frequent operations
@@ -900,6 +903,6 @@ async def rate_limit_middleware(request: Request, call_next):
 
 ---
 
-This implementation guide provides specific, actionable steps you can take immediately to transform your current Heroku deployment into a production-ready system. Start with the immediate actions this week, then gradually implement the advanced features over the coming months.
+This implementation guide provides specific, actionable steps you can take immediately to transform your current cloud deployment into a production-ready system. Start with the immediate actions this week, then gradually implement the advanced features over the coming months.
 
 Would you like me to help you implement any of these specific steps right now?

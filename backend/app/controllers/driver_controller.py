@@ -4,13 +4,14 @@ Driver management controller for driver operations.
 import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
-from beanie import PydanticObjectId
+from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 
-from ..models.driver import Driver, DriverStatus, VehicleType, Location
-from ..models.user import User
+from ..models.driver_sql import Driver, DriverStatus, VehicleType, Location
+from ..models.user_sql import User
 from ..services.auth_service import current_active_user
 from ..services.driver_service import DriverService
+from ..core.db_manager import get_async_session
 
 
 class DriverCreateSchema(BaseModel):
@@ -55,7 +56,8 @@ class DriverController:
         @self.router.post("/", response_model=dict)
         async def create_driver(
             driver_data: DriverCreateSchema,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Create a new driver (admin only)."""
             try:
@@ -95,7 +97,8 @@ class DriverController:
             is_active: Optional[bool] = Query(None, description="Filter by active status"),
             limit: int = Query(50, ge=1, le=100),
             skip: int = Query(0, ge=0),
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Get list of drivers."""
             try:

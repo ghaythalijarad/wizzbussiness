@@ -143,7 +143,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
     final loc = AppLocalizations.of(context)!;
     final isDesktop = ResponsiveHelper.isDesktop(context);
     final isTablet = ResponsiveHelper.isTablet(context);
-    
+
     if (isDesktop) {
       return _buildDesktopLayout(context, loc);
     } else if (isTablet) {
@@ -274,7 +274,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
 
   Widget _buildSideNavigation(BuildContext context, AppLocalizations loc) {
     final isDesktop = ResponsiveHelper.isDesktop(context);
-    
+
     return Container(
       padding: EdgeInsets.all(ResponsiveHelper.getResponsivePadding(context)),
       child: Column(
@@ -332,23 +332,23 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: _appState.isOnline 
-                                ? Colors.green.withOpacity(0.2)
-                                : Colors.orange.withOpacity(0.2),
+                              color: _appState.isOnline
+                                  ? Colors.green.withOpacity(0.2)
+                                  : Colors.orange.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: _appState.isOnline 
-                                  ? Colors.green
-                                  : Colors.orange,
+                                color: _appState.isOnline
+                                    ? Colors.green
+                                    : Colors.orange,
                                 width: 1,
                               ),
                             ),
                             child: Text(
                               _appState.isOnline ? loc.online : loc.offline,
                               style: TextStyle(
-                                color: _appState.isOnline 
-                                  ? Colors.green.shade100
-                                  : Colors.orange.shade100,
+                                color: _appState.isOnline
+                                    ? Colors.green.shade100
+                                    : Colors.orange.shade100,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -362,7 +362,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
               ],
             ),
           ),
-          
+
           // Navigation items
           Expanded(
             child: ListView(
@@ -411,7 +411,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
     required VoidCallback onTap,
   }) {
     final isDesktop = ResponsiveHelper.isDesktop(context);
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: Material(
@@ -425,24 +425,24 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
               vertical: isDesktop ? 16 : 12,
             ),
             decoration: BoxDecoration(
-              color: isSelected 
-                ? Theme.of(context).primaryColor.withOpacity(0.1)
-                : Colors.transparent,
+              color: isSelected
+                  ? Theme.of(context).primaryColor.withOpacity(0.1)
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
-              border: isSelected 
-                ? Border.all(
-                    color: Theme.of(context).primaryColor.withOpacity(0.3),
-                    width: 1,
-                  )
-                : null,
+              border: isSelected
+                  ? Border.all(
+                      color: Theme.of(context).primaryColor.withOpacity(0.3),
+                      width: 1,
+                    )
+                  : null,
             ),
             child: Row(
               children: [
                 Icon(
                   icon,
-                  color: isSelected 
-                    ? Theme.of(context).primaryColor
-                    : Colors.grey.shade600,
+                  color: isSelected
+                      ? Theme.of(context).primaryColor
+                      : Colors.grey.shade600,
                   size: isDesktop ? 24 : 20,
                 ),
                 const SizedBox(width: 16),
@@ -450,11 +450,12 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
                   child: Text(
                     title,
                     style: TextStyle(
-                      color: isSelected 
-                        ? Theme.of(context).primaryColor
-                        : Colors.grey.shade700,
+                      color: isSelected
+                          ? Theme.of(context).primaryColor
+                          : Colors.grey.shade700,
                       fontSize: isDesktop ? 16 : 14,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w500,
                     ),
                   ),
                 ),

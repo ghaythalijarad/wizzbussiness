@@ -4,12 +4,11 @@ POS Settings Controller for managing Point of Sale integrations
 from typing import List, Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from beanie import PydanticObjectId
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.user import User  
-from ..models.pos_settings import (
-    PosSettings, PosTestConnection, PosConnectionResult,
-    PosOrderSyncLog, PosSystemType
+from ..models.user_sql import User  
+from ..models.pos_settings_sql import (
+    PosSettings, PosTestConnection, PosConnectionResult, PosOrderSyncLog, PosSystemType
 )
 from ..schemas.pos_schemas import (
     PosSettingsBase, PosSettingsCreate, PosSettingsUpdate, PosSettingsResponse,
@@ -18,6 +17,7 @@ from ..schemas.pos_schemas import (
 )
 from ..services.pos_settings_service import PosSettingsService
 from ..services.auth_service import current_active_user
+from ..core.db_manager import get_async_session
 
 
 class PosController:
@@ -28,7 +28,7 @@ class PosController:
         self.service = PosSettingsService()
         self._setup_routes()
     
-    async def _sync_order_background(self, business_id: PydanticObjectId, order_id: str):
+    async def _sync_order_background(self, business_id: str, order_id: str, session: AsyncSession):
         """Background task to sync order to POS"""
         try:
             # Note: This would need to fetch the Order object from order_id
@@ -90,12 +90,13 @@ class PosController:
         @self.router.get("/{business_id}/settings", response_model=PosSettingsResponse)
         async def get_pos_settings(
             business_id: str,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Get POS settings for a business."""
             try:
-                business_id_obj = PydanticObjectId(business_id)
-                settings = await self.service.get_business_pos_settings(business_id_obj)
+                business_id_obj = business_id
+                settings = await self.service.get_business_pos_settings(business_id_obj, session)
                 
                 if not settings:
                     # Return default settings if none exist
@@ -120,17 +121,18 @@ class PosController:
         async def create_pos_settings(
             business_id: str,
             settings_data: PosSettingsCreate,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Create POS settings for a business."""
             try:
-                business_id_obj = PydanticObjectId(business_id)
+                business_id_obj = business_id
                 
                 # Create POS settings object
                 settings = PosSettings(**settings_data.dict())
                 
                 # Save settings
-                success = await self.service.save_business_pos_settings(business_id_obj, settings)
+                success = await self.service.save_business_pos_settings(business_id_obj, settings, session)
                 
                 if not success:
                     raise HTTPException(status_code=500, detail="Failed to save POS settings")
@@ -152,14 +154,15 @@ class PosController:
         async def update_pos_settings(
             business_id: str,
             settings_data: PosSettingsUpdate,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Update POS settings for a business."""
             try:
-                business_id_obj = PydanticObjectId(business_id)
+                business_id_obj = business_id
                 
                 # Get existing settings
-                existing_settings = await self.service.get_business_pos_settings(business_id_obj)
+                existing_settings = await self.service.get_business_pos_settings(business_id_obj, session)
                 if not existing_settings:
                     existing_settings = PosSettings()
                 
@@ -169,7 +172,7 @@ class PosController:
                     setattr(existing_settings, key, value)
                 
                 # Save updated settings
-                success = await self.service.save_business_pos_settings(business_id_obj, existing_settings)
+                success = await self.service.save_business_pos_settings(business_id_obj, existing_settings, session)
                 
                 if not success:
                     raise HTTPException(status_code=500, detail="Failed to update POS settings")
@@ -190,13 +193,14 @@ class PosController:
         @self.router.delete("/{business_id}/settings")
         async def delete_pos_settings(
             business_id: str,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Delete POS settings for a business."""
             try:
-                business_id_obj = PydanticObjectId(business_id)
+                business_id_obj = business_id
                 
-                success = await self.service.delete_business_pos_settings(business_id_obj)
+                success = await self.service.delete_business_pos_settings(business_id_obj, session)
                 
                 if not success:
                     raise HTTPException(status_code=404, detail="POS settings not found")
@@ -210,25 +214,26 @@ class PosController:
         async def test_pos_connection(
             business_id: str,
             test_request: PosTestRequest,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Test connection to POS system."""
             try:
-                business_id_obj = PydanticObjectId(business_id)
+                business_id_obj = business_id
                 
                 # Create test configuration
                 test_config = PosTestConnection(**test_request.dict())
                 
                 # Test connection
-                result = await self.service.test_pos_connection(test_config)
+                result = await self.service.test_pos_connection(test_config, session)
                 
                 # Update settings with test result if business settings exist
-                existing_settings = await self.service.get_business_pos_settings(business_id_obj)
+                existing_settings = await self.service.get_business_pos_settings(business_id_obj, session)
                 if existing_settings:
                     existing_settings.last_connection_test = datetime.utcnow()
                     existing_settings.last_connection_status = result.success
                     existing_settings.last_error_message = result.error_details
-                    await self.service.save_business_pos_settings(business_id_obj, existing_settings)
+                    await self.service.save_business_pos_settings(business_id_obj, existing_settings, session)
                 
                 return PosConnectionResponse(
                     success=result.success,
@@ -247,11 +252,12 @@ class PosController:
             business_id: str,
             limit: int = 50,
             skip: int = 0,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Get POS order sync logs for a business."""
             try:
-                business_id_obj = PydanticObjectId(business_id)
+                business_id_obj = business_id
                 
                 logs = await PosOrderSyncLog.find(
                     PosOrderSyncLog.business_id == business_id_obj
@@ -279,17 +285,19 @@ class PosController:
             business_id: str,
             order_id: str,
             background_tasks: BackgroundTasks,
-            current_user: User = Depends(current_active_user)
+            current_user: User = Depends(current_active_user),
+            session: AsyncSession = Depends(get_async_session)
         ):
             """Manually sync an order to POS system."""
             try:
-                business_id_obj = PydanticObjectId(business_id)
+                business_id_obj = business_id
                 
                 # Add background task to sync order
                 background_tasks.add_task(
                     self._sync_order_background,
                     business_id_obj,
-                    order_id
+                    order_id,
+                    session
                 )
                 
                 return {"message": "Order sync initiated", "order_id": order_id}

@@ -133,7 +133,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         onPressed: () => _showCreateDiscountDialog(),
         icon: const Icon(Icons.add),
         label: Text(AppLocalizations.of(context)!.createDiscount),
-        backgroundColor: const Color(0xFFc1e8),
+        backgroundColor: const Color(0xFF00c1e8),
         foregroundColor: Colors.white,
       ),
     );
@@ -148,10 +148,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         elevation: isSelected ? 2 : 0.5,
         borderRadius: BorderRadius.circular(16),
         color: isSelected
-            ? const Color(0xFFc1e8)
+            ? const Color(0xFF00c1e8)
             : const Color(0xFF001133).withValues(alpha: 0.05),
         shadowColor: isSelected
-            ? const Color(0xFFc1e8).withValues(alpha: 0.3)
+            ? const Color(0xFF00c1e8).withValues(alpha: 0.3)
             : const Color(0xFF001133).withValues(alpha: 0.1),
         child: InkWell(
           onTap: () => setState(() {
@@ -164,7 +164,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected
-                    ? const Color(0xFFc1e8)
+                    ? const Color(0xFF00c1e8)
                     : const Color(0xFF001133).withValues(alpha: 0.3),
                 width: 1,
               ),
@@ -1248,6 +1248,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                   Navigator.of(context).pop();
                 }
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00c1e8),
+                foregroundColor: Colors.white,
+              ),
               child: Text(isEditing
                   ? AppLocalizations.of(context)!.saveChanges
                   : AppLocalizations.of(context)!.create),
@@ -1389,6 +1393,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                     });
                     Navigator.of(context).pop();
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00c1e8),
+                    foregroundColor: Colors.white,
+                  ),
                   child: Text(AppLocalizations.of(context)!.ok),
                 ),
               ],
@@ -1476,6 +1484,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                     });
                     Navigator.of(context).pop();
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00c1e8),
+                    foregroundColor: Colors.white,
+                  ),
                   child: Text(AppLocalizations.of(context)!.ok),
                 ),
               ],
@@ -1596,6 +1608,9 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                     onItemSelected(tempSelected);
                     Navigator.of(context).pop();
                   },
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF00c1e8),
+                  ),
                   child: Text(AppLocalizations.of(context)!.ok),
                 ),
               ],
@@ -1690,7 +1705,7 @@ class DiscountCard extends StatelessWidget {
                 Row(
                   children: [
                     Icon(Icons.local_offer,
-                        color: Colors.grey.shade500, size: 16),
+                        color: const Color(0xFF00c1e8), size: 16),
                     const SizedBox(width: 8),
                     Text(
                       discount.type == DiscountType.percentage
@@ -1735,10 +1750,11 @@ class DiscountCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  children: [                  IconButton(
-                    icon: const Icon(Icons.edit, color: Color(0xFFc1e8)),
-                    onPressed: onEdit,
-                  ),
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Color(0xFF00c1e8)),
+                      onPressed: onEdit,
+                    ),
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: onDelete,

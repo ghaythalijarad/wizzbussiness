@@ -165,7 +165,7 @@ class DiscountCard extends StatelessWidget {
                   icon: const Icon(Icons.edit, size: 16),
                   label: Text(AppLocalizations.of(context)!.edit),
                   style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF007fff)),
+                      foregroundColor: const Color(0xFFc1e8)),
                 ),
                 const SizedBox(width: 8),
                 TextButton.icon(

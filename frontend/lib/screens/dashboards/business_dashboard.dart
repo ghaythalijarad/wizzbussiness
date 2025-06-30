@@ -161,11 +161,11 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.inventory_2),
-            label: 'Items',
+            label: loc.items,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.local_offer),
-            label: 'Discounts',
+            label: loc.discounts,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings),

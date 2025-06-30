@@ -122,7 +122,7 @@ class _IOSSidebarState extends State<IOSSidebar> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: const Color(0xFF007AFF),
+              color: const Color(0xff00c1e8),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
@@ -330,7 +330,7 @@ class _IOSSidebarState extends State<IOSSidebar> {
             children: [
               Icon(
                 item.icon,
-                color: item.isDestructive ? const Color(0xFFFF3B30) : const Color(0xFF007AFF),
+                color: item.isDestructive ? const Color(0xFFFF3B30) : const Color(0xff00c1e8),
                 size: 20,
               ),
               const SizedBox(width: 16),
@@ -389,7 +389,7 @@ class _IOSSidebarState extends State<IOSSidebar> {
               const Icon(
                 Icons.language,
                 size: 24,
-                color: Color(0xFF007AFF),
+                color: Color(0xff00c1e8),
               ),
               const SizedBox(width: 8),
               Text(
@@ -443,7 +443,7 @@ class _IOSSidebarState extends State<IOSSidebar> {
       trailing: isSelected
           ? const Icon(
               Icons.check_circle,
-              color: Color(0xFF007AFF),
+              color: Color(0xff00c1e8),
             )
           : null,
       onTap: () async {

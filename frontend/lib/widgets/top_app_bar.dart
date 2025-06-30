@@ -51,32 +51,69 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final isTabletOrDesktop = ResponsiveHelper.isTablet(context) ||
         ResponsiveHelper.isDesktop(context);
+    final isDesktop = ResponsiveHelper.isDesktop(context);
 
     final loc = AppLocalizations.of(context)!;
-    return AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.notifications),
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(loc.notificationsTapped)),
-          );
-        },
-        tooltip: loc.notifications,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: isTabletOrDesktop ? 24 : 20,
-          fontWeight: FontWeight.w600,
+    
+    if (isDesktop) {
+      return AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.notifications_outlined),
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(loc.notificationsTapped)),
+            );
+          },
+          tooltip: loc.notifications,
         ),
-      ),
-      elevation: isTabletOrDesktop ? 0 : 1,
-      backgroundColor: isTabletOrDesktop ? Colors.white : null,
-      foregroundColor: isTabletOrDesktop ? Colors.black87 : null,
-      actions: isTabletOrDesktop
-          ? _buildDesktopActions(context)
-          : _buildMobileActions(context),
-    );
+        title: Row(
+          children: [
+            Icon(
+              Icons.store,
+              size: 24,
+              color: Colors.black87,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              loc.dashboard,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        actions: _buildDesktopActions(context),
+      );
+    } else {
+      return AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.notifications),
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(loc.notificationsTapped)),
+            );
+          },
+          tooltip: loc.notifications,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: isTabletOrDesktop ? 24 : 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        elevation: isTabletOrDesktop ? 0 : 1,
+        backgroundColor: isTabletOrDesktop ? Colors.white : null,
+        foregroundColor: isTabletOrDesktop ? Colors.black87 : null,
+        actions: isTabletOrDesktop
+            ? _buildDesktopActions(context)
+            : _buildMobileActions(context),
+      );
+    }
   }
 
   List<Widget> _buildMobileActions(BuildContext context) {

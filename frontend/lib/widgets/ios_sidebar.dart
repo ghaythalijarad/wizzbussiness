@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../services/language_service.dart';
+import '../utils/responsive_helper.dart';
 
 class IOSSidebar extends StatefulWidget {
   final bool isOnline;
@@ -58,7 +59,7 @@ class _IOSSidebarState extends State<IOSSidebar> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Container(
-                  width: MediaQuery.of(context).size.width * 0.85,
+                  width: ResponsiveHelper.getSidebarWidth(context),
                   height: MediaQuery.of(context).size.height,
                   decoration: const BoxDecoration(
                     color: Colors.white,
@@ -113,22 +114,29 @@ class _IOSSidebarState extends State<IOSSidebar> {
   }
 
   Widget _buildIOSHeader(BuildContext context, AppLocalizations localizations) {
+    final isCompact = ResponsiveHelper.shouldUseCompactLayout(context);
+    
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 16, 16),
+      padding: EdgeInsets.fromLTRB(
+        ResponsiveHelper.getResponsivePadding(context),
+        ResponsiveHelper.getResponsivePadding(context),
+        16,
+        16,
+      ),
       child: Row(
         children: [
           // App icon
           Container(
-            width: 32,
-            height: 32,
+            width: ResponsiveHelper.getResponsiveIconSize(context, 32),
+            height: ResponsiveHelper.getResponsiveIconSize(context, 32),
             decoration: BoxDecoration(
               color: const Color(0xff00c1e8),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.restaurant_menu,
               color: Colors.white,
-              size: 18,
+              size: ResponsiveHelper.getResponsiveIconSize(context, 18),
             ),
           ),
           const SizedBox(width: 12),
@@ -137,11 +145,13 @@ class _IOSSidebarState extends State<IOSSidebar> {
           Expanded(
             child: Text(
               localizations.appTitle,
-              style: const TextStyle(
-                fontSize: 18,
+              style: TextStyle(
+                fontSize: ResponsiveHelper.getResponsiveFontSize(context, 18),
                 fontWeight: FontWeight.w600,
                 color: Colors.black,
               ),
+              maxLines: isCompact ? 1 : 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           
@@ -149,16 +159,16 @@ class _IOSSidebarState extends State<IOSSidebar> {
           GestureDetector(
             onTap: _close,
             child: Container(
-              width: 32,
-              height: 32,
+              width: ResponsiveHelper.getResponsiveIconSize(context, 32),
+              height: ResponsiveHelper.getResponsiveIconSize(context, 32),
               decoration: BoxDecoration(
                 color: const Color(0xFFF2F2F7),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.close,
-                color: Color(0xFF8E8E93),
-                size: 18,
+                color: const Color(0xFF8E8E93),
+                size: ResponsiveHelper.getResponsiveIconSize(context, 18),
               ),
             ),
           ),
@@ -168,65 +178,126 @@ class _IOSSidebarState extends State<IOSSidebar> {
   }
 
   Widget _buildIOSStatusSection(BuildContext context, AppLocalizations localizations) {
+    final responsivePadding = ResponsiveHelper.getResponsivePadding(context);
+    final isCompact = ResponsiveHelper.shouldUseCompactLayout(context);
+    
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(
+        horizontal: responsivePadding, 
+        vertical: isCompact ? 8 : 12,
+      ),
+      padding: EdgeInsets.all(isCompact ? 16 : 20),
       decoration: BoxDecoration(
         color: widget.isOnline 
             ? const Color(0xFF34C759).withValues(alpha: 0.1) 
             : const Color(0xFFFF3B30).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: widget.isOnline ? const Color(0xFF34C759) : const Color(0xFFFF3B30),
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          const SizedBox(width: 12),
-          
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: isCompact ? 
+        // Compact layout for mobile
+        Column(
+          children: [
+            Row(
               children: [
-                Text(
-                  widget.isOnline ? localizations.online : localizations.offline,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
                     color: widget.isOnline ? const Color(0xFF34C759) : const Color(0xFFFF3B30),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  widget.isOnline 
-                      ? localizations.readyToReceiveOrders 
-                      : localizations.ordersArePaused,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF8E8E93),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    widget.isOnline ? localizations.online : localizations.offline,
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.getResponsiveFontSize(context, 16),
+                      fontWeight: FontWeight.w600,
+                      color: widget.isOnline ? const Color(0xFF34C759) : const Color(0xFFFF3B30),
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-          
-          // iOS-style switch
-          Switch.adaptive(
-            value: widget.isOnline,
-            onChanged: widget.onToggleStatus,
-            activeColor: const Color(0xFF34C759),
-          ),
-        ],
-      ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.isOnline 
+                        ? localizations.readyToReceiveOrders 
+                        : localizations.ordersArePaused,
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.getResponsiveFontSize(context, 13),
+                      color: const Color(0xFF8E8E93),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // iOS-style switch
+                Switch.adaptive(
+                  value: widget.isOnline,
+                  onChanged: widget.onToggleStatus,
+                  activeColor: const Color(0xFF34C759),
+                ),
+              ],
+            ),
+          ],
+        ) :
+        // Full layout for tablet/desktop
+        Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: widget.isOnline ? const Color(0xFF34C759) : const Color(0xFFFF3B30),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(width: 12),
+            
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.isOnline ? localizations.online : localizations.offline,
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.getResponsiveFontSize(context, 16),
+                      fontWeight: FontWeight.w600,
+                      color: widget.isOnline ? const Color(0xFF34C759) : const Color(0xFFFF3B30),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.isOnline 
+                        ? localizations.readyToReceiveOrders 
+                        : localizations.ordersArePaused,
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.getResponsiveFontSize(context, 13),
+                      color: const Color(0xFF8E8E93),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // iOS-style switch
+            Switch.adaptive(
+              value: widget.isOnline,
+              onChanged: widget.onToggleStatus,
+              activeColor: const Color(0xFF34C759),
+            ),
+          ],
+        ),
     );
   }
 
   Widget _buildIOSNavigationMenu(BuildContext context, AppLocalizations localizations) {
+    final responsivePadding = ResponsiveHelper.getResponsivePadding(context);
+    
     final menuItems = [
       _IOSMenuItem(
         icon: Icons.list_alt,
@@ -251,7 +322,7 @@ class _IOSSidebarState extends State<IOSSidebar> {
     ];
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: EdgeInsets.symmetric(horizontal: responsivePadding),
       child: Column(
         children: [
           // Main navigation
@@ -268,10 +339,12 @@ class _IOSSidebarState extends State<IOSSidebar> {
                 
                 return Column(
                   children: [
-                    _buildIOSMenuTile(item),
+                    _buildIOSMenuTile(item, context),
                     if (!isLast) 
                       Container(
-                        margin: const EdgeInsets.only(left: 52),
+                        margin: EdgeInsets.only(
+                          left: ResponsiveHelper.getResponsiveIconSize(context, 52),
+                        ),
                         height: 0.5,
                         color: const Color(0xFFC6C6C8),
                       ),
@@ -281,7 +354,7 @@ class _IOSSidebarState extends State<IOSSidebar> {
             ),
           ),
           
-          const SizedBox(height: 24),
+          SizedBox(height: ResponsiveHelper.shouldUseCompactLayout(context) ? 16 : 24),
           
           // Quick actions section
           Container(
@@ -295,9 +368,11 @@ class _IOSSidebarState extends State<IOSSidebar> {
                   icon: Icons.language,
                   title: localizations.language,
                   onTap: () => _showLanguageDialog(context),
-                )),
+                ), context),
                 Container(
-                  margin: const EdgeInsets.only(left: 52),
+                  margin: EdgeInsets.only(
+                    left: ResponsiveHelper.getResponsiveIconSize(context, 52),
+                  ),
                   height: 0.5,
                   color: const Color(0xFFC6C6C8),
                 ),
@@ -309,7 +384,7 @@ class _IOSSidebarState extends State<IOSSidebar> {
                     _close();
                   },
                   isDestructive: true,
-                )),
+                ), context),
               ],
             ),
           ),
@@ -318,36 +393,44 @@ class _IOSSidebarState extends State<IOSSidebar> {
     );
   }
 
-  Widget _buildIOSMenuTile(_IOSMenuItem item) {
+  Widget _buildIOSMenuTile(_IOSMenuItem item, BuildContext context) {
+    final responsivePadding = ResponsiveHelper.getResponsivePadding(context);
+    final isCompact = ResponsiveHelper.shouldUseCompactLayout(context);
+    
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: item.onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.symmetric(
+            horizontal: isCompact ? 16 : responsivePadding,
+            vertical: isCompact ? 12 : 16,
+          ),
           child: Row(
             children: [
               Icon(
                 item.icon,
                 color: item.isDestructive ? const Color(0xFFFF3B30) : const Color(0xff00c1e8),
-                size: 20,
+                size: ResponsiveHelper.getResponsiveIconSize(context, 20),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   item.title,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: ResponsiveHelper.getResponsiveFontSize(context, 16),
                     fontWeight: FontWeight.w400,
                     color: item.isDestructive ? const Color(0xFFFF3B30) : Colors.black,
                   ),
+                  maxLines: isCompact ? 1 : 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
-                color: Color(0xFFC6C6C8),
-                size: 18,
+                color: const Color(0xFFC6C6C8),
+                size: ResponsiveHelper.getResponsiveIconSize(context, 18),
               ),
             ],
           ),
@@ -357,15 +440,20 @@ class _IOSSidebarState extends State<IOSSidebar> {
   }
 
   Widget _buildIOSFooter(BuildContext context, AppLocalizations localizations) {
+    final responsivePadding = ResponsiveHelper.getResponsivePadding(context);
+    final isCompact = ResponsiveHelper.shouldUseCompactLayout(context);
+    
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isCompact ? 16 : responsivePadding),
       child: Text(
         localizations.tapOutsideOrPressEscToClose,
-        style: const TextStyle(
-          fontSize: 12,
-          color: Color(0xFF8E8E93),
+        style: TextStyle(
+          fontSize: ResponsiveHelper.getResponsiveFontSize(context, 12),
+          color: const Color(0xFF8E8E93),
         ),
         textAlign: TextAlign.center,
+        maxLines: isCompact ? 2 : 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -377,6 +465,8 @@ class _IOSSidebarState extends State<IOSSidebar> {
 
   void _showLanguageDialog(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final isCompact = ResponsiveHelper.shouldUseCompactLayout(context);
+    
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -386,15 +476,21 @@ class _IOSSidebarState extends State<IOSSidebar> {
           ),
           title: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.language,
-                size: 24,
-                color: Color(0xff00c1e8),
+                size: ResponsiveHelper.getResponsiveIconSize(context, 24),
+                color: const Color(0xff00c1e8),
               ),
               const SizedBox(width: 8),
-              Text(
-                localizations.selectLanguage,
-                style: const TextStyle(fontSize: 18),
+              Expanded(
+                child: Text(
+                  localizations.selectLanguage,
+                  style: TextStyle(
+                    fontSize: ResponsiveHelper.getResponsiveFontSize(context, 18),
+                  ),
+                  maxLines: isCompact ? 1 : 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -436,14 +532,30 @@ class _IOSSidebarState extends State<IOSSidebar> {
     final localizations = AppLocalizations.of(context)!;
     final currentLocale = Localizations.localeOf(context);
     final isSelected = currentLocale.languageCode == locale.languageCode;
+    final isCompact = ResponsiveHelper.shouldUseCompactLayout(context);
 
     return ListTile(
-      leading: Text(flag, style: const TextStyle(fontSize: 24)),
-      title: Text(name),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 12 : 16,
+        vertical: isCompact ? 4 : 8,
+      ),
+      leading: Text(
+        flag, 
+        style: TextStyle(
+          fontSize: ResponsiveHelper.getResponsiveFontSize(context, 24),
+        ),
+      ),
+      title: Text(
+        name,
+        style: TextStyle(
+          fontSize: ResponsiveHelper.getResponsiveFontSize(context, 16),
+        ),
+      ),
       trailing: isSelected
-          ? const Icon(
+          ? Icon(
               Icons.check_circle,
-              color: Color(0xff00c1e8),
+              color: const Color(0xff00c1e8),
+              size: ResponsiveHelper.getResponsiveIconSize(context, 24),
             )
           : null,
       onTap: () async {

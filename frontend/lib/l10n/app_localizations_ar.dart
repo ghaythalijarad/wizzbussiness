@@ -160,10 +160,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get changePassword => 'تغيير كلمة المرور';
 
   @override
-  String get posSettingsUpdated => 'POS settings updated successfully';
+  String get posSettingsUpdated => 'تم تحديث إعدادات نقاط البيع بنجاح';
 
   @override
-  String get connectionSuccessful => 'Connection successful';
+  String get connectionSuccessful => 'نجح الاتصال';
 
   @override
   String get connectionFailed => 'فشل اختبار الاتصال';
@@ -172,87 +172,87 @@ class AppLocalizationsAr extends AppLocalizations {
   String get testConnection => 'اختبار الاتصال';
 
   @override
-  String get close => 'Close';
+  String get close => 'إغلاق';
 
   @override
-  String get posSystemType => 'POS System Type';
+  String get posSystemType => 'نوع نظام نقاط البيع';
 
   @override
   String get selectPosSystem => 'اختر نظام نقاط البيع';
 
   @override
-  String get apiConfiguration => 'API Configuration';
+  String get apiConfiguration => 'تكوين API';
 
   @override
   String get apiEndpoint => 'نقطة نهاية API';
 
   @override
-  String get pleaseEnterApiEndpoint => 'Please enter API endpoint';
+  String get pleaseEnterApiEndpoint => 'يرجى إدخال نقطة نهاية API';
 
   @override
-  String get pleaseEnterValidUrl => 'Please enter a valid URL';
+  String get pleaseEnterValidUrl => 'يرجى إدخال رابط صحيح';
 
   @override
   String get apiKey => 'مفتاح API';
 
   @override
-  String get enterApiKey => 'Enter API Key';
+  String get enterApiKey => 'أدخل مفتاح API';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'تم نسخه إلى الحافظة';
 
   @override
-  String get pleaseEnterApiKey => 'Please enter API key';
+  String get pleaseEnterApiKey => 'يرجى إدخال مفتاح API';
 
   @override
   String get accessToken => 'رمز الوصول';
 
   @override
-  String get enterAccessToken => 'Enter Access Token';
+  String get enterAccessToken => 'أدخل رمز الوصول';
 
   @override
   String get locationId => 'معرف الموقع';
 
   @override
-  String get enterLocationId => 'Enter Location ID';
+  String get enterLocationId => 'أدخل معرف الموقع';
 
   @override
-  String get posIntegrationSettings => 'POS Integration Settings';
+  String get posIntegrationSettings => 'إعدادات تكامل نقاط البيع';
 
   @override
-  String get enablePosIntegration => 'Enable POS Integration';
+  String get enablePosIntegration => 'تفعيل تكامل نقاط البيع';
 
   @override
   String get enablePosIntegrationDescription =>
-      'Automatically sync orders with your POS system';
+      'مزامنة تلقائية للطلبات مع نظام نقاط البيع';
 
   @override
-  String get autoSendOrders => 'Auto Send Orders';
+  String get autoSendOrders => 'إرسال الطلبات تلقائياً';
 
   @override
   String get autoSendOrdersDescription =>
-      'Automatically send new orders to POS';
+      'إرسال الطلبات الجديدة تلقائياً إلى نقاط البيع';
 
   @override
   String get connectionStatus => 'حالة الاتصال';
 
   @override
-  String get posIntegrationEnabled => 'POS Integration Enabled';
+  String get posIntegrationEnabled => 'تم تفعيل تكامل نقاط البيع';
 
   @override
-  String get posIntegrationDisabled => 'POS Integration Disabled';
+  String get posIntegrationDisabled => 'تم تعطيل تكامل نقاط البيع';
 
   @override
-  String get system => 'System';
+  String get system => 'النظام';
 
   @override
-  String get endpoint => 'Endpoint';
+  String get endpoint => 'نقطة النهاية';
 
   @override
-  String get testing => 'Testing...';
+  String get testing => 'جاري الاختبار...';
 
   @override
-  String get saving => 'Saving...';
+  String get saving => 'جاري الحفظ...';
 
   @override
   String get saveSettings => 'حفظ الإعدادات';
@@ -303,7 +303,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get testMode => 'وضع الاختبار';
 
   @override
-  String get testModeDescription => 'تفعيل وضع الاختبار للتطوير والاختبار';
+  String get testModeDescription => 'تفعيل وضع الاختبار للتطوير';
 
   @override
   String get webhooksIntegration => 'تكامل Webhooks';
@@ -370,13 +370,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get emailSupportOpened => 'تم فتح دعم البريد الإلكتروني';
 
   @override
-  String get generalSettings => 'عام';
+  String get generalSettings => 'الإعدادات العامة';
 
   @override
   String get syncLogs => 'سجلات المزامنة';
 
   @override
-  String get advancedSettings => 'متقدم';
+  String get advancedSettings => 'الإعدادات المتقدمة';
 
   @override
   String get help => 'مساعدة';
@@ -876,26 +876,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get passwordMismatch => 'كلمات المرور غير متطابقة';
 
   @override
-  String get emailSent => 'تم إرسال البريد الإلكتروني';
+  String get emailSent => 'Email Sent';
 
   @override
   String get passwordResetLinkSent =>
-      'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني';
+      'A password reset link has been sent to your email';
 
   @override
   String get ok => 'موافق';
 
   @override
-  String get enterOtp => 'أدخل رمز التحقق';
+  String get enterOtp => 'Enter OTP';
 
   @override
-  String get pleaseEnterOtp => 'يرجى إدخال رمز التحقق';
+  String get pleaseEnterOtp => 'Please enter OTP';
 
   @override
-  String get resetYourPassword => 'إعادة تعيين كلمة المرور';
+  String get resetYourPassword => 'Reset Your Password';
 
   @override
-  String get emailOrPhone => 'البريد الإلكتروني أو الهاتف';
+  String get emailOrPhone => 'Email or Phone';
 
   @override
   String get pleaseEnterEmailAddress => 'يرجى إدخال البريد الإلكتروني';
@@ -907,19 +907,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pleaseEnterPassword => 'Please enter password';
 
   @override
-  String get confirmNewPassword => 'تأكيد كلمة المرور الجديدة';
+  String get confirmNewPassword => 'Confirm New Password';
 
   @override
-  String get pleaseConfirmPassword => 'يرجى تأكيد كلمة المرور';
+  String get pleaseConfirmPassword => 'Please confirm password';
 
   @override
-  String get resetPassword => 'إعادة تعيين كلمة المرور';
+  String get resetPassword => 'Reset Password';
 
   @override
-  String get sendOtp => 'إرسال رمز التحقق';
+  String get sendOtp => 'Send OTP';
 
   @override
-  String get backToLogin => 'العودة لتسجيل الدخول';
+  String get backToLogin => 'Back to Login';
 
   @override
   String get language => 'اللغة';

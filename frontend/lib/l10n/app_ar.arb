@@ -664,5 +664,34 @@
         "type": "String"
       }
     }
-  }
+  },
+  
+  "posSettingsUpdated": "تم تحديث إعدادات نقاط البيع بنجاح",
+  "connectionSuccessful": "نجح الاتصال",
+  "close": "إغلاق",
+  "posSystemType": "نوع نظام نقاط البيع",
+  "apiConfiguration": "تكوين API",
+  "pleaseEnterApiEndpoint": "يرجى إدخال نقطة نهاية API",
+  "pleaseEnterValidUrl": "يرجى إدخال رابط صحيح",
+  "enterApiKey": "أدخل مفتاح API",
+  "copiedToClipboard": "تم نسخه إلى الحافظة",
+  "pleaseEnterApiKey": "يرجى إدخال مفتاح API",
+  "enterAccessToken": "أدخل رمز الوصول",
+  "enterLocationId": "أدخل معرف الموقع",
+  "posIntegrationSettings": "إعدادات تكامل نقاط البيع",
+  "enablePosIntegration": "تفعيل تكامل نقاط البيع",
+  "enablePosIntegrationDescription": "مزامنة تلقائية للطلبات مع نظام نقاط البيع",
+  "autoSendOrders": "إرسال الطلبات تلقائياً",
+  "autoSendOrdersDescription": "إرسال الطلبات الجديدة تلقائياً إلى نقاط البيع",
+  "posIntegrationEnabled": "تم تفعيل تكامل نقاط البيع",
+  "posIntegrationDisabled": "تم تعطيل تكامل نقاط البيع",
+  "system": "النظام",
+  "endpoint": "نقطة النهاية",
+  "testing": "جاري الاختبار...",
+  "saving": "جاري الحفظ...",
+  "generalSettings": "الإعدادات العامة",
+  "syncLogs": "سجلات المزامنة",
+  "advancedSettings": "الإعدادات المتقدمة",
+  "help": "مساعدة",
+  "testModeDescription": "تفعيل وضع الاختبار للتطوير"
 }

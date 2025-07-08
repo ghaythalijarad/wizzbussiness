@@ -1073,7 +1073,10 @@ class ApiService {
     required String phoneNumber,
     required Map<String, dynamic> address,
   }) async {
-    final headers = await _getAuthHeaders();
+    // Use public headers for registration endpoint (no auth required)
+    final headers = <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    };
 
     final businessData = {
       'cognito_user_id': cognitoUserId,

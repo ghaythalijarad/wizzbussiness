@@ -866,7 +866,17 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         ),
       );
 
-      // Get current Cognito user to get the user ID
+      // First, log in the user to get access tokens after email verification
+      final loginResult = await UnifiedAuthService.signIn(
+        email: email,
+        password: _passwordController.text,
+      );
+      
+      if (!loginResult['success']) {
+        throw Exception('Failed to log in after verification: ${loginResult['message']}');
+      }
+
+      // Now get current Cognito user to get the user ID
       final currentUser = await UnifiedAuthService.getCurrentUser();
       if (!currentUser['success']) {
         throw Exception('Failed to get current user');
@@ -883,7 +893,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         'city': _businessCityController.text.trim(),
         'district': _businessDistrictController.text.trim(),
         'country': _businessCountryController.text.trim(),
-        'zip_code': _businessZipCodeController.text.trim(),
+        'zipcode': _businessZipCodeController.text.trim(), // Fixed: backend expects 'zipcode' not 'zip_code'
         'neighborhood': _businessNeighborhoodController.text.trim(),
         'street': _businessStreetController.text.trim(),
         'home_address': _businessHomeController.text.trim(),

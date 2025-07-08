@@ -6,7 +6,8 @@ import '../widgets/wizz_business_button.dart';
 import '../screens/forgot_password_page.dart';
 import '../screens/registration_form_screen.dart';
 import '../screens/dashboards/business_dashboard.dart';
-import '../services/auth_service.dart';
+import '../services/unified_auth_service.dart';
+import '../services/auth_service.dart' as legacy_auth;
 import '../services/api_service.dart';
 import '../models/business.dart';
 import '../models/business_type.dart';
@@ -45,13 +46,17 @@ class _LoginPageState extends State<LoginPage> {
         final email = _emailController.text.trim();
         final password = _passwordController.text.trim();
 
-        // Attempt real login
-        var response = await AuthService.login(email, password);
+        // Attempt unified login (supports both Cognito and custom auth)
+        var response = await UnifiedAuthService.signIn(
+          email: email,
+          password: password,
+        );
         bool isTest = false;
 
-        // If real login fails, attempt test login for local development
+        // If unified login fails, attempt legacy test login for local development
         if (response['success'] != true) {
-          final testResp = await AuthService.testLogin(email, password);
+          final testResp =
+              await legacy_auth.AuthService.testLogin(email, password);
           if (testResp['success'] == true) {
             response = testResp;
             isTest = true;
@@ -65,7 +70,8 @@ class _LoginPageState extends State<LoginPage> {
 
           if (isTest) {
             // Fetch test user profile
-            final profileResp = await AuthService.testGetCurrentUser();
+            final profileResp =
+                await legacy_auth.AuthService.testGetCurrentUser();
             if (profileResp['success'] == true) {
               final user = profileResp['user'];
               // Build business from test profile

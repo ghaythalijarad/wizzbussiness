@@ -47,6 +47,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return handle_login(request_data)
         elif path.endswith('/register') and http_method == 'POST':
             return handle_register(request_data)
+        elif path.endswith('/register-business') and http_method == 'POST':
+            return handle_business_registration(request_data)
         elif path.endswith('/verify') and http_method == 'GET':
             return handle_verify(headers)
         else:
@@ -124,6 +126,149 @@ def handle_register(request_data: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         return {'statusCode': 500, 'headers': get_cors_headers(), 'body': json.dumps({'error': 'DB write error', 'message': str(e)})}
     return {'statusCode': 201, 'headers': get_cors_headers(), 'body': json.dumps({'id': user_id, 'email': email})}
+
+def handle_business_registration(request_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Handle business registration after Cognito signup."""
+    try:
+        # Extract required data
+        cognito_user_id = request_data.get('cognito_user_id')
+        email = request_data.get('email')
+        business_name = request_data.get('business_name')
+        business_type = request_data.get('business_type', 'restaurant')
+        owner_name = request_data.get('owner_name')
+        phone_number = request_data.get('phone_number')
+        address = request_data.get('address', {})
+        
+        # Validate required fields
+        if not all([cognito_user_id, email, business_name, owner_name]):
+            return {
+                'statusCode': 400,
+                'headers': get_cors_headers(),
+                'body': json.dumps({'error': 'Missing required fields: cognito_user_id, email, business_name, owner_name'})
+            }
+        
+        # Generate IDs and timestamp
+        business_id = str(uuid.uuid4())
+        user_id = str(uuid.uuid4())
+        timestamp = datetime.utcnow().isoformat()
+        
+        # Create user record linked to Cognito
+        user_item = {
+            'PK': f'USER#{user_id}',
+            'SK': 'PROFILE',
+            'GSI1_PK': email,
+            'GSI1_SK': f'USER#{user_id}',
+            'user_id': user_id,
+            'cognito_user_id': cognito_user_id,
+            'email': email,
+            'owner_name': owner_name,
+            'phone_number': phone_number,
+            'created_at': timestamp,
+            'updated_at': timestamp,
+            'entity_type': 'USER'
+        }
+        
+        # Create business record
+        business_item = {
+            'PK': f'BUS#{business_id}',
+            'SK': 'PROFILE',
+            'GSI1_PK': f'USER#{user_id}',
+            'GSI1_SK': f'BUS#{business_id}',
+            'business_id': business_id,
+            'user_id': user_id,
+            'name': business_name,
+            'business_type': business_type,
+            'status': 'pending_verification',
+            'contact_phone': phone_number,
+            'contact_email': email,
+            'address': {
+                'city': address.get('city', ''),
+                'district': address.get('district', ''),
+                'country': address.get('country', ''),
+                'zip_code': address.get('zip_code', ''),
+                'neighborhood': address.get('neighborhood', ''),
+                'street': address.get('street', ''),
+                'home_address': address.get('home_address', ''),
+                'latitude': address.get('latitude', 0.0),
+                'longitude': address.get('longitude', 0.0)
+            },
+            'settings': {
+                'notifications_enabled': True,
+                'auto_accept_orders': False,
+                'operating_hours': {
+                    'monday': {'open': '09:00', 'close': '22:00', 'is_open': True},
+                    'tuesday': {'open': '09:00', 'close': '22:00', 'is_open': True},
+                    'wednesday': {'open': '09:00', 'close': '22:00', 'is_open': True},
+                    'thursday': {'open': '09:00', 'close': '22:00', 'is_open': True},
+                    'friday': {'open': '09:00', 'close': '22:00', 'is_open': True},
+                    'saturday': {'open': '09:00', 'close': '22:00', 'is_open': True},
+                    'sunday': {'open': '09:00', 'close': '22:00', 'is_open': True}
+                }
+            },
+            'created_at': timestamp,
+            'updated_at': timestamp,
+            'entity_type': 'BUSINESS'
+        }
+        
+        # Create default categories for the business
+        default_categories = [
+            {'name': 'Appetizers', 'description': 'Starter dishes'},
+            {'name': 'Main Courses', 'description': 'Main dishes'},
+            {'name': 'Beverages', 'description': 'Drinks and beverages'},
+            {'name': 'Desserts', 'description': 'Sweet treats and desserts'}
+        ]
+        
+        category_items = []
+        for i, category in enumerate(default_categories):
+            category_id = str(uuid.uuid4())
+            category_item = {
+                'PK': f'BUS#{business_id}',
+                'SK': f'CAT#{category_id}',
+                'GSI1_PK': f'BUS#{business_id}',
+                'GSI1_SK': f'CAT#{category_id}',
+                'category_id': category_id,
+                'business_id': business_id,
+                'name': category['name'],
+                'description': category['description'],
+                'sort_order': i + 1,
+                'is_active': True,
+                'created_at': timestamp,
+                'updated_at': timestamp,
+                'entity_type': 'CATEGORY'
+            }
+            category_items.append(category_item)
+        
+        # Save all items to DynamoDB
+        with _table.batch_writer() as batch:
+            # Write user
+            batch.put_item(Item=user_item)
+            # Write business
+            batch.put_item(Item=business_item)
+            # Write categories
+            for category_item in category_items:
+                batch.put_item(Item=category_item)
+        
+        return {
+            'statusCode': 201,
+            'headers': get_cors_headers(),
+            'body': json.dumps({
+                'success': True,
+                'user_id': user_id,
+                'business_id': business_id,
+                'message': 'Business registration completed successfully'
+            })
+        }
+        
+    except Exception as e:
+        print(f"Business registration error: {str(e)}")
+        return {
+            'statusCode': 500,
+            'headers': get_cors_headers(),
+            'body': json.dumps({
+                'error': 'Failed to register business',
+                'message': str(e) if os.getenv('ENVIRONMENT') != 'production' else 'Registration error'
+            })
+        }
 
 def handle_verify(headers: Dict[str, Any]) -> Dict[str, Any]:
     """Handle token verification."""

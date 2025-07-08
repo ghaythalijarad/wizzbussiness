@@ -7,7 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
-import '../services/auth_service.dart';
+import '../services/unified_auth_service.dart';
 
 class RegistrationFormScreen extends StatefulWidget {
   const RegistrationFormScreen({Key? key}) : super(key: key);
@@ -461,26 +461,35 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
       };
 
       // Call the registration service
-      final response = await AuthService.register(
-        registrationData,
-        _licenseFile,
-        _identityFile,
-        _healthCertificateFile,
-        _ownerPhotoFile,
+      final response = await UnifiedAuthService.register(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        userData: registrationData,
+        licenseFile: _licenseFile,
+        identityFile: _identityFile,
+        healthCertificateFile: _healthCertificateFile,
+        ownerPhotoFile: _ownerPhotoFile,
       );
 
       // Close the loading dialog
       Navigator.of(context).pop();
 
       if (response['success']) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.registrationSuccessLogin),
-            backgroundColor: Colors.green,
-          ),
-        );
-        // Navigate back to login screen
-        Navigator.of(context).pop();
+        // Check if email verification is needed (Cognito)
+        if (response['isSignUpComplete'] == false &&
+            response['nextStep']?.contains('CONFIRM_SIGN_UP') == true) {
+          // Show email verification dialog for Cognito
+          _showEmailVerificationDialog(_emailController.text.trim());
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.registrationSuccessLogin),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // Navigate back to login screen
+          Navigator.of(context).pop();
+        }
       } else {
         // It's good practice to check if the widget is still in the tree
         if (!mounted) return;
@@ -505,73 +514,422 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     }
   }
 
-  Future<void> _getCurrentLocation() async {
-    final l10n = AppLocalizations.of(context)!;
-    setState(() {
-      _isLoadingLocation = true;
-    });
+  void _showEmailVerificationDialog(String email) {
+    final codeController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool isVerifying = false;
+    bool isResending = false;
 
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.mark_email_read,
+                color: const Color(0xFF00C1E8),
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Verify Your Email',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00C1E8).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'We sent a verification code to:',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        email,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF00C1E8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: codeController,
+                  decoration: InputDecoration(
+                    labelText: 'Verification Code',
+                    hintText: 'Enter 6-digit code',
+                    prefixIcon: const Icon(Icons.verified_user),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF00C1E8),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter the verification code';
+                    }
+                    if (value.trim().length != 6) {
+                      return 'Code must be 6 digits';
+                    }
+                    return null;
+                  },
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.orange.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        color: Colors.orange,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Check your email (including spam folder) for the verification code.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.orange[800],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isResending
+                  ? null
+                  : () async {
+                      setState(() => isResending = true);
+
+                      try {
+                        final result =
+                            await UnifiedAuthService.resendConfirmationCode(
+                          email: email,
+                        );
+
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  Icon(
+                                    result['success']
+                                        ? Icons.check_circle
+                                        : Icons.error,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child:
+                                        Text(result['message'] ?? 'Code sent'),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor:
+                                  result['success'] ? Colors.green : Colors.red,
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      } finally {
+                        if (context.mounted) {
+                          setState(() => isResending = false);
+                        }
+                      }
+                    },
+              child: isResending
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.grey[600]!,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text('Sending...'),
+                      ],
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.refresh, size: 18),
+                        const SizedBox(width: 4),
+                        const Text('Resend Code'),
+                      ],
+                    ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: isVerifying
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
+
+                      setState(() => isVerifying = true);
+
+                      try {
+                        final code = codeController.text.trim();
+                        final result = await UnifiedAuthService.confirmSignUp(
+                          email: email,
+                          confirmationCode: code,
+                        );
+
+                        if (context.mounted) {
+                          if (result['success']) {
+                            // Close verification dialog
+                            Navigator.of(context).pop();
+
+                            // Now register business data with the backend
+                            await _registerBusinessDataAfterVerification(email);
+
+                            // Show success message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.check_circle,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Expanded(
+                                      child: Text(
+                                        'Registration completed successfully! You can now login.',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                backgroundColor: Colors.green,
+                                duration: const Duration(seconds: 4),
+                              ),
+                            );
+
+                            // Navigate back to login screen
+                            Navigator.of(context).pop();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.error,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        result['message'] ??
+                                            'Verification failed',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                backgroundColor: Colors.red,
+                                duration: const Duration(seconds: 4),
+                              ),
+                            );
+                          }
+                        }
+                      } finally {
+                        if (context.mounted) {
+                          setState(() => isVerifying = false);
+                        }
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00C1E8),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: isVerifying
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text('Verifying...'),
+                      ],
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.verified, size: 18),
+                        const SizedBox(width: 4),
+                        const Text(
+                          'Verify Email',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _registerBusinessDataAfterVerification(String email) async {
     try {
-      // Show loading message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.gettingYourLocation),
-          duration: const Duration(seconds: 2),
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text(
+                'Completing registration...',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
         ),
       );
 
-      // Check location permissions
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
+      // Get current Cognito user to get the user ID
+      final currentUser = await UnifiedAuthService.getCurrentUser();
+      if (!currentUser['success']) {
+        throw Exception('Failed to get current user');
       }
 
-      if (permission == LocationPermission.deniedForever) {
-        throw Exception(l10n.locationPermissionDeniedForever);
+      final cognitoUserId =
+          currentUser['user']['userId'] ?? currentUser['user']['sub'];
+      if (cognitoUserId == null) {
+        throw Exception('Cognito user ID not found');
       }
 
-      if (permission == LocationPermission.denied) {
-        throw Exception(l10n.locationPermissionDenied);
-      }
+      // Prepare address data
+      final addressData = {
+        'city': _businessCityController.text.trim(),
+        'district': _businessDistrictController.text.trim(),
+        'country': _businessCountryController.text.trim(),
+        'zip_code': _businessZipCodeController.text.trim(),
+        'neighborhood': _businessNeighborhoodController.text.trim(),
+        'street': _businessStreetController.text.trim(),
+        'home_address': _businessHomeController.text.trim(),
+      };
 
-      // Check if location services are enabled
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        throw Exception(l10n.locationServicesDisabled);
-      }
-
-      // Get current position
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+      // Register business data with the backend
+      final businessResult = await UnifiedAuthService.registerBusinessData(
+        cognitoUserId: cognitoUserId,
+        email: email,
+        businessName: _businessNameController.text.trim(),
+        businessType: _selectedBusinessType ?? 'restaurant',
+        ownerName: _ownerNameController.text.trim(),
+        phoneNumber: '+964${_phoneController.text.trim()}',
+        address: addressData,
       );
 
-      // Get placemark from coordinates
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks.first;
-        setState(() {
-          _businessCountryController.text = place.country ?? '';
-          _businessCityController.text = place.locality ?? '';
-          _businessDistrictController.text = place.subAdministrativeArea ?? '';
-          _businessNeighborhoodController.text = place.subLocality ?? '';
-          _businessStreetController.text = place.street ?? '';
-          _businessZipCodeController.text = place.postalCode ?? '';
-        });
-      } else {
-        throw Exception(l10n.couldNotDeterminePlacemark);
+      // Close loading dialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
       }
+
+      if (!businessResult['success']) {
+        throw Exception(
+            businessResult['message'] ?? 'Failed to register business data');
+      }
+
+      print(
+          'Business registration completed successfully: ${businessResult['message']}');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-    } finally {
-      setState(() {
-        _isLoadingLocation = false;
-      });
+      // Close loading dialog if still open
+      if (context.mounted) {
+        Navigator.of(context).pop();
+
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Business registration failed: ${e.toString()}'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+
+      print('Business registration error: $e');
+      // Don't throw here - let the user still proceed to login
+      // The business data can be added later if needed
     }
   }
 

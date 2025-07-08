@@ -5,12 +5,11 @@ import '../models/item_category.dart';
 import '../models/notification.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io';
+import '../config/app_config.dart';
 
 class ApiService {
-  /// Base URL adjusts for Android emulator (10.0.2.2) vs iOS simulator (127.0.0.1)
-  final String baseUrl =
-      Platform.isAndroid ? "http://10.0.2.2:8000" : "http://127.0.0.1:8000";
+  /// Base URL from app configuration (supports AWS deployment)
+  final String baseUrl = AppConfig.baseUrl;
 
   /// Get authorization headers with stored token
   Future<Map<String, String>> _getAuthHeaders() async {
@@ -1061,6 +1060,47 @@ class ApiService {
     if (response.statusCode != 201) {
       throw Exception(
           'Registration failed: ${response.statusCode} ${response.body}');
+    }
+  }
+
+  /// Register business data after Cognito authentication
+  Future<Map<String, dynamic>> registerBusiness({
+    required String cognitoUserId,
+    required String email,
+    required String businessName,
+    required String businessType,
+    required String ownerName,
+    required String phoneNumber,
+    required Map<String, dynamic> address,
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final businessData = {
+      'cognito_user_id': cognitoUserId,
+      'email': email,
+      'business_name': businessName,
+      'business_type': businessType,
+      'owner_name': ownerName,
+      'phone_number': phoneNumber,
+      'address': address,
+    };
+
+    print('Registering business: $businessData');
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/register-business'),
+      headers: headers,
+      body: jsonEncode(businessData),
+    );
+
+    print(
+        'Business registration response: ${response.statusCode} - ${response.body}');
+
+    if (response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      final errorBody = jsonDecode(response.body);
+      throw Exception(errorBody['error'] ?? 'Failed to register business');
     }
   }
 }

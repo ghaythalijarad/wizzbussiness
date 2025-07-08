@@ -322,12 +322,14 @@ class DriverAssignmentDAO:
 def handle_health_check() -> Dict[str, Any]:
     """Handle health check endpoint."""
     try:
-        # Test DynamoDB connection
-        table.describe_table()
+        # Test DynamoDB connection by getting table info
+        dynamodb_client = boto3.client('dynamodb')
+        dynamodb_client.describe_table(TableName=table_name)
         return create_response(200, {
             'status': 'healthy',
             'timestamp': get_timestamp(),
-            'service': 'order-receiver-api'
+            'service': 'order-receiver-api',
+            'database': 'DynamoDB'
         })
     except Exception as e:
         logger.error(f"Health check failed: {e}")

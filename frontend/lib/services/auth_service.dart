@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/app_config.dart';
 
 /// Provides authentication related services such as login, logout, and password reset.
-class AuthService {
-  /// Base URL adjusts for Android emulator (10.0.2.2) vs iOS simulator (127.0.0.1)
-  static String get baseUrl =>
-      Platform.isAndroid ? 'http://10.0.2.2:8000' : 'http://127.0.0.1:8000';
+class AuthService extends ChangeNotifier {
+  /// Base URL from app configuration (supports AWS deployment)
+  static String get baseUrl => AppConfig.baseUrl;
 
   static String _parseError(dynamic detail) {
     if (detail is String) {

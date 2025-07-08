@@ -5,15 +5,20 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
-// Import services
+// Import services and config
+import 'config/app_config.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/auth_provider.dart';
 import 'screens/wizz_business_splash_page.dart';
 import 'services/language_service.dart';
 import 'services/notification_service.dart';
+import 'services/unified_auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize app configuration and print for debugging
+  AppConfig.printConfig();
 
   // Initialize services
   await _initializeApp();
@@ -27,6 +32,9 @@ void main() async {
 Future<void> _initializeApp() async {
   // Initialize notification service
   await NotificationService.init();
+
+  // Initialize unified authentication service
+  await UnifiedAuthService.initialize();
 
   // Request permissions
   await Permission.notification.request();

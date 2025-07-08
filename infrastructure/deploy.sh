@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 PROJECT_NAME="order-receiver"
-AWS_REGION="eu-north-1"
+AWS_REGION="us-east-1"
 BACKEND_DIR="../backend"
 FRONTEND_DIR="../frontend"
 INFRASTRUCTURE_DIR="."

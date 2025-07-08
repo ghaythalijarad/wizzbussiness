@@ -4,7 +4,7 @@
 # Project Configuration
 project_name = "order-receiver"
 environment  = "dev"  # Change to "staging" or "production" as needed
-aws_region   = "eu-north-1"
+aws_region   = "us-east-1"
 
 # Database Configuration
 db_password = "YOUR_SECURE_DATABASE_PASSWORD_HERE"  # CHANGE THIS!

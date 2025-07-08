@@ -1,6 +1,20 @@
 # Hadhir Business - Order Receiver App
 
+[![CI/CD Pipeline](https://github.com/YOUR_USERNAME/order-receiver-app-2/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/YOUR_USERNAME/order-receiver-app-2/actions/workflows/ci-cd.yml)
+[![Security Scanning](https://github.com/YOUR_USERNAME/order-receiver-app-2/actions/workflows/security.yml/badge.svg)](https://github.com/YOUR_USERNAME/order-receiver-app-2/actions/workflows/security.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A comprehensive business management application for restaurants, stores, pharmacies, and cloud kitchens to manage orders, integrate with POS systems, and coordinate with a centralized delivery platform.
+
+## 🔄 Automated Deployment
+
+This project uses **GitHub Actions for automated CI/CD** with multi-environment deployments:
+
+- **Development**: Auto-deploy on push to `develop` branch
+- **Staging**: Auto-deploy on push to `main` branch  
+- **Production**: Manual approval after staging validation
+
+**[📖 Complete CI/CD Setup Guide](./.github/README.md)**
 
 ## 📋 Complete Documentation
 

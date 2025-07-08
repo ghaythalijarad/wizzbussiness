@@ -5,7 +5,7 @@ import '../models/order.dart';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
-import '../services/auth_service.dart';
+import '../services/unified_auth_service.dart';
 import '../utils/responsive_helper.dart';
 import 'dart:io';
 import 'dart:async';
@@ -62,7 +62,7 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
 
   Future<void> _loadUserData() async {
     try {
-      final response = await AuthService.getCurrentUser();
+      final response = await UnifiedAuthService.getCurrentUser();
       if (response['success'] == true && mounted) {
         setState(() {
           _userData = response['user'];

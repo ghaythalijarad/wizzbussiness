@@ -8,6 +8,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../services/unified_auth_service.dart';
+import '../config/app_config.dart';
 
 class RegistrationFormScreen extends StatefulWidget {
   const RegistrationFormScreen({Key? key}) : super(key: key);
@@ -476,9 +477,34 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
       if (response['success']) {
         // Check if email verification is needed (Cognito)
-        if (response['isSignUpComplete'] == false &&
-            response['nextStep']?.contains('CONFIRM_SIGN_UP') == true) {
+        print('Registration response: $response'); // Debug output
+
+        // Check for email verification requirement
+        bool needsEmailVerification = false;
+        if (AppConfig.useCognito && AppConfig.isCognitoConfigured) {
+          // For Cognito, check if sign up is not complete or needs confirmation
+          needsEmailVerification = response['isSignUpComplete'] == false ||
+              response['nextStep']?.toLowerCase().contains('confirm') == true ||
+              response['needsVerification'] == true;
+        }
+
+        if (needsEmailVerification) {
           // Show email verification dialog for Cognito
+          String message =
+              response['message'] ?? 'Please verify your email address';
+          if (response['existingUser'] == true) {
+            message =
+                'Account exists but not verified. Please check your email for the verification code.';
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+
           _showEmailVerificationDialog(_emailController.text.trim());
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -491,14 +517,33 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
           Navigator.of(context).pop();
         }
       } else {
-        // It's good practice to check if the widget is still in the tree
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? l10n.registrationFailed),
-            backgroundColor: Colors.red,
-          ),
-        );
+        // Handle different types of failures
+        if (response['shouldSignIn'] == true) {
+          // User already exists and is confirmed - suggest sign in
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] ??
+                  'Account already exists. Please sign in.'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Sign In',
+                textColor: Colors.white,
+                onPressed: () {
+                  Navigator.of(context).pop(); // Go back to sign in
+                },
+              ),
+            ),
+          );
+        } else {
+          // Regular registration failure
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] ?? l10n.registrationFailed),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
       // Close the loading dialog
@@ -866,26 +911,39 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         ),
       );
 
-      // First, log in the user to get access tokens after email verification
-      final loginResult = await UnifiedAuthService.signIn(
-        email: email,
-        password: _passwordController.text,
-      );
-      
-      if (!loginResult['success']) {
-        throw Exception('Failed to log in after verification: ${loginResult['message']}');
-      }
+      // Handle authentication based on mode
+      String userId;
 
-      // Now get current Cognito user to get the user ID
-      final currentUser = await UnifiedAuthService.getCurrentUser();
-      if (!currentUser['success']) {
-        throw Exception('Failed to get current user');
-      }
+      if (AppConfig.useCognito && AppConfig.isCognitoConfigured) {
+        // Cognito mode: First log in to get access tokens after email verification
+        final loginResult = await UnifiedAuthService.signIn(
+          email: email,
+          password: _passwordController.text,
+        );
 
-      final cognitoUserId =
-          currentUser['user']['userId'] ?? currentUser['user']['sub'];
-      if (cognitoUserId == null) {
-        throw Exception('Cognito user ID not found');
+        if (!loginResult['success']) {
+          throw Exception(
+              'Failed to log in after verification: ${loginResult['message']}');
+        }
+
+        // Get current Cognito user to get the user ID
+        final currentUser = await UnifiedAuthService.getCurrentUser();
+        if (!currentUser['success']) {
+          throw Exception('Failed to get current user');
+        }
+
+        final userIdFromCognito =
+            currentUser['user']['userId'] ?? currentUser['user']['sub'];
+        if (userIdFromCognito == null) {
+          throw Exception('Cognito user ID not found');
+        }
+        userId = userIdFromCognito;
+      } else {
+        // Custom authentication mode: Use email as user ID for business registration
+        // The backend will handle user creation as part of the registration process
+        userId = email;
+
+        print('Using custom auth mode with email as user ID: $userId');
       }
 
       // Prepare address data
@@ -893,7 +951,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         'city': _businessCityController.text.trim(),
         'district': _businessDistrictController.text.trim(),
         'country': _businessCountryController.text.trim(),
-        'zipcode': _businessZipCodeController.text.trim(), // Fixed: backend expects 'zipcode' not 'zip_code'
+        'zipcode': _businessZipCodeController.text
+            .trim(), // Fixed: backend expects 'zipcode' not 'zip_code'
         'neighborhood': _businessNeighborhoodController.text.trim(),
         'street': _businessStreetController.text.trim(),
         'home_address': _businessHomeController.text.trim(),
@@ -901,7 +960,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
       // Register business data with the backend
       final businessResult = await UnifiedAuthService.registerBusinessData(
-        cognitoUserId: cognitoUserId,
+        cognitoUserId: userId,
         email: email,
         businessName: _businessNameController.text.trim(),
         businessType: _selectedBusinessType ?? 'restaurant',

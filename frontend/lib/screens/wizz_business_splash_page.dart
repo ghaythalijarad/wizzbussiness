@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/login_page.dart';
+import '../screens/dashboards/business_dashboard.dart';
+import '../services/unified_auth_service.dart';
+import '../services/api_service.dart';
+import '../models/business.dart';
+import '../models/business_type.dart';
 
 /// Extracted WizzBusinessSplashPage from main.dart
 class WizzBusinessSplashPage extends StatefulWidget {
@@ -45,13 +50,80 @@ class _WizzBusinessSplashPageState extends State<WizzBusinessSplashPage>
     // Simulate a delay for splash screen
     await Future.delayed(const Duration(seconds: 3));
 
-    if (mounted) {
-      // Navigate directly to LoginPage regardless of auth status
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-            builder: (_) =>
-                LoginPage(onLanguageChanged: widget.onLanguageChanged)),
-      );
+    if (!mounted) return;
+
+    try {
+      // Check if user is already signed in
+      final isSignedIn = await UnifiedAuthService.isSignedIn();
+
+      if (isSignedIn) {
+        print('User is already signed in, checking for business data...');
+
+        // User is signed in, try to get their business data and go to dashboard
+        final apiService = ApiService();
+        final businesses = await apiService.getUserBusinesses();
+
+        if (businesses.isNotEmpty) {
+          // User has business data, navigate to dashboard
+          final businessData = businesses[0];
+          final business = Business(
+            id: businessData['id'],
+            name: businessData['name'],
+            email: businessData['email'] ?? '',
+            phone: businessData['phone_number'] ?? '',
+            address: businessData['address']?['street'] ?? '',
+            latitude: businessData['address']?['latitude']?.toDouble() ?? 0.0,
+            longitude: businessData['address']?['longitude']?.toDouble() ?? 0.0,
+            offers: [],
+            businessHours: {},
+            settings: {},
+            businessType:
+                _getBusinessTypeFromString(businessData['business_type']),
+          );
+
+          print(
+              'Navigating to dashboard with existing business: ${business.name}');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => BusinessDashboard(
+                business: business,
+                onLanguageChanged: widget.onLanguageChanged,
+              ),
+            ),
+          );
+          return;
+        } else {
+          print(
+              'User is signed in but has no business data, going to login screen');
+        }
+      } else {
+        print('User is not signed in, going to login screen');
+      }
+    } catch (e) {
+      print('Error checking authentication: $e');
+      // Fall through to login screen on any error
+    }
+
+    // If we reach here, navigate to login screen
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => LoginPage(onLanguageChanged: widget.onLanguageChanged),
+      ),
+    );
+  }
+
+  BusinessType _getBusinessTypeFromString(String? businessTypeString) {
+    switch (businessTypeString?.toLowerCase()) {
+      case 'restaurant':
+        return BusinessType.restaurant;
+      case 'store':
+        return BusinessType.store;
+      case 'pharmacy':
+        return BusinessType.pharmacy;
+      case 'kitchen':
+        return BusinessType.kitchen;
+      default:
+        return BusinessType.restaurant; // Default fallback
     }
   }
 

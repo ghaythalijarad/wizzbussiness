@@ -101,6 +101,18 @@
         "LogGroupName": "/aws/lambda/order-receiver-serverless-dev-registerBusiness"
       }
     },
+    "JwtLoginLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/order-receiver-serverless-dev-jwtLogin"
+      }
+    },
+    "GetUserBusinessesLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/order-receiver-serverless-dev-getUserBusinesses"
+      }
+    },
     "CognitoLoginLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
@@ -249,7 +261,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/order-receiver-serverless/dev/1751933640612-2025-07-08T00:14:00.612Z/order-receiver-serverless.zip"
+          "S3Key": "serverless/order-receiver-serverless/dev/1752009972005-2025-07-08T21:26:12.005Z/order-receiver-serverless.zip"
         },
         "Handler": "lambda_functions/health_lambda.root",
         "Runtime": "python3.9",
@@ -260,8 +272,8 @@
           "Variables": {
             "ENVIRONMENT": "dev",
             "DYNAMODB_TABLE_NAME": "order-receiver-businesses-dev",
-            "COGNITO_USER_POOL_ID": "",
-            "COGNITO_CLIENT_ID": ""
+            "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
+            "COGNITO_CLIENT_ID": "6n752vrmqmbss6nmlg6be2nn9a"
           }
         },
         "Role": {
@@ -282,7 +294,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/order-receiver-serverless/dev/1751933640612-2025-07-08T00:14:00.612Z/order-receiver-serverless.zip"
+          "S3Key": "serverless/order-receiver-serverless/dev/1752009972005-2025-07-08T21:26:12.005Z/order-receiver-serverless.zip"
         },
         "Handler": "lambda_functions/health_lambda.health",
         "Runtime": "python3.9",
@@ -293,8 +305,8 @@
           "Variables": {
             "ENVIRONMENT": "dev",
             "DYNAMODB_TABLE_NAME": "order-receiver-businesses-dev",
-            "COGNITO_USER_POOL_ID": "",
-            "COGNITO_CLIENT_ID": ""
+            "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
+            "COGNITO_CLIENT_ID": "6n752vrmqmbss6nmlg6be2nn9a"
           }
         },
         "Role": {
@@ -315,7 +327,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/order-receiver-serverless/dev/1751933640612-2025-07-08T00:14:00.612Z/order-receiver-serverless.zip"
+          "S3Key": "serverless/order-receiver-serverless/dev/1752009972005-2025-07-08T21:26:12.005Z/order-receiver-serverless.zip"
         },
         "Handler": "lambda_functions/health_lambda.health_detailed",
         "Runtime": "python3.9",
@@ -326,8 +338,8 @@
           "Variables": {
             "ENVIRONMENT": "dev",
             "DYNAMODB_TABLE_NAME": "order-receiver-businesses-dev",
-            "COGNITO_USER_POOL_ID": "",
-            "COGNITO_CLIENT_ID": ""
+            "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
+            "COGNITO_CLIENT_ID": "6n752vrmqmbss6nmlg6be2nn9a"
           }
         },
         "Role": {
@@ -348,7 +360,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/order-receiver-serverless/dev/1751933640612-2025-07-08T00:14:00.612Z/order-receiver-serverless.zip"
+          "S3Key": "serverless/order-receiver-serverless/dev/1752009972005-2025-07-08T21:26:12.005Z/order-receiver-serverless.zip"
         },
         "Handler": "lambda_functions/auth_lambda.auth_health",
         "Runtime": "python3.9",
@@ -359,8 +371,8 @@
           "Variables": {
             "ENVIRONMENT": "dev",
             "DYNAMODB_TABLE_NAME": "order-receiver-businesses-dev",
-            "COGNITO_USER_POOL_ID": "",
-            "COGNITO_CLIENT_ID": ""
+            "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
+            "COGNITO_CLIENT_ID": "6n752vrmqmbss6nmlg6be2nn9a"
           }
         },
         "Role": {
@@ -381,19 +393,19 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/order-receiver-serverless/dev/1751933640612-2025-07-08T00:14:00.612Z/order-receiver-serverless.zip"
+          "S3Key": "serverless/order-receiver-serverless/dev/1752009972005-2025-07-08T21:26:12.005Z/order-receiver-serverless.zip"
         },
         "Handler": "lambda_functions/auth_lambda.register_business",
         "Runtime": "python3.9",
         "FunctionName": "order-receiver-serverless-dev-registerBusiness",
         "MemorySize": 1024,
-        "Timeout": 30,
+        "Timeout": 6,
         "Environment": {
           "Variables": {
             "ENVIRONMENT": "dev",
             "DYNAMODB_TABLE_NAME": "order-receiver-businesses-dev",
-            "COGNITO_USER_POOL_ID": "",
-            "COGNITO_CLIENT_ID": ""
+            "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
+            "COGNITO_CLIENT_ID": "6n752vrmqmbss6nmlg6be2nn9a"
           }
         },
         "Role": {
@@ -407,6 +419,72 @@
         "RegisterBusinessLogGroup"
       ]
     },
+    "JwtLoginLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/order-receiver-serverless/dev/1752009972005-2025-07-08T21:26:12.005Z/order-receiver-serverless.zip"
+        },
+        "Handler": "lambda_functions/auth_lambda.jwt_login",
+        "Runtime": "python3.9",
+        "FunctionName": "order-receiver-serverless-dev-jwtLogin",
+        "MemorySize": 1024,
+        "Timeout": 30,
+        "Environment": {
+          "Variables": {
+            "ENVIRONMENT": "dev",
+            "DYNAMODB_TABLE_NAME": "order-receiver-businesses-dev",
+            "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
+            "COGNITO_CLIENT_ID": "6n752vrmqmbss6nmlg6be2nn9a"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "JwtLoginLogGroup"
+      ]
+    },
+    "GetUserBusinessesLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/order-receiver-serverless/dev/1752009972005-2025-07-08T21:26:12.005Z/order-receiver-serverless.zip"
+        },
+        "Handler": "lambda_functions/auth_lambda.get_user_businesses",
+        "Runtime": "python3.9",
+        "FunctionName": "order-receiver-serverless-dev-getUserBusinesses",
+        "MemorySize": 1024,
+        "Timeout": 30,
+        "Environment": {
+          "Variables": {
+            "ENVIRONMENT": "dev",
+            "DYNAMODB_TABLE_NAME": "order-receiver-businesses-dev",
+            "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
+            "COGNITO_CLIENT_ID": "6n752vrmqmbss6nmlg6be2nn9a"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "GetUserBusinessesLogGroup"
+      ]
+    },
     "CognitoLoginLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
@@ -414,7 +492,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/order-receiver-serverless/dev/1751933640612-2025-07-08T00:14:00.612Z/order-receiver-serverless.zip"
+          "S3Key": "serverless/order-receiver-serverless/dev/1752009972005-2025-07-08T21:26:12.005Z/order-receiver-serverless.zip"
         },
         "Handler": "lambda_functions/cognito_auth_lambda.cognito_login",
         "Runtime": "python3.9",
@@ -425,8 +503,8 @@
           "Variables": {
             "ENVIRONMENT": "dev",
             "DYNAMODB_TABLE_NAME": "order-receiver-businesses-dev",
-            "COGNITO_USER_POOL_ID": "",
-            "COGNITO_CLIENT_ID": ""
+            "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
+            "COGNITO_CLIENT_ID": "6n752vrmqmbss6nmlg6be2nn9a"
           }
         },
         "Role": {
@@ -447,7 +525,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/order-receiver-serverless/dev/1751933640612-2025-07-08T00:14:00.612Z/order-receiver-serverless.zip"
+          "S3Key": "serverless/order-receiver-serverless/dev/1752009972005-2025-07-08T21:26:12.005Z/order-receiver-serverless.zip"
         },
         "Handler": "lambda_functions/cognito_auth_lambda.cognito_register",
         "Runtime": "python3.9",
@@ -458,8 +536,8 @@
           "Variables": {
             "ENVIRONMENT": "dev",
             "DYNAMODB_TABLE_NAME": "order-receiver-businesses-dev",
-            "COGNITO_USER_POOL_ID": "",
-            "COGNITO_CLIENT_ID": ""
+            "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
+            "COGNITO_CLIENT_ID": "6n752vrmqmbss6nmlg6be2nn9a"
           }
         },
         "Role": {
@@ -480,7 +558,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/order-receiver-serverless/dev/1751933640612-2025-07-08T00:14:00.612Z/order-receiver-serverless.zip"
+          "S3Key": "serverless/order-receiver-serverless/dev/1752009972005-2025-07-08T21:26:12.005Z/order-receiver-serverless.zip"
         },
         "Handler": "lambda_functions/cognito_auth_lambda.cognito_verify_email",
         "Runtime": "python3.9",
@@ -491,8 +569,8 @@
           "Variables": {
             "ENVIRONMENT": "dev",
             "DYNAMODB_TABLE_NAME": "order-receiver-businesses-dev",
-            "COGNITO_USER_POOL_ID": "",
-            "COGNITO_CLIENT_ID": ""
+            "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
+            "COGNITO_CLIENT_ID": "6n752vrmqmbss6nmlg6be2nn9a"
           }
         },
         "Role": {
@@ -513,7 +591,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/order-receiver-serverless/dev/1751933640612-2025-07-08T00:14:00.612Z/order-receiver-serverless.zip"
+          "S3Key": "serverless/order-receiver-serverless/dev/1752009972005-2025-07-08T21:26:12.005Z/order-receiver-serverless.zip"
         },
         "Handler": "lambda_functions/cognito_auth_lambda.cognito_health",
         "Runtime": "python3.9",
@@ -524,8 +602,8 @@
           "Variables": {
             "ENVIRONMENT": "dev",
             "DYNAMODB_TABLE_NAME": "order-receiver-businesses-dev",
-            "COGNITO_USER_POOL_ID": "",
-            "COGNITO_CLIENT_ID": ""
+            "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
+            "COGNITO_CLIENT_ID": "6n752vrmqmbss6nmlg6be2nn9a"
           }
         },
         "Role": {
@@ -539,94 +617,114 @@
         "CognitoHealthLogGroup"
       ]
     },
-    "RootLambdaVersioniyUK6fUJbFX5RNsNNJ7v8JTzDXLk70u6rfZPXxIktY": {
+    "RootLambdaVersionqCD2tDsuLO1l5L2zgsHUxNOZg1g4ymsIHw23oQiH0": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "RootLambdaFunction"
         },
-        "CodeSha256": "Xq521QXCpS+8PeiEkuk/gfVgHXF3JHztu37RgvbqZQU="
+        "CodeSha256": "4zrWcgDRLzE6U1XIb662xZGalHQhi+QRnjhlgICIloE="
       }
     },
-    "HealthLambdaVersionts0JeUnQyoXTjzCwdt92kZ1FDH7IIw70PwtSkvFQO0o": {
+    "HealthLambdaVersioniOd9IwsVKrBjE5jWYMeHPIQWeHet4UgrKGTPU": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "HealthLambdaFunction"
         },
-        "CodeSha256": "Xq521QXCpS+8PeiEkuk/gfVgHXF3JHztu37RgvbqZQU="
+        "CodeSha256": "4zrWcgDRLzE6U1XIb662xZGalHQhi+QRnjhlgICIloE="
       }
     },
-    "HealthDetailedLambdaVersionFKM7xNBM6yqMijGtoN5AOLzpMd8FDo3spfumroqI": {
+    "HealthDetailedLambdaVersionsVIIzI1kaJyWG4iKvniYGSvd1md7q0ztGKJ3ImCGE": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "HealthDetailedLambdaFunction"
         },
-        "CodeSha256": "Xq521QXCpS+8PeiEkuk/gfVgHXF3JHztu37RgvbqZQU="
+        "CodeSha256": "4zrWcgDRLzE6U1XIb662xZGalHQhi+QRnjhlgICIloE="
       }
     },
-    "AuthHealthLambdaVersion7CeRZa683f3m7Fr2D0LLlOcCDkYzZoe2Q1UJ69sGek": {
+    "AuthHealthLambdaVersionj6cJPI7p6DXkZRY9fnb4nlooCWUNQ3jKFIiDehDuA": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "AuthHealthLambdaFunction"
         },
-        "CodeSha256": "Xq521QXCpS+8PeiEkuk/gfVgHXF3JHztu37RgvbqZQU="
+        "CodeSha256": "4zrWcgDRLzE6U1XIb662xZGalHQhi+QRnjhlgICIloE="
       }
     },
-    "RegisterBusinessLambdaVersionC2m5jItLqAoY0PPlNMwH9TB012FYWn0o8KOiYnn4go": {
+    "RegisterBusinessLambdaVersion5a8mBi3M1mQQK5tpIvOUZqGdToROyY9A70BStKLX8": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "RegisterBusinessLambdaFunction"
         },
-        "CodeSha256": "Xq521QXCpS+8PeiEkuk/gfVgHXF3JHztu37RgvbqZQU="
+        "CodeSha256": "4zrWcgDRLzE6U1XIb662xZGalHQhi+QRnjhlgICIloE="
       }
     },
-    "CognitoLoginLambdaVersionlbpwfprj1wy1SlQ493iLcGBq1oBZRiREpFGMCLVC9E": {
+    "JwtLoginLambdaVersion26IFPrRhTLeJkmX853sck0QFYgOGGhpi8s5OfKhhVv0": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "JwtLoginLambdaFunction"
+        },
+        "CodeSha256": "4zrWcgDRLzE6U1XIb662xZGalHQhi+QRnjhlgICIloE="
+      }
+    },
+    "GetUserBusinessesLambdaVersioneRyqLvVbRAJew4zPwIQIsxROYwEwvOVtnLAI0GhC18": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "GetUserBusinessesLambdaFunction"
+        },
+        "CodeSha256": "4zrWcgDRLzE6U1XIb662xZGalHQhi+QRnjhlgICIloE="
+      }
+    },
+    "CognitoLoginLambdaVersionUffn2t6rciGQ4yLoXD0BS4M9Q8hu3wqVJlaaQODy3o": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CognitoLoginLambdaFunction"
         },
-        "CodeSha256": "Xq521QXCpS+8PeiEkuk/gfVgHXF3JHztu37RgvbqZQU="
+        "CodeSha256": "4zrWcgDRLzE6U1XIb662xZGalHQhi+QRnjhlgICIloE="
       }
     },
-    "CognitoRegisterLambdaVersionESkt4hKgYvPvsjCUygr0CgKiwiK1LzmkZGWJ6sFrk": {
+    "CognitoRegisterLambdaVersion8yjlTJjbm0tOrlEpenHOCzMuBDPzgfamHnM60eYWhw": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CognitoRegisterLambdaFunction"
         },
-        "CodeSha256": "Xq521QXCpS+8PeiEkuk/gfVgHXF3JHztu37RgvbqZQU="
+        "CodeSha256": "4zrWcgDRLzE6U1XIb662xZGalHQhi+QRnjhlgICIloE="
       }
     },
-    "CognitoVerifyEmailLambdaVersionZT6hish8IF08KDd43npevs1V9JezzEK8PwzLJuuYo": {
+    "CognitoVerifyEmailLambdaVersionRKWd7n2fOwXqnDfzzsHvAx78HJ8ZLokPhHtqHUyszyo": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CognitoVerifyEmailLambdaFunction"
         },
-        "CodeSha256": "Xq521QXCpS+8PeiEkuk/gfVgHXF3JHztu37RgvbqZQU="
+        "CodeSha256": "4zrWcgDRLzE6U1XIb662xZGalHQhi+QRnjhlgICIloE="
       }
     },
-    "CognitoHealthLambdaVersionLnwYygTMDH1nvBkChtf9qZNwjygxThJDlMyiZuSfb4": {
+    "CognitoHealthLambdaVersioni2FknTnpCnGf1kzTHOiBLlys2vB0e4wyPEzeWDlydH4": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CognitoHealthLambdaFunction"
         },
-        "CodeSha256": "Xq521QXCpS+8PeiEkuk/gfVgHXF3JHztu37RgvbqZQU="
+        "CodeSha256": "4zrWcgDRLzE6U1XIb662xZGalHQhi+QRnjhlgICIloE="
       }
     },
     "ApiGatewayRestApi": {
@@ -707,6 +805,30 @@
         }
       }
     },
+    "ApiGatewayResourceAuthJwt": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceAuth"
+        },
+        "PathPart": "jwt",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceAuthJwtLogin": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceAuthJwt"
+        },
+        "PathPart": "login",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
     "ApiGatewayResourceAuthCognito": {
       "Type": "AWS::ApiGateway::Resource",
       "Properties": {
@@ -762,6 +884,33 @@
           "Ref": "ApiGatewayResourceAuthCognito"
         },
         "PathPart": "health",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceBusinesses": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "businesses",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceBusinessesMyDashbusinesses": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceBusinesses"
+        },
+        "PathPart": "my-businesses",
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
@@ -989,6 +1138,96 @@
         },
         "ResourceId": {
           "Ref": "ApiGatewayResourceAuthRegisterDashbusiness"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodAuthJwtLoginOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceAuthJwtLogin"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodBusinessesMyDashbusinessesOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceBusinessesMyDashbusinesses"
         },
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
@@ -1374,7 +1613,10 @@
           "Ref": "ApiGatewayRestApi"
         },
         "ApiKeyRequired": false,
-        "AuthorizationType": "NONE",
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "1UnderscorebDqnKdrqoApiGatewayAuthorizer"
+        },
         "Integration": {
           "IntegrationHttpMethod": "POST",
           "Type": "AWS_PROXY",
@@ -1405,7 +1647,99 @@
         "MethodResponses": []
       },
       "DependsOn": [
-        "RegisterBusinessLambdaPermissionApiGateway"
+        "1UnderscorebDqnKdrqoApiGatewayAuthorizer"
+      ]
+    },
+    "ApiGatewayMethodAuthJwtLoginPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceAuthJwtLogin"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "JwtLoginLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "JwtLoginLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodBusinessesMyDashbusinessesGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceBusinessesMyDashbusinesses"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "GetUserBusinessesLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "GetUserBusinessesLambdaPermissionApiGateway"
       ]
     },
     "ApiGatewayMethodAuthCognitoLoginPost": {
@@ -1592,7 +1926,22 @@
         "CognitoHealthLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1751933626947": {
+    "1UnderscorebDqnKdrqoApiGatewayAuthorizer": {
+      "Type": "AWS::ApiGateway::Authorizer",
+      "Properties": {
+        "AuthorizerResultTtlInSeconds": 300,
+        "IdentitySource": "method.request.header.Authorization",
+        "Name": "1_bDqnKdrqo",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "Type": "COGNITO_USER_POOLS",
+        "ProviderARNs": [
+          "arn:aws:cognito-idp:us-east-1:*:userpool/us-east-1_bDqnKdrqo"
+        ]
+      }
+    },
+    "ApiGatewayDeployment1752009957376": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -1606,6 +1955,8 @@
         "ApiGatewayMethodHealthDetailedOptions",
         "ApiGatewayMethodAuthHealthOptions",
         "ApiGatewayMethodAuthRegisterDashbusinessOptions",
+        "ApiGatewayMethodAuthJwtLoginOptions",
+        "ApiGatewayMethodBusinessesMyDashbusinessesOptions",
         "ApiGatewayMethodAuthCognitoLoginOptions",
         "ApiGatewayMethodAuthCognitoRegisterOptions",
         "ApiGatewayMethodAuthCognitoVerifyDashemailOptions",
@@ -1615,6 +1966,8 @@
         "ApiGatewayMethodHealthDetailedGet",
         "ApiGatewayMethodAuthHealthGet",
         "ApiGatewayMethodAuthRegisterDashbusinessPost",
+        "ApiGatewayMethodAuthJwtLoginPost",
+        "ApiGatewayMethodBusinessesMyDashbusinessesGet",
         "ApiGatewayMethodAuthCognitoLoginPost",
         "ApiGatewayMethodAuthCognitoRegisterPost",
         "ApiGatewayMethodAuthCognitoVerifyDashemailPost",
@@ -1775,6 +2128,80 @@
         "FunctionName": {
           "Fn::GetAtt": [
             "RegisterBusinessLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "JwtLoginLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "JwtLoginLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "GetUserBusinessesLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "GetUserBusinessesLambdaFunction",
             "Arn"
           ]
         },
@@ -2030,7 +2457,7 @@
     "RootLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "RootLambdaVersioniyUK6fUJbFX5RNsNNJ7v8JTzDXLk70u6rfZPXxIktY"
+        "Ref": "RootLambdaVersionqCD2tDsuLO1l5L2zgsHUxNOZg1g4ymsIHw23oQiH0"
       },
       "Export": {
         "Name": "sls-order-receiver-serverless-dev-RootLambdaFunctionQualifiedArn"
@@ -2039,7 +2466,7 @@
     "HealthLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "HealthLambdaVersionts0JeUnQyoXTjzCwdt92kZ1FDH7IIw70PwtSkvFQO0o"
+        "Ref": "HealthLambdaVersioniOd9IwsVKrBjE5jWYMeHPIQWeHet4UgrKGTPU"
       },
       "Export": {
         "Name": "sls-order-receiver-serverless-dev-HealthLambdaFunctionQualifiedArn"
@@ -2048,7 +2475,7 @@
     "HealthDetailedLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "HealthDetailedLambdaVersionFKM7xNBM6yqMijGtoN5AOLzpMd8FDo3spfumroqI"
+        "Ref": "HealthDetailedLambdaVersionsVIIzI1kaJyWG4iKvniYGSvd1md7q0ztGKJ3ImCGE"
       },
       "Export": {
         "Name": "sls-order-receiver-serverless-dev-HealthDetailedLambdaFunctionQualifiedArn"
@@ -2057,7 +2484,7 @@
     "AuthHealthLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "AuthHealthLambdaVersion7CeRZa683f3m7Fr2D0LLlOcCDkYzZoe2Q1UJ69sGek"
+        "Ref": "AuthHealthLambdaVersionj6cJPI7p6DXkZRY9fnb4nlooCWUNQ3jKFIiDehDuA"
       },
       "Export": {
         "Name": "sls-order-receiver-serverless-dev-AuthHealthLambdaFunctionQualifiedArn"
@@ -2066,16 +2493,34 @@
     "RegisterBusinessLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "RegisterBusinessLambdaVersionC2m5jItLqAoY0PPlNMwH9TB012FYWn0o8KOiYnn4go"
+        "Ref": "RegisterBusinessLambdaVersion5a8mBi3M1mQQK5tpIvOUZqGdToROyY9A70BStKLX8"
       },
       "Export": {
         "Name": "sls-order-receiver-serverless-dev-RegisterBusinessLambdaFunctionQualifiedArn"
       }
     },
+    "JwtLoginLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "JwtLoginLambdaVersion26IFPrRhTLeJkmX853sck0QFYgOGGhpi8s5OfKhhVv0"
+      },
+      "Export": {
+        "Name": "sls-order-receiver-serverless-dev-JwtLoginLambdaFunctionQualifiedArn"
+      }
+    },
+    "GetUserBusinessesLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "GetUserBusinessesLambdaVersioneRyqLvVbRAJew4zPwIQIsxROYwEwvOVtnLAI0GhC18"
+      },
+      "Export": {
+        "Name": "sls-order-receiver-serverless-dev-GetUserBusinessesLambdaFunctionQualifiedArn"
+      }
+    },
     "CognitoLoginLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CognitoLoginLambdaVersionlbpwfprj1wy1SlQ493iLcGBq1oBZRiREpFGMCLVC9E"
+        "Ref": "CognitoLoginLambdaVersionUffn2t6rciGQ4yLoXD0BS4M9Q8hu3wqVJlaaQODy3o"
       },
       "Export": {
         "Name": "sls-order-receiver-serverless-dev-CognitoLoginLambdaFunctionQualifiedArn"
@@ -2084,7 +2529,7 @@
     "CognitoRegisterLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CognitoRegisterLambdaVersionESkt4hKgYvPvsjCUygr0CgKiwiK1LzmkZGWJ6sFrk"
+        "Ref": "CognitoRegisterLambdaVersion8yjlTJjbm0tOrlEpenHOCzMuBDPzgfamHnM60eYWhw"
       },
       "Export": {
         "Name": "sls-order-receiver-serverless-dev-CognitoRegisterLambdaFunctionQualifiedArn"
@@ -2093,7 +2538,7 @@
     "CognitoVerifyEmailLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CognitoVerifyEmailLambdaVersionZT6hish8IF08KDd43npevs1V9JezzEK8PwzLJuuYo"
+        "Ref": "CognitoVerifyEmailLambdaVersionRKWd7n2fOwXqnDfzzsHvAx78HJ8ZLokPhHtqHUyszyo"
       },
       "Export": {
         "Name": "sls-order-receiver-serverless-dev-CognitoVerifyEmailLambdaFunctionQualifiedArn"
@@ -2102,7 +2547,7 @@
     "CognitoHealthLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CognitoHealthLambdaVersionLnwYygTMDH1nvBkChtf9qZNwjygxThJDlMyiZuSfb4"
+        "Ref": "CognitoHealthLambdaVersioni2FknTnpCnGf1kzTHOiBLlys2vB0e4wyPEzeWDlydH4"
       },
       "Export": {
         "Name": "sls-order-receiver-serverless-dev-CognitoHealthLambdaFunctionQualifiedArn"

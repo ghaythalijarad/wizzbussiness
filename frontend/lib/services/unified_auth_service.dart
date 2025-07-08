@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
 import 'cognito_auth_service.dart';
 import 'auth_service.dart' as custom_auth;
@@ -211,18 +212,14 @@ class UnifiedAuthService {
     if (AppConfig.useCognito && AppConfig.isCognitoConfigured) {
       return await CognitoAuthService.getAccessToken();
     } else {
-      // For custom auth, the token is stored in SharedPreferences
-      // We'll need to access it through the custom auth service
-      final result = await custom_auth.AuthService.getCurrentUser();
-      if (result['success'] == true) {
-        // Return a placeholder or extract from stored preferences
-        return 'custom_auth_token'; // You might want to modify custom_auth to expose this
-      }
-      return null;
+      // For custom auth, get the actual token from SharedPreferences
+      // This should match the same storage mechanism used by AuthService._getToken()
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('access_token');
     }
   }
 
-  /// Register business data after successful Cognito email verification
+  /// Register business data after successful email verification
   static Future<Map<String, dynamic>> registerBusinessData({
     required String cognitoUserId,
     required String email,
@@ -234,27 +231,19 @@ class UnifiedAuthService {
   }) async {
     await initialize();
 
-    if (AppConfig.useCognito && AppConfig.isCognitoConfigured) {
-      // Import the ApiService to call the business registration endpoint
-      // We need to create a temporary instance to call the method
-      final apiService = _createApiServiceInstance();
+    // For both Cognito and custom auth, we need to call the backend API
+    // to register the business data
+    final apiService = _createApiServiceInstance();
 
-      return await apiService.registerBusiness(
-        cognitoUserId: cognitoUserId,
-        email: email,
-        businessName: businessName,
-        businessType: businessType,
-        ownerName: ownerName,
-        phoneNumber: phoneNumber,
-        address: address,
-      );
-    } else {
-      // For custom auth, business data is handled during registration
-      return {
-        'success': true,
-        'message': 'Business data handled during custom registration',
-      };
-    }
+    return await apiService.registerBusiness(
+      cognitoUserId: cognitoUserId,
+      email: email,
+      businessName: businessName,
+      businessType: businessType,
+      ownerName: ownerName,
+      phoneNumber: phoneNumber,
+      address: address,
+    );
   }
 
   /// Helper method to create ApiService instance

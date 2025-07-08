@@ -3,8 +3,10 @@ import 'dart:io';
 /// Application configuration for different environments
 class AppConfig {
   // Use deployed AWS API Gateway URL for development/testing
-  static const String _defaultLocalUrl = 'https://zgbj685nr7.execute-api.us-east-1.amazonaws.com/dev';
-  static const String _defaultAndroidUrl = 'https://zgbj685nr7.execute-api.us-east-1.amazonaws.com/dev';
+  static const String _defaultLocalUrl =
+      'https://zgbj685nr7.execute-api.us-east-1.amazonaws.com/dev';
+  static const String _defaultAndroidUrl =
+      'https://zgbj685nr7.execute-api.us-east-1.amazonaws.com/dev';
 
   // Environment configuration
   static const String _awsApiUrl = String.fromEnvironment(
@@ -52,7 +54,12 @@ class AppConfig {
     }
 
     // Otherwise, use local development URLs
-    return Platform.isAndroid ? _defaultAndroidUrl : _defaultLocalUrl;
+    try {
+      return Platform.isAndroid ? _defaultAndroidUrl : _defaultLocalUrl;
+    } catch (e) {
+      // Web platform doesn't support Platform.isAndroid, use default
+      return _defaultLocalUrl;
+    }
   }
 
   /// Get current environment
@@ -107,7 +114,11 @@ class AppConfig {
       print('Environment: $environment');
       print('Base URL: $baseUrl');
       print('WebSocket URL: $webSocketUrl');
-      print('Platform: ${Platform.operatingSystem}');
+      try {
+        print('Platform: ${Platform.operatingSystem}');
+      } catch (e) {
+        print('Platform: web');
+      }
       print('Auth Mode: $authMode');
       if (useCognito) {
         print('Cognito User Pool ID: $cognitoUserPoolId');

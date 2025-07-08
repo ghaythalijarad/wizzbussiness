@@ -107,11 +107,31 @@ functions:
 
   registerBusiness:
     handler: lambda_functions/auth_lambda.register_business
-    timeout: 30  # Business registration might take longer
     events:
       - http:
           path: /auth/register-business
           method: post
+          cors: ${self:custom.stages.${self:provider.stage}.cors}
+          authorizer:
+            arn: "arn:aws:cognito-idp:${self:provider.region}:*:userpool/${env:COGNITO_USER_POOL_ID}"
+
+  # Custom JWT Authentication Functions
+  jwtLogin:
+    handler: lambda_functions/auth_lambda.jwt_login
+    timeout: 30
+    events:
+      - http:
+          path: /auth/jwt/login
+          method: post
+          cors: ${self:custom.stages.${self:provider.stage}.cors}
+
+  getUserBusinesses:
+    handler: lambda_functions/auth_lambda.get_user_businesses
+    timeout: 30
+    events:
+      - http:
+          path: /businesses/my-businesses
+          method: get
           cors: ${self:custom.stages.${self:provider.stage}.cors}
 
   # Cognito Authentication Functions

@@ -6,7 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../models/business.dart';
 import '../models/order.dart';
 import '../services/app_state.dart';
-import '../services/auth_service.dart';
+import '../services/unified_auth_service.dart';
 import '../screens/login_page.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
@@ -61,7 +61,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     });
 
     try {
-      final response = await AuthService.getCurrentUser();
+      final response = await UnifiedAuthService.getCurrentUser();
       if (response['success'] == true) {
         setState(() {
           _userData = response['user'];
@@ -434,7 +434,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     );
 
     if (confirmed == true) {
-      await AuthService.logout();
+      await UnifiedAuthService.signOut();
       _appState.logout();
       Navigator.pushAndRemoveUntil(
         context,

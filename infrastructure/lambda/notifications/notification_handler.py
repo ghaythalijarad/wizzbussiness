@@ -8,7 +8,7 @@ import logging
 from typing import Dict, Any, Optional, List
 import boto3
 from botocore.exceptions import ClientError
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import uuid
 
 # Configure logging
@@ -161,13 +161,10 @@ def handle_mark_notification_read(path_params: Dict[str, Any]) -> Dict[str, Any]
             table.update_item(
                 Key={'PK': f'NOTIFICATION#{notification_id}', 'SK': 'DETAILS'},
                 UpdateExpression='SET is_read = :is_read, read_at = :read_at',
-                ExpressionAttributeValues={
-                    ':is_read': True,
-                    ':read_at': timestamp
-                },
                 ConditionExpression='business_id = :business_id',
                 ExpressionAttributeValues={
-                    **table.update_item.im_func.__defaults__[0] if hasattr(table.update_item, 'im_func') else {},
+                    ':is_read': True,
+                    ':read_at': timestamp,
                     ':business_id': business_id
                 }
             )
@@ -305,7 +302,6 @@ def handle_send_notification(body: Dict[str, Any]) -> Dict[str, Any]:
         
         for business_id in business_ids:
             notification_id = str(uuid.uuid4())
-            
             notification_item = {
                 'PK': f'NOTIFICATION#{notification_id}',
                 'SK': 'DETAILS',
@@ -322,9 +318,9 @@ def handle_send_notification(body: Dict[str, Any]) -> Dict[str, Any]:
                 'created_at': timestamp,
                 'entity_type': 'NOTIFICATION'
             }
-            
             table.put_item(Item=notification_item)
             notification_ids.append(notification_id)
+
         
         logger.info(f"Sent notifications to {len(business_ids)} businesses")
         
@@ -346,29 +342,26 @@ def handle_cleanup_old_notifications(body: Dict[str, Any]) -> Dict[str, Any]:
         business_id = body.get('business_id')  # Optional: clean for specific business
         
         # Calculate cutoff date
-        from datetime import timedelta
         cutoff_date = (datetime.now(timezone.utc) - timedelta(days=days_old)).isoformat()
         
         # Query old notifications
         if business_id:
-            # Clean for specific business
             response = table.query(
                 IndexName='GSI1',
-                KeyConditionExpression='GSI1_PK = :pk',
-                FilterExpression='created_at < :cutoff AND entity_type = :entity_type',
+                KeyConditionExpression='GSI1_PK = :pk AND GSI1_SK < :sk',
                 ExpressionAttributeValues={
                     ':pk': f'BUSINESS#{business_id}',
-                    ':cutoff': cutoff_date,
-                    ':entity_type': 'NOTIFICATION'
+                    ':sk': f'NOTIFICATION#{cutoff_date}'
                 }
             )
         else:
-            # Scan all notifications (use carefully in production)
+            # This requires a full table scan which is expensive.
+            # Consider a more efficient approach for production, e.g., a dedicated GSI.
             response = table.scan(
-                FilterExpression='created_at < :cutoff AND entity_type = :entity_type',
+                FilterExpression='entity_type = :entity_type AND created_at < :cutoff',
                 ExpressionAttributeValues={
-                    ':cutoff': cutoff_date,
-                    ':entity_type': 'NOTIFICATION'
+                    ':entity_type': 'NOTIFICATION',
+                    ':cutoff': cutoff_date
                 }
             )
         
@@ -376,15 +369,12 @@ def handle_cleanup_old_notifications(body: Dict[str, Any]) -> Dict[str, Any]:
         
         # Delete old notifications
         deleted_count = 0
-        for notification in old_notifications:
-            try:
-                table.delete_item(
+        with table.batch_writer() as batch:
+            for notification in old_notifications:
+                batch.delete_item(
                     Key={'PK': notification['PK'], 'SK': notification['SK']}
                 )
                 deleted_count += 1
-            except ClientError as e:
-                logger.error(f"Failed to delete notification {notification.get('PK')}: {str(e)}")
-                continue
         
         logger.info(f"Deleted {deleted_count} old notifications older than {days_old} days")
         

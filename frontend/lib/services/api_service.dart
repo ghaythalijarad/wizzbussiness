@@ -6,6 +6,7 @@ import '../models/notification.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
+import '../services/unified_auth_service.dart';
 
 class ApiService {
   /// Base URL from app configuration (supports AWS deployment)
@@ -13,15 +14,16 @@ class ApiService {
 
   /// Get authorization headers with stored token
   Future<Map<String, String>> _getAuthHeaders() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-
     final headers = <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     };
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
+    if (AppConfig.useCognito && AppConfig.isCognitoConfigured) {
+      final token = await UnifiedAuthService.getAccessToken();
+      if (token != null) headers['Authorization'] = 'Bearer $token';
+    } else {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('access_token');
+      if (token != null) headers['Authorization'] = 'Bearer $token';
     }
 
     return headers;
@@ -1073,10 +1075,9 @@ class ApiService {
     required String phoneNumber,
     required Map<String, dynamic> address,
   }) async {
-    // Use public headers for registration endpoint (no auth required)
-    final headers = <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-    };
+    // Use auth headers for protected registration endpoint
+    final headers = await _getAuthHeaders();
+    headers['Content-Type'] = 'application/json; charset=UTF-8';
 
     final businessData = {
       'cognito_user_id': cognitoUserId,

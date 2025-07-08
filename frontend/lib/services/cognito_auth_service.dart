@@ -121,13 +121,56 @@ class CognitoAuthService {
         ),
       );
 
-      return {
+      final response = {
         'success': true,
         'message': 'User registered successfully',
         'isSignUpComplete': result.isSignUpComplete,
-        'nextStep': result.nextStep?.signUpStep.toString(),
+        'nextStep': result.nextStep.signUpStep.toString(),
       };
+
+      print(
+          'Cognito signUp result: isSignUpComplete=${result.isSignUpComplete}, nextStep=${result.nextStep.signUpStep.toString()}');
+
+      return response;
     } on AuthException catch (e) {
+      // Handle the special case where user exists but is unconfirmed
+      if (e.runtimeType.toString() == 'UsernameExistsException') {
+        try {
+          // Try to resend confirmation code for the existing unconfirmed user
+          print(
+              'User exists but may be unconfirmed. Attempting to resend confirmation code...');
+          final resendResult = await resendSignUpCode(email: email);
+
+          if (resendResult['success']) {
+            return {
+              'success': true,
+              'message':
+                  'Account exists but not verified. Verification code sent to your email.',
+              'isSignUpComplete': false,
+              'nextStep': 'AuthSignUpStep.confirmSignUp',
+              'needsVerification': true,
+              'existingUser': true,
+            };
+          } else {
+            // If resend fails, the user might already be confirmed
+            return {
+              'success': false,
+              'message':
+                  'An account with this email already exists and is verified. Please sign in instead.',
+              'shouldSignIn': true,
+            };
+          }
+        } catch (resendError) {
+          print('Error attempting to resend confirmation: $resendError');
+          return {
+            'success': false,
+            'message':
+                'An account with this email already exists. Please sign in instead.',
+            'shouldSignIn': true,
+          };
+        }
+      }
+
       return {
         'success': false,
         'message': _parseAuthError(e),
@@ -224,7 +267,7 @@ class CognitoAuthService {
         return {
           'success': false,
           'message': 'Sign in incomplete',
-          'nextStep': result.nextStep?.signInStep.toString(),
+          'nextStep': result.nextStep.signInStep.toString(),
         };
       }
     } on AuthException catch (e) {

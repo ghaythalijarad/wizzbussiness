@@ -1,0 +1,2 @@
+# Authentication Lambda Requirements
+# No additional dependencies needed - using Lambda layer

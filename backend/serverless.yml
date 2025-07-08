@@ -1,0 +1,221 @@
+# Serverless Framework configuration for Lambda + API Gateway deployment
+service: order-receiver-serverless
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  environment:
+    ENVIRONMENT: ${self:provider.stage}
+    DYNAMODB_TABLE_NAME: ${self:custom.tableName}
+    # Cognito Configuration - Set these in your deployment environment
+    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID, ''}
+    COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID, ''}
+  
+  # IAM permissions for Lambda functions
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:DescribeTable
+          Resource: 
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.tableName}"
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.tableName}/index/*"
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: "arn:aws:logs:${self:provider.region}:*:*"
+        # Cognito IAM permissions
+        - Effect: Allow
+          Action:
+            - cognito-idp:AdminInitiateAuth
+            - cognito-idp:AdminCreateUser
+            - cognito-idp:AdminSetUserPassword
+            - cognito-idp:AdminConfirmSignUp
+            - cognito-idp:AdminGetUser
+            - cognito-idp:AdminRespondToAuthChallenge
+            - cognito-idp:ConfirmSignUp
+            - cognito-idp:ResendConfirmationCode
+          Resource: "arn:aws:cognito-idp:${self:provider.region}:*:userpool/*"
+
+custom:
+  tableName: order-receiver-businesses-${self:provider.stage}
+  
+  # Python requirements plugin configuration
+  pythonRequirements:
+    dockerizePip: non-linux
+    slim: true
+    strip: false
+    fileName: lambda_functions/requirements-lambda.txt
+    
+  # Environment-specific configurations
+  stages:
+    dev:
+      cors: true
+    staging:
+      cors: true
+    prod:
+      cors: false  # Configure specific origins in production
+
+functions:
+  # Root endpoint
+  root:
+    handler: lambda_functions/health_lambda.root
+    events:
+      - http:
+          path: /
+          method: get
+          cors: ${self:custom.stages.${self:provider.stage}.cors}
+
+  # Health check endpoints
+  health:
+    handler: lambda_functions/health_lambda.health
+    events:
+      - http:
+          path: /health
+          method: get
+          cors: ${self:custom.stages.${self:provider.stage}.cors}
+
+  healthDetailed:
+    handler: lambda_functions/health_lambda.health_detailed
+    events:
+      - http:
+          path: /health/detailed
+          method: get
+          cors: ${self:custom.stages.${self:provider.stage}.cors}
+
+  # Auth service endpoints
+  authHealth:
+    handler: lambda_functions/auth_lambda.auth_health
+    events:
+      - http:
+          path: /auth/health
+          method: get
+          cors: ${self:custom.stages.${self:provider.stage}.cors}
+
+  registerBusiness:
+    handler: lambda_functions/auth_lambda.register_business
+    timeout: 30  # Business registration might take longer
+    events:
+      - http:
+          path: /auth/register-business
+          method: post
+          cors: ${self:custom.stages.${self:provider.stage}.cors}
+
+  # Cognito Authentication Functions
+  cognitoLogin:
+    handler: lambda_functions/cognito_auth_lambda.cognito_login
+    timeout: 30
+    events:
+      - http:
+          path: /auth/cognito/login
+          method: post
+          cors: ${self:custom.stages.${self:provider.stage}.cors}
+
+  cognitoRegister:
+    handler: lambda_functions/cognito_auth_lambda.cognito_register
+    timeout: 30
+    events:
+      - http:
+          path: /auth/cognito/register
+          method: post
+          cors: ${self:custom.stages.${self:provider.stage}.cors}
+
+  cognitoVerifyEmail:
+    handler: lambda_functions/cognito_auth_lambda.cognito_verify_email
+    timeout: 30
+    events:
+      - http:
+          path: /auth/cognito/verify-email
+          method: post
+          cors: ${self:custom.stages.${self:provider.stage}.cors}
+
+  cognitoHealth:
+    handler: lambda_functions/cognito_auth_lambda.cognito_health
+    events:
+      - http:
+          path: /auth/cognito/health
+          method: get
+          cors: ${self:custom.stages.${self:provider.stage}.cors}
+
+# CloudFormation resources
+resources:
+  Resources:
+    # DynamoDB table for business data
+    BusinessesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: business_id
+            AttributeType: S
+          - AttributeName: cognito_user_id
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: business_id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: cognito-user-index
+            KeySchema:
+              - AttributeName: cognito_user_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: email-index
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+        Tags:
+          - Key: Service
+            Value: order-receiver
+          - Key: Environment
+            Value: ${self:provider.stage}
+
+    # API Gateway custom domain (optional)
+    # Uncomment and configure if you have a custom domain
+    # ApiGatewayCustomDomain:
+    #   Type: AWS::ApiGateway::DomainName
+    #   Properties:
+    #     DomainName: api-${self:provider.stage}.yourdomain.com
+    #     CertificateArn: arn:aws:acm:us-east-1:123456789012:certificate/your-cert-id
+
+  Outputs:
+    ApiGatewayRestApiId:
+      Value:
+        Ref: ApiGatewayRestApi
+      Export:
+        Name: ${self:service}-${self:provider.stage}-restApiId
+
+    ApiGatewayRestApiRootResourceId:
+      Value:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      Export:
+        Name: ${self:service}-${self:provider.stage}-rootResourceId
+
+    BusinessesTableName:
+      Value: ${self:custom.tableName}
+      Export:
+        Name: ${self:service}-${self:provider.stage}-businessesTableName
+
+plugins:
+  - serverless-python-requirements
+  - serverless-offline  # For local development

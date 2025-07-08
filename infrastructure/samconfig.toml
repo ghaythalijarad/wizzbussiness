@@ -1,0 +1,17 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "order-receiver-app"
+resolve_s3 = true
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Environment=\"production\" CorsOrigins=\"*\" DynamoDBTableName=\"order-receiver-data\""
+confirm_changeset = true
+disable_rollback = true
+s3_prefix = "order-receiver-app"
+image_repositories = []
+
+[default.build]
+[default.build.parameters]
+parallel = true

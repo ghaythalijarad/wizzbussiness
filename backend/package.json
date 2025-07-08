@@ -1,0 +1,43 @@
+{
+  "name": "order-receiver-serverless-backend",
+  "version": "1.0.0",
+  "description": "Serverless backend for order receiver application using AWS Lambda and API Gateway",
+  "scripts": {
+    "deploy": "./deploy.sh",
+    "deploy:dev": "./deploy.sh dev",
+    "deploy:staging": "./deploy.sh staging",
+    "deploy:prod": "./deploy.sh prod",
+    "deploy:sam": "./deploy-sam.sh",
+    "deploy:sam:dev": "./deploy-sam.sh dev",
+    "deploy:sam:staging": "./deploy-sam.sh staging",
+    "deploy:sam:prod": "./deploy-sam.sh prod",
+    "test": "python -m pytest tests/test_lambda_functions.py -v",
+    "test:all": "python -m pytest tests/ -v",
+    "local": "serverless offline start",
+    "logs": "serverless logs -f health",
+    "remove": "serverless remove",
+    "validate": "serverless print"
+  },
+  "devDependencies": {
+    "serverless": "^3.38.0",
+    "serverless-offline": "^13.3.0",
+    "serverless-python-requirements": "^6.1.2"
+  },
+  "keywords": [
+    "serverless",
+    "aws",
+    "lambda",
+    "api-gateway",
+    "dynamodb",
+    "order-receiver"
+  ],
+  "author": "Order Receiver Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/order-receiver-app-2.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,23 @@
+# Terraform Variables for Order Receiver App
+# Copy this file to terraform.tfvars and fill in your values
+
+# Project Configuration
+project_name = "order-receiver"
+environment  = "dev"  # Change to "staging" or "production" as needed
+aws_region   = "eu-north-1"
+
+# Database Configuration
+db_password = "YOUR_SECURE_DATABASE_PASSWORD_HERE"  # CHANGE THIS!
+
+# Application Configuration
+secret_key = "YOUR_SECRET_KEY_HERE"  # CHANGE THIS! Use: openssl rand -base64 32
+
+# CORS Configuration (for production, specify your domain)
+cors_origins = "*"  # For production: "https://yourdomain.com,https://www.yourdomain.com"
+
+# Resource Sizing (adjust based on your needs)
+# For production, consider larger instance classes
+db_instance_class = "db.t3.micro"     # Free tier eligible
+ecs_cpu          = 512                # 0.5 vCPU
+ecs_memory       = 1024               # 1 GB RAM
+ecs_desired_count = 2                 # Number of app instances

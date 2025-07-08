@@ -1,0 +1,315 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AWS_REGION: us-east-1
+  SAM_CLI_TELEMETRY: 0
+
+jobs:
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov boto3 moto
+
+      - name: Run backend tests
+        run: |
+          cd backend
+          python -m pytest tests/ -v --cov=app --cov-report=xml
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: backend/coverage.xml
+          flags: backend
+
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+          channel: 'stable'
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            frontend/.dart_tool
+          key: ${{ runner.os }}-flutter-${{ hashFiles('frontend/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Install Flutter dependencies
+        run: |
+          cd frontend
+          flutter pub get
+
+      - name: Analyze Flutter code
+        run: |
+          cd frontend
+          flutter analyze
+
+      - name: Run Flutter tests
+        run: |
+          cd frontend
+          flutter test
+
+  build-and-deploy-dev:
+    name: Build and Deploy to Development
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: development
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Set up AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Cache SAM build
+        uses: actions/cache@v3
+        with:
+          path: |
+            infrastructure/.aws-sam
+          key: ${{ runner.os }}-sam-${{ hashFiles('infrastructure/template.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-sam-
+
+      - name: Build SAM application
+        run: |
+          cd infrastructure
+          sam build --use-container
+
+      - name: Deploy to Development
+        run: |
+          cd infrastructure
+          sam deploy \
+            --stack-name order-receiver-dev \
+            --s3-bucket ${{ secrets.SAM_DEPLOYMENT_BUCKET_DEV }} \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
+            --region ${{ env.AWS_REGION }} \
+            --parameter-overrides \
+              Environment=dev \
+              SecretKey=${{ secrets.SECRET_KEY_DEV }} \
+              CorsOrigins=${{ secrets.CORS_ORIGINS_DEV }} \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
+
+      - name: Run integration tests
+        run: |
+          # Get API Gateway URL from stack outputs
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name order-receiver-dev \
+            --query 'Stacks[0].Outputs[?OutputKey==`ApiGatewayUrl`].OutputValue' \
+            --output text)
+          echo "API_URL=$API_URL" >> $GITHUB_ENV
+          
+          # Run integration tests against the deployed API
+          cd backend
+          python -m pytest tests/integration/ -v --api-url=$API_URL
+
+  build-and-deploy-staging:
+    name: Build and Deploy to Staging
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Set up AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build SAM application
+        run: |
+          cd infrastructure
+          sam build --use-container
+
+      - name: Deploy to Staging
+        run: |
+          cd infrastructure
+          sam deploy \
+            --stack-name order-receiver-staging \
+            --s3-bucket ${{ secrets.SAM_DEPLOYMENT_BUCKET_STAGING }} \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
+            --region ${{ env.AWS_REGION }} \
+            --parameter-overrides \
+              Environment=staging \
+              SecretKey=${{ secrets.SECRET_KEY_STAGING }} \
+              CorsOrigins=${{ secrets.CORS_ORIGINS_STAGING }} \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
+
+      - name: Run staging tests
+        run: |
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name order-receiver-staging \
+            --query 'Stacks[0].Outputs[?OutputKey==`ApiGatewayUrl`].OutputValue' \
+            --output text)
+          echo "API_URL=$API_URL" >> $GITHUB_ENV
+          
+          cd backend
+          python -m pytest tests/integration/ -v --api-url=$API_URL
+
+  deploy-production:
+    name: Deploy to Production
+    needs: [build-and-deploy-staging]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Set up AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build SAM application
+        run: |
+          cd infrastructure
+          sam build --use-container
+
+      - name: Deploy to Production
+        run: |
+          cd infrastructure
+          sam deploy \
+            --stack-name order-receiver-production \
+            --s3-bucket ${{ secrets.SAM_DEPLOYMENT_BUCKET_PROD }} \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
+            --region ${{ env.AWS_REGION }} \
+            --parameter-overrides \
+              Environment=production \
+              SecretKey=${{ secrets.SECRET_KEY_PROD }} \
+              CorsOrigins=${{ secrets.CORS_ORIGINS_PROD }} \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
+
+  build-flutter-web:
+    name: Build Flutter Web
+    needs: [test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+          channel: 'stable'
+
+      - name: Install Flutter dependencies
+        run: |
+          cd frontend
+          flutter pub get
+
+      - name: Build Flutter web
+        run: |
+          cd frontend
+          flutter build web --release
+
+      - name: Upload web build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: flutter-web-build
+          path: frontend/build/web/
+
+  deploy-flutter-web:
+    name: Deploy Flutter Web to S3
+    needs: [build-flutter-web, deploy-production]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Download web build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: flutter-web-build
+          path: ./web-build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync ./web-build s3://${{ secrets.WEB_S3_BUCKET }} --delete
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"

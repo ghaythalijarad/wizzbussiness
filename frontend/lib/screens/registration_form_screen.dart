@@ -756,8 +756,6 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                 _buildSectionHeader(l10n.businessAddressLabel),
                 TextFormField(
                   controller: _businessCountryController,
-                  onTap: _autoFillAddress,
-                  readOnly: true,
                   decoration: InputDecoration(
                     labelText: l10n.country,
                     border: OutlineInputBorder(
@@ -772,7 +770,10 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                                 child:
                                     CircularProgressIndicator(strokeWidth: 2)),
                           )
-                        : const Icon(Icons.my_location),
+                        : IconButton(
+                            icon: const Icon(Icons.my_location),
+                            onPressed: _autoFillAddress,
+                          ),
                   ),
                   validator: (value) =>
                       value!.isEmpty ? l10n.pleaseEnterCountry : null,

@@ -1,0 +1,1 @@
+{ "httpMethod": "POST", "path": "/auth/register", "body": "{\"email\":\"newuser@example.com\",\"password\":\"Test@1234\"}" }

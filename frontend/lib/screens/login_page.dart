@@ -3,11 +3,10 @@ import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../widgets/language_switcher.dart';
 import '../widgets/wizz_business_text_form_field.dart';
 import '../widgets/wizz_business_button.dart';
-import '../screens/forgot_password_page.dart';
+// import '../screens/forgot_password_page.dart'; // TODO: Implement forgot password
 import '../screens/registration_form_screen.dart';
 import '../screens/dashboards/business_dashboard.dart';
-import '../services/unified_auth_service.dart';
-import '../services/auth_service.dart' as legacy_auth;
+import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../models/business.dart';
 import '../models/business_type.dart';
@@ -46,74 +45,51 @@ class _LoginPageState extends State<LoginPage> {
         final email = _emailController.text.trim();
         final password = _passwordController.text.trim();
 
-        // Attempt unified login (supports both Cognito and custom auth)
-        var response = await UnifiedAuthService.signIn(
+        // Use the working AuthService directly
+        final response = await AuthService.signIn(
           email: email,
           password: password,
         );
-        bool isTest = false;
 
-        // If unified login fails, attempt legacy test login for local development
-        if (response['success'] != true) {
-          final testResp =
-              await legacy_auth.AuthService.testLogin(email, password);
-          if (testResp['success'] == true) {
-            response = testResp;
-            isTest = true;
-          }
-        }
-
-        if (response['success'] == true) {
+        if (response.success) {
           // Store and print token
-          final accessToken = response['access_token'];
+          final accessToken = response.data?['tokens']?['AccessToken'] ?? 
+                            response.data?['access_token'];
           print('Login successful, access token: $accessToken');
 
-          if (isTest) {
-            // Fetch test user profile
-            final profileResp =
-                await legacy_auth.AuthService.testGetCurrentUser();
-            if (profileResp['success'] == true) {
-              final user = profileResp['user'];
-              // Build business from test profile
-              final business = Business(
-                id: user['id'],
-                name: user['business_name'],
-                email: user['email'],
-                phone: user['phone_number'] ?? '',
-                address: AppLocalizations.of(context)!.notAvailable,
-                latitude: 0.0,
-                longitude: 0.0,
-                offers: [],
-                businessHours: {},
-                settings: {},
-                businessType: _getBusinessTypeFromString(user['business_type']),
-              );
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BusinessDashboard(
-                    business: business,
-                    onLanguageChanged: widget.onLanguageChanged,
-                  ),
+          // Real login succeeded: use the business data from the response
+          if (response.data?['business'] != null) {
+            final businessData = response.data!['business'];
+            final business = Business(
+              id: businessData['id'] ?? businessData['business_id'] ?? 'unknown',
+              name: businessData['name'] ?? businessData['business_name'] ?? 'Unknown Business',
+              email: businessData['email'] ?? email,
+              phone: businessData['phone_number'] ?? '',
+              address: businessData['address']?['street'] ?? 
+                      businessData['address'] ?? '',
+              latitude: businessData['address']?['latitude']?.toDouble() ?? 0.0,
+              longitude: businessData['address']?['longitude']?.toDouble() ?? 0.0,
+              offers: [],
+              businessHours: {},
+              settings: {},
+              businessType: _getBusinessTypeFromString(businessData['business_type']),
+            );
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BusinessDashboard(
+                  business: business,
+                  onLanguageChanged: widget.onLanguageChanged,
                 ),
-              );
-              return;
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(profileResp['message'] ??
-                      AppLocalizations.of(context)!.failedToFetchProfile),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
+              ),
+            );
           } else {
-            // Real login: fetch user's businesses
+            // Fallback: fetch user's businesses from API
             final apiService = ApiService();
             final businesses = await apiService.getUserBusinesses();
 
             if (businesses.isNotEmpty) {
-              // Existing flow unchanged
               final businessData = businesses[0];
               final business = Business(
                 id: businessData['id'],
@@ -121,15 +97,12 @@ class _LoginPageState extends State<LoginPage> {
                 email: businessData['email'] ?? email,
                 phone: businessData['phone_number'] ?? '',
                 address: businessData['address']?['street'] ?? '',
-                latitude:
-                    businessData['address']?['latitude']?.toDouble() ?? 0.0,
-                longitude:
-                    businessData['address']?['longitude']?.toDouble() ?? 0.0,
+                latitude: businessData['address']?['latitude']?.toDouble() ?? 0.0,
+                longitude: businessData['address']?['longitude']?.toDouble() ?? 0.0,
                 offers: [],
                 businessHours: {},
                 settings: {},
-                businessType:
-                    _getBusinessTypeFromString(businessData['business_type']),
+                businessType: _getBusinessTypeFromString(businessData['business_type']),
               );
 
               Navigator.pushReplacement(
@@ -153,11 +126,10 @@ class _LoginPageState extends State<LoginPage> {
             }
           }
         } else {
-          // All login attempts failed
+          // Login failed
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response['message'] ??
-                  AppLocalizations.of(context)!.loginFailedMessage),
+              content: Text(response.message),
               backgroundColor: Colors.red,
             ),
           );
@@ -180,15 +152,19 @@ class _LoginPageState extends State<LoginPage> {
   BusinessType _getBusinessTypeFromString(String? businessTypeString) {
     switch (businessTypeString?.toLowerCase()) {
       case 'restaurant':
-        return BusinessType.restaurant;
+      case 'kitchen':
+        return BusinessType.kitchen;
+      case 'cloudkitchen':
+        return BusinessType.cloudkitchen;
       case 'store':
         return BusinessType.store;
       case 'pharmacy':
         return BusinessType.pharmacy;
-      case 'kitchen':
-        return BusinessType.kitchen;
+      case 'caffe':
+      case 'cafe':
+        return BusinessType.caffe;
       default:
-        return BusinessType.restaurant; // Default fallback
+        return BusinessType.kitchen; // Default fallback
     }
   }
 
@@ -284,11 +260,11 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 16),
                         TextButton(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const ForgotPasswordPage(),
+                            // TODO: Implement forgot password functionality
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Forgot password feature coming soon'),
+                                backgroundColor: Colors.orange,
                               ),
                             );
                           },

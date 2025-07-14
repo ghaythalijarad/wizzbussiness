@@ -116,6 +116,12 @@ abstract class AppLocalizations {
   /// **'Login'**
   String get login;
 
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get signIn;
+
   /// No description provided for @email.
   ///
   /// In en, this message translates to:
@@ -176,6 +182,12 @@ abstract class AppLocalizations {
   /// **'Please enter your password'**
   String get pleaseEnterYourPassword;
 
+  /// No description provided for @emailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Email is required'**
+  String get emailRequired;
+
   /// No description provided for @errorOccurred.
   ///
   /// In en, this message translates to:
@@ -199,6 +211,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Login failed'**
   String get loginFailed;
+
+  /// No description provided for @loginFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed'**
+  String get loginFailedMessage;
+
+  /// No description provided for @errorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password. Please check your credentials and try again.'**
+  String get errorInvalidCredentials;
+
+  /// No description provided for @sessionConflictTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Already Signed In'**
+  String get sessionConflictTitle;
+
+  /// No description provided for @sessionConflictMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You are already signed in. Please choose an option below.'**
+  String get sessionConflictMessage;
+
+  /// No description provided for @continueCurrentSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with current session'**
+  String get continueCurrentSession;
+
+  /// No description provided for @signOutAndRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out and try again'**
+  String get signOutAndRetry;
+
+  /// No description provided for @userAlreadySignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'User is already signed in'**
+  String get userAlreadySignedIn;
+
+  /// No description provided for @forceSignInOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Force sign in'**
+  String get forceSignInOption;
+
+  /// No description provided for @sessionExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Expired'**
+  String get sessionExpiredTitle;
+
+  /// No description provided for @authenticationFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication Failed'**
+  String get authenticationFailedTitle;
+
+  /// No description provided for @systemErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'System Error'**
+  String get systemErrorTitle;
+
+  /// No description provided for @tooManyAttemptsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Too Many Attempts'**
+  String get tooManyAttemptsTitle;
+
+  /// No description provided for @userNotFoundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'User Not Found'**
+  String get userNotFoundTitle;
+
+  /// No description provided for @emailVerificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Verification Required'**
+  String get emailVerificationTitle;
 
   /// No description provided for @demoStore.
   ///
@@ -1622,17 +1718,59 @@ abstract class AppLocalizations {
   /// **'Email Address'**
   String get emailAddress;
 
-  /// No description provided for @country.
+  /// No description provided for @firstName.
   ///
   /// In en, this message translates to:
-  /// **'Country'**
-  String get country;
+  /// **'First Name'**
+  String get firstName;
 
-  /// No description provided for @pleaseEnterCountry.
+  /// No description provided for @lastName.
   ///
   /// In en, this message translates to:
-  /// **'Please enter country'**
-  String get pleaseEnterCountry;
+  /// **'Last Name'**
+  String get lastName;
+
+  /// No description provided for @firstNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'First name is required'**
+  String get firstNameRequired;
+
+  /// No description provided for @lastNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Last name is required'**
+  String get lastNameRequired;
+
+  /// No description provided for @invalidEmailFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get invalidEmailFormat;
+
+  /// No description provided for @phoneNumberRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number is required'**
+  String get phoneNumberRequired;
+
+  /// No description provided for @businessNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Business name is required'**
+  String get businessNameRequired;
+
+  /// No description provided for @businessAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Address'**
+  String get businessAddress;
+
+  /// No description provided for @streetAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Street Address'**
+  String get streetAddress;
 
   /// No description provided for @city.
   ///
@@ -1640,341 +1778,17 @@ abstract class AppLocalizations {
   /// **'City'**
   String get city;
 
-  /// No description provided for @pleaseEnterCity.
+  /// No description provided for @state.
   ///
   /// In en, this message translates to:
-  /// **'Please enter city'**
-  String get pleaseEnterCity;
-
-  /// No description provided for @district.
-  ///
-  /// In en, this message translates to:
-  /// **'District'**
-  String get district;
-
-  /// No description provided for @pleaseEnterDistrict.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter district'**
-  String get pleaseEnterDistrict;
+  /// **'State/Province'**
+  String get state;
 
   /// No description provided for @zipCode.
   ///
   /// In en, this message translates to:
-  /// **'Zip Code'**
+  /// **'ZIP/Postal Code'**
   String get zipCode;
-
-  /// No description provided for @pleaseEnterZipCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter zip code'**
-  String get pleaseEnterZipCode;
-
-  /// No description provided for @neighbourhood.
-  ///
-  /// In en, this message translates to:
-  /// **'Neighbourhood'**
-  String get neighbourhood;
-
-  /// No description provided for @pleaseEnterNeighbourhood.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter neighbourhood'**
-  String get pleaseEnterNeighbourhood;
-
-  /// No description provided for @street.
-  ///
-  /// In en, this message translates to:
-  /// **'Street'**
-  String get street;
-
-  /// No description provided for @pleaseEnterStreet.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter street'**
-  String get pleaseEnterStreet;
-
-  /// No description provided for @buildingNumber.
-  ///
-  /// In en, this message translates to:
-  /// **'Building Number'**
-  String get buildingNumber;
-
-  /// No description provided for @nationalId.
-  ///
-  /// In en, this message translates to:
-  /// **'National ID'**
-  String get nationalId;
-
-  /// No description provided for @pleaseEnterNationalId.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter national ID'**
-  String get pleaseEnterNationalId;
-
-  /// No description provided for @dateOfBirth.
-  ///
-  /// In en, this message translates to:
-  /// **'Date of Birth'**
-  String get dateOfBirth;
-
-  /// No description provided for @pleaseEnterDateOfBirth.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter date of birth'**
-  String get pleaseEnterDateOfBirth;
-
-  /// No description provided for @ownerNationalId.
-  ///
-  /// In en, this message translates to:
-  /// **'Owner National ID'**
-  String get ownerNationalId;
-
-  /// No description provided for @ownerNationalIdSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Upload a clear photo of the national ID'**
-  String get ownerNationalIdSubtitle;
-
-  /// No description provided for @ownerPhoto.
-  ///
-  /// In en, this message translates to:
-  /// **'Owner Photo'**
-  String get ownerPhoto;
-
-  /// No description provided for @ownerPhotoSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Upload a clear photo of the owner'**
-  String get ownerPhotoSubtitle;
-
-  /// No description provided for @requiredDocuments.
-  ///
-  /// In en, this message translates to:
-  /// **'Required Documents'**
-  String get requiredDocuments;
-
-  /// No description provided for @commercialLicense.
-  ///
-  /// In en, this message translates to:
-  /// **'Commercial License'**
-  String get commercialLicense;
-
-  /// No description provided for @commercialLicenseSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Upload your business commercial license'**
-  String get commercialLicenseSubtitle;
-
-  /// No description provided for @healthCertificate.
-  ///
-  /// In en, this message translates to:
-  /// **'Health Certificate'**
-  String get healthCertificate;
-
-  /// No description provided for @healthCertificateSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Required for food-related businesses'**
-  String get healthCertificateSubtitle;
-
-  /// No description provided for @submitRegistration.
-  ///
-  /// In en, this message translates to:
-  /// **'Submit Registration'**
-  String get submitRegistration;
-
-  /// No description provided for @passwordMismatch.
-  ///
-  /// In en, this message translates to:
-  /// **'Passwords do not match'**
-  String get passwordMismatch;
-
-  /// No description provided for @emailSent.
-  ///
-  /// In en, this message translates to:
-  /// **'Email Sent'**
-  String get emailSent;
-
-  /// No description provided for @passwordResetLinkSent.
-  ///
-  /// In en, this message translates to:
-  /// **'A password reset link has been sent to your email'**
-  String get passwordResetLinkSent;
-
-  /// No description provided for @ok.
-  ///
-  /// In en, this message translates to:
-  /// **'OK'**
-  String get ok;
-
-  /// No description provided for @enterOtp.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter OTP'**
-  String get enterOtp;
-
-  /// No description provided for @pleaseEnterOtp.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter OTP'**
-  String get pleaseEnterOtp;
-
-  /// No description provided for @resetYourPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Reset Your Password'**
-  String get resetYourPassword;
-
-  /// No description provided for @emailOrPhone.
-  ///
-  /// In en, this message translates to:
-  /// **'Email or Phone'**
-  String get emailOrPhone;
-
-  /// No description provided for @pleaseEnterEmailAddress.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter your email address'**
-  String get pleaseEnterEmailAddress;
-
-  /// No description provided for @newPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'New Password'**
-  String get newPassword;
-
-  /// No description provided for @pleaseEnterPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter password'**
-  String get pleaseEnterPassword;
-
-  /// No description provided for @confirmNewPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm New Password'**
-  String get confirmNewPassword;
-
-  /// No description provided for @pleaseConfirmPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Please confirm password'**
-  String get pleaseConfirmPassword;
-
-  /// No description provided for @resetPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Reset Password'**
-  String get resetPassword;
-
-  /// No description provided for @sendOtp.
-  ///
-  /// In en, this message translates to:
-  /// **'Send OTP'**
-  String get sendOtp;
-
-  /// No description provided for @backToLogin.
-  ///
-  /// In en, this message translates to:
-  /// **'Back to Login'**
-  String get backToLogin;
-
-  /// No description provided for @language.
-  ///
-  /// In en, this message translates to:
-  /// **'Language'**
-  String get language;
-
-  /// No description provided for @arabic.
-  ///
-  /// In en, this message translates to:
-  /// **'العربية'**
-  String get arabic;
-
-  /// No description provided for @english.
-  ///
-  /// In en, this message translates to:
-  /// **'English'**
-  String get english;
-
-  /// No description provided for @selectLanguage.
-  ///
-  /// In en, this message translates to:
-  /// **'Select Language'**
-  String get selectLanguage;
-
-  /// No description provided for @newOrderReceived.
-  ///
-  /// In en, this message translates to:
-  /// **'New order received from {customerName}'**
-  String newOrderReceived(String customerName);
-
-  /// No description provided for @passwordResetSuccessful.
-  ///
-  /// In en, this message translates to:
-  /// **'Password Reset Successful'**
-  String get passwordResetSuccessful;
-
-  /// No description provided for @passwordResetSuccessMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Your password has been reset successfully.'**
-  String get passwordResetSuccessMessage;
-
-  /// No description provided for @goToLogin.
-  ///
-  /// In en, this message translates to:
-  /// **'Go to Login'**
-  String get goToLogin;
-
-  /// No description provided for @passwordLengthRequirement.
-  ///
-  /// In en, this message translates to:
-  /// **'Password must be at least 8 characters.'**
-  String get passwordLengthRequirement;
-
-  /// No description provided for @passwordComplexityRequirement.
-  ///
-  /// In en, this message translates to:
-  /// **'Password must include uppercase, lowercase, and numbers.'**
-  String get passwordComplexityRequirement;
-
-  /// No description provided for @passwordsDoNotMatch.
-  ///
-  /// In en, this message translates to:
-  /// **'Passwords do not match.'**
-  String get passwordsDoNotMatch;
-
-  /// No description provided for @setNewPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Set New Password'**
-  String get setNewPassword;
-
-  /// No description provided for @enterNewPasswordBelow.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your new password below.'**
-  String get enterNewPasswordBelow;
-
-  /// No description provided for @passwordRequirements.
-  ///
-  /// In en, this message translates to:
-  /// **'Password Requirements'**
-  String get passwordRequirements;
-
-  /// No description provided for @passwordRequirementsDetails.
-  ///
-  /// In en, this message translates to:
-  /// **'Must be at least 8 characters, include uppercase, lowercase, and a number.'**
-  String get passwordRequirementsDetails;
-
-  /// No description provided for @pleaseEnterValidEmail.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter a valid email address'**
-  String get pleaseEnterValidEmail;
 
   /// No description provided for @confirmPassword.
   ///
@@ -1982,125 +1796,47 @@ abstract class AppLocalizations {
   /// **'Confirm Password'**
   String get confirmPassword;
 
-  /// No description provided for @autoFillAddress.
+  /// No description provided for @passwordRequired.
   ///
   /// In en, this message translates to:
-  /// **'Auto-fill Address'**
-  String get autoFillAddress;
+  /// **'Password is required'**
+  String get passwordRequired;
 
-  /// No description provided for @validityPeriod.
+  /// No description provided for @weakPassword.
   ///
   /// In en, this message translates to:
-  /// **'Validity Period'**
-  String get validityPeriod;
+  /// **'Password is too weak'**
+  String get weakPassword;
 
-  /// No description provided for @unknownStatus.
+  /// No description provided for @confirmPasswordRequired.
   ///
   /// In en, this message translates to:
-  /// **'Unknown Status'**
-  String get unknownStatus;
+  /// **'Please confirm your password'**
+  String get confirmPasswordRequired;
 
-  /// No description provided for @discountCombinationWarning.
+  /// No description provided for @passwordsDoNotMatch.
   ///
   /// In en, this message translates to:
-  /// **'This discount type cannot be combined with existing active discounts'**
-  String get discountCombinationWarning;
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatch;
 
-  /// No description provided for @freeDeliveryCombinable.
+  /// No description provided for @registrationSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Free Delivery can be combined with other discounts'**
-  String get freeDeliveryCombinable;
+  /// **'Registration successful'**
+  String get registrationSuccess;
 
-  /// No description provided for @discountCreatedSuccessfully.
+  /// No description provided for @emailAlreadyInUse.
   ///
   /// In en, this message translates to:
-  /// **'Discount created successfully'**
-  String get discountCreatedSuccessfully;
+  /// **'Email address is already in use'**
+  String get emailAlreadyInUse;
 
-  /// No description provided for @discountUpdatedSuccessfully.
+  /// No description provided for @passwordResetLinkSent.
   ///
   /// In en, this message translates to:
-  /// **'Discount updated successfully'**
-  String get discountUpdatedSuccessfully;
-
-  /// No description provided for @combinableDiscount.
-  ///
-  /// In en, this message translates to:
-  /// **'Combinable'**
-  String get combinableDiscount;
-
-  /// No description provided for @discountApplicability.
-  ///
-  /// In en, this message translates to:
-  /// **'Discount Applicability'**
-  String get discountApplicability;
-
-  /// No description provided for @allItems.
-  ///
-  /// In en, this message translates to:
-  /// **'All Items'**
-  String get allItems;
-
-  /// No description provided for @specificItems.
-  ///
-  /// In en, this message translates to:
-  /// **'Specific Items'**
-  String get specificItems;
-
-  /// No description provided for @specificCategories.
-  ///
-  /// In en, this message translates to:
-  /// **'Specific Categories'**
-  String get specificCategories;
-
-  /// No description provided for @selectItems.
-  ///
-  /// In en, this message translates to:
-  /// **'Select Items'**
-  String get selectItems;
-
-  /// No description provided for @selectCategories.
-  ///
-  /// In en, this message translates to:
-  /// **'Select Categories'**
-  String get selectCategories;
-
-  /// No description provided for @noItemsSelected.
-  ///
-  /// In en, this message translates to:
-  /// **'No items selected'**
-  String get noItemsSelected;
-
-  /// No description provided for @noCategoriesSelected.
-  ///
-  /// In en, this message translates to:
-  /// **'No categories selected'**
-  String get noCategoriesSelected;
-
-  /// No description provided for @categories.
-  ///
-  /// In en, this message translates to:
-  /// **'Categories'**
-  String get categories;
-
-  /// No description provided for @conflictingDiscounts.
-  ///
-  /// In en, this message translates to:
-  /// **'Some selected items or categories already have active discounts. Each item can only have one discount at a time.'**
-  String get conflictingDiscounts;
-
-  /// No description provided for @wizzBusiness.
-  ///
-  /// In en, this message translates to:
-  /// **'Wizz Business'**
-  String get wizzBusiness;
-
-  /// No description provided for @businessManagement.
-  ///
-  /// In en, this message translates to:
-  /// **'Business Management'**
-  String get businessManagement;
+  /// **'Password reset link sent to your email'**
+  String get passwordResetLinkSent;
 
   /// No description provided for @welcomeToOrderReceiver.
   ///
@@ -2413,6 +2149,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please select both buy and get items for {discountType} discount.'**
   String pleasSelectBothBuyAndGetItems(String discountType);
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
 
   /// No description provided for @addFreeDeliveryToDiscount.
   ///
@@ -3008,12 +2750,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No business found for this user'**
   String get noBusinessFoundForThisUser;
-
-  /// No description provided for @loginFailedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Login failed'**
-  String get loginFailedMessage;
 
   /// No description provided for @notAvailable.
   ///
@@ -3734,6 +3470,672 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{category} • {currency} {price}'**
   String categoryAndPrice(String category, String currency, String price);
+
+  /// No description provided for @availableUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Available until {date}'**
+  String availableUntil(String date);
+
+  /// No description provided for @joinOrderReceiver.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Order Receiver'**
+  String get joinOrderReceiver;
+
+  /// No description provided for @signUpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start managing your business with ease'**
+  String get signUpSubtitle;
+
+  /// No description provided for @personalInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInformation;
+
+  /// No description provided for @accountSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Security'**
+  String get accountSecurity;
+
+  /// No description provided for @iAgreeToThe.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree to the '**
+  String get iAgreeToThe;
+
+  /// No description provided for @termsOfService.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get termsOfService;
+
+  /// No description provided for @and.
+  ///
+  /// In en, this message translates to:
+  /// **'and'**
+  String get and;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
+
+  /// No description provided for @alreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? '**
+  String get alreadyHaveAccount;
+
+  /// No description provided for @backTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to '**
+  String get backTo;
+
+  /// No description provided for @verificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Code'**
+  String get verificationCode;
+
+  /// No description provided for @verifyYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Your Email'**
+  String get verifyYourEmail;
+
+  /// No description provided for @verificationCodeSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code has been sent to {email}'**
+  String verificationCodeSentTo(String email);
+
+  /// No description provided for @pleaseEnterVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the verification code'**
+  String get pleaseEnterVerificationCode;
+
+  /// No description provided for @verificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed. Please try again.'**
+  String get verificationFailed;
+
+  /// No description provided for @failedToResendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to resend verification code'**
+  String get failedToResendCode;
+
+  /// No description provided for @verificationCodeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code is required'**
+  String get verificationCodeRequired;
+
+  /// No description provided for @invalidVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid verification code'**
+  String get invalidVerificationCode;
+
+  /// No description provided for @verificationCodeExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code has expired'**
+  String get verificationCodeExpired;
+
+  /// No description provided for @resendVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Verification Code'**
+  String get resendVerificationCode;
+
+  /// No description provided for @verificationSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification successful'**
+  String get verificationSuccess;
+
+  /// No description provided for @verificationFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed'**
+  String get verificationFailure;
+
+  /// No description provided for @emailNotVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email not verified'**
+  String get emailNotVerified;
+
+  /// No description provided for @emailVerificationPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification pending'**
+  String get emailVerificationPending;
+
+  /// No description provided for @emailVerificationCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification completed'**
+  String get emailVerificationCompleted;
+
+  /// No description provided for @emailVerificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification failed'**
+  String get emailVerificationFailed;
+
+  /// No description provided for @emailVerificationResendSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resent successfully'**
+  String get emailVerificationResendSuccess;
+
+  /// No description provided for @emailVerificationResendFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to resend verification code'**
+  String get emailVerificationResendFailure;
+
+  /// No description provided for @emailVerificationInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your email for the verification code to complete your registration.'**
+  String get emailVerificationInstructions;
+
+  /// No description provided for @emailVerificationCodeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code has been sent to your email. Please enter the code to verify your email address.'**
+  String get emailVerificationCodeSent;
+
+  /// No description provided for @emailVerificationCodePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter verification code'**
+  String get emailVerificationCodePlaceholder;
+
+  /// No description provided for @emailVerificationCodeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The verification code is invalid. Please check and try again.'**
+  String get emailVerificationCodeInvalid;
+
+  /// No description provided for @emailVerificationCodeExpiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The verification code has expired. Please request a new code.'**
+  String get emailVerificationCodeExpiredMessage;
+
+  /// No description provided for @emailVerificationCodeResendSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'A new verification code has been sent to your email.'**
+  String get emailVerificationCodeResendSuccess;
+
+  /// No description provided for @emailVerificationCodeResendFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to resend the verification code. Please try again later.'**
+  String get emailVerificationCodeResendFailure;
+
+  /// No description provided for @emailVerificationComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email has been verified successfully. You can now log in to your account.'**
+  String get emailVerificationComplete;
+
+  /// No description provided for @emailVerificationFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification failed. Please try again or contact support.'**
+  String get emailVerificationFailedMessage;
+
+  /// No description provided for @emailVerificationPendingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email verification is pending. Please check your email for the verification code.'**
+  String get emailVerificationPendingMessage;
+
+  /// No description provided for @emailVerificationInstructionsResend.
+  ///
+  /// In en, this message translates to:
+  /// **'If you didn\'t receive the code, you can request a new one.'**
+  String get emailVerificationInstructionsResend;
+
+  /// No description provided for @emailVerificationCodeRequestSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code sent successfully. Please check your email.'**
+  String get emailVerificationCodeRequestSuccess;
+
+  /// No description provided for @emailVerificationCodeRequestFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send verification code. Please try again later.'**
+  String get emailVerificationCodeRequestFailure;
+
+  /// No description provided for @emailVerificationCodeRequestPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code request is pending. Please wait...'**
+  String get emailVerificationCodeRequestPending;
+
+  /// No description provided for @emailVerificationCodeRequestCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code request completed. Please check your email.'**
+  String get emailVerificationCodeRequestCompleted;
+
+  /// No description provided for @emailVerificationCodeRequestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code request failed. Please try again.'**
+  String get emailVerificationCodeRequestFailed;
+
+  /// No description provided for @emailVerificationCodeRequestResendSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resent successfully. Please check your email.'**
+  String get emailVerificationCodeRequestResendSuccess;
+
+  /// No description provided for @emailVerificationCodeRequestResendFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to resend verification code. Please try again later.'**
+  String get emailVerificationCodeRequestResendFailure;
+
+  /// No description provided for @emailVerificationCodeRequestResendPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resend is pending. Please wait...'**
+  String get emailVerificationCodeRequestResendPending;
+
+  /// No description provided for @emailVerificationCodeRequestResendCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resend completed. Please check your email.'**
+  String get emailVerificationCodeRequestResendCompleted;
+
+  /// No description provided for @emailVerificationCodeRequestResendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resend failed. Please try again.'**
+  String get emailVerificationCodeRequestResendFailed;
+
+  /// No description provided for @emailVerificationCodeRequestAlreadySent.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code has already been sent to your email. Please check your email.'**
+  String get emailVerificationCodeRequestAlreadySent;
+
+  /// No description provided for @emailVerificationCodeRequestNotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code request not sent. Please try again.'**
+  String get emailVerificationCodeRequestNotSent;
+
+  /// No description provided for @emailVerificationCodeRequestInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email address. Please enter a valid email.'**
+  String get emailVerificationCodeRequestInvalidEmail;
+
+  /// No description provided for @emailVerificationCodeRequestEmailSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code email sent. Please check your inbox.'**
+  String get emailVerificationCodeRequestEmailSent;
+
+  /// No description provided for @emailVerificationCodeRequestEmailNotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code email not sent. Please try again.'**
+  String get emailVerificationCodeRequestEmailNotSent;
+
+  /// No description provided for @emailVerificationCodeRequestEmailAlreadyVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'This email address is already verified.'**
+  String get emailVerificationCodeRequestEmailAlreadyVerified;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification is pending. Please check your email.'**
+  String get emailVerificationCodeRequestEmailVerificationPending;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification failed. Please try again.'**
+  String get emailVerificationCodeRequestEmailVerificationFailed;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification successful. You can now log in.'**
+  String get emailVerificationCodeRequestEmailVerificationSuccess;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationResendSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resent successfully. Please check your email.'**
+  String get emailVerificationCodeRequestEmailVerificationResendSuccess;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationResendFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to resend verification code. Please try again later.'**
+  String get emailVerificationCodeRequestEmailVerificationResendFailure;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationResendPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resend is pending. Please wait...'**
+  String get emailVerificationCodeRequestEmailVerificationResendPending;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationResendCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resend completed. Please check your email.'**
+  String get emailVerificationCodeRequestEmailVerificationResendCompleted;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationResendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resend failed. Please try again.'**
+  String get emailVerificationCodeRequestEmailVerificationResendFailed;
+
+  /// No description provided for @emailVerificationCodeRequestEmailAlreadyExists.
+  ///
+  /// In en, this message translates to:
+  /// **'An account with this email already exists. Please log in.'**
+  String get emailVerificationCodeRequestEmailAlreadyExists;
+
+  /// No description provided for @emailVerificationCodeRequestEmailNotRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is not registered. Please sign up.'**
+  String get emailVerificationCodeRequestEmailNotRegistered;
+
+  /// No description provided for @emailVerificationCodeRequestEmailInvalidFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email format. Please enter a valid email address.'**
+  String get emailVerificationCodeRequestEmailInvalidFormat;
+
+  /// No description provided for @emailVerificationCodeRequestEmailEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address cannot be empty. Please enter your email.'**
+  String get emailVerificationCodeRequestEmailEmpty;
+
+  /// No description provided for @emailVerificationCodeRequestEmailTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address is too long. Please enter a shorter email.'**
+  String get emailVerificationCodeRequestEmailTooLong;
+
+  /// No description provided for @emailVerificationCodeRequestEmailTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address is too short. Please enter a longer email.'**
+  String get emailVerificationCodeRequestEmailTooShort;
+
+  /// No description provided for @emailVerificationCodeRequestEmailContainsInvalidCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address contains invalid characters. Please enter a valid email.'**
+  String get emailVerificationCodeRequestEmailContainsInvalidCharacters;
+
+  /// No description provided for @emailVerificationCodeRequestEmailStartsWithInvalidCharacter.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address starts with an invalid character. Please enter a valid email.'**
+  String get emailVerificationCodeRequestEmailStartsWithInvalidCharacter;
+
+  /// No description provided for @emailVerificationCodeRequestEmailEndsWithInvalidCharacter.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address ends with an invalid character. Please enter a valid email.'**
+  String get emailVerificationCodeRequestEmailEndsWithInvalidCharacter;
+
+  /// No description provided for @emailVerificationCodeRequestEmailDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'This email address is already in use. Please use a different email.'**
+  String get emailVerificationCodeRequestEmailDuplicate;
+
+  /// No description provided for @emailVerificationCodeRequestEmailNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address not allowed. Please use a different email.'**
+  String get emailVerificationCodeRequestEmailNotAllowed;
+
+  /// No description provided for @emailVerificationCodeRequestEmailBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address blocked. Please contact support.'**
+  String get emailVerificationCodeRequestEmailBlocked;
+
+  /// No description provided for @emailVerificationCodeRequestEmailUnverified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address unverified. Please verify your email.'**
+  String get emailVerificationCodeRequestEmailUnverified;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification required. Please verify your email.'**
+  String get emailVerificationCodeRequestEmailVerificationRequired;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification optional. You can verify your email later.'**
+  String get emailVerificationCodeRequestEmailVerificationOptional;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification completed. You can now log in.'**
+  String get emailVerificationCodeRequestEmailVerificationCompleted;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification failed. Please try again or contact support.'**
+  String get emailVerificationCodeRequestEmailVerificationFailedMessage;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationPendingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email verification is pending. Please check your email for the verification code.'**
+  String get emailVerificationCodeRequestEmailVerificationPendingMessage;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your email for the verification code to complete your registration.'**
+  String get emailVerificationCodeRequestEmailVerificationInstructions;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationCodeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code has been sent to your email. Please enter the code to verify your email address.'**
+  String get emailVerificationCodeRequestEmailVerificationCodeSent;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationCodePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter verification code'**
+  String get emailVerificationCodeRequestEmailVerificationCodePlaceholder;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationCodeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The verification code is invalid. Please check and try again.'**
+  String get emailVerificationCodeRequestEmailVerificationCodeInvalid;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationCodeExpiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The verification code has expired. Please request a new code.'**
+  String get emailVerificationCodeRequestEmailVerificationCodeExpiredMessage;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationCodeResendSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'A new verification code has been sent to your email.'**
+  String get emailVerificationCodeRequestEmailVerificationCodeResendSuccess;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationCodeResendFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to resend the verification code. Please try again later.'**
+  String get emailVerificationCodeRequestEmailVerificationCodeResendFailure;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email has been verified successfully. You can now log in to your account.'**
+  String get emailVerificationCodeRequestEmailVerificationComplete;
+
+  /// No description provided for @emailVerificationCodeRequestEmailVerificationInstructionsResend.
+  ///
+  /// In en, this message translates to:
+  /// **'If you didn\'t receive the code, you can request a new one.'**
+  String get emailVerificationCodeRequestEmailVerificationInstructionsResend;
+
+  /// Wrong email question for verification screen
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong email?'**
+  String get wrongEmail;
+
+  /// Wrong email start over link for verification screen
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong email? Start over'**
+  String get wrongEmailStartOver;
+
+  /// No description provided for @startOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Over'**
+  String get startOver;
+
+  /// No description provided for @createAnAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account'**
+  String get createAnAccount;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @english.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
+
+  /// No description provided for @arabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get arabic;
+
+  /// No description provided for @selectLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Language'**
+  String get selectLanguage;
+
+  /// No description provided for @selectItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Items'**
+  String get selectItems;
+
+  /// No description provided for @discountApplicability.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount Applicability'**
+  String get discountApplicability;
+
+  /// No description provided for @allItems.
+  ///
+  /// In en, this message translates to:
+  /// **'All Items'**
+  String get allItems;
+
+  /// No description provided for @specificItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Specific Items'**
+  String get specificItems;
+
+  /// No description provided for @specificCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Specific Categories'**
+  String get specificCategories;
+
+  /// No description provided for @noItemsSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No items selected'**
+  String get noItemsSelected;
+
+  /// No description provided for @selectCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Categories'**
+  String get selectCategories;
+
+  /// No description provided for @noCategoriesSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories selected'**
+  String get noCategoriesSelected;
+
+  /// No description provided for @conflictingDiscounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Conflicting Discounts'**
+  String get conflictingDiscounts;
+
+  /// No description provided for @categories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categories;
 }
 
 class _AppLocalizationsDelegate

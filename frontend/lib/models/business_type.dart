@@ -1,6 +1,7 @@
 enum BusinessType {
-  restaurant,
-  store,
   kitchen,
+  cloudkitchen,
+  store,
   pharmacy,
+  caffe,
 }

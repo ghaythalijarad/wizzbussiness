@@ -1,12 +1,20 @@
 import 'dart:io';
 
 /// Application configuration for different environments
+///
+/// Backend Architecture:
+/// - AWS Lambda Functions (Serverless)
+/// - AWS API Gateway (REST API)
+/// - AWS DynamoDB (NoSQL Database)
+/// - AWS Cognito (Authentication)
+///
+/// Note: MongoDB/Beanie backend has been removed and replaced with DynamoDB
 class AppConfig {
-  // Use deployed AWS API Gateway URL for development/testing
+  // Use deployed AWS API Gateway URL for development/testing (us-east-1)
   static const String _defaultLocalUrl =
-      'https://zgbj685nr7.execute-api.us-east-1.amazonaws.com/dev';
+      'https://2q9vzca001.execute-api.us-east-1.amazonaws.com/Prod';
   static const String _defaultAndroidUrl =
-      'https://zgbj685nr7.execute-api.us-east-1.amazonaws.com/dev';
+      'https://2q9vzca001.execute-api.us-east-1.amazonaws.com/Prod';
 
   // Environment configuration
   static const String _awsApiUrl = String.fromEnvironment(
@@ -19,15 +27,15 @@ class AppConfig {
     defaultValue: 'development',
   );
 
-  // AWS Cognito configuration
+  // AWS Cognito configuration (Stage 1 Fix: hardcoded defaults for reliable authentication)
   static const String _cognitoUserPoolId = String.fromEnvironment(
     'COGNITO_USER_POOL_ID',
-    defaultValue: '',
+    defaultValue: 'us-east-1_bDqnKdrqo',
   );
 
   static const String _cognitoUserPoolClientId = String.fromEnvironment(
     'COGNITO_USER_POOL_CLIENT_ID',
-    defaultValue: '',
+    defaultValue: '6n752vrmqmbss6nmlg6be2nn9a',
   );
 
   static const String _cognitoRegion = String.fromEnvironment(
@@ -40,10 +48,24 @@ class AppConfig {
     defaultValue: '',
   );
 
-  // Authentication mode: 'cognito' or 'custom'
+  // Google Maps API Key for Places API
+  static const String googleMapsApiKey = String.fromEnvironment(
+    'GOOGLE_MAPS_API_KEY',
+    defaultValue:
+        'YOUR_GOOGLE_MAPS_API_KEY_HERE', // TODO: Replace with your actual key
+  );
+
+  // Mapbox Access Token
+  static const String mapboxAccessToken = String.fromEnvironment(
+    'MAPBOX_ACCESS_TOKEN',
+    defaultValue:
+        'pk.eyJ1Ijoid2l6emdvIiwiYSI6ImNtYm50cGY0ajFpYW0ybXF0ZnY1ZG1uczMifQ.UPBxYXZeez7n4gAhmjVgSQ',
+  );
+
+  // Authentication mode: 'cognito' only (Stage 1 Fix)
   static const String _authMode = String.fromEnvironment(
     'AUTH_MODE',
-    defaultValue: 'custom',
+    defaultValue: 'cognito',
   );
 
   /// Get the appropriate base URL based on environment and platform
@@ -125,6 +147,13 @@ class AppConfig {
         print('Cognito Client ID: $cognitoUserPoolClientId');
         print('Cognito Region: $cognitoRegion');
         print('Cognito Configured: $isCognitoConfigured');
+      }
+      if (googleMapsApiKey.contains('YOUR_GOOGLE_MAPS_API_KEY')) {
+        print(
+            '⚠️ Google Maps API Key is not set. Please add it to your environment variables or directly in app_config.dart');
+      }
+      if (mapboxAccessToken.isEmpty) {
+        print('⚠️ Mapbox Access Token is not set.');
       }
       print('========================');
     }

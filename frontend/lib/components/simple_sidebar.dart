@@ -218,7 +218,7 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
                             ),
                             _buildMenuItem(
                               icon: Icons.language,
-                              title: AppLocalizations.of(context)!.language,
+                              title: AppLocalizations.of(context)!.languageSettings,
                               onTap: () {
                                 _showLanguageDialog(context);
                               },
@@ -320,7 +320,7 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
               const Icon(Icons.language, size: 24, color: Color(0xFF00C1E8)),
               const SizedBox(width: 8),
               Text(
-                loc.selectLanguage,
+                loc.changeAppLanguage,
                 style: const TextStyle(fontSize: 18),
               ),
             ],
@@ -334,14 +334,14 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
               _buildLanguageTile(
                 context: context,
                 flag: '🇺🇸',
-                name: loc.english,
+                name: 'English',
                 locale: const Locale('en'),
               ),
               const Divider(height: 1),
               _buildLanguageTile(
                 context: context,
                 flag: '🇸🇦',
-                name: loc.arabic,
+                name: 'العربية',
                 locale: const Locale('ar'),
               ),
             ],

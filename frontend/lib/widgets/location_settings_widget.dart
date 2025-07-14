@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
-import '../services/location_service.dart';
+import '../services/location_service_stub.dart';
 import '../widgets/map_location_picker.dart';
 import '../l10n/app_localizations.dart';
 
@@ -60,8 +60,10 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
             });
 
             // Get address from coordinates
-            final address =
-                await LocationService.getAddressFromCoordinates(location);
+            final address = await LocationService.getAddressFromCoordinates(
+              latitude: location['latitude'] ?? 0.0,
+              longitude: location['longitude'] ?? 0.0,
+            );
 
             setState(() {
               _address = address;

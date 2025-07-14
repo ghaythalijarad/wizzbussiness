@@ -1,43 +1,22 @@
 {
-  "name": "order-receiver-serverless-backend",
+  "name": "order-receiver-backend-nodejs",
   "version": "1.0.0",
-  "description": "Serverless backend for order receiver application using AWS Lambda and API Gateway",
+  "description": "Node.js backend for Order Receiver App",
+  "main": "index.js",
   "scripts": {
-    "deploy": "./deploy.sh",
-    "deploy:dev": "./deploy.sh dev",
-    "deploy:staging": "./deploy.sh staging",
-    "deploy:prod": "./deploy.sh prod",
-    "deploy:sam": "./deploy-sam.sh",
-    "deploy:sam:dev": "./deploy-sam.sh dev",
-    "deploy:sam:staging": "./deploy-sam.sh staging",
-    "deploy:sam:prod": "./deploy-sam.sh prod",
-    "test": "python -m pytest tests/test_lambda_functions.py -v",
-    "test:all": "python -m pytest tests/ -v",
-    "local": "serverless offline start",
-    "logs": "serverless logs -f health",
-    "remove": "serverless remove",
-    "validate": "serverless print"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "serverless": "^3.38.0",
-    "serverless-offline": "^13.3.0",
-    "serverless-python-requirements": "^6.1.2"
-  },
-  "keywords": [
-    "serverless",
-    "aws",
-    "lambda",
-    "api-gateway",
-    "dynamodb",
-    "order-receiver"
-  ],
-  "author": "Order Receiver Team",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yourusername/order-receiver-app-2.git"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "babel-loader": "^10.0.0",
+    "serverless-webpack": "^5.15.2",
+    "webpack": "^5.100.1",
+    "webpack-cli": "^6.0.1"
   }
 }

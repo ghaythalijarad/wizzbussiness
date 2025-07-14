@@ -56,22 +56,30 @@ class Order {
     int complexityTime;
 
     switch (businessType.toLowerCase()) {
-      case 'restaurant':
+      case 'kitchen':
+        baseTime = 25;
+        complexityTime = items.length * 4;
+        break;
+      case 'cloudkitchen':
+      case 'cloud kitchen':
         baseTime = 20;
         complexityTime = items.length * 3;
         break;
       case 'store':
-      case 'grocery':
         baseTime = 10;
         complexityTime = items.length * 2;
         break;
       case 'pharmacy':
-      case 'kitchen':
         baseTime = 15;
-        complexityTime = items.length * 4;
+        complexityTime = items.length * 2;
+        break;
+      case 'caffe':
+      case 'cafe':
+        baseTime = 18;
+        complexityTime = items.length * 3;
         break;
       default:
-        baseTime = 15;
+        baseTime = 20;
         complexityTime = items.length * 3;
     }
 

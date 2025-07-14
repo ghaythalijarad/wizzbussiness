@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
 import '../models/business.dart';
+import '../models/pos_settings.dart';
 import '../services/pos_service.dart';
 import '../services/api_service.dart';
+import '../services/app_auth_service.dart';
+import '../screens/login_page.dart';
 
 class PosSettingsPage extends StatefulWidget {
   final Business business;
@@ -24,6 +27,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
   bool _isTesting = false;
   bool _isLoadingSettings = true;
   bool _isLoadingSyncLogs = false;
+  bool _isInitializing = true;
   List<Map<String, dynamic>> _syncLogs = [];
   late TabController _tabController;
   final _formKey = GlobalKey<FormState>();
@@ -38,8 +42,104 @@ class _PosSettingsPageState extends State<PosSettingsPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _loadPosSettings();
-    _loadSyncLogs();
+    _validateAuthenticationAndInitialize();
+  }
+
+  Future<void> _validateAuthenticationAndInitialize() async {
+    try {
+      // Check if business ID is provided
+      if (widget.business.id.isEmpty) {
+        _showAuthenticationRequiredDialog();
+        return;
+      }
+
+      // Check if user is signed in
+      final isSignedIn = await AppAuthService.isSignedIn();
+      if (!isSignedIn) {
+        _showAuthenticationRequiredDialog();
+        return;
+      }
+
+      // Verify current user and access token
+      final currentUser = await AppAuthService.getCurrentUser();
+      final accessToken = await AppAuthService.getAccessToken();
+
+      if (currentUser == null || accessToken == null) {
+        _showAuthenticationRequiredDialog();
+        return;
+      }
+
+      // If all checks pass, proceed with initialization
+      setState(() {
+        _isInitializing = false;
+      });
+
+      // Load POS settings and sync logs after authentication is verified
+      _loadPosSettings();
+      _loadSyncLogs();
+    } catch (e) {
+      print('Authentication validation failed: $e');
+      _showAuthenticationRequiredDialog();
+    }
+  }
+
+  void _showAuthenticationRequiredDialog() {
+    final loc = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        icon: const Icon(
+          Icons.security,
+          color: Color(0xFF00C1E8),
+          size: 48,
+        ),
+        title: Text(
+          loc.userNotLoggedIn,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF001133),
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          'Please sign in to access POS settings',
+          style: TextStyle(
+            color: const Color(0xFF001133).withOpacity(0.7),
+          ),
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => _navigateToLogin(),
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFF00C1E8),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(loc.signIn),
+          ),
+        ],
+        actionsAlignment: MainAxisAlignment.center,
+      ),
+    );
+  }
+
+  void _navigateToLogin() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => LoginPage(
+          onLanguageChanged: (locale) {
+            // Handle language change if needed
+          },
+        ),
+      ),
+      (route) => false,
+    );
   }
 
   @override
@@ -1075,6 +1175,16 @@ class _PosSettingsPageState extends State<PosSettingsPage>
 
   @override
   Widget build(BuildContext context) {
+    if (_isInitializing) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF00C1E8),
+          ),
+        ),
+      );
+    }
+
     final loc = AppLocalizations.of(context)!;
 
     return Scaffold(

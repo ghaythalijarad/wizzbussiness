@@ -415,7 +415,7 @@ class _IOSSidebarState extends State<IOSSidebar> {
                 _buildIOSMenuTile(
                     _IOSMenuItem(
                       icon: Icons.language,
-                      title: localizations.language,
+                      title: localizations.languageSettings,
                       onTap: () => _showLanguageDialog(context),
                     ),
                     context),
@@ -541,7 +541,7 @@ class _IOSSidebarState extends State<IOSSidebar> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  localizations.selectLanguage,
+                  localizations.changeAppLanguage,
                   style: TextStyle(
                     fontSize:
                         ResponsiveHelper.getResponsiveFontSize(context, 18),
@@ -558,14 +558,14 @@ class _IOSSidebarState extends State<IOSSidebar> {
               _buildLanguageTile(
                 context: context,
                 flag: '🇺🇸',
-                name: localizations.english,
+                name: 'English',
                 locale: const Locale('en'),
               ),
               const Divider(height: 1),
               _buildLanguageTile(
                 context: context,
                 flag: '🇸🇦',
-                name: localizations.arabic,
+                name: 'العربية',
                 locale: const Locale('ar'),
               ),
             ],

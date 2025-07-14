@@ -14,4 +14,15 @@ class Offer {
     required this.validFrom,
     required this.validTo,
   });
+
+  factory Offer.fromJson(Map<String, dynamic> json) {
+    return Offer(
+      id: json['id'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      imageUrl: json['imageUrl'] ?? json['image_url'] ?? '',
+      validFrom: DateTime.tryParse(json['validFrom'] ?? json['valid_from'] ?? '') ?? DateTime.now(),
+      validTo: DateTime.tryParse(json['validTo'] ?? json['valid_to'] ?? '') ?? DateTime.now().add(Duration(days: 30)),
+    );
+  }
 }

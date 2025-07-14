@@ -24,7 +24,7 @@ class Business {
   Business({
     required this.id,
     required this.name,
-    required this.email,
+    this.email = '',
     this.ownerName,
     this.phone,
     this.address,
@@ -37,6 +37,77 @@ class Business {
     required this.settings,
     required this.businessType,
   });
+
+  factory Business.fromJson(Map<String, dynamic> json) {
+    // Helper to safely extract address components
+    dynamic addressData = json['address'];
+    String street = '';
+    double? lat, lon;
+
+    if (addressData is Map<String, dynamic>) {
+      street = addressData['street'] ?? '';
+      lat = (addressData['latitude'] as num?)?.toDouble();
+      lon = (addressData['longitude'] as num?)?.toDouble();
+    } else if (addressData is String) {
+      street = addressData;
+    }
+
+    // Debug logging for business ID extraction
+    print('Business.fromJson: Full JSON data: $json');
+    final businessId = json['businessId'] ?? json['id'] ?? json['business_id'];
+    print('Business.fromJson: Extracted business ID: $businessId');
+
+    // Validate business ID
+    if (businessId == null || businessId.toString().isEmpty) {
+      print('Business.fromJson: WARNING - No valid business ID found in JSON');
+      print('Business.fromJson: Available keys: ${json.keys.toList()}');
+      throw Exception(
+          'Invalid business data: Missing business ID. Available keys: ${json.keys.toList()}');
+    }
+
+    return Business(
+      id: businessId.toString(),
+      name: json['businessName'] ??
+          json['name'] ??
+          json['business_name'] ??
+          'Unknown Business',
+      email: json['email'] ?? '',
+      ownerName: json['ownerName'] ?? json['owner_name'],
+      phone: json['phone_number'] ?? json['phone'],
+      address: street,
+      latitude: lat,
+      longitude: lon,
+      description: json['description'],
+      website: json['website'],
+      offers: (json['offers'] as List<dynamic>?)
+              ?.map((offerJson) => Offer.fromJson(offerJson))
+              .toList() ??
+          [],
+      businessHours: Map<String, String>.from(json['businessHours'] ?? {}),
+      settings: Map<String, dynamic>.from(json['settings'] ?? {}),
+      businessType: _getBusinessTypeFromString(
+          json['businessType'] ?? json['business_type']),
+    );
+  }
+
+  static BusinessType _getBusinessTypeFromString(String? businessTypeString) {
+    switch (businessTypeString?.toLowerCase().replaceAll(' ', '')) {
+      case 'restaurant':
+      case 'kitchen':
+        return BusinessType.kitchen;
+      case 'cloudkitchen':
+        return BusinessType.cloudkitchen;
+      case 'store':
+        return BusinessType.store;
+      case 'pharmacy':
+        return BusinessType.pharmacy;
+      case 'caffe':
+      case 'cafe':
+        return BusinessType.caffe;
+      default:
+        return BusinessType.kitchen; // Default fallback
+    }
+  }
 
   void updateProfile({
     String? name,

@@ -39,16 +39,16 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
 
     try {
       // Test connection
-      final connectionTest = await _platformService.testConnection();
-      setState(() => _connectionStatus = connectionTest);
+      final connectionTest = await _platformService.testConnection('default');
+      setState(() => _connectionStatus = {'connected': connectionTest});
 
       // Get sync status
-      final syncStatus = await _platformService.getPlatformSyncStatus();
+      final syncStatus = _platformService.getPlatformSyncStatus();
       setState(() => _syncStatus = syncStatus);
 
       // Get platform apps
-      final appsResult = await _platformService.getPlatformApps();
-      setState(() => _platformApps = appsResult['apps'] ?? []);
+      final appsResult = _platformService.getPlatformApps();
+      setState(() => _platformApps = appsResult);
     } catch (e) {
       final loc = AppLocalizations.of(context)!;
       _showError('${loc.failedToLoadPlatformStatus}: $e');
@@ -66,8 +66,7 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
         "app_config": {"name": "delivery-platform-central", "region": "us"}
       };
 
-      final result =
-          await _platformService.setupCentralizedPlatform(setupConfig);
+      final result = await _platformService.setupCentralizedPlatform();
 
       if (result['success'] == true) {
         _showSuccess(loc.platformSetupCompletedSuccessfully);
@@ -88,7 +87,11 @@ class _CentralizedPlatformPageState extends State<CentralizedPlatformPage> {
 
     try {
       final result = await _platformService.syncAllBusinessesToPlatform();
-      _showSuccess(result['message'] ?? loc.allBusinessesSyncedSuccessfully);
+      if (result['success'] == true) {
+        _showSuccess(result['message'] ?? loc.allBusinessesSyncedSuccessfully);
+      } else {
+        _showError(result['message'] ?? loc.failedToSyncAllBusinessesToPlatform);
+      }
       await _loadPlatformStatus();
     } catch (e) {
       _showError('${loc.errorSyncingBusinesses}: $e');

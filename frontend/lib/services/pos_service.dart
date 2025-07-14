@@ -1,315 +1,213 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../models/pos_settings.dart';
 
-enum PosSystemType {
-  square,
-  toast,
-  clover,
-  shopifyPos,
-  genericApi,
-}
-
-class PosSettings {
-  bool enabled;
-  bool autoSendOrders;
-  PosSystemType systemType;
-  String apiEndpoint;
-  String apiKey;
-  String? accessToken;
-  String? locationId;
-  int? timeoutSeconds;
-  int? retryAttempts;
-  bool? testMode;
-
-  PosSettings({
-    this.enabled = false,
-    this.autoSendOrders = false,
-    this.systemType = PosSystemType.genericApi,
-    this.apiEndpoint = '',
-    this.apiKey = '',
-    this.accessToken,
-    this.locationId,
-    this.timeoutSeconds = 30,
-    this.retryAttempts = 3,
-    this.testMode = false,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'enabled': enabled,
-      'autoSendOrders': autoSendOrders,
-      'systemType': systemType.toString().split('.').last,
-      'apiEndpoint': apiEndpoint,
-      'apiKey': apiKey,
-      'accessToken': accessToken,
-      'locationId': locationId,
-      'timeoutSeconds': timeoutSeconds,
-      'retryAttempts': retryAttempts,
-      'testMode': testMode,
-    };
-  }
-
-  factory PosSettings.fromJson(Map<String, dynamic> json) {
-    return PosSettings(
-      enabled: json['enabled'] ?? false,
-      autoSendOrders: json['autoSendOrders'] ?? false,
-      systemType: PosSystemType.values.firstWhere(
-        (e) => e.toString().split('.').last == json['systemType'],
-        orElse: () => PosSystemType.genericApi,
-      ),
-      apiEndpoint: json['apiEndpoint'] ?? '',
-      apiKey: json['apiKey'] ?? '',
-      accessToken: json['accessToken'],
-      locationId: json['locationId'],
-      timeoutSeconds: json['timeoutSeconds'] ?? 30,
-      retryAttempts: json['retryAttempts'] ?? 3,
-      testMode: json['testMode'] ?? false,
-    );
-  }
-}
-
+/// Service for managing Point of Sale (POS) settings and configurations
 class PosService {
+  static const String _posSettingsKey = 'pos_settings';
+  static const String _receiptSettingsKey = 'receipt_settings';
+  static const String _printerSettingsKey = 'printer_settings';
+
+  /// Default POS settings
+  static const Map<String, dynamic> _defaultPosSettings = {
+    'autoAcceptOrders': true,
+    'orderNotificationSound': true,
+    'displayOrderTimer': true,
+    'maxProcessingTimeMinutes': 30,
+    'currency': 'USD',
+    'taxRate': 0.0,
+    'serviceChargeRate': 0.0,
+  };
+
+  /// Default receipt settings
+  static const Map<String, dynamic> _defaultReceiptSettings = {
+    'businessName': '',
+    'businessAddress': '',
+    'businessPhone': '',
+    'showLogo': false,
+    'showQrCode': true,
+    'footerMessage': 'Thank you for your business!',
+    'paperSize': 'A4',
+  };
+
+  /// Default printer settings
+  static const Map<String, dynamic> _defaultPrinterSettings = {
+    'printerEnabled': false,
+    'printerName': '',
+    'printerIp': '',
+    'autoPrintReceipts': false,
+    'printKitchenOrders': true,
+  };
+
+  /// Get POS settings
+  static Future<Map<String, dynamic>> getPosSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final settingsJson = prefs.getString(_posSettingsKey);
+    
+    if (settingsJson != null) {
+      return {..._defaultPosSettings, ...jsonDecode(settingsJson)};
+    }
+    
+    return Map<String, dynamic>.from(_defaultPosSettings);
+  }
+
+  /// Save POS settings
+  static Future<bool> savePosSettings(Map<String, dynamic> settings) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final settingsJson = jsonEncode(settings);
+      return await prefs.setString(_posSettingsKey, settingsJson);
+    } catch (e) {
+      print('Error saving POS settings: $e');
+      return false;
+    }
+  }
+
+  /// Get receipt settings
+  static Future<Map<String, dynamic>> getReceiptSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final settingsJson = prefs.getString(_receiptSettingsKey);
+    
+    if (settingsJson != null) {
+      return {..._defaultReceiptSettings, ...jsonDecode(settingsJson)};
+    }
+    
+    return Map<String, dynamic>.from(_defaultReceiptSettings);
+  }
+
+  /// Save receipt settings
+  static Future<bool> saveReceiptSettings(Map<String, dynamic> settings) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final settingsJson = jsonEncode(settings);
+      return await prefs.setString(_receiptSettingsKey, settingsJson);
+    } catch (e) {
+      print('Error saving receipt settings: $e');
+      return false;
+    }
+  }
+
+  /// Get printer settings
+  static Future<Map<String, dynamic>> getPrinterSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final settingsJson = prefs.getString(_printerSettingsKey);
+    
+    if (settingsJson != null) {
+      return {..._defaultPrinterSettings, ...jsonDecode(settingsJson)};
+    }
+    
+    return Map<String, dynamic>.from(_defaultPrinterSettings);
+  }
+
+  /// Save printer settings
+  static Future<bool> savePrinterSettings(Map<String, dynamic> settings) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final settingsJson = jsonEncode(settings);
+      return await prefs.setString(_printerSettingsKey, settingsJson);
+    } catch (e) {
+      print('Error saving printer settings: $e');
+      return false;
+    }
+  }
+
+  /// Test printer connection
+  static Future<bool> testPrinterConnection(String printerIp) async {
+    // TODO: Implement actual printer connection test
+    // For now, simulate a test
+    await Future.delayed(const Duration(seconds: 2));
+    return printerIp.isNotEmpty;
+  }
+
+  /// Reset all POS settings to defaults
+  static Future<bool> resetToDefaults() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_posSettingsKey);
+      await prefs.remove(_receiptSettingsKey);
+      await prefs.remove(_printerSettingsKey);
+      return true;
+    } catch (e) {
+      print('Error resetting POS settings: $e');
+      return false;
+    }
+  }
+
+  /// Get specific setting value
+  static Future<T?> getSetting<T>(String category, String key) async {
+    Map<String, dynamic> settings;
+    
+    switch (category) {
+      case 'pos':
+        settings = await getPosSettings();
+        break;
+      case 'receipt':
+        settings = await getReceiptSettings();
+        break;
+      case 'printer':
+        settings = await getPrinterSettings();
+        break;
+      default:
+        return null;
+    }
+    
+    return settings[key] as T?;
+  }
+
+  /// Update specific setting value
+  static Future<bool> updateSetting(String category, String key, dynamic value) async {
+    Map<String, dynamic> settings;
+    
+    switch (category) {
+      case 'pos':
+        settings = await getPosSettings();
+        settings[key] = value;
+        return await savePosSettings(settings);
+      case 'receipt':
+        settings = await getReceiptSettings();
+        settings[key] = value;
+        return await saveReceiptSettings(settings);
+      case 'printer':
+        settings = await getPrinterSettings();
+        settings[key] = value;
+        return await savePrinterSettings(settings);
+      default:
+        return false;
+    }
+  }
+
+  /// Get display name for POS system type
   static String getSystemTypeName(PosSystemType type) {
     switch (type) {
+      case PosSystemType.genericApi:
+        return 'Generic API';
       case PosSystemType.square:
         return 'Square';
       case PosSystemType.toast:
-        return 'Toast POS';
+        return 'Toast';
       case PosSystemType.clover:
         return 'Clover';
-      case PosSystemType.shopifyPos:
-        return 'Shopify POS';
-      case PosSystemType.genericApi:
-        return 'Generic API';
+      case PosSystemType.shopify:
+        return 'Shopify';
+      case PosSystemType.woocommerce:
+        return 'WooCommerce';
     }
   }
 
+  /// Validate API endpoint URL
   static bool isValidApiEndpoint(String endpoint) {
     if (endpoint.isEmpty) return false;
-
+    
     try {
       final uri = Uri.parse(endpoint);
-      if (!uri.isAbsolute) {
-        return false;
-      }
-      return uri.scheme == 'http' || uri.scheme == 'https';
+      return uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https');
     } catch (e) {
       return false;
     }
   }
 
-  // Send order to POS system
-  static Future<bool> sendOrderToPos(
-    Map<String, dynamic> orderData,
-    PosSettings settings,
-  ) async {
-    if (!settings.enabled) return false;
-
-    try {
-      final uri = Uri.parse(settings.apiEndpoint);
-      if (!uri.isAbsolute) {
-        return false;
-      }
-
-      final headers = _buildHeaders(settings);
-      final formattedData = _formatOrderForPos(orderData, settings);
-
-      final response = await http.post(
-        uri,
-        headers: headers,
-        body: jsonEncode(formattedData),
-      );
-
-      return response.statusCode >= 200 && response.statusCode < 300;
-    } catch (e) {
-      print('Error sending order to POS: $e');
-      return false;
-    }
-  }
-
-  // Build authentication headers for each POS system
-  static Map<String, String> _buildHeaders(PosSettings settings) {
-    final headers = <String, String>{
-      'Content-Type': 'application/json',
-    };
-
-    switch (settings.systemType) {
-      case PosSystemType.square:
-        headers['Authorization'] = 'Bearer ${settings.accessToken}';
-        headers['Square-Version'] = '2023-10-18';
-        break;
-      case PosSystemType.toast:
-        headers['Authorization'] = 'Bearer ${settings.accessToken}';
-        headers['Toast-Restaurant-External-ID'] = settings.locationId ?? '';
-        break;
-      case PosSystemType.clover:
-        headers['Authorization'] = 'Bearer ${settings.accessToken}';
-        break;
-      case PosSystemType.shopifyPos:
-        headers['X-Shopify-Access-Token'] = settings.accessToken ?? '';
-        break;
-      case PosSystemType.genericApi:
-        headers['Authorization'] = 'Bearer ${settings.apiKey}';
-        headers['X-API-Key'] = settings.apiKey;
-        break;
-    }
-
-    return headers;
-  }
-
-  // Format order data according to POS system requirements
-  static Map<String, dynamic> _formatOrderForPos(
-    Map<String, dynamic> orderData,
-    PosSettings settings,
-  ) {
-    switch (settings.systemType) {
-      case PosSystemType.square:
-        return _formatForSquare(orderData, settings);
-      case PosSystemType.toast:
-        return _formatForToast(orderData, settings);
-      case PosSystemType.clover:
-        return _formatForClover(orderData, settings);
-      case PosSystemType.shopifyPos:
-        return _formatForShopify(orderData, settings);
-      case PosSystemType.genericApi:
-      default:
-        return _formatForGenericApi(orderData, settings);
-    }
-  }
-
-  // Square POS format
-  static Map<String, dynamic> _formatForSquare(
-    Map<String, dynamic> orderData,
-    PosSettings settings,
-  ) {
-    return {
-      'location_id': settings.locationId,
-      'order': {
-        'state': 'OPEN',
-        'line_items': orderData['items']
-            ?.map((item) => {
-                  'name': item['name'],
-                  'quantity': item['quantity'].toString(),
-                  'base_price_money': {
-                    'amount': (item['price'] * 100).round(), // Convert to cents
-                    'currency': 'IQD',
-                  },
-                })
-            ?.toList(),
-        'fulfillments': [
-          {
-            'type': 'PICKUP',
-            'state': 'PROPOSED',
-            'pickup_details': {
-              'recipient': {
-                'display_name': orderData['customerName'],
-              },
-              'pickup_at': DateTime.now()
-                  .add(const Duration(minutes: 30))
-                  .toIso8601String(),
-            },
-          }
-        ],
-      },
-    };
-  }
-
-  // Toast POS format
-  static Map<String, dynamic> _formatForToast(
-    Map<String, dynamic> orderData,
-    PosSettings settings,
-  ) {
-    return {
-      'restaurantExternalId': settings.locationId,
-      'order': {
-        'externalId': orderData['id'],
-        'orderNumber': orderData['id'],
-        'customer': {
-          'firstName': orderData['customerName']?.split(' ').first ?? '',
-          'lastName':
-              orderData['customerName']?.split(' ').skip(1).join(' ') ?? '',
-          'phone': orderData['customerPhone'],
-        },
-        'selections': orderData['items']
-            ?.map((item) => {
-                  'item': {
-                    'name': item['name'],
-                  },
-                  'quantity': item['quantity'],
-                  'unitPrice': item['price'],
-                })
-            ?.toList(),
-      },
-    };
-  }
-
-  // Clover POS format
-  static Map<String, dynamic> _formatForClover(
-    Map<String, dynamic> orderData,
-    PosSettings settings,
-  ) {
-    return {
-      'note': 'Order from mobile app',
-      'lineItems': orderData['items']
-          ?.map((item) => {
-                'name': item['name'],
-                'unitQty': item['quantity'],
-                'price': (item['price'] * 100).round(), // Convert to cents
-              })
-          ?.toList(),
-    };
-  }
-
-  // Shopify POS format
-  static Map<String, dynamic> _formatForShopify(
-    Map<String, dynamic> orderData,
-    PosSettings settings,
-  ) {
-    return {
-      'order': {
-        'line_items': orderData['items']
-            ?.map((item) => {
-                  'title': item['name'],
-                  'quantity': item['quantity'],
-                  'price': item['price'].toString(),
-                })
-            ?.toList(),
-        'customer': {
-          'first_name': orderData['customerName']?.split(' ').first ?? '',
-          'last_name':
-              orderData['customerName']?.split(' ').skip(1).join(' ') ?? '',
-          'phone': orderData['customerPhone'],
-        },
-        'financial_status': 'pending',
-        'fulfillment_status': null,
-      },
-    };
-  }
-
-  // Generic API format
-  static Map<String, dynamic> _formatForGenericApi(
-    Map<String, dynamic> orderData,
-    PosSettings settings,
-  ) {
-    // Keep the original format for generic APIs
-    return orderData;
-  }
-
-  // Test connection to POS system
-  static Future<bool> testConnection(PosSettings settings) async {
-    if (settings.apiEndpoint.isEmpty || settings.apiKey.isEmpty) {
-      return false;
-    }
-
-    try {
-      final uri = Uri.parse('${settings.apiEndpoint}/health');
-      final headers = _buildHeaders(settings);
-
-      final response = await http.get(uri, headers: headers);
-      return response.statusCode >= 200 && response.statusCode < 300;
-    } catch (e) {
-      print('Connection test failed: $e');
-      return false;
-    }
+  /// Validate API key format
+  static bool isValidApiKey(String apiKey) {
+    return apiKey.isNotEmpty && apiKey.length >= 8;
   }
 }

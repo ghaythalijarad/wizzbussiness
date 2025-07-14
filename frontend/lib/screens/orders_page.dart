@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/order.dart';
 import '../services/order_timer_service.dart';
-// import '../services/order_simulation_service.dart';
+import '../services/app_auth_service.dart';
+import '../screens/login_page.dart';
 import '../widgets/order_card.dart';
 import '../utils/responsive_helper.dart';
 
@@ -26,7 +27,106 @@ class OrdersPage extends StatefulWidget {
 
 class _OrdersPageState extends State<OrdersPage> {
   String _selectedFilter = 'pending';
-  // final OrderSimulationService _simulationService = OrderSimulationService();
+  bool _isInitializing = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _validateAuthenticationAndInitialize();
+  }
+
+  Future<void> _validateAuthenticationAndInitialize() async {
+    try {
+      // Check if business ID is provided
+      if (widget.businessId == null || widget.businessId!.isEmpty) {
+        _showAuthenticationRequiredDialog();
+        return;
+      }
+
+      // Check if user is signed in
+      final isSignedIn = await AppAuthService.isSignedIn();
+      if (!isSignedIn) {
+        _showAuthenticationRequiredDialog();
+        return;
+      }
+
+      // Verify current user and access token
+      final currentUser = await AppAuthService.getCurrentUser();
+      final accessToken = await AppAuthService.getAccessToken();
+
+      if (currentUser == null || accessToken == null) {
+        _showAuthenticationRequiredDialog();
+        return;
+      }
+
+      // If all checks pass, proceed with initialization
+      setState(() {
+        _isInitializing = false;
+      });
+    } catch (e) {
+      print('Authentication validation failed: $e');
+      _showAuthenticationRequiredDialog();
+    }
+  }
+
+  void _showAuthenticationRequiredDialog() {
+    final loc = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        icon: const Icon(
+          Icons.security,
+          color: Color(0xFF00C1E8),
+          size: 48,
+        ),
+        title: Text(
+          loc.userNotLoggedIn,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF001133),
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          'Please sign in to view orders',
+          style: TextStyle(
+            color: const Color(0xFF001133).withOpacity(0.7),
+          ),
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => _navigateToLogin(),
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFF00C1E8),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(loc.signIn),
+          ),
+        ],
+        actionsAlignment: MainAxisAlignment.center,
+      ),
+    );
+  }
+
+  void _navigateToLogin() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => LoginPage(
+          onLanguageChanged: (locale) {
+            // Handle language change if needed
+          },
+        ),
+      ),
+      (route) => false,
+    );
+  }
 
   OrderStatus? _getStatusFromString(String value) {
     switch (value) {
@@ -49,6 +149,16 @@ class _OrdersPageState extends State<OrdersPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isInitializing) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF00C1E8),
+          ),
+        ),
+      );
+    }
+
     final loc = AppLocalizations.of(context)!;
     List<Order> filteredOrders = widget.orders;
     final filterStatus = _getStatusFromString(_selectedFilter);
@@ -103,37 +213,6 @@ class _OrdersPageState extends State<OrdersPage> {
                     _buildFilterChip(loc.cancelled, 'cancelled'),
                     const SizedBox(width: 6),
                     _buildFilterChip(loc.orderReturned, 'returned'),
-                    // Simulation functionality temporarily disabled
-                    // if (widget.businessId != null) ...[
-                    //   const SizedBox(width: 16),
-                    //   ElevatedButton(
-                    //     onPressed: () async {
-                    //       if (_isSimulating) {
-                    //         setState(() {
-                    //           _isSimulating = false;
-                    //         });
-                    //       } else {
-                    //         await _simulationService.createSimulatedOrder(widget.businessId!);
-                    //         setState(() {
-                    //           _isSimulating = true;
-                    //         });
-                    //       }
-                    //     },
-                    //     child: Text(_isSimulating
-                    //         ? loc.stopSimulation
-                    //         : loc.startSimulation),
-                    //   ),
-                    //   const SizedBox(width: 16),
-                    //   ElevatedButton(
-                    //     onPressed: () {
-                    //       if (widget.businessId != null) {
-                    //         _simulationService
-                    //             .createSimulatedOrder(widget.businessId!);
-                    //       }
-                    //     },
-                    //     child: Text(loc.simulateNewOrder),
-                    //   ),
-                    // ],
                   ],
                 ),
               ),
@@ -154,8 +233,7 @@ class _OrdersPageState extends State<OrdersPage> {
           ),
         ],
       ),
-      floatingActionButton:
-          null, // widget.businessId != null ? _buildSimulationFAB(loc) : null,
+      floatingActionButton: null,
     );
   }
 
@@ -238,110 +316,4 @@ class _OrdersPageState extends State<OrdersPage> {
       },
     );
   }
-
-  // Simulation functionality temporarily disabled
-  /*
-  Future<void> _simulateSingleOrder() async {
-    if (widget.businessId == null) return;
-    
-    setState(() => _isSimulating = true);
-    
-    try {
-      await _simulationService.createSimulatedOrder(widget.businessId!);
-      
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Test order created successfully!'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
-        
-        // Refresh orders if callback provided
-        widget.onOrdersRefresh?.call();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error, color: Colors.white),
-                const SizedBox(width: 8),
-                Expanded(child: Text('Failed to create order: $e')),
-              ],
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isSimulating = false);
-      }
-    }
-  }
-
-  Future<void> _simulateMultipleOrders() async {
-    if (widget.businessId == null) return;
-    
-    setState(() => _isSimulating = true);
-    
-    try {
-      // Create 3 simulated orders
-      for (int i = 0; i < 3; i++) {
-        await _simulationService.createSimulatedOrder(widget.businessId!);
-      }
-      
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 8),
-                Text('3 test orders created successfully!'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-        
-        // Refresh orders if callback provided
-        widget.onOrdersRefresh?.call();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error, color: Colors.white),
-                const SizedBox(width: 8),
-                Expanded(child: Text('${AppLocalizations.of(context)!.failedToCreateOrders}: $e')),
-              ],
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isSimulating = false);
-      }
-    }
-  }
-  */
 }

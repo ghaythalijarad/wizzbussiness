@@ -4,60 +4,7 @@ import '../models/order.dart';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
 import 'dart:math' as math;
-
-class AnalyticsData {
-  final double totalRevenue;
-  final double dailyRevenue;
-  final double weeklyRevenue;
-  final double monthlyRevenue;
-  final int totalOrders;
-  final double averageOrderValue;
-  final List<TopSellingItem> topSellingItems;
-  final Map<OrderStatus, int> ordersByStatus;
-  final List<DailyRevenue> revenueChart;
-  final double growthRate;
-  final int customersServed;
-  final double cancellationRate;
-  final double averagePreparationTime;
-
-  AnalyticsData({
-    required this.totalRevenue,
-    required this.dailyRevenue,
-    required this.weeklyRevenue,
-    required this.monthlyRevenue,
-    required this.totalOrders,
-    required this.averageOrderValue,
-    required this.topSellingItems,
-    required this.ordersByStatus,
-    required this.revenueChart,
-    required this.growthRate,
-    required this.customersServed,
-    required this.cancellationRate,
-    required this.averagePreparationTime,
-  });
-}
-
-class TopSellingItem {
-  final String itemName;
-  final int soldQuantity;
-  final double revenue;
-
-  TopSellingItem({
-    required this.itemName,
-    required this.soldQuantity,
-    required this.revenue,
-  });
-}
-
-class DailyRevenue {
-  final DateTime date;
-  final double revenue;
-
-  DailyRevenue({
-    required this.date,
-    required this.revenue,
-  });
-}
+import '../models/enhanced_analytics_data.dart';
 
 class AnalyticsPage extends StatefulWidget {
   final Business business;

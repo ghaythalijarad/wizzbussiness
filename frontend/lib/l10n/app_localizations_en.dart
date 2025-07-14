@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get login => 'Login';
 
   @override
+  String get signIn => 'Sign In';
+
+  @override
   String get email => 'Email';
 
   @override
@@ -48,6 +51,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleaseEnterYourPassword => 'Please enter your password';
 
   @override
+  String get emailRequired => 'Email is required';
+
+  @override
   String get errorOccurred => 'An error occurred';
 
   @override
@@ -58,6 +64,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginFailed => 'Login failed';
+
+  @override
+  String get loginFailedMessage => 'Login failed';
+
+  @override
+  String get errorInvalidCredentials =>
+      'Invalid email or password. Please check your credentials and try again.';
+
+  @override
+  String get sessionConflictTitle => 'Already Signed In';
+
+  @override
+  String get sessionConflictMessage =>
+      'You are already signed in. Please choose an option below.';
+
+  @override
+  String get continueCurrentSession => 'Continue with current session';
+
+  @override
+  String get signOutAndRetry => 'Sign out and try again';
+
+  @override
+  String get userAlreadySignedIn => 'User is already signed in';
+
+  @override
+  String get forceSignInOption => 'Force sign in';
+
+  @override
+  String get sessionExpiredTitle => 'Session Expired';
+
+  @override
+  String get authenticationFailedTitle => 'Authentication Failed';
+
+  @override
+  String get systemErrorTitle => 'System Error';
+
+  @override
+  String get tooManyAttemptsTitle => 'Too Many Attempts';
+
+  @override
+  String get userNotFoundTitle => 'User Not Found';
+
+  @override
+  String get emailVerificationTitle => 'Email Verification Required';
 
   @override
   String get demoStore => 'Demo Store';
@@ -788,257 +838,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailAddress => 'Email Address';
 
   @override
-  String get country => 'Country';
+  String get firstName => 'First Name';
 
   @override
-  String get pleaseEnterCountry => 'Please enter country';
+  String get lastName => 'Last Name';
+
+  @override
+  String get firstNameRequired => 'First name is required';
+
+  @override
+  String get lastNameRequired => 'Last name is required';
+
+  @override
+  String get invalidEmailFormat => 'Please enter a valid email address';
+
+  @override
+  String get phoneNumberRequired => 'Phone number is required';
+
+  @override
+  String get businessNameRequired => 'Business name is required';
+
+  @override
+  String get businessAddress => 'Business Address';
+
+  @override
+  String get streetAddress => 'Street Address';
 
   @override
   String get city => 'City';
 
   @override
-  String get pleaseEnterCity => 'Please enter city';
+  String get state => 'State/Province';
 
   @override
-  String get district => 'District';
-
-  @override
-  String get pleaseEnterDistrict => 'Please enter district';
-
-  @override
-  String get zipCode => 'Zip Code';
-
-  @override
-  String get pleaseEnterZipCode => 'Please enter zip code';
-
-  @override
-  String get neighbourhood => 'Neighbourhood';
-
-  @override
-  String get pleaseEnterNeighbourhood => 'Please enter neighbourhood';
-
-  @override
-  String get street => 'Street';
-
-  @override
-  String get pleaseEnterStreet => 'Please enter street';
-
-  @override
-  String get buildingNumber => 'Building Number';
-
-  @override
-  String get nationalId => 'National ID';
-
-  @override
-  String get pleaseEnterNationalId => 'Please enter national ID';
-
-  @override
-  String get dateOfBirth => 'Date of Birth';
-
-  @override
-  String get pleaseEnterDateOfBirth => 'Please enter date of birth';
-
-  @override
-  String get ownerNationalId => 'Owner National ID';
-
-  @override
-  String get ownerNationalIdSubtitle =>
-      'Upload a clear photo of the national ID';
-
-  @override
-  String get ownerPhoto => 'Owner Photo';
-
-  @override
-  String get ownerPhotoSubtitle => 'Upload a clear photo of the owner';
-
-  @override
-  String get requiredDocuments => 'Required Documents';
-
-  @override
-  String get commercialLicense => 'Commercial License';
-
-  @override
-  String get commercialLicenseSubtitle =>
-      'Upload your business commercial license';
-
-  @override
-  String get healthCertificate => 'Health Certificate';
-
-  @override
-  String get healthCertificateSubtitle =>
-      'Required for food-related businesses';
-
-  @override
-  String get submitRegistration => 'Submit Registration';
-
-  @override
-  String get passwordMismatch => 'Passwords do not match';
-
-  @override
-  String get emailSent => 'Email Sent';
-
-  @override
-  String get passwordResetLinkSent =>
-      'A password reset link has been sent to your email';
-
-  @override
-  String get ok => 'OK';
-
-  @override
-  String get enterOtp => 'Enter OTP';
-
-  @override
-  String get pleaseEnterOtp => 'Please enter OTP';
-
-  @override
-  String get resetYourPassword => 'Reset Your Password';
-
-  @override
-  String get emailOrPhone => 'Email or Phone';
-
-  @override
-  String get pleaseEnterEmailAddress => 'Please enter your email address';
-
-  @override
-  String get newPassword => 'New Password';
-
-  @override
-  String get pleaseEnterPassword => 'Please enter password';
-
-  @override
-  String get confirmNewPassword => 'Confirm New Password';
-
-  @override
-  String get pleaseConfirmPassword => 'Please confirm password';
-
-  @override
-  String get resetPassword => 'Reset Password';
-
-  @override
-  String get sendOtp => 'Send OTP';
-
-  @override
-  String get backToLogin => 'Back to Login';
-
-  @override
-  String get language => 'Language';
-
-  @override
-  String get arabic => 'العربية';
-
-  @override
-  String get english => 'English';
-
-  @override
-  String get selectLanguage => 'Select Language';
-
-  @override
-  String newOrderReceived(String customerName) {
-    return 'New order received from $customerName';
-  }
-
-  @override
-  String get passwordResetSuccessful => 'Password Reset Successful';
-
-  @override
-  String get passwordResetSuccessMessage =>
-      'Your password has been reset successfully.';
-
-  @override
-  String get goToLogin => 'Go to Login';
-
-  @override
-  String get passwordLengthRequirement =>
-      'Password must be at least 8 characters.';
-
-  @override
-  String get passwordComplexityRequirement =>
-      'Password must include uppercase, lowercase, and numbers.';
-
-  @override
-  String get passwordsDoNotMatch => 'Passwords do not match.';
-
-  @override
-  String get setNewPassword => 'Set New Password';
-
-  @override
-  String get enterNewPasswordBelow => 'Enter your new password below.';
-
-  @override
-  String get passwordRequirements => 'Password Requirements';
-
-  @override
-  String get passwordRequirementsDetails =>
-      'Must be at least 8 characters, include uppercase, lowercase, and a number.';
-
-  @override
-  String get pleaseEnterValidEmail => 'Please enter a valid email address';
+  String get zipCode => 'ZIP/Postal Code';
 
   @override
   String get confirmPassword => 'Confirm Password';
 
   @override
-  String get autoFillAddress => 'Auto-fill Address';
+  String get passwordRequired => 'Password is required';
 
   @override
-  String get validityPeriod => 'Validity Period';
+  String get weakPassword => 'Password is too weak';
 
   @override
-  String get unknownStatus => 'Unknown Status';
+  String get confirmPasswordRequired => 'Please confirm your password';
 
   @override
-  String get discountCombinationWarning =>
-      'This discount type cannot be combined with existing active discounts';
+  String get passwordsDoNotMatch => 'Passwords do not match';
 
   @override
-  String get freeDeliveryCombinable =>
-      'Free Delivery can be combined with other discounts';
+  String get registrationSuccess => 'Registration successful';
 
   @override
-  String get discountCreatedSuccessfully => 'Discount created successfully';
+  String get emailAlreadyInUse => 'Email address is already in use';
 
   @override
-  String get discountUpdatedSuccessfully => 'Discount updated successfully';
-
-  @override
-  String get combinableDiscount => 'Combinable';
-
-  @override
-  String get discountApplicability => 'Discount Applicability';
-
-  @override
-  String get allItems => 'All Items';
-
-  @override
-  String get specificItems => 'Specific Items';
-
-  @override
-  String get specificCategories => 'Specific Categories';
-
-  @override
-  String get selectItems => 'Select Items';
-
-  @override
-  String get selectCategories => 'Select Categories';
-
-  @override
-  String get noItemsSelected => 'No items selected';
-
-  @override
-  String get noCategoriesSelected => 'No categories selected';
-
-  @override
-  String get categories => 'Categories';
-
-  @override
-  String get conflictingDiscounts =>
-      'Some selected items or categories already have active discounts. Each item can only have one discount at a time.';
-
-  @override
-  String get wizzBusiness => 'Wizz Business';
-
-  @override
-  String get businessManagement => 'Business Management';
+  String get passwordResetLinkSent => 'Password reset link sent to your email';
 
   @override
   String get welcomeToOrderReceiver => 'Welcome to Order Receiver';
@@ -1200,6 +1057,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String pleasSelectBothBuyAndGetItems(String discountType) {
     return 'Please select both buy and get items for $discountType discount.';
   }
+
+  @override
+  String get ok => 'OK';
 
   @override
   String get addFreeDeliveryToDiscount => 'Add free delivery to this discount';
@@ -1532,9 +1392,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noBusinessFoundForThisUser => 'No business found for this user';
-
-  @override
-  String get loginFailedMessage => 'Login failed';
 
   @override
   String get notAvailable => 'N/A';
@@ -1939,4 +1796,405 @@ class AppLocalizationsEn extends AppLocalizations {
   String categoryAndPrice(String category, String currency, String price) {
     return '$category • $currency $price';
   }
+
+  @override
+  String availableUntil(String date) {
+    return 'Available until $date';
+  }
+
+  @override
+  String get joinOrderReceiver => 'Join Order Receiver';
+
+  @override
+  String get signUpSubtitle => 'Start managing your business with ease';
+
+  @override
+  String get personalInformation => 'Personal Information';
+
+  @override
+  String get accountSecurity => 'Account Security';
+
+  @override
+  String get iAgreeToThe => 'I agree to the ';
+
+  @override
+  String get termsOfService => 'Terms of Service';
+
+  @override
+  String get and => 'and';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account? ';
+
+  @override
+  String get backTo => 'Back to ';
+
+  @override
+  String get verificationCode => 'Verification Code';
+
+  @override
+  String get verifyYourEmail => 'Verify Your Email';
+
+  @override
+  String verificationCodeSentTo(String email) {
+    return 'A verification code has been sent to $email';
+  }
+
+  @override
+  String get pleaseEnterVerificationCode =>
+      'Please enter the verification code';
+
+  @override
+  String get verificationFailed => 'Verification failed. Please try again.';
+
+  @override
+  String get failedToResendCode => 'Failed to resend verification code';
+
+  @override
+  String get verificationCodeRequired => 'Verification code is required';
+
+  @override
+  String get invalidVerificationCode => 'Invalid verification code';
+
+  @override
+  String get verificationCodeExpired => 'Verification code has expired';
+
+  @override
+  String get resendVerificationCode => 'Resend Verification Code';
+
+  @override
+  String get verificationSuccess => 'Verification successful';
+
+  @override
+  String get verificationFailure => 'Verification failed';
+
+  @override
+  String get emailNotVerified => 'Email not verified';
+
+  @override
+  String get emailVerificationPending => 'Email verification pending';
+
+  @override
+  String get emailVerificationCompleted => 'Email verification completed';
+
+  @override
+  String get emailVerificationFailed => 'Email verification failed';
+
+  @override
+  String get emailVerificationResendSuccess =>
+      'Verification code resent successfully';
+
+  @override
+  String get emailVerificationResendFailure =>
+      'Failed to resend verification code';
+
+  @override
+  String get emailVerificationInstructions =>
+      'Please check your email for the verification code to complete your registration.';
+
+  @override
+  String get emailVerificationCodeSent =>
+      'A verification code has been sent to your email. Please enter the code to verify your email address.';
+
+  @override
+  String get emailVerificationCodePlaceholder => 'Enter verification code';
+
+  @override
+  String get emailVerificationCodeInvalid =>
+      'The verification code is invalid. Please check and try again.';
+
+  @override
+  String get emailVerificationCodeExpiredMessage =>
+      'The verification code has expired. Please request a new code.';
+
+  @override
+  String get emailVerificationCodeResendSuccess =>
+      'A new verification code has been sent to your email.';
+
+  @override
+  String get emailVerificationCodeResendFailure =>
+      'Failed to resend the verification code. Please try again later.';
+
+  @override
+  String get emailVerificationComplete =>
+      'Your email has been verified successfully. You can now log in to your account.';
+
+  @override
+  String get emailVerificationFailedMessage =>
+      'Email verification failed. Please try again or contact support.';
+
+  @override
+  String get emailVerificationPendingMessage =>
+      'Your email verification is pending. Please check your email for the verification code.';
+
+  @override
+  String get emailVerificationInstructionsResend =>
+      'If you didn\'t receive the code, you can request a new one.';
+
+  @override
+  String get emailVerificationCodeRequestSuccess =>
+      'Verification code sent successfully. Please check your email.';
+
+  @override
+  String get emailVerificationCodeRequestFailure =>
+      'Failed to send verification code. Please try again later.';
+
+  @override
+  String get emailVerificationCodeRequestPending =>
+      'Verification code request is pending. Please wait...';
+
+  @override
+  String get emailVerificationCodeRequestCompleted =>
+      'Verification code request completed. Please check your email.';
+
+  @override
+  String get emailVerificationCodeRequestFailed =>
+      'Verification code request failed. Please try again.';
+
+  @override
+  String get emailVerificationCodeRequestResendSuccess =>
+      'Verification code resent successfully. Please check your email.';
+
+  @override
+  String get emailVerificationCodeRequestResendFailure =>
+      'Failed to resend verification code. Please try again later.';
+
+  @override
+  String get emailVerificationCodeRequestResendPending =>
+      'Verification code resend is pending. Please wait...';
+
+  @override
+  String get emailVerificationCodeRequestResendCompleted =>
+      'Verification code resend completed. Please check your email.';
+
+  @override
+  String get emailVerificationCodeRequestResendFailed =>
+      'Verification code resend failed. Please try again.';
+
+  @override
+  String get emailVerificationCodeRequestAlreadySent =>
+      'A verification code has already been sent to your email. Please check your email.';
+
+  @override
+  String get emailVerificationCodeRequestNotSent =>
+      'Verification code request not sent. Please try again.';
+
+  @override
+  String get emailVerificationCodeRequestInvalidEmail =>
+      'Invalid email address. Please enter a valid email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailSent =>
+      'Verification code email sent. Please check your inbox.';
+
+  @override
+  String get emailVerificationCodeRequestEmailNotSent =>
+      'Verification code email not sent. Please try again.';
+
+  @override
+  String get emailVerificationCodeRequestEmailAlreadyVerified =>
+      'This email address is already verified.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationPending =>
+      'Email verification is pending. Please check your email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationFailed =>
+      'Email verification failed. Please try again.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationSuccess =>
+      'Email verification successful. You can now log in.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationResendSuccess =>
+      'Verification code resent successfully. Please check your email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationResendFailure =>
+      'Failed to resend verification code. Please try again later.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationResendPending =>
+      'Verification code resend is pending. Please wait...';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationResendCompleted =>
+      'Verification code resend completed. Please check your email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationResendFailed =>
+      'Verification code resend failed. Please try again.';
+
+  @override
+  String get emailVerificationCodeRequestEmailAlreadyExists =>
+      'An account with this email already exists. Please log in.';
+
+  @override
+  String get emailVerificationCodeRequestEmailNotRegistered =>
+      'This email is not registered. Please sign up.';
+
+  @override
+  String get emailVerificationCodeRequestEmailInvalidFormat =>
+      'Invalid email format. Please enter a valid email address.';
+
+  @override
+  String get emailVerificationCodeRequestEmailEmpty =>
+      'Email address cannot be empty. Please enter your email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailTooLong =>
+      'Email address is too long. Please enter a shorter email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailTooShort =>
+      'Email address is too short. Please enter a longer email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailContainsInvalidCharacters =>
+      'Email address contains invalid characters. Please enter a valid email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailStartsWithInvalidCharacter =>
+      'Email address starts with an invalid character. Please enter a valid email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailEndsWithInvalidCharacter =>
+      'Email address ends with an invalid character. Please enter a valid email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailDuplicate =>
+      'This email address is already in use. Please use a different email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailNotAllowed =>
+      'Email address not allowed. Please use a different email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailBlocked =>
+      'Email address blocked. Please contact support.';
+
+  @override
+  String get emailVerificationCodeRequestEmailUnverified =>
+      'Email address unverified. Please verify your email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationRequired =>
+      'Email verification required. Please verify your email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationOptional =>
+      'Email verification optional. You can verify your email later.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationCompleted =>
+      'Email verification completed. You can now log in.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationFailedMessage =>
+      'Email verification failed. Please try again or contact support.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationPendingMessage =>
+      'Your email verification is pending. Please check your email for the verification code.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationInstructions =>
+      'Please check your email for the verification code to complete your registration.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationCodeSent =>
+      'A verification code has been sent to your email. Please enter the code to verify your email address.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationCodePlaceholder =>
+      'Enter verification code';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationCodeInvalid =>
+      'The verification code is invalid. Please check and try again.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationCodeExpiredMessage =>
+      'The verification code has expired. Please request a new code.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationCodeResendSuccess =>
+      'A new verification code has been sent to your email.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationCodeResendFailure =>
+      'Failed to resend the verification code. Please try again later.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationComplete =>
+      'Your email has been verified successfully. You can now log in to your account.';
+
+  @override
+  String get emailVerificationCodeRequestEmailVerificationInstructionsResend =>
+      'If you didn\'t receive the code, you can request a new one.';
+
+  @override
+  String get wrongEmail => 'Wrong email?';
+
+  @override
+  String get wrongEmailStartOver => 'Wrong email? Start over';
+
+  @override
+  String get startOver => 'Start Over';
+
+  @override
+  String get createAnAccount => 'Create an account';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get arabic => 'Arabic';
+
+  @override
+  String get selectLanguage => 'Select Language';
+
+  @override
+  String get selectItems => 'Select Items';
+
+  @override
+  String get discountApplicability => 'Discount Applicability';
+
+  @override
+  String get allItems => 'All Items';
+
+  @override
+  String get specificItems => 'Specific Items';
+
+  @override
+  String get specificCategories => 'Specific Categories';
+
+  @override
+  String get noItemsSelected => 'No items selected';
+
+  @override
+  String get selectCategories => 'Select Categories';
+
+  @override
+  String get noCategoriesSelected => 'No categories selected';
+
+  @override
+  String get conflictingDiscounts => 'Conflicting Discounts';
+
+  @override
+  String get categories => 'Categories';
 }

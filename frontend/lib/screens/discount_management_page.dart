@@ -6,6 +6,8 @@ import '../models/order.dart';
 import '../models/item_category.dart';
 import '../services/app_state.dart';
 import '../services/api_service.dart';
+import '../services/app_auth_service.dart';
+import '../screens/login_page.dart';
 import '../utils/responsive_helper.dart';
 
 class DiscountManagementPage extends StatefulWidget {
@@ -30,6 +32,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
   String _selectedFilter = 'all';
   final ApiService _apiService = ApiService();
   Business get _business => widget.business;
+  bool _isInitializing = true;
 
   List<Discount> get _filteredDiscounts {
     final allDiscounts = _business.discounts;
@@ -58,6 +61,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
   void initState() {
     super.initState();
     _appState.addListener(_onAppStateChanged);
+    _validateAuthenticationAndInitialize();
   }
 
   @override
@@ -66,12 +70,118 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     super.dispose();
   }
 
+  Future<void> _validateAuthenticationAndInitialize() async {
+    try {
+      // Check if we have a valid business ID first
+      if (widget.business.id == 'unknown-id' || widget.business.id.isEmpty) {
+        print(
+            'DiscountManagementPage: Invalid business ID: ${widget.business.id}');
+
+        if (mounted) {
+          final loc = AppLocalizations.of(context)!;
+          _showAuthenticationRequiredDialog(loc.authenticationFailedTitle,
+              'Invalid business configuration. Please sign in again.');
+        }
+        return;
+      }
+
+      // Verify authentication before proceeding
+      final isSignedIn = await AppAuthService.isSignedIn();
+      if (!isSignedIn) {
+        print('DiscountManagementPage: User not authenticated');
+
+        if (mounted) {
+          final loc = AppLocalizations.of(context)!;
+          _showAuthenticationRequiredDialog(loc.authenticationFailedTitle,
+              'Please sign in to access discount management.');
+        }
+        return;
+      }
+
+      // Verify we can get current user and access token
+      final currentUser = await AppAuthService.getCurrentUser();
+      final accessToken = await AppAuthService.getAccessToken();
+
+      if (currentUser == null || accessToken == null) {
+        print('DiscountManagementPage: Authentication verification failed');
+
+        if (mounted) {
+          final loc = AppLocalizations.of(context)!;
+          _showAuthenticationRequiredDialog(loc.sessionExpiredTitle,
+              'Your session has expired. Please sign in again.');
+        }
+        return;
+      }
+
+      print(
+          'DiscountManagementPage: Authentication verified - ${currentUser['email'] ?? 'Unknown email'}');
+
+      setState(() {
+        _isInitializing = false;
+      });
+    } catch (e) {
+      print('DiscountManagementPage: Authentication check failed: $e');
+
+      if (mounted) {
+        final loc = AppLocalizations.of(context)!;
+        _showAuthenticationRequiredDialog(loc.authenticationFailedTitle,
+            'Authentication verification failed. Please sign in again.');
+      }
+    }
+  }
+
+  void _showAuthenticationRequiredDialog(String title, String message) {
+    final loc = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.security, color: Colors.red[700]),
+            const SizedBox(width: 8),
+            Expanded(child: Text(title)),
+          ],
+        ),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: _navigateToLogin,
+            child: Text(loc.signIn),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToLogin() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LoginPage(
+          onLanguageChanged: (Locale locale) {
+            // Handle language change if needed
+          },
+        ),
+      ),
+      (route) => false, // Remove all previous routes
+    );
+  }
+
   void _onAppStateChanged() {
     if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isInitializing) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Column(
         children: [

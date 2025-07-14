@@ -1,2 +1,0 @@
-# Order processing requirements
-# No additional dependencies needed - using Lambda layer

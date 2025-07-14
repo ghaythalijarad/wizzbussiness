@@ -86,14 +86,12 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     if (_useSimpleNotifications) {
       // Switch to simple notifications
       await NotificationService().dispose();
-      await SimpleNotificationService()
-          .startPolling(_currentBusinessId!, _authToken!);
+      await SimpleNotificationService().startPolling();
       SimpleNotificationService().setPollingInterval(_pollingInterval);
     } else {
       // Switch to complex notifications
       await SimpleNotificationService().stopPolling();
-      await NotificationService()
-          .connectToNotifications(_currentBusinessId!, _authToken!);
+      await NotificationService().connectToNotifications();
     }
   }
 

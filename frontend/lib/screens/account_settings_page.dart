@@ -3,7 +3,8 @@ import 'dart:ui' as ui;
 import 'package:intl/intl.dart';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
-import '../services/auth_service.dart';
+import '../services/app_auth_service.dart';
+import '../screens/login_page.dart';
 
 class AccountSettingsPage extends StatefulWidget {
   final Business business;
@@ -23,6 +24,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   Map<String, dynamic>? _userData;
   bool _isLoadingUserData = true;
   String? _errorMessage;
+  bool _isInitializing = true;
 
   @override
   void initState() {
@@ -32,7 +34,103 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     _ownerNameController = TextEditingController();
     _addressController = TextEditingController();
 
-    _loadUserData();
+    _validateAuthenticationAndInitialize();
+  }
+
+  Future<void> _validateAuthenticationAndInitialize() async {
+    try {
+      // Check if business ID is provided
+      if (widget.business.id.isEmpty) {
+        _showAuthenticationRequiredDialog();
+        return;
+      }
+
+      // Check if user is signed in
+      final isSignedIn = await AppAuthService.isSignedIn();
+      if (!isSignedIn) {
+        _showAuthenticationRequiredDialog();
+        return;
+      }
+
+      // Verify current user and access token
+      final currentUser = await AppAuthService.getCurrentUser();
+      final accessToken = await AppAuthService.getAccessToken();
+
+      if (currentUser == null || accessToken == null) {
+        _showAuthenticationRequiredDialog();
+        return;
+      }
+
+      // If all checks pass, proceed with initialization
+      setState(() {
+        _isInitializing = false;
+      });
+
+      // Load user data after authentication is verified
+      _loadUserData();
+    } catch (e) {
+      print('Authentication validation failed: $e');
+      _showAuthenticationRequiredDialog();
+    }
+  }
+
+  void _showAuthenticationRequiredDialog() {
+    final loc = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        icon: const Icon(
+          Icons.security,
+          color: Color(0xFF00C1E8),
+          size: 48,
+        ),
+        title: Text(
+          loc.userNotLoggedIn,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF001133),
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          'Please sign in to access account settings',
+          style: TextStyle(
+            color: const Color(0xFF001133).withOpacity(0.7),
+          ),
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => _navigateToLogin(),
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFF00C1E8),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(loc.signIn),
+          ),
+        ],
+        actionsAlignment: MainAxisAlignment.center,
+      ),
+    );
+  }
+
+  void _navigateToLogin() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => LoginPage(
+          onLanguageChanged: (locale) {
+            // Handle language change if needed
+          },
+        ),
+      ),
+      (route) => false,
+    );
   }
 
   Future<void> _loadUserData() async {
@@ -42,10 +140,24 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     });
 
     try {
-      final response = await AuthService.getCurrentUser();
-      if (response['success'] == true) {
+      // Use AppAuthService to get current user
+      final currentUser = await AppAuthService.getCurrentUser();
+      if (currentUser != null) {
         setState(() {
-          _userData = response['user'];
+          _userData = {
+            'business_name': widget.business.name,
+            'owner_name': currentUser['name'] ?? '',
+            'email': currentUser['email'] ?? '',
+            'phone_number': currentUser['phone_number'] ?? '',
+            'address': {
+              'home_address': '',
+              'street': widget.business.address,
+              'neighborhood': '',
+              'district': '',
+              'city': '',
+              'country': '',
+            }
+          };
           _isLoadingUserData = false;
 
           // Update controllers with real user data
@@ -55,7 +167,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         });
       } else {
         setState(() {
-          _errorMessage = response['message'] ?? 'Failed to load user data';
+          _errorMessage = 'Failed to load user data - user not authenticated';
           _isLoadingUserData = false;
         });
       }
@@ -90,7 +202,18 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isInitializing) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF00C1E8),
+          ),
+        ),
+      );
+    }
+
     final l10n = AppLocalizations.of(context)!;
+    ;
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.accountSettings),

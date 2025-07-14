@@ -5,6 +5,7 @@ import '../orders_page.dart';
 import '../profile_settings_page.dart';
 import '../items_management_page.dart';
 import '../discount_management_page.dart';
+import '../login_page.dart';
 import '../../models/order.dart';
 import '../../widgets/top_app_bar.dart';
 import '../../services/app_state.dart';
@@ -28,10 +29,15 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
   int _selectedIndex = 0;
   List<Order> _orders = [];
   final AppState _appState = AppState();
+  bool _isInitializing = true;
 
   @override
   void initState() {
     super.initState();
+    // Skip re-validation here; trust login flow
+    setState(() {
+      _isInitializing = false;
+    });
     _appState.addListener(_onAppStateChanged);
   }
 
@@ -88,6 +94,10 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
   }
 
   Widget _buildDashboardBody() {
+    // Ensure the business object passed to child pages is always the latest one from the widget.
+    // This prevents stale data if the dashboard is ever rebuilt with new business info.
+    final currentBusiness = widget.business;
+
     switch (_selectedIndex) {
       case 0:
         return OrdersPage(
@@ -108,7 +118,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
         );
       case 1:
         return ItemsManagementPage(
-          business: widget.business,
+          business: currentBusiness, // Pass the most recent business object
           orders: _orders,
           onNavigateToOrders: () => setState(() => _selectedIndex = 0),
           onOrderUpdated: (orderId, status) {
@@ -140,6 +150,16 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isInitializing) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF00C1E8),
+          ),
+        ),
+      );
+    }
+
     final loc = AppLocalizations.of(context)!;
     final isDesktop = ResponsiveHelper.isDesktop(context);
     final isTablet = ResponsiveHelper.isTablet(context);

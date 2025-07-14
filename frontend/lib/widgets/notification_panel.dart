@@ -31,10 +31,7 @@ class _NotificationPanelState extends State<NotificationPanel> {
   Future<void> _initializeNotifications() async {
     try {
       // Connect to real-time notifications
-      await _notificationService.connectToNotifications(
-        widget.businessId,
-        widget.authToken,
-      );
+      await _notificationService.connectToNotifications();
 
       // Listen to notification stream
       _notificationService.notificationStream?.listen((notification) {

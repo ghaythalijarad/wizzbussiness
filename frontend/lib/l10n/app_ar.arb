@@ -699,5 +699,26 @@
         "type": "String"
       }
     }
-  }
+  },
+  
+  "validityPeriod": "فترة الصلاحية",
+  "unknownStatus": "حالة غير معروفة",
+  "discountApplicability": "إمكانية تطبيق الخصم",
+  "allItems": "جميع العناصر",
+  "specificItems": "عناصر محددة",
+  "specificCategories": "فئات محددة",
+  "selectItems": "اختر العناصر",
+  "noItemsSelected": "لم يتم اختيار عناصر",
+  "selectCategories": "اختر الفئات",
+  "noCategoriesSelected": "لم يتم اختيار فئات",
+  "conflictingDiscounts": "خصومات متضاربة",
+  "categories": "الفئات",
+  
+  "wizzBusiness": "ويز بيزنس",
+  "businessManagement": "إدارة الأعمال",
+  "language": "اللغة",
+  "selectLanguage": "اختر اللغة",
+  "english": "الإنجليزية",
+  "arabic": "العربية",
+  "changeAppLanguage": "تغيير لغة التطبيق"
 }

@@ -1,2 +1,0 @@
-# Lambda API Function Requirements
-# No dependencies needed; all are provided via DependenciesLayer

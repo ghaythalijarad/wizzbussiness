@@ -6,10 +6,8 @@ import '../widgets/wizz_business_button.dart';
 // import '../screens/forgot_password_page.dart'; // TODO: Implement forgot password
 import '../screens/registration_form_screen.dart';
 import '../screens/dashboards/business_dashboard.dart';
-import '../services/auth_service.dart';
-import '../services/api_service.dart';
+import '../services/app_auth_service.dart';
 import '../models/business.dart';
-import '../models/business_type.dart';
 import '../utils/responsive_helper.dart';
 
 class LoginPage extends StatefulWidget {
@@ -36,7 +34,10 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _login() async {
+    debugPrint('🎯 LOGIN BUTTON PRESSED - Starting validation');
+
     if (_formKey.currentState!.validate()) {
+      debugPrint('✅ Form validation passed');
       setState(() {
         _isLoading = true;
       });
@@ -45,68 +46,45 @@ class _LoginPageState extends State<LoginPage> {
         final email = _emailController.text.trim();
         final password = _passwordController.text.trim();
 
-        // Use the working AuthService directly
-        final response = await AuthService.signIn(
+        debugPrint('🔐 Starting login for: $email');
+
+        // Use AppAuthService for consistent authentication
+        final response = await AppAuthService.signIn(
           email: email,
           password: password,
         );
 
-        if (response.success) {
-          // Store and print token
-          final accessToken = response.data?['tokens']?['AccessToken'] ?? 
-                            response.data?['access_token'];
-          print('Login successful, access token: $accessToken');
+        debugPrint('📡 Login response received: ${response.success}');
+        debugPrint('📄 Response user: ${response.user}');
 
-          // Real login succeeded: use the business data from the response
-          if (response.data?['business'] != null) {
-            final businessData = response.data!['business'];
-            final business = Business(
-              id: businessData['id'] ?? businessData['business_id'] ?? 'unknown',
-              name: businessData['name'] ?? businessData['business_name'] ?? 'Unknown Business',
-              email: businessData['email'] ?? email,
-              phone: businessData['phone_number'] ?? '',
-              address: businessData['address']?['street'] ?? 
-                      businessData['address'] ?? '',
-              latitude: businessData['address']?['latitude']?.toDouble() ?? 0.0,
-              longitude: businessData['address']?['longitude']?.toDouble() ?? 0.0,
-              offers: [],
-              businessHours: {},
-              settings: {},
-              businessType: _getBusinessTypeFromString(businessData['business_type']),
-            );
+        if (response.success && mounted) {
+          debugPrint(
+              '🔍 Widget mounted: $mounted, Context valid: ${context.mounted}');
+          final userData = response.user;
+          debugPrint('👤 User data found: ${userData != null}');
 
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => BusinessDashboard(
-                  business: business,
-                  onLanguageChanged: widget.onLanguageChanged,
-                ),
-              ),
-            );
-          } else {
-            // Fallback: fetch user's businesses from API
-            final apiService = ApiService();
-            final businesses = await apiService.getUserBusinesses();
+          if (userData != null && response.businesses.isNotEmpty) {
+            debugPrint('👤 User data: $userData');
+            debugPrint(
+                '🏢 Businesses available: ${response.businesses.length}');
 
-            if (businesses.isNotEmpty) {
-              final businessData = businesses[0];
-              final business = Business(
-                id: businessData['id'],
-                name: businessData['name'],
-                email: businessData['email'] ?? email,
-                phone: businessData['phone_number'] ?? '',
-                address: businessData['address']?['street'] ?? '',
-                latitude: businessData['address']?['latitude']?.toDouble() ?? 0.0,
-                longitude: businessData['address']?['longitude']?.toDouble() ?? 0.0,
-                offers: [],
-                businessHours: {},
-                settings: {},
-                businessType: _getBusinessTypeFromString(businessData['business_type']),
-              );
+            // Use first business from the businesses list
+            final businessData =
+                Map<String, dynamic>.from(response.businesses.first);
+            businessData['email'] =
+                businessData['email'] ?? userData['email'] ?? email;
 
-              Navigator.pushReplacement(
-                context,
+            debugPrint('🏢 Business data used: $businessData');
+
+            try {
+              final business = Business.fromJson(businessData);
+              debugPrint(
+                  '✅ Business object created: ${business.name} (ID: ${business.id})');
+
+              debugPrint('🚀 Attempting navigation...');
+
+              final navigator = Navigator.of(context, rootNavigator: true);
+              navigator.pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => BusinessDashboard(
                     business: business,
@@ -114,18 +92,32 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               );
-            } else {
-              // No businesses
+              debugPrint('✅ Navigation completed');
+            } catch (businessError) {
+              debugPrint('💥 Error creating business object: $businessError');
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error creating business: $businessError'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          } else {
+            debugPrint('❌ No user data or businesses in response');
+            if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                      AppLocalizations.of(context)!.noBusinessFoundForThisUser),
+                      'No business associated with this account. Please contact support.'),
                   backgroundColor: Colors.orange,
                 ),
               );
             }
           }
-        } else {
+        } else if (mounted) {
+          debugPrint('❌ Login failed: ${response.message}');
           // Login failed
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -135,36 +127,25 @@ class _LoginPageState extends State<LoginPage> {
           );
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.errorOccurred),
-            backgroundColor: Colors.red,
-          ),
-        );
+        debugPrint('💥 Login error: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.errorOccurred),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       } finally {
-        setState(() {
-          _isLoading = false;
-        });
+        debugPrint('🔄 Finally block - resetting loading state');
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
-    }
-  }
-
-  BusinessType _getBusinessTypeFromString(String? businessTypeString) {
-    switch (businessTypeString?.toLowerCase()) {
-      case 'restaurant':
-      case 'kitchen':
-        return BusinessType.kitchen;
-      case 'cloudkitchen':
-        return BusinessType.cloudkitchen;
-      case 'store':
-        return BusinessType.store;
-      case 'pharmacy':
-        return BusinessType.pharmacy;
-      case 'caffe':
-      case 'cafe':
-        return BusinessType.caffe;
-      default:
-        return BusinessType.kitchen; // Default fallback
+    } else {
+      debugPrint('❌ Form validation failed');
     }
   }
 
@@ -251,7 +232,12 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 24),
                         WizzBusinessButton(
                           onPressed: () {
-                            if (_isLoading) return;
+                            debugPrint('🔘 LOGIN BUTTON TAPPED!');
+                            if (_isLoading) {
+                              debugPrint('⏳ Already loading, ignoring tap');
+                              return;
+                            }
+                            debugPrint('🎬 Calling _login() method');
                             _login();
                           },
                           text: loc.login,
@@ -263,7 +249,8 @@ class _LoginPageState extends State<LoginPage> {
                             // TODO: Implement forgot password functionality
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Forgot password feature coming soon'),
+                                content:
+                                    Text('Forgot password feature coming soon'),
                                 backgroundColor: Colors.orange,
                               ),
                             );

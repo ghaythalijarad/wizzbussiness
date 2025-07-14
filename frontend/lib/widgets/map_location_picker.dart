@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../services/location_service.dart';
+import 'package:latlong2/latlong.dart';
 import '../l10n/app_localizations.dart';
 
 class MapLocationPicker extends StatefulWidget {
@@ -23,7 +24,7 @@ class MapLocationPicker extends StatefulWidget {
 class _MapLocationPickerState extends State<MapLocationPicker> {
   final MapController _mapController = MapController();
   LatLng? _selectedLocation;
-  LatLng _currentMapCenter = LocationService.getDefaultLocation();
+  LatLng _currentMapCenter = const LatLng(33.3152, 44.3661); // Baghdad coordinates
   bool _isLoading = false;
   String? _selectedAddress;
 
@@ -38,7 +39,10 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
   }
 
   Future<void> _loadAddressForLocation(LatLng location) async {
-    final address = await LocationService.getAddressFromCoordinates(location);
+    final address = await LocationService.getAddressFromCoordinates(
+      latitude: location.latitude,
+      longitude: location.longitude,
+    );
     if (mounted) {
       setState(() {
         _selectedAddress = address;
@@ -52,8 +56,12 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
     });
 
     try {
-      final currentLocation = await LocationService.getCurrentLocation();
-      if (currentLocation != null && mounted) {
+      final currentLocationMap = await LocationService.getCurrentLocation();
+      if (currentLocationMap != null && mounted) {
+        final currentLocation = LatLng(
+          currentLocationMap['latitude']!,
+          currentLocationMap['longitude']!,
+        );
         setState(() {
           _selectedLocation = currentLocation;
           _currentMapCenter = currentLocation;

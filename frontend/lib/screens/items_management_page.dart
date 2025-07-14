@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import '../models/dish.dart';
-import '../models/item_category.dart';
-import '../models/order.dart';
-import '../models/business.dart';
-import '../l10n/app_localizations.dart';
-import '../services/api_service.dart';
-import '../services/unified_auth_service.dart';
-import '../utils/responsive_helper.dart';
-import 'dart:io';
 import 'dart:async';
-import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../models/business.dart';
+import '../models/order.dart';
+import '../models/item_category.dart';
+import '../models/dish.dart';
+import '../services/api_service.dart';
+import '../services/app_auth_service.dart';
+import '../l10n/app_localizations.dart';
+import '../utils/responsive_helper.dart';
+import 'login_page.dart';
 
 class ItemsManagementPage extends StatefulWidget {
   final Business business;
@@ -41,36 +39,142 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
   @override
   void initState() {
     super.initState();
+
+    print(
+        'ItemsManagementPage: Initializing with business: ID=${widget.business.id}, Name=${widget.business.name}');
+
+    // The validation logic is now handled within the data loading methods
     _loadCategories();
     _loadUserData();
+
     _searchController.addListener(_onSearchChanged);
   }
 
   Future<void> _loadCategories() async {
     try {
+      // Check if we have a valid business ID first
+      if (widget.business.id == 'unknown-id' || widget.business.id.isEmpty) {
+        print(
+            'ItemsManagementPage: Invalid business ID: ${widget.business.id}');
+        print(
+            'ItemsManagementPage: Business object: ${widget.business.name} - ${widget.business.email}');
+
+        // Show error dialog and redirect to login
+        if (mounted) {
+          final loc = AppLocalizations.of(context)!;
+          _showAuthenticationRequiredDialog(loc.authenticationFailedTitle,
+              'Invalid business configuration. Please sign in again.');
+        }
+        return;
+      }
+
+      // Verify authentication before making API calls
+      final isSignedIn = await AppAuthService.isSignedIn();
+      if (!isSignedIn) {
+        print(
+            'ItemsManagementPage: User not authenticated, cannot load categories');
+
+        if (mounted) {
+          final loc = AppLocalizations.of(context)!;
+          _showAuthenticationRequiredDialog(loc.authenticationFailedTitle,
+              'Please sign in to access your items.');
+        }
+        return;
+      }
+
+      print(
+          'ItemsManagementPage: Loading categories for business: ${widget.business.id}');
       final categories = await _apiService.getCategories(widget.business.id);
+
       if (mounted) {
         setState(() {
           _categories = categories;
         });
+        print(
+            'ItemsManagementPage: Loaded ${categories.length} categories successfully');
       }
     } catch (e) {
       // Handle error
-      print(e);
+      print('ItemsManagementPage: Error loading categories: $e');
+
+      // Check if it's an authentication error
+      final errorString = e.toString().toLowerCase();
+      if (errorString.contains('401') ||
+          errorString.contains('unauthorized') ||
+          errorString.contains('authentication') ||
+          errorString.contains('token') ||
+          errorString.contains('signedout') ||
+          errorString.contains('signed out')) {
+        if (mounted) {
+          final loc = AppLocalizations.of(context)!;
+          _showAuthenticationRequiredDialog(
+              loc.sessionExpiredTitle, loc.sessionExpiredPleaseLoginAgain);
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '${AppLocalizations.of(context)!.failedToLoadCategories}: $e'),
+            backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: AppLocalizations.of(context)!.retry,
+              onPressed: _loadCategories,
+            ),
+          ),
+        );
+      }
     }
   }
 
   Future<void> _loadUserData() async {
     try {
-      final response = await UnifiedAuthService.getCurrentUser();
-      if (response['success'] == true && mounted) {
+      // Verify authentication status first
+      final isSignedIn = await AppAuthService.isSignedIn();
+      if (!isSignedIn) {
+        print(
+            'ItemsManagementPage: User not authenticated, cannot load user data');
+
+        if (mounted) {
+          final loc = AppLocalizations.of(context)!;
+          _showAuthenticationRequiredDialog(loc.authenticationFailedTitle,
+              'Please sign in to access your account.');
+        }
+        return;
+      }
+
+      // Get current authenticated user data
+      final userResponse = await AppAuthService.getCurrentUser();
+      if (userResponse != null && mounted) {
         setState(() {
-          _userData = response['user'];
+          _userData = userResponse;
         });
+        print(
+            'ItemsManagementPage: User data loaded for ${userResponse['email'] ?? 'Unknown user'}');
+      } else {
+        print('ItemsManagementPage: Failed to load user data');
+        if (mounted) {
+          final loc = AppLocalizations.of(context)!;
+          _showAuthenticationRequiredDialog(
+            loc.sessionExpiredTitle,
+            'Unable to load user information. Please sign in again.',
+          );
+        }
       }
     } catch (e) {
-      // Handle error silently or log it
-      print('Error loading user data: $e');
+      // Handle error with more detailed logging
+      print('ItemsManagementPage: Error loading user data: $e');
+
+      // Check if it's an authentication error
+      if (e.toString().contains('401') ||
+          e.toString().contains('unauthorized') ||
+          e.toString().contains('authentication') ||
+          e.toString().contains('token')) {
+        if (mounted) {
+          final loc = AppLocalizations.of(context)!;
+          _showAuthenticationRequiredDialog(
+              loc.sessionExpiredTitle, loc.sessionExpiredPleaseLoginAgain);
+        }
+      }
     }
   }
 
@@ -94,6 +198,12 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
     }
 
     try {
+      // Verify authentication before performing search
+      final isSignedIn = await AppAuthService.isSignedIn();
+      if (!isSignedIn) {
+        throw Exception('Authentication required. Please sign in again.');
+      }
+
       if (query.isEmpty) {
         // If no search query, load all categories normally
         await _loadCategories();
@@ -101,19 +211,29 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
         // Perform backend search
         final searchResult = await _apiService.searchItems(
           widget.business.id,
-          query: query,
-          pageSize: 100, // Get more items for search
+          query,
         );
 
         // Process search results and group by categories
-        final items = searchResult['items'] as List<dynamic>;
+        final items = searchResult;
         final categoryMap = <String, ItemCategory>{};
 
-        for (var itemData in items) {
-          final item = Dish.fromJson(itemData);
+        for (var item in items) {
           final categoryId = item.categoryId;
-          final categoryName = itemData['category_name'] as String? ??
-              AppLocalizations.of(context)!.uncategorized;
+          // Find the category name from existing categories
+          String categoryName = AppLocalizations.of(context)!.uncategorized;
+          if (categoryId.isNotEmpty) {
+            final category = _categories.firstWhere(
+              (cat) => cat.id == categoryId,
+              orElse: () => ItemCategory(
+                id: categoryId,
+                name: 'Category $categoryId',
+                businessId: widget.business.id,
+                items: [],
+              ),
+            );
+            categoryName = category.name;
+          }
           final finalCategoryId =
               categoryId.isNotEmpty ? categoryId : 'uncategorized';
 
@@ -136,7 +256,7 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
         }
       }
     } catch (e) {
-      print('Error performing search: $e');
+      print('ItemsManagementPage: Error performing search: $e');
       // Show error message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -153,6 +273,171 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
         });
       }
     }
+  }
+
+  void _showAddItemDialogWithAuth() async {
+    final loc = AppLocalizations.of(context)!;
+
+    try {
+      print(
+          'ItemsManagementPage: Starting authentication check for add item...');
+
+      // Check if we have a valid business ID first
+      if (widget.business.id == 'unknown-id' || widget.business.id.isEmpty) {
+        print(
+            'ItemsManagementPage: Invalid business ID: ${widget.business.id}');
+        _showAuthenticationRequiredDialog('Invalid Business Configuration',
+            'Business setup is incomplete. Please sign in again to reload your business information.');
+        return;
+      }
+
+      // Try a simple authentication check first
+      bool isSignedIn = false;
+      try {
+        isSignedIn = await AppAuthService.isSignedIn();
+        print('ItemsManagementPage: isSignedIn = $isSignedIn');
+      } catch (signInError) {
+        print(
+            'ItemsManagementPage: Error checking sign-in status: $signInError');
+        // If we can't even check sign-in status, there's an Amplify configuration issue
+        _showAuthenticationRequiredDialog('Authentication System Error',
+            'There is an issue with the authentication system. Please restart the app and try signing in again.');
+        return;
+      }
+
+      if (!isSignedIn) {
+        print('ItemsManagementPage: User is not signed in');
+        _showAuthenticationRequiredDialog(loc.authenticationFailedTitle,
+            "Please sign in to add items to your business.");
+        return;
+      }
+
+      // Try to get access token - this is the most reliable check
+      String? accessToken;
+      try {
+        accessToken = await AppAuthService.getAccessToken();
+        print(
+            'ItemsManagementPage: accessToken = ${accessToken != null ? "Present" : "NULL"}');
+      } catch (tokenError) {
+        print('ItemsManagementPage: Error getting access token: $tokenError');
+
+        // Check if it's an Amplify configuration error
+        if (tokenError.toString().contains('Auth plugin has not been added') ||
+            tokenError.toString().contains('Amplify')) {
+          _showAuthenticationRequiredDialog('Authentication Setup Issue',
+              'There is an issue with the authentication system. Please restart the app and try signing in again.');
+          return;
+        }
+      }
+
+      if (accessToken == null) {
+        print('ItemsManagementPage: No access token available');
+        _showAuthenticationRequiredDialog(loc.sessionExpiredTitle,
+            'Your session has expired. Please sign in again.');
+        return;
+      }
+
+      // Try to get user info (but don't fail if this doesn't work)
+      try {
+        final currentUser = await AppAuthService.getCurrentUser();
+        print('ItemsManagementPage: currentUser = $currentUser');
+
+        // Only check success if we get a response back
+        if (currentUser != null && currentUser['success'] == false) {
+          print(
+              'ItemsManagementPage: currentUser success is false: ${currentUser['message']}');
+          _showAuthenticationRequiredDialog(
+              loc.sessionExpiredTitle,
+              currentUser['message'] ??
+                  'Authentication failed. Please sign in again.');
+          return;
+        }
+      } catch (userError) {
+        print(
+            'ItemsManagementPage: Warning - could not get current user: $userError');
+        // Continue anyway if we have a token
+      }
+
+      // If we reach here, we have basic authentication, proceed with add item
+      print(
+          'ItemsManagementPage: Authentication checks passed, showing add item dialog');
+      _showAddItemDialog();
+    } catch (e) {
+      print('ItemsManagementPage: Authentication verification failed: $e');
+
+      // Check if it's an Amplify configuration error
+      if (e.toString().contains('Auth plugin has not been added') ||
+          e.toString().contains('Amplify') ||
+          e.toString().contains('Future already completed')) {
+        _showAuthenticationRequiredDialog('Authentication Setup Issue',
+            'There is an issue with the authentication system. Please restart the app and try signing in again.');
+      } else {
+        _showAuthenticationRequiredDialog(loc.authenticationFailedTitle,
+            "Authentication check failed. Please try signing in again.");
+      }
+    }
+  }
+
+  void _showAuthenticationRequiredDialog(String title, String message) {
+    final loc = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.security, color: Colors.orange.shade600),
+            const SizedBox(width: 8),
+            Expanded(child: Text(title)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.lock_outline, size: 48, color: Colors.orange.shade400),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(loc.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Navigate to login or trigger re-authentication
+              _navigateToLogin();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange.shade600,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(loc.signIn),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToLogin() {
+    // Navigate to the login page to re-authenticate
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LoginPage(
+          onLanguageChanged: (Locale locale) {
+            // Handle language change if needed - this would typically
+            // be passed down from a parent widget
+          },
+        ),
+      ),
+      (route) => false, // Remove all previous routes
+    );
   }
 
   void _showAddItemDialog() {
@@ -275,7 +560,7 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddItemDialog,
+        onPressed: _showAddItemDialogWithAuth,
         backgroundColor: const Color(0xFF00c1e8),
         child: const Icon(Icons.add),
       ),
@@ -349,6 +634,12 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
 
   void _deleteItem(Dish item) async {
     try {
+      // Verify authentication before performing delete operation
+      final isSignedIn = await AppAuthService.isSignedIn();
+      if (!isSignedIn) {
+        throw Exception('Authentication required. Please sign in again.');
+      }
+
       await _apiService.deleteItem(widget.business.id, item.id);
       _loadCategories();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -359,7 +650,7 @@ class _ItemsManagementPageState extends State<ItemsManagementPage> {
       );
     } catch (e) {
       // Handle error
-      print(e);
+      print('ItemsManagementPage: Error deleting item: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
@@ -395,7 +686,6 @@ class _AddItemDialogState extends State<AddItemDialog> {
   final _imageUrlController = TextEditingController();
   final _newCategoryController = TextEditingController();
 
-  XFile? _imageFile;
   String? _selectedCategoryId;
   bool _isAvailable = true;
   bool _showNewCategoryField = false;
@@ -412,13 +702,29 @@ class _AddItemDialogState extends State<AddItemDialog> {
       print(
           'AddItemDialog: Loading categories for business: ${widget.business.id}');
 
-      // Check if user is logged in first
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('access_token');
+      // Validate business ID first
+      if (widget.business.id == 'unknown-id' || widget.business.id.isEmpty) {
+        throw Exception(
+            'Invalid business ID: ${widget.business.id}. Cannot load categories.');
+      }
 
-      if (token == null) {
+      // Check authentication using real Cognito service
+      final isSignedIn = await AppAuthService.isSignedIn();
+      if (!isSignedIn) {
         throw Exception(AppLocalizations.of(context)!.userNotLoggedIn);
       }
+
+      // Verify we can get current user and access token
+      final currentUser = await AppAuthService.getCurrentUser();
+      final accessToken = await AppAuthService.getAccessToken();
+
+      if (currentUser == null || accessToken == null) {
+        throw Exception(
+            'Authentication verification failed. Please sign in again.');
+      }
+
+      print(
+          'AddItemDialog: User authenticated - ${currentUser['user']?['email'] ?? 'Unknown email'}');
 
       final categories =
           await widget.apiService.getCategories(widget.business.id);
@@ -446,14 +752,6 @@ class _AddItemDialogState extends State<AddItemDialog> {
         );
       }
     }
-  }
-
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    setState(() {
-      _imageFile = image;
-    });
   }
 
   @override
@@ -532,39 +830,27 @@ class _AddItemDialogState extends State<AddItemDialog> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Image upload section
-                      if (_imageFile != null)
-                        Container(
-                          margin: const EdgeInsets.only(
-                              bottom: 12), // Reduced margin
-                          constraints: BoxConstraints(
-                            maxHeight:
-                                isMobile ? 100 : 120, // Reduced image height
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.file(
-                              File(_imageFile!.path),
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                            ),
-                          ),
+                      // Image upload section - temporarily disabled
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          border: Border.all(color: Colors.orange.shade200),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-
-                      // Image upload button
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          icon: const Icon(Icons.photo_camera),
-                          label: Text(loc.uploadImage),
-                          onPressed: _pickImage,
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 10), // Reduced padding
-                          ),
+                        child: Column(
+                          children: [
+                            const Icon(Icons.info, color: Colors.orange),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Image upload feature is temporarily disabled during cleanup.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.orange.shade700),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 12),
 
                       // Category selection section
                       if (!_showNewCategoryField) ...[
@@ -906,6 +1192,12 @@ class _AddItemDialogState extends State<AddItemDialog> {
   void _addItem() async {
     if (_formKey.currentState!.validate()) {
       try {
+        // Verify authentication before performing create operations
+        final isSignedIn = await AppAuthService.isSignedIn();
+        if (!isSignedIn) {
+          throw Exception('Authentication required. Please sign in again.');
+        }
+
         ItemCategory? category;
         if (_showNewCategoryField && _newCategoryController.text.isNotEmpty) {
           // Create new category
@@ -936,17 +1228,18 @@ class _AddItemDialogState extends State<AddItemDialog> {
         final createdItem =
             await widget.apiService.createItem(widget.business.id, newItem);
 
-        if (_imageFile != null) {
-          try {
-            final imageUrl = await widget.apiService
-                .uploadItemImage(createdItem.id, _imageFile!);
-            createdItem.imageUrl = imageUrl;
-            await widget.apiService.updateItem(widget.business.id, createdItem);
-          } catch (imageError) {
-            print('Error uploading image: $imageError');
-            // Continue anyway, item was created successfully
-          }
-        }
+        // Image upload functionality is temporarily disabled
+        // if (_imageFile != null) {
+        //   try {
+        //     final imageUrl = await widget.apiService
+        //         .uploadItemImage(createdItem.id, _imageFile!);
+        //     createdItem.imageUrl = imageUrl;
+        //     await widget.apiService.updateItem(widget.business.id, createdItem);
+        //   } catch (imageError) {
+        //     print('Error uploading image: $imageError');
+        //     // Continue anyway, item was created successfully
+        //   }
+        // }
 
         widget.onItemAdded(category, createdItem);
         Navigator.of(context).pop();
@@ -1377,12 +1670,18 @@ class _EditItemDialogState extends State<EditItemDialog> {
       );
 
       try {
+        // Verify authentication before performing update operation
+        final isSignedIn = await AppAuthService.isSignedIn();
+        if (!isSignedIn) {
+          throw Exception('Authentication required. Please sign in again.');
+        }
+
         final item =
             await widget.apiService.updateItem(widget.business.id, updatedDish);
         widget.onItemUpdated(item);
         Navigator.of(context).pop();
       } catch (e) {
-        print(e);
+        print('EditItemDialog: Error updating item: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:

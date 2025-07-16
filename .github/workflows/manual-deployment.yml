@@ -36,20 +36,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.9'
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
 
-      - name: Install dependencies
+      - name: Install backend dependencies
         run: |
-          pip install -r requirements.txt
-          pip install pytest pytest-cov boto3 moto
+          cd backend
+          npm ci
 
       - name: Run backend tests
         run: |
           cd backend
-          python -m pytest tests/ -v
+          npm test
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -77,13 +79,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.9'
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
 
-      - name: Set up AWS SAM CLI
-        uses: aws-actions/setup-sam@v2
+      - name: Install Serverless Framework
+        run: npm install -g serverless
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -96,40 +100,24 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.environment }}" == "production" ]; then
             echo "STACK_NAME=order-receiver-production" >> $GITHUB_ENV
-            echo "S3_BUCKET=${{ secrets.SAM_DEPLOYMENT_BUCKET_PROD }}" >> $GITHUB_ENV
-            echo "SECRET_KEY=${{ secrets.SECRET_KEY_PROD }}" >> $GITHUB_ENV
-            echo "CORS_ORIGINS=${{ secrets.CORS_ORIGINS_PROD }}" >> $GITHUB_ENV
+            echo "STAGE=prod" >> $GITHUB_ENV
           elif [ "${{ github.event.inputs.environment }}" == "staging" ]; then
             echo "STACK_NAME=order-receiver-staging" >> $GITHUB_ENV
-            echo "S3_BUCKET=${{ secrets.SAM_DEPLOYMENT_BUCKET_STAGING }}" >> $GITHUB_ENV
-            echo "SECRET_KEY=${{ secrets.SECRET_KEY_STAGING }}" >> $GITHUB_ENV
-            echo "CORS_ORIGINS=${{ secrets.CORS_ORIGINS_STAGING }}" >> $GITHUB_ENV
+            echo "STAGE=staging" >> $GITHUB_ENV
           else
             echo "STACK_NAME=order-receiver-dev" >> $GITHUB_ENV
-            echo "S3_BUCKET=${{ secrets.SAM_DEPLOYMENT_BUCKET_DEV }}" >> $GITHUB_ENV
-            echo "SECRET_KEY=${{ secrets.SECRET_KEY_DEV }}" >> $GITHUB_ENV
-            echo "CORS_ORIGINS=${{ secrets.CORS_ORIGINS_DEV }}" >> $GITHUB_ENV
+            echo "STAGE=dev" >> $GITHUB_ENV
           fi
 
-      - name: Build SAM application
+      - name: Install backend dependencies
         run: |
-          cd infrastructure
-          sam build --use-container
+          cd backend
+          npm ci
 
       - name: Deploy to ${{ github.event.inputs.environment }}
         run: |
-          cd infrastructure
-          sam deploy \
-            --stack-name ${{ env.STACK_NAME }} \
-            --s3-bucket ${{ env.S3_BUCKET }} \
-            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
-            --region ${{ env.AWS_REGION }} \
-            --parameter-overrides \
-              Environment=${{ github.event.inputs.environment }} \
-              SecretKey=${{ env.SECRET_KEY }} \
-              CorsOrigins=${{ env.CORS_ORIGINS }} \
-            --no-confirm-changeset \
-            --no-fail-on-empty-changeset
+          cd backend
+          npx serverless deploy --stage ${{ env.STAGE }}
 
   deploy-frontend:
     name: Deploy Frontend

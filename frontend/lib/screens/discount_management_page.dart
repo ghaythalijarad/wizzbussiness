@@ -3,10 +3,11 @@ import '../l10n/app_localizations.dart';
 import '../models/business.dart';
 import '../models/discount.dart';
 import '../models/order.dart';
-import '../models/item_category.dart';
+import '../models/product.dart';
 import '../services/app_state.dart';
 import '../services/api_service.dart';
 import '../services/app_auth_service.dart';
+import '../services/product_service.dart';
 import '../screens/login_page.dart';
 import '../utils/responsive_helper.dart';
 
@@ -32,6 +33,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
   String _selectedFilter = 'all';
   final ApiService _apiService = ApiService();
   List<Discount> _discounts = [];
+  List<Product> _products = [];
+  List<ProductCategory> _categories = [];
   bool _isInitializing = true;
   bool _isLoading = false;
 
@@ -117,8 +120,12 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       print(
           'DiscountManagementPage: Authentication verified - ${currentUser['email'] ?? 'Unknown email'}');
 
-      // Load discounts from API
-      await _loadDiscounts();
+      // Load all data in parallel
+      await Future.wait([
+        _loadDiscounts(),
+        _loadProducts(),
+        _loadCategories(),
+      ]);
 
       if (mounted) {
         setState(() {
@@ -163,6 +170,87 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      print('DiscountManagementPage: Loading products for business ${widget.business.id}');
+      final result = await ProductService.getProducts();
+      
+      if (result['success'] && result['products'] != null) {
+        final productsList = result['products'] as List;
+        final products = productsList.map((json) => Product.fromJson(json)).toList();
+        
+        setState(() {
+          _products = products;
+        });
+        
+        print('DiscountManagementPage: Loaded ${products.length} products');
+      } else {
+        throw Exception(result['message'] ?? 'Failed to load products');
+      }
+    } catch (e) {
+      print('DiscountManagementPage: Error loading products: $e');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load products: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final businessTypeString = _getBusinessTypeString(widget.business.businessType);
+      print('DiscountManagementPage: Loading categories for business type $businessTypeString');
+      final result = await ProductService.getCategoriesForBusinessType(businessTypeString);
+      
+      if (result['success'] && result['categories'] != null) {
+        final categoriesList = result['categories'] as List;
+        final categories = categoriesList.map((json) => ProductCategory.fromJson(json)).toList();
+        
+        setState(() {
+          _categories = categories;
+        });
+        
+        print('DiscountManagementPage: Loaded ${categories.length} categories');
+      } else {
+        throw Exception(result['message'] ?? 'Failed to load categories');
+      }
+    } catch (e) {
+      print('DiscountManagementPage: Error loading categories: $e');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load categories: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  String _getBusinessTypeString(dynamic businessType) {
+    // Convert BusinessType enum to the correct API string
+    final typeStr = businessType.toString().split('.').last.toLowerCase();
+
+    switch (typeStr) {
+      case 'kitchen':
+        return 'restaurant'; // API expects 'restaurant' for kitchen businesses
+      case 'cloudkitchen':
+        return 'cloudkitchen';
+      case 'store':
+        return 'store';
+      case 'pharmacy':
+        return 'pharmacy';
+      default:
+        return 'restaurant'; // Default fallback
     }
   }
 
@@ -1582,26 +1670,29 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
 
   void _showItemSelectionDialog(
       List<String> selectedItemIds, StateSetter setState) async {
-    // Load all available categories using ApiService
-    List<ItemCategory> categories = [];
-    try {
-      categories = await _apiService.getCategories(widget.business.id);
-    } catch (e) {
-      print('Error loading categories: $e');
+    // Use the already loaded products instead of API call
+    if (_products.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.noItemsFound)),
+      );
       return;
     }
 
-    // Flatten all items from all categories
+    // Flatten all items from all products
     List<Map<String, dynamic>> allItems = [];
-    for (final category in categories) {
-      for (final item in category.items) {
-        allItems.add({
-          'id': item.id,
-          'name': item.name,
-          'categoryName': category.name,
-          'price': item.price,
-        });
-      }
+    for (final product in _products) {
+      // Find the category name for this product
+      final category = _categories.firstWhere(
+        (cat) => cat.id == product.categoryId,
+        orElse: () => ProductCategory(id: '', name: 'Unknown', businessType: '', sortOrder: 0),
+      );
+      
+      allItems.add({
+        'id': product.id,
+        'name': product.name,
+        'categoryName': category.name,
+        'price': product.price,
+      });
     }
 
     if (allItems.isEmpty) {
@@ -1690,16 +1781,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
 
   void _showCategorySelectionDialog(
       List<String> selectedCategoryIds, StateSetter setState) async {
-    // Load all available categories using ApiService
-    List<ItemCategory> categories = [];
-    try {
-      categories = await _apiService.getCategories(widget.business.id);
-    } catch (e) {
-      print('Error loading categories: $e');
-      return;
-    }
-
-    if (categories.isEmpty) {
+    // Use the already loaded categories instead of API call
+    if (_categories.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(AppLocalizations.of(context)!.noCategoriesFound)),
@@ -1728,9 +1811,9 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                     const SizedBox(height: 16),
                     Expanded(
                       child: ListView.builder(
-                        itemCount: categories.length,
+                        itemCount: _categories.length,
                         itemBuilder: (context, index) {
-                          final category = categories[index];
+                          final category = _categories[index];
                           final isSelected = tempSelected.contains(category.id);
 
                           return CheckboxListTile(
@@ -1802,26 +1885,29 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     String title,
     Function(String?) onItemSelected,
   ) async {
-    // Load all available categories using ApiService
-    List<ItemCategory> categories = [];
-    try {
-      categories = await _apiService.getCategories(widget.business.id);
-    } catch (e) {
-      print('Error loading categories: $e');
+    // Use the already loaded products instead of API call
+    if (_products.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.noItemsFound)),
+      );
       return;
     }
 
-    // Flatten all items from all categories
+    // Flatten all items from all products
     List<Map<String, dynamic>> allItems = [];
-    for (final category in categories) {
-      for (final item in category.items) {
-        allItems.add({
-          'id': item.id,
-          'name': item.name,
-          'categoryName': category.name,
-          'price': item.price,
-        });
-      }
+    for (final product in _products) {
+      // Find the category name for this product
+      final category = _categories.firstWhere(
+        (cat) => cat.id == product.categoryId,
+        orElse: () => ProductCategory(id: '', name: 'Unknown', businessType: '', sortOrder: 0),
+      );
+      
+      allItems.add({
+        'id': product.id,
+        'name': product.name,
+        'categoryName': category.name,
+        'price': product.price,
+      });
     }
 
     if (allItems.isEmpty) {

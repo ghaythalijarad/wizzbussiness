@@ -6,7 +6,7 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs18.x
+  runtime: nodejs22.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
   memorySize: 512
@@ -101,6 +101,10 @@ functions:
           method: get
           cors: true
       - http:
+          path: /products/search
+          method: get
+          cors: true
+      - http:
           path: /products
           method: post
           cors: true
@@ -173,6 +177,18 @@ functions:
       - http:
           path: /health
           method: get
+          cors: true
+  imageUpload:
+    handler: functions/upload/image_upload_handler.handler
+    name: order-receiver-${self:provider.stage}-image-upload-v1-sls
+    events:
+      - http:
+          path: /upload/product-image
+          method: post
+          cors: true
+      - http:
+          path: /upload/product-image
+          method: delete
           cors: true
 
 package:

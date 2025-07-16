@@ -30,6 +30,13 @@ const BUSINESS_TYPE_CATEGORIES = {
         { name: 'Sandwiches', name_ar: 'الساندويتشات', description: 'Light meals and sandwiches' },
         { name: 'Cold Drinks', name_ar: 'المشروبات الباردة', description: 'Cold beverages and smoothies' }
     ],
+    caffe: [  // Add alias for caffe (same as cafe)
+        { name: 'Coffee', name_ar: 'القهوة', description: 'Coffee drinks and varieties' },
+        { name: 'Tea', name_ar: 'الشاي', description: 'Tea varieties and blends' },
+        { name: 'Pastries', name_ar: 'المعجنات', description: 'Baked goods and pastries' },
+        { name: 'Sandwiches', name_ar: 'الساندويتشات', description: 'Light meals and sandwiches' },
+        { name: 'Cold Drinks', name_ar: 'المشروبات الباردة', description: 'Cold beverages and smoothies' }
+    ],
     store: [
         { name: 'Electronics', name_ar: 'الإلكترونيات', description: 'Electronic devices and gadgets' },
         { name: 'Clothing', name_ar: 'الملابس', description: 'Apparel and clothing items' },
@@ -79,6 +86,9 @@ exports.handler = async (event) => {
         // Route the request based on HTTP method and path
         if (httpMethod === 'GET' && path === '/products') {
             return await handleGetProducts(dynamodb, userInfo);
+        } else if (httpMethod === 'GET' && path === '/products/search') {
+            const query = event.queryStringParameters?.q || '';
+            return await handleSearchProducts(dynamodb, userInfo, query);
         } else if (httpMethod === 'POST' && path === '/products') {
             return await handleCreateProduct(dynamodb, userInfo, JSON.parse(body || '{}'));
         } else if (httpMethod === 'GET' && pathParameters?.productId) {
@@ -471,6 +481,74 @@ async function handleUpdateProduct(dynamodb, userInfo, productId, productData) {
     } catch (error) {
         console.error('Error updating product:', error);
         return createResponse(500, { success: false, message: 'Failed to update product' });
+    }
+}
+
+// Search products by name, description, or ingredients
+async function handleSearchProducts(dynamodb, userInfo, query) {
+    try {
+        const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
+        if (!businessInfo) {
+            return createResponse(404, { success: false, message: 'Business not found for user' });
+        }
+
+        if (!query || query.trim().length === 0) {
+            // If no query provided, return all products
+            return await handleGetProducts(dynamodb, userInfo);
+        }
+
+        const searchTerm = query.trim().toLowerCase();
+
+        // Get all products for the business first
+        const params = {
+            TableName: PRODUCTS_TABLE,
+            IndexName: 'business-index',
+            KeyConditionExpression: 'businessId = :businessId',
+            ExpressionAttributeValues: {
+                ':businessId': businessInfo.businessId
+            }
+        };
+
+        const result = await dynamodb.query(params).promise();
+        
+        // Filter products based on search criteria
+        const filteredProducts = result.Items.filter(product => {
+            // Search in product name
+            const nameMatch = product.name && product.name.toLowerCase().includes(searchTerm);
+            const nameArMatch = product.name_ar && product.name_ar.toLowerCase().includes(searchTerm);
+            
+            // Search in description
+            const descMatch = product.description && product.description.toLowerCase().includes(searchTerm);
+            const descArMatch = product.description_ar && product.description_ar.toLowerCase().includes(searchTerm);
+            
+            // Search in ingredients
+            let ingredientsMatch = false;
+            if (product.ingredients && Array.isArray(product.ingredients)) {
+                ingredientsMatch = product.ingredients.some(ingredient => 
+                    ingredient && ingredient.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Search in allergens
+            let allergensMatch = false;
+            if (product.allergens && Array.isArray(product.allergens)) {
+                allergensMatch = product.allergens.some(allergen => 
+                    allergen && allergen.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            return nameMatch || nameArMatch || descMatch || descArMatch || ingredientsMatch || allergensMatch;
+        });
+
+        return createResponse(200, {
+            success: true,
+            products: filteredProducts,
+            count: filteredProducts.length,
+            searchQuery: query
+        });
+    } catch (error) {
+        console.error('Error searching products:', error);
+        return createResponse(500, { success: false, message: 'Failed to search products' });
     }
 }
 

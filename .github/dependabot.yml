@@ -1,7 +1,23 @@
 version: 2
 updates:
-  # Python dependencies
-  - package-ecosystem: "pip"
+  # Node.js backend dependencies
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "team-devops"
+    assignees:
+      - "team-devops"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+  # Node.js dependencies
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
@@ -16,30 +32,13 @@ updates:
       prefix: "deps"
       include: "scope"
 
-  # Backend Python dependencies
-  - package-ecosystem: "pip"
-    directory: "/backend"
+  # Flutter dependencies
+  - package-ecosystem: "pub"
+    directory: "/frontend"
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "09:00"
-    open-pull-requests-limit: 5
-
-  # Lambda layer dependencies
-  - package-ecosystem: "pip"
-    directory: "/infrastructure/layers/dependencies"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
-    open-pull-requests-limit: 3
-
-  # Node.js dependencies
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
+            day: "monday"
       time: "09:00"
     open-pull-requests-limit: 5
     reviewers:
@@ -80,20 +79,4 @@ updates:
       - "team-devops"
     commit-message:
       prefix: "ci"
-      include: "scope"
-
-  # Docker
-  - package-ecosystem: "docker"
-    directory: "/infrastructure"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
-    open-pull-requests-limit: 3
-    reviewers:
-      - "team-devops"
-    assignees:
-      - "team-devops"
-    commit-message:
-      prefix: "deps"
       include: "scope"

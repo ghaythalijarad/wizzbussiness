@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../widgets/language_switcher.dart';
 import '../widgets/wizz_business_text_form_field.dart';
@@ -25,6 +26,7 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isPasswordVisible = false;
 
   @override
   void dispose() {
@@ -212,6 +214,13 @@ class _LoginPageState extends State<LoginPage> {
                         WizzBusinessTextFormField(
                           controller: _emailController,
                           labelText: loc.email,
+                          keyboardType: TextInputType.emailAddress,
+                          inputFormatters: [
+                            // Only allow English Latin letters, numbers, and email symbols
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9@._-]'),
+                            ),
+                          ],
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return loc.pleaseEnterYourEmail;
@@ -223,7 +232,27 @@ class _LoginPageState extends State<LoginPage> {
                         WizzBusinessTextFormField(
                           controller: _passwordController,
                           labelText: loc.password,
-                          obscureText: true,
+                          obscureText: !_isPasswordVisible,
+                          inputFormatters: [
+                            // Only allow English Latin letters, numbers, and common password symbols
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9!@#$%^&*()_+=\-\[\]{}|;:,.<>?/~`]'),
+                            ),
+                          ],
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible 
+                                ? Icons.visibility_off_rounded 
+                                : Icons.visibility_rounded,
+                              color: const Color(0xFF3399FF),
+                              size: 22,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
+                          ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return loc.pleaseEnterYourPassword;

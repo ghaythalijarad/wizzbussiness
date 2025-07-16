@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../models/product.dart';
 import '../models/business.dart';
 import '../services/product_service.dart';
@@ -21,15 +22,29 @@ class ProductsManagementScreen extends StatefulWidget {
 
 class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
   List<Product> _products = [];
+  List<Product> _filteredProducts = [];
   List<ProductCategory> _categories = [];
   bool _isLoading = true;
   String? _error;
-  String _selectedCategoryFilter = 'all';
+  
+  // Search functionality
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
+  Timer? _debounceTimer;
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -50,6 +65,7 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
       if (productsResult['success']) {
         final productsList = productsResult['products'] as List;
         _products = productsList.map((json) => Product.fromJson(json)).toList();
+        _updateFilteredProducts();
       } else {
         _error = productsResult['message'];
       }
@@ -67,28 +83,42 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
     final businessTypeString =
         _getBusinessTypeString(widget.business.businessType);
 
-    print('Loading categories for business type: $businessTypeString');
+    print('🏪 ProductsManagementScreen: Loading categories...');
+    print('   Business ID: ${widget.business.id}');
+    print('   Business Name: ${widget.business.name}');
+    print('   Business Type Enum: ${widget.business.businessType}');
+    print('   Business Type String: $businessTypeString');
 
     try {
       final result = await ProductService.getCategoriesForBusinessType(
         businessTypeString,
       );
 
-      print('Categories result: $result');
+      print('📋 Categories API Result: $result');
 
-      if (result['success']) {
+      // The updated ProductService now always returns success=true with categories
+      // (either from API or predetermined fallback)
+      if (result['success'] && result['categories'] != null) {
         final categoriesList = result['categories'] as List;
+        print('📦 Raw categories list length: ${categoriesList.length}');
+        print('📦 Raw categories data: $categoriesList');
+        
         _categories = categoriesList
             .map((json) => ProductCategory.fromJson(json))
             .toList();
-        print(
-            'Loaded ${_categories.length} categories: ${_categories.map((c) => c.name).toList()}');
+        print('✅ Successfully loaded ${_categories.length} categories:');
+        for (var category in _categories) {
+          print('   - ${category.name} (ID: ${category.id})');
+        }
       } else {
-        print('Failed to load categories: ${result['message']}');
+        print('❌ No categories available, this should not happen with the updated service');
+        print('   Result success: ${result['success']}');
+        print('   Result categories: ${result['categories']}');
         _categories = [];
       }
     } catch (e) {
-      print('Error loading categories: $e');
+      print('💥 Error loading categories: $e');
+      print('📍 Stack trace: ${StackTrace.current}');
       _categories = [];
     }
   }
@@ -113,13 +143,99 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
     }
   }
 
-  List<Product> get _filteredProducts {
-    if (_selectedCategoryFilter == 'all') {
-      return _products;
+  List<Product> get _displayedProducts {
+    return _filteredProducts;
+  }
+
+  void _updateFilteredProducts() {
+    List<Product> filtered = _products;
+
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
+      filtered = filtered.where((product) {
+        final nameMatch = product.name.toLowerCase().contains(query);
+        final descriptionMatch = product.description.toLowerCase().contains(query);
+        
+        // Check for ingredients match if product has additionalData
+        bool ingredientsMatch = false;
+        if (product.additionalData != null && 
+            product.additionalData!['ingredients'] != null) {
+          final ingredients = product.additionalData!['ingredients'];
+          if (ingredients is List) {
+            ingredientsMatch = ingredients.any((ingredient) => 
+              ingredient.toString().toLowerCase().contains(query));
+          } else if (ingredients is String) {
+            ingredientsMatch = ingredients.toLowerCase().contains(query);
+          }
+        }
+        
+        return nameMatch || descriptionMatch || ingredientsMatch;
+      }).toList();
     }
-    return _products
-        .where((product) => product.categoryId == _selectedCategoryFilter)
-        .toList();
+
+    setState(() {
+      _filteredProducts = filtered;
+    });
+  }
+
+  void _onSearchChanged() {
+    // Cancel previous timer if it exists
+    _debounceTimer?.cancel();
+
+    // Set a new timer for debounced search
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      _performSearch();
+    });
+  }
+
+  Future<void> _performSearch() async {
+    final query = _searchController.text.trim();
+    
+    setState(() {
+      _isSearching = true;
+      _searchQuery = query;
+    });
+
+    try {
+      if (query.isEmpty) {
+        // If no search query, use local filtering
+        _updateFilteredProducts();
+      } else {
+        // Perform backend search for more comprehensive results
+        final searchResult = await ProductService.searchProducts(query);
+        
+        if (searchResult['success']) {
+          final searchProducts = searchResult['products'] as List;
+          final products = searchProducts.map((json) => Product.fromJson(json)).toList();
+          
+          setState(() {
+            _filteredProducts = products;
+          });
+        } else {
+          // Fallback to local search if backend search fails
+          _updateFilteredProducts();
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Search unavailable, showing local results'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      // Fallback to local search on error
+      _updateFilteredProducts();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
+        });
+      }
+    }
   }
 
   String _getCategoryName(String categoryId) {
@@ -142,6 +258,7 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
       setState(() {
         _products.removeWhere((product) => product.id == productId);
       });
+      _updateFilteredProducts();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -179,6 +296,7 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
           );
         }
       });
+      _updateFilteredProducts();
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -220,17 +338,6 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Products Management'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadData,
-          ),
-        ],
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
@@ -253,42 +360,128 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
                 )
               : Column(
                   children: [
-                    // Category Filter
-                    if (_categories.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
+                    // Compact Search Bar with Rounded Design
+                    Container(
+                      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF3399FF),
+                            const Color(0xFF00D4FF),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF3399FF).withOpacity(0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
                           children: [
-                            const Text(
-                              'Filter by category: ',
-                              style: TextStyle(fontWeight: FontWeight.w500),
-                            ),
-                            Expanded(
-                              child: DropdownButton<String>(
-                                value: _selectedCategoryFilter,
-                                isExpanded: true,
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    _selectedCategoryFilter = newValue ?? 'all';
-                                  });
-                                },
-                                items: [
-                                  const DropdownMenuItem<String>(
-                                    value: 'all',
-                                    child: Text('All Categories'),
+                            // Search Field
+                            Container(
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
                                   ),
-                                  ..._categories.map((category) {
-                                    return DropdownMenuItem<String>(
-                                      value: category.id,
-                                      child: Text(category.name),
-                                    );
-                                  }).toList(),
                                 ],
                               ),
+                              child: TextField(
+                                controller: _searchController,
+                                decoration: InputDecoration(
+                                  hintText: 'Search products...',
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: _isSearching
+                                      ? Container(
+                                          width: 20,
+                                          height: 20,
+                                          padding: const EdgeInsets.all(14),
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<Color>(
+                                              const Color(0xFF3399FF),
+                                            ),
+                                          ),
+                                        )
+                                      : Icon(
+                                          Icons.search_rounded,
+                                          color: const Color(0xFF3399FF),
+                                          size: 22,
+                                        ),
+                                  suffixIcon: _searchController.text.isNotEmpty
+                                      ? IconButton(
+                                          icon: Icon(
+                                            Icons.clear_rounded,
+                                            color: Colors.grey[500],
+                                            size: 20,
+                                          ),
+                                          onPressed: () {
+                                            _searchController.clear();
+                                            setState(() {
+                                              _searchQuery = '';
+                                            });
+                                            _updateFilteredProducts();
+                                          },
+                                        )
+                                      : null,
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                style: const TextStyle(fontSize: 15),
+                              ),
                             ),
+                            
+                            // Compact Search Results Summary
+                            if (_searchQuery.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline_rounded,
+                                      color: Colors.white.withOpacity(0.9),
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        '${_filteredProducts.length} results for "${_searchQuery}"',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.9),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
+                    ),
 
                     // Products List
                     Expanded(
@@ -298,24 +491,30 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
-                                    Icons.inventory_2_outlined,
+                                    _searchQuery.isNotEmpty
+                                        ? Icons.search_off
+                                        : Icons.inventory_2_outlined,
                                     size: 64,
                                     color: Colors.grey[400],
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    _selectedCategoryFilter == 'all'
-                                        ? 'No products found'
-                                        : 'No products in this category',
+                                    _searchQuery.isNotEmpty
+                                        ? 'No products found for "${_searchQuery}"'
+                                        : 'No products found',
                                     style: TextStyle(
                                       fontSize: 16,
                                       color: Colors.grey[600],
                                     ),
+                                    textAlign: TextAlign.center,
                                   ),
                                   const SizedBox(height: 8),
-                                  const Text(
-                                    'Add your first product to get started',
+                                  Text(
+                                    _searchQuery.isNotEmpty
+                                        ? 'Try adjusting your search terms'
+                                        : 'Add your first product to get started',
                                     style: TextStyle(color: Colors.grey),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),

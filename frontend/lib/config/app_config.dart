@@ -12,9 +12,9 @@ import 'dart:io';
 class AppConfig {
   // Use deployed AWS API Gateway URL for development/testing (us-east-1)
   static const String _defaultLocalUrl =
-      'https://2q9vzca001.execute-api.us-east-1.amazonaws.com/Prod';
+      'https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev';
   static const String _defaultAndroidUrl =
-      'https://2q9vzca001.execute-api.us-east-1.amazonaws.com/Prod';
+      'https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev';
 
   // Environment configuration
   static const String _awsApiUrl = String.fromEnvironment(

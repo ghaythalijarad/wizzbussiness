@@ -69,7 +69,7 @@ class ProductService {
         'name': name,
         'description': description,
         'price': price,
-        'category_id': categoryId,
+        'categoryId': categoryId,
         'is_available': isAvailable,
         if (imageUrl != null) 'image_url': imageUrl,
         if (additionalData != null) ...additionalData,
@@ -130,7 +130,7 @@ class ProductService {
       if (name != null) updateData['name'] = name;
       if (description != null) updateData['description'] = description;
       if (price != null) updateData['price'] = price;
-      if (categoryId != null) updateData['category_id'] = categoryId;
+      if (categoryId != null) updateData['categoryId'] = categoryId;
       if (imageUrl != null) updateData['image_url'] = imageUrl;
       if (isAvailable != null) updateData['is_available'] = isAvailable;
       if (additionalData != null) updateData.addAll(additionalData);
@@ -248,28 +248,43 @@ class ProductService {
   /// Get categories for a specific business type
   static Future<Map<String, dynamic>> getCategoriesForBusinessType(
       String businessType) async {
+    print('🔗 ProductService: Getting categories for business type: $businessType');
+    
     try {
+      final url = '$baseUrl/categories/business-type/$businessType';
+      print('🌐 ProductService: Making request to: $url');
+      
       final response = await http.get(
-        Uri.parse('$baseUrl/categories/business-type/$businessType'),
+        Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
         },
       );
 
+      print('📊 ProductService: API response status: ${response.statusCode}');
+      print('📄 ProductService: API response body: ${response.body}');
+      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        final apiCategories = data['categories'] ?? [];
+        
+        print('✅ ProductService: API returned ${apiCategories.length} categories');
+        print('📦 ProductService: Categories data: $apiCategories');
+        
         return {
           'success': true,
-          'categories': data['categories'] ?? [],
+          'categories': apiCategories,
         };
       } else {
         final errorData = jsonDecode(response.body);
+        print('❌ ProductService: API error: ${errorData['message']}');
         return {
           'success': false,
           'message': errorData['message'] ?? 'Failed to fetch categories',
         };
       }
     } catch (e) {
+      print('ProductService: Network error: $e');
       return {
         'success': false,
         'message': 'Network error: ${e.toString()}',
@@ -298,6 +313,46 @@ class ProductService {
         return {
           'success': false,
           'message': errorData['message'] ?? 'Failed to fetch categories',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Search products by name or ingredients
+  static Future<Map<String, dynamic>> searchProducts(String query) async {
+    try {
+      final token = await AppAuthService.getAccessToken();
+      if (token == null) {
+        return {
+          'success': false,
+          'message': 'No access token found',
+        };
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/products/search?q=${Uri.encodeComponent(query)}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'products': data['products'] ?? [],
+        };
+      } else {
+        final errorData = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': errorData['message'] ?? 'Failed to search products',
         };
       }
     } catch (e) {

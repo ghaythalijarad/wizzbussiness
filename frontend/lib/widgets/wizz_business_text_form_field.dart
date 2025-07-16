@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class WizzBusinessTextFormField extends StatelessWidget {
   final TextEditingController controller;
@@ -8,6 +9,9 @@ class WizzBusinessTextFormField extends StatelessWidget {
   final TextInputType? keyboardType;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final int? maxLines;
+  final TextCapitalization textCapitalization;
+  final List<TextInputFormatter>? inputFormatters;
 
   const WizzBusinessTextFormField({
     super.key,
@@ -18,6 +22,9 @@ class WizzBusinessTextFormField extends StatelessWidget {
     this.keyboardType,
     this.prefixIcon,
     this.suffixIcon,
+    this.maxLines = 1,
+    this.textCapitalization = TextCapitalization.none,
+    this.inputFormatters,
   });
 
   @override
@@ -27,6 +34,9 @@ class WizzBusinessTextFormField extends StatelessWidget {
       validator: validator,
       obscureText: obscureText,
       keyboardType: keyboardType,
+      maxLines: maxLines,
+      textCapitalization: textCapitalization,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: labelText,
         prefixIcon: prefixIcon,

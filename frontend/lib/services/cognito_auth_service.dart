@@ -18,6 +18,13 @@ class CognitoAuthService {
     if (_isConfigured) return;
 
     try {
+      // Check if Amplify is already configured
+      if (Amplify.isConfigured) {
+        _isConfigured = true;
+        print('✅ Amplify already configured, skipping configuration');
+        return;
+      }
+
       // Configure Amplify with Cognito
       final authPlugin = AmplifyAuthCognito();
       final apiPlugin = AmplifyAPI();

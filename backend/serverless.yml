@@ -2,6 +2,7 @@ service: order-receiver-api
 
 plugins:
   - serverless-webpack
+  - serverless-offline
 
 provider:
   name: aws
@@ -14,6 +15,9 @@ provider:
     ENVIRONMENT: ${self:provider.stage}
     USERS_TABLE: order-receiver-users-${self:provider.stage}
     BUSINESSES_TABLE: order-receiver-businesses-${self:provider.stage}
+    PRODUCTS_TABLE: order-receiver-products-${self:provider.stage}
+    CATEGORIES_TABLE: order-receiver-categories-${self:provider.stage}
+    DISCOUNTS_TABLE: order-receiver-discounts-${self:provider.stage}
     COGNITO_USER_POOL_ID: ${self:params.CognitoUserPoolId}
     COGNITO_CLIENT_ID: ${self:params.CognitoClientId}
   iam:
@@ -32,6 +36,12 @@ provider:
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-users-${self:provider.stage}/index/*"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-businesses-${self:provider.stage}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-businesses-${self:provider.stage}/index/*"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-products-${self:provider.stage}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-products-${self:provider.stage}/index/*"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-categories-${self:provider.stage}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-categories-${self:provider.stage}/index/*"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-discounts-${self:provider.stage}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-discounts-${self:provider.stage}/index/*"
         - Effect: "Allow"
           Action:
             - "cognito-idp:AdminGetUser"
@@ -74,7 +84,86 @@ functions:
           method: post
           cors: true
       - http:
+          path: /auth/user-businesses
+          method: get
+          cors: true
+      - http:
           path: /auth/health
+          method: get
+          cors: true
+  orderManagement:
+    handler: functions/orders/order_management_handler.handler
+    name: order-receiver-${self:provider.stage}-order-management-v1-sls
+    events:
+      # Product endpoints
+      - http:
+          path: /products
+          method: get
+          cors: true
+      - http:
+          path: /products
+          method: post
+          cors: true
+      - http:
+          path: /products/{productId}
+          method: get
+          cors: true
+      - http:
+          path: /products/{productId}
+          method: put
+          cors: true
+      - http:
+          path: /products/{productId}
+          method: delete
+          cors: true
+      # Category endpoints
+      - http:
+          path: /categories
+          method: get
+          cors: true
+      - http:
+          path: /categories/business-type/{businessType}
+          method: get
+          cors: true
+  discountManagement:
+    handler: functions/discounts/discount_management_handler.handler
+    name: order-receiver-${self:provider.stage}-discount-management-v1-sls
+    events:
+      # Discount endpoints
+      - http:
+          path: /discounts
+          method: get
+          cors: true
+      - http:
+          path: /discounts
+          method: post
+          cors: true
+      - http:
+          path: /discounts/{discountId}
+          method: get
+          cors: true
+      - http:
+          path: /discounts/{discountId}
+          method: put
+          cors: true
+      - http:
+          path: /discounts/{discountId}
+          method: delete
+          cors: true
+      - http:
+          path: /discounts/{discountId}/toggle-status
+          method: patch
+          cors: true
+      - http:
+          path: /discounts/validate-discount
+          method: post
+          cors: true
+      - http:
+          path: /discounts/apply-discount
+          method: post
+          cors: true
+      - http:
+          path: /discounts/stats
           method: get
           cors: true
   health:
@@ -96,6 +185,97 @@ custom:
 
 build:
   esbuild: false
+
+resources:
+  Resources:
+    ProductsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: order-receiver-products-${self:provider.stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: productId
+            AttributeType: S
+          - AttributeName: businessId
+            AttributeType: S
+          - AttributeName: categoryId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: productId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: business-index
+            KeySchema:
+              - AttributeName: businessId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: category-index
+            KeySchema:
+              - AttributeName: categoryId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: business-category-index
+            KeySchema:
+              - AttributeName: businessId
+                KeyType: HASH
+              - AttributeName: categoryId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    CategoriesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: order-receiver-categories-${self:provider.stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: categoryId
+            AttributeType: S
+          - AttributeName: businessType
+            AttributeType: S
+        KeySchema:
+          - AttributeName: categoryId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: business-type-index
+            KeySchema:
+              - AttributeName: businessType
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    DiscountsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: order-receiver-discounts-${self:provider.stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: discountId
+            AttributeType: S
+          - AttributeName: businessId
+            AttributeType: S
+          - AttributeName: status
+            AttributeType: S
+        KeySchema:
+          - AttributeName: discountId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: business-index
+            KeySchema:
+              - AttributeName: businessId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: business-status-index
+            KeySchema:
+              - AttributeName: businessId
+                KeyType: HASH
+              - AttributeName: status
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
 
 outputs:
   ApiGatewayEndpoint:

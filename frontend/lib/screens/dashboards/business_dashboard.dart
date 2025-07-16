@@ -3,9 +3,8 @@ import '../../models/business.dart';
 import '../../l10n/app_localizations.dart';
 import '../orders_page.dart';
 import '../profile_settings_page.dart';
-import '../items_management_page.dart';
 import '../discount_management_page.dart';
-import '../login_page.dart';
+import '../products_management_screen.dart';
 import '../../models/order.dart';
 import '../../widgets/top_app_bar.dart';
 import '../../services/app_state.dart';
@@ -14,11 +13,15 @@ import '../../utils/responsive_helper.dart';
 class BusinessDashboard extends StatefulWidget {
   final Business business;
   final void Function(Locale) onLanguageChanged;
+  final Map<String, dynamic>? userData;
+  final List<Map<String, dynamic>>? businessesData;
 
   const BusinessDashboard({
     Key? key,
     required this.business,
     required this.onLanguageChanged,
+    this.userData,
+    this.businessesData,
   }) : super(key: key);
 
   @override
@@ -117,21 +120,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
           onOrdersRefresh: _refreshOrders,
         );
       case 1:
-        return ItemsManagementPage(
-          business: currentBusiness, // Pass the most recent business object
-          orders: _orders,
-          onNavigateToOrders: () => setState(() => _selectedIndex = 0),
-          onOrderUpdated: (orderId, status) {
-            final orderIndex =
-                _orders.indexWhere((order) => order.id == orderId);
-            if (orderIndex != -1) {
-              setState(() {
-                _orders[orderIndex] =
-                    _orders[orderIndex].copyWith(status: status);
-              });
-            }
-          },
-        );
+        return ProductsManagementScreen(business: widget.business);
       case 2:
         return DiscountManagementPage(
           business: widget.business,
@@ -142,6 +131,8 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
           business: widget.business,
           orders: _orders,
           onLanguageChanged: widget.onLanguageChanged,
+          userData: widget.userData,
+          businessesData: widget.businessesData,
         );
       default:
         return Center(child: Text(AppLocalizations.of(context)!.error));
@@ -194,8 +185,8 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
             label: loc.orders,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.inventory_2),
-            label: loc.items,
+            icon: const Icon(Icons.shopping_bag),
+            label: 'Products',
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.local_offer),
@@ -396,8 +387,8 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
                 ),
                 _buildNavItem(
                   context,
-                  icon: Icons.inventory_2,
-                  title: loc.items,
+                  icon: Icons.shopping_bag,
+                  title: 'Products',
                   isSelected: _selectedIndex == 1,
                   onTap: () => setState(() => _selectedIndex = 1),
                 ),

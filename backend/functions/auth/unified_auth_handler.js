@@ -4,10 +4,6 @@ const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
 const { createResponse } = require('./utils');
 
-// Initialize AWS clients
-const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
-const dynamodb = new AWS.DynamoDB.DocumentClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
-
 // Environment variables
 const USERS_TABLE = process.env.USERS_TABLE;
 const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE;
@@ -30,6 +26,8 @@ exports.handler = async (event) => {
                 return await handleSignin(body);
             case 'POST /auth/resend-code':
                 return await handleResendCode(body);
+            case 'GET /auth/user-businesses':
+                return await handleGetUserBusinesses(event);
             case 'GET /auth/health':
                 return handleHealth();
             default:
@@ -42,6 +40,10 @@ exports.handler = async (event) => {
 };
 
 async function handleRegisterWithBusiness(body) {
+    // Instantiate AWS clients for this invocation (supports Jest mocks)
+    const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
+    const dynamodb = new AWS.DynamoDB.DocumentClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
+
     const {
         email: rawEmail,
         password,
@@ -87,6 +89,7 @@ async function handleRegisterWithBusiness(body) {
         const timestamp = new Date().toISOString();
 
         const userItem = {
+            userId: userId,
             user_id: userId,
             cognito_user_id: userSub,
             email,
@@ -101,6 +104,7 @@ async function handleRegisterWithBusiness(body) {
         };
 
         const businessItem = {
+            businessId: businessId,
             business_id: businessId,
             cognito_user_id: userSub,
             email,
@@ -159,6 +163,10 @@ async function handleRegisterWithBusiness(body) {
 }
 
 async function handleConfirmSignup(body) {
+    // Instantiate AWS clients for this invocation (supports Jest mocks)
+    const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
+    const dynamodb = new AWS.DynamoDB.DocumentClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
+
     const { email: rawEmail, verificationCode } = body;
     const email = rawEmail ? rawEmail.toLowerCase().trim() : '';
 
@@ -181,6 +189,7 @@ async function handleConfirmSignup(body) {
         }).promise();
         console.log(`Updated email_verified attribute for user: ${email}`);
 
+        // Query user by email using the email-index
         const queryParams = {
             TableName: USERS_TABLE,
             IndexName: 'email-index',
@@ -188,20 +197,38 @@ async function handleConfirmSignup(body) {
             ExpressionAttributeValues: { ':email': email }
         };
         const { Items } = await dynamodb.query(queryParams).promise();
+        console.log(`Query found ${Items ? Items.length : 0} users with email: ${email}`);
 
         if (Items && Items.length > 0) {
             const user = Items[0];
+            console.log(`Found user record:`, JSON.stringify(user, null, 2));
+            
+            // Check both possible userId fields
+            const userIdKey = user.userId || user.user_id;
+            console.log(`Using userId for update: ${userIdKey}`);
+            
+            if (!userIdKey) {
+                console.error('No userId found in user record');
+                throw new Error('User record missing userId');
+            }
+            
             const updateParams = {
                 TableName: USERS_TABLE,
-                Key: { 'user_id': user.user_id },
+                Key: { 'userId': userIdKey },
                 UpdateExpression: 'set email_verified = :v, updated_at = :t',
                 ExpressionAttributeValues: {
                     ':v': true,
                     ':t': new Date().toISOString()
                 }
             };
-            await dynamodb.update(updateParams).promise();
-            console.log(`Updated email verification status for user: ${user.user_id}`);
+            console.log(`Update params:`, JSON.stringify(updateParams, null, 2));
+            
+            const updateResult = await dynamodb.update(updateParams).promise();
+            console.log(`DynamoDB update result:`, JSON.stringify(updateResult, null, 2));
+            console.log(`✅ Updated email verification status for user: ${userIdKey}`);
+        } else {
+            console.error(`❌ No user found with email: ${email}`);
+            throw new Error('User not found in database');
         }
 
         return createResponse(200, { success: true, message: 'Email verified successfully. You can now sign in.' });
@@ -219,6 +246,9 @@ async function handleConfirmSignup(body) {
 }
 
 async function handleCheckEmail(body) {
+    // Instantiate AWS client for this invocation (supports Jest mocks)
+    const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
+
     const { email: rawEmail } = body;
     const email = rawEmail ? rawEmail.toLowerCase().trim() : '';
 
@@ -239,6 +269,10 @@ async function handleCheckEmail(body) {
 }
 
 async function handleSignin(body) {
+    // Instantiate AWS clients for this invocation (supports Jest mocks)
+    const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
+    const dynamodb = new AWS.DynamoDB.DocumentClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
+
     const { email: rawEmail, password } = body;
     const email = rawEmail ? rawEmail.toLowerCase().trim() : '';
 
@@ -257,17 +291,45 @@ async function handleSignin(body) {
         };
         const response = await cognito.initiateAuth(authParams).promise();
         console.log(`User ${email} signed in successfully.`);
-        return createResponse(200, { success: true, message: 'Sign in successful', data: response.AuthenticationResult });
+
+        // Fetch user data from DynamoDB
+        const userQueryParams = {
+            TableName: USERS_TABLE,
+            IndexName: 'email-index',
+            KeyConditionExpression: 'email = :email',
+            ExpressionAttributeValues: { ':email': email }
+        };
+        const { Items: userItems } = await dynamodb.query(userQueryParams).promise();
+        console.log(`Found ${userItems ? userItems.length : 0} user records for: ${email}`);
+
+        // Fetch business data from DynamoDB
+        const businessQueryParams = {
+            TableName: BUSINESSES_TABLE,
+            IndexName: 'email-index',
+            KeyConditionExpression: 'email = :email',
+            ExpressionAttributeValues: { ':email': email }
+        };
+        const { Items: businessItems } = await dynamodb.query(businessQueryParams).promise();
+        console.log(`Found ${businessItems ? businessItems.length : 0} business records for: ${email}`);
+
+        return createResponse(200, { 
+            success: true, 
+            message: 'Sign in successful', 
+            data: response.AuthenticationResult,
+            user: userItems && userItems.length > 0 ? userItems[0] : null,
+            businesses: businessItems || []
+        });
     } catch (error) {
         console.error('Error signing in:', error);
-        if (error.code === 'NotAuthorizedException' || error.code === 'UserNotFoundException') {
-            return createResponse(401, { success: false, message: 'Invalid credentials' });
-        }
-        return createResponse(500, { success: false, message: 'Sign in failed' });
+        // Always return unauthorized for any sign-in error
+        return createResponse(401, { success: false, message: 'Invalid credentials' });
     }
 }
 
 async function handleResendCode(body) {
+    // Instantiate AWS client for this invocation (supports Jest mocks)
+    const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
+
     const { email: rawEmail } = body;
     const email = rawEmail ? rawEmail.toLowerCase().trim() : '';
 
@@ -292,6 +354,68 @@ async function handleResendCode(body) {
     }
 }
 
+async function handleGetUserBusinesses(event) {
+    // Instantiate AWS clients for this invocation
+    const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
+    const dynamodb = new AWS.DynamoDB.DocumentClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
+
+    // Extract access token from Authorization header
+    const authHeader = event.headers?.Authorization || event.headers?.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return createResponse(401, { success: false, message: 'Missing or invalid authorization header' });
+    }
+
+    const accessToken = authHeader.replace('Bearer ', '');
+
+    try {
+        // Verify the access token with Cognito
+        const userResponse = await cognito.getUser({ AccessToken: accessToken }).promise();
+        const email = userResponse.UserAttributes.find(attr => attr.Name === 'email')?.Value;
+        
+        if (!email) {
+            return createResponse(400, { success: false, message: 'Email not found in user attributes' });
+        }
+
+        console.log(`Fetching businesses for user: ${email}`);
+
+        // Query businesses by email using the email-index
+        const queryParams = {
+            TableName: BUSINESSES_TABLE,
+            IndexName: 'email-index',
+            KeyConditionExpression: 'email = :email',
+            ExpressionAttributeValues: { ':email': email.toLowerCase().trim() }
+        };
+
+        const { Items } = await dynamodb.query(queryParams).promise();
+        console.log(`Found ${Items ? Items.length : 0} businesses for user: ${email}`);
+
+        if (Items && Items.length > 0) {
+            return createResponse(200, { 
+                success: true, 
+                businesses: Items,
+                message: `Found ${Items.length} business(es)` 
+            });
+        } else {
+            return createResponse(200, { 
+                success: true, 
+                businesses: [],
+                message: 'No businesses found for this user' 
+            });
+        }
+
+    } catch (error) {
+        console.error('Error fetching user businesses:', error);
+        if (error.code === 'NotAuthorizedException') {
+            return createResponse(401, { success: false, message: 'Invalid or expired access token' });
+        }
+        return createResponse(500, { success: false, message: 'Failed to fetch user businesses' });
+    }
+}
+
 function handleHealth() {
     return createResponse(200, { success: true, message: 'Auth service is healthy' });
 }
+
+// Export internal functions for testing
+module.exports.handleRegisterWithBusiness = handleRegisterWithBusiness;
+module.exports.handleSignin = handleSignin;

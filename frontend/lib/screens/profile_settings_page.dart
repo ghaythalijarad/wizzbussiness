@@ -16,6 +16,8 @@ class ProfileSettingsPage extends StatefulWidget {
   final List<Order> orders;
   final Function(int)? onNavigateToPage;
   final Function(String, OrderStatus)? onOrderUpdated;
+  final Map<String, dynamic>? userData;
+  final List<Map<String, dynamic>>? businessesData;
 
   const ProfileSettingsPage({
     Key? key,
@@ -24,6 +26,8 @@ class ProfileSettingsPage extends StatefulWidget {
     required this.orders,
     this.onNavigateToPage,
     this.onOrderUpdated,
+    this.userData,
+    this.businessesData,
   }) : super(key: key);
 
   @override
@@ -65,35 +69,51 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     });
 
     try {
-      // Load Cognito user data
-      final userResponse = await AppAuthService.getCurrentUser();
-      if (userResponse != null && userResponse['success'] == true) {
+      // Use passed user data if available, otherwise load from Cognito
+      if (widget.userData != null) {
         setState(() {
-          _userData = userResponse['user'];
+          _userData = widget.userData;
           _isLoadingUserData = false;
         });
       } else {
-        setState(() {
-          _errorMessage =
-              userResponse?['message'] ?? 'Failed to load user data';
-          _isLoadingUserData = false;
-        });
+        // Fallback to loading from Cognito
+        final userResponse = await AppAuthService.getCurrentUser();
+        if (userResponse != null && userResponse['success'] == true) {
+          setState(() {
+            _userData = userResponse['user'];
+            _isLoadingUserData = false;
+          });
+        } else {
+          setState(() {
+            _errorMessage =
+                userResponse?['message'] ?? 'Failed to load user data';
+            _isLoadingUserData = false;
+          });
+        }
       }
 
-      // Load business data from DynamoDB via API Gateway
-      final apiService = ApiService();
-      final businesses = await apiService.getUserBusinesses();
-
-      if (businesses.isNotEmpty) {
+      // Use passed business data if available, otherwise load from API
+      if (widget.businessesData != null && widget.businessesData!.isNotEmpty) {
         setState(() {
-          _businessData = businesses[0]; // Get the first business
+          _businessData = widget.businessesData!.first;
           _isLoadingBusinessData = false;
         });
       } else {
-        setState(() {
-          _businessData = null;
-          _isLoadingBusinessData = false;
-        });
+        // Fallback to loading from API
+        final apiService = ApiService();
+        final businesses = await apiService.getUserBusinesses();
+
+        if (businesses.isNotEmpty) {
+          setState(() {
+            _businessData = businesses[0]; // Get the first business
+            _isLoadingBusinessData = false;
+          });
+        } else {
+          setState(() {
+            _businessData = null;
+            _isLoadingBusinessData = false;
+          });
+        }
       }
     } catch (e) {
       setState(() {

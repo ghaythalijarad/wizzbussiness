@@ -3,7 +3,7 @@ import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../widgets/language_switcher.dart';
 import '../widgets/wizz_business_text_form_field.dart';
 import '../widgets/wizz_business_button.dart';
-// import '../screens/forgot_password_page.dart'; // TODO: Implement forgot password
+import '../screens/forgot_password_screen.dart';
 import '../screens/registration_form_screen.dart';
 import '../screens/dashboards/business_dashboard.dart';
 import '../services/app_auth_service.dart';
@@ -89,6 +89,8 @@ class _LoginPageState extends State<LoginPage> {
                   builder: (context) => BusinessDashboard(
                     business: business,
                     onLanguageChanged: widget.onLanguageChanged,
+                    userData: userData,
+                    businessesData: response.businesses,
                   ),
                 ),
               );
@@ -246,12 +248,11 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 16),
                         TextButton(
                           onPressed: () {
-                            // TODO: Implement forgot password functionality
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('Forgot password feature coming soon'),
-                                backgroundColor: Colors.orange,
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ForgotPasswordScreen(),
                               ),
                             );
                           },

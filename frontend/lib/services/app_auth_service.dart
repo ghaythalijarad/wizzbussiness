@@ -125,68 +125,51 @@ class AppAuthService {
         // Continue with sign-in attempt
       }
 
-      // Now attempt to sign in with Cognito via Amplify
-      final cognitoResult = await CognitoAuthService.signIn(
-        username: email,
+      // Use our backend API for sign-in which returns both auth tokens and business data
+      final apiResponse = await ApiService().signIn(
+        email: email,
         password: password,
       );
-      if (cognitoResult['success'] == true) {
-        // Verify Amplify session is established
-        final authSession =
-            await Amplify.Auth.fetchAuthSession() as CognitoAuthSession;
-        if (!authSession.isSignedIn) {
-          return SignInResult(
-            success: false,
-            message: 'Amplify session not established',
-            user: null,
-            businesses: [],
-            data: null,
-          );
+
+      if (apiResponse['success'] == true) {
+        print('📡 Backend sign-in successful');
+
+        // Extract tokens from the response
+        final authData = apiResponse['data'];
+        if (authData != null) {
+          await _storeAuthTokens({
+            'accessToken': authData['AccessToken'],
+            'idToken': authData['IdToken'],
+            'refreshToken': authData['RefreshToken'],
+          });
         }
-        // Store cognito tokens
-        await _storeAuthTokens({
-          'accessToken': cognitoResult['accessToken'],
-          'idToken': cognitoResult['idToken'],
-          'refreshToken': cognitoResult['refreshToken'],
-        });
+
+        // Configure Amplify with the tokens to establish session
+        try {
+          // Use CognitoAuthService to establish the Amplify session
+          final cognitoResult = await CognitoAuthService.signIn(
+            username: email,
+            password: password,
+          );
+          print('🔄 Amplify session established: ${cognitoResult['success']}');
+        } catch (e) {
+          print('⚠️ Warning: Could not establish Amplify session: $e');
+          // Continue anyway as we have the backend data
+        }
+
+        // Return the user and business data from our backend
+        return SignInResult(
+          success: true,
+          message: apiResponse['message'] ?? 'Sign in successful',
+          user: apiResponse['user'],
+          businesses:
+              List<Map<String, dynamic>>.from(apiResponse['businesses'] ?? []),
+          data: authData,
+        );
       } else {
         return SignInResult(
           success: false,
-          message: cognitoResult['message'] ?? 'Cognito sign-in failed',
-          user: null,
-          businesses: [],
-          data: null,
-        );
-      }
-
-      // After Cognito sign-in, fetch user attributes and businesses
-      try {
-        final attributes = await Amplify.Auth.fetchUserAttributes();
-        final userAttributesMap = {
-          for (final attr in attributes) attr.userAttributeKey.key: attr.value
-        };
-
-        // Small delay to allow session to propagate to API Gateway
-        await Future.delayed(Duration(milliseconds: 500));
-
-        List<Map<String, dynamic>> businessesRaw;
-        try {
-          businessesRaw = await ApiService().getUserBusinesses();
-        } catch (amplifyError) {
-          print('Amplify API failed, trying fallback: $amplifyError');
-          businessesRaw = await ApiService().getUserBusinessesFallback();
-        }
-        return SignInResult(
-          success: true,
-          message: 'Sign in successful',
-          user: userAttributesMap,
-          businesses: businessesRaw,
-          data: null,
-        );
-      } catch (fetchError) {
-        return SignInResult(
-          success: false,
-          message: 'Failed to fetch user data: $fetchError',
+          message: apiResponse['message'] ?? 'Sign-in failed',
           user: null,
           businesses: [],
           data: null,
@@ -429,6 +412,50 @@ class AppAuthService {
       );
     }
   }
+
+  static Future<ForgotPasswordResult> forgotPassword({
+    required String email,
+  }) async {
+    await initialize();
+    try {
+      final result = await CognitoAuthService.forgotPassword(username: email);
+      return ForgotPasswordResult(
+        success: result['success'] == true,
+        message: result['message'] ?? 'Reset code sent successfully',
+        codeDeliveryDetails: result['codeDeliveryDetails'],
+      );
+    } catch (e) {
+      return ForgotPasswordResult(
+        success: false,
+        message: e.toString(),
+        codeDeliveryDetails: null,
+      );
+    }
+  }
+
+  static Future<ConfirmForgotPasswordResult> confirmForgotPassword({
+    required String email,
+    required String newPassword,
+    required String confirmationCode,
+  }) async {
+    await initialize();
+    try {
+      final result = await CognitoAuthService.confirmForgotPassword(
+        username: email,
+        newPassword: newPassword,
+        confirmationCode: confirmationCode,
+      );
+      return ConfirmForgotPasswordResult(
+        success: result['success'] == true,
+        message: result['message'] ?? 'Password reset successfully',
+      );
+    } catch (e) {
+      return ConfirmForgotPasswordResult(
+        success: false,
+        message: e.toString(),
+      );
+    }
+  }
 }
 
 class RegisterResult {
@@ -492,6 +519,28 @@ class ChangePasswordResult {
   final String message;
 
   ChangePasswordResult({
+    required this.success,
+    required this.message,
+  });
+}
+
+class ForgotPasswordResult {
+  final bool success;
+  final String message;
+  final Map<String, dynamic>? codeDeliveryDetails;
+
+  ForgotPasswordResult({
+    required this.success,
+    required this.message,
+    this.codeDeliveryDetails,
+  });
+}
+
+class ConfirmForgotPasswordResult {
+  final bool success;
+  final String message;
+
+  ConfirmForgotPasswordResult({
     required this.success,
     required this.message,
   });

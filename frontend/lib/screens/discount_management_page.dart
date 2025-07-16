@@ -31,11 +31,12 @@ class DiscountManagementPage extends StatefulWidget {
 class _DiscountManagementPageState extends State<DiscountManagementPage> {
   String _selectedFilter = 'all';
   final ApiService _apiService = ApiService();
-  Business get _business => widget.business;
+  List<Discount> _discounts = [];
   bool _isInitializing = true;
+  bool _isLoading = false;
 
   List<Discount> get _filteredDiscounts {
-    final allDiscounts = _business.discounts;
+    final allDiscounts = _discounts;
 
     switch (_selectedFilter) {
       case 'active':
@@ -116,16 +117,172 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       print(
           'DiscountManagementPage: Authentication verified - ${currentUser['email'] ?? 'Unknown email'}');
 
-      setState(() {
-        _isInitializing = false;
-      });
+      // Load discounts from API
+      await _loadDiscounts();
+
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
     } catch (e) {
-      print('DiscountManagementPage: Authentication check failed: $e');
+      print('DiscountManagementPage: Error during initialization: $e');
 
       if (mounted) {
         final loc = AppLocalizations.of(context)!;
-        _showAuthenticationRequiredDialog(loc.authenticationFailedTitle,
-            'Authentication verification failed. Please sign in again.');
+        _showAuthenticationRequiredDialog(
+            loc.authenticationFailedTitle, 'Failed to initialize: $e');
+      }
+    }
+  }
+
+  Future<void> _loadDiscounts() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final discountsData = await _apiService.getDiscounts();
+      final discounts = discountsData.map((data) => Discount.fromJson(data)).toList();
+      
+      setState(() {
+        _discounts = discounts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading discounts: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load discounts: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _createDiscount(Discount discount) async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final discountData = discount.toJson();
+      final createdDiscountData = await _apiService.createDiscount(discountData);
+      final createdDiscount = Discount.fromJson(createdDiscountData);
+      
+      setState(() {
+        _discounts.add(createdDiscount);
+        _isLoading = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Discount created successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error creating discount: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create discount: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _updateDiscount(Discount discount) async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final discountData = discount.toJson();
+      final updatedDiscountData = await _apiService.updateDiscount(discount.id, discountData);
+      final updatedDiscount = Discount.fromJson(updatedDiscountData);
+      
+      setState(() {
+        final index = _discounts.indexWhere((d) => d.id == discount.id);
+        if (index != -1) {
+          _discounts[index] = updatedDiscount;
+        }
+        _isLoading = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Discount updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error updating discount: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update discount: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteDiscount(String discountId) async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      await _apiService.deleteDiscount(discountId);
+      
+      setState(() {
+        _discounts.removeWhere((d) => d.id == discountId);
+        _isLoading = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Discount deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error deleting discount: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete discount: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -183,60 +340,74 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     }
 
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          // Filter chips
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 3,
-                  offset: const Offset(0, 1),
+          Column(
+            children: [
+              // Filter chips
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildFilterChip(
-                      AppLocalizations.of(context)!.allDiscounts, 'all'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip(
-                      AppLocalizations.of(context)!.activeDiscounts, 'active'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip(
-                      AppLocalizations.of(context)!.scheduledDiscounts,
-                      'scheduled'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip(
-                      AppLocalizations.of(context)!.expiredDiscounts,
-                      'expired'),
-                ],
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildFilterChip(
+                          AppLocalizations.of(context)!.allDiscounts, 'all'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(
+                          AppLocalizations.of(context)!.activeDiscounts, 'active'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(
+                          AppLocalizations.of(context)!.scheduledDiscounts,
+                          'scheduled'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(
+                          AppLocalizations.of(context)!.expiredDiscounts,
+                          'expired'),
+                    ],
+                  ),
+                ),
+              ),
+              // Discounts list
+              Expanded(
+                child: _filteredDiscounts.isEmpty
+                    ? _buildEmptyState()
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _filteredDiscounts.length,
+                        itemBuilder: (context, index) {
+                          final discount = _filteredDiscounts[index];
+                          return DiscountCard(
+                            discount: discount,
+                            onEdit: () => _showEditDiscountDialog(discount),
+                            onDelete: () => _showDeleteConfirmationDialog(discount),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+          // Loading overlay
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFF00C1E8),
+                ),
               ),
             ),
-          ),
-          // Discounts list
-          Expanded(
-            child: _filteredDiscounts.isEmpty
-                ? _buildEmptyState()
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _filteredDiscounts.length,
-                    itemBuilder: (context, index) {
-                      final discount = _filteredDiscounts[index];
-                      return DiscountCard(
-                        discount: discount,
-                        onEdit: () => _showEditDiscountDialog(discount),
-                        onDelete: () => _showDeleteConfirmationDialog(discount),
-                      );
-                    },
-                  ),
-          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -356,11 +527,9 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
             child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
-            onPressed: () {
-              setState(() {
-                _business.discounts.removeWhere((d) => d.id == discount.id);
-              });
+            onPressed: () async {
               Navigator.of(context).pop();
+              await _deleteDiscount(discount.id);
             },
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
@@ -1202,7 +1371,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
               child: Text(AppLocalizations.of(context)!.cancel),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   // Check for conflicting discounts
                   if ((applicability == DiscountApplicability.specificItems &&
@@ -1315,21 +1484,33 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                     );
                   }
 
-                  setState(() {
+                  Navigator.of(context).pop();
+                  
+                  // Call API methods to create or update the discount
+                  try {
                     if (isEditing) {
-                      final index = _business.discounts
-                          .indexWhere((d) => d.id == newDiscount.id);
-                      if (index != -1) {
-                        _business.discounts[index] = newDiscount;
+                      await _updateDiscount(newDiscount);
+                      // Update free delivery discount if needed
+                      if (freeDeliveryDiscount != null) {
+                        // Try to find existing free delivery discount for this main discount
+                        final existingFreeDelivery = _discounts.where(
+                          (d) => d.type == DiscountType.freeDelivery && 
+                                 d.title.contains(newDiscount.title)
+                        ).firstOrNull;
+                        if (existingFreeDelivery == null) {
+                          await _createDiscount(freeDeliveryDiscount);
+                        } else {
+                          await _updateDiscount(freeDeliveryDiscount);
+                        }
                       }
                     } else {
                       // Check for conflicting discounts before adding
                       if (!_hasConflictingDiscounts(
                           selectedItemIds, selectedCategoryIds, null)) {
-                        _business.discounts.add(newDiscount);
+                        await _createDiscount(newDiscount);
                         // Add free delivery discount if created
                         if (freeDeliveryDiscount != null) {
-                          _business.discounts.add(freeDeliveryDiscount);
+                          await _createDiscount(freeDeliveryDiscount);
                         }
                       } else {
                         // Show error message
@@ -1342,9 +1523,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                         );
                       }
                     }
-                  });
-
-                  Navigator.of(context).pop();
+                  } catch (e) {
+                    // Error handling is already done in the individual methods
+                    print('Error in discount dialog: $e');
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -1364,7 +1546,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
   // Add validation method to check for conflicting discounts
   bool _hasConflictingDiscounts(List<String> selectedItemIds,
       List<String> selectedCategoryIds, String? currentDiscountId) {
-    final existingDiscounts = _business.discounts.where((d) =>
+    final existingDiscounts = _discounts.where((d) =>
         d.id != currentDiscountId &&
         d.status == DiscountStatus.active &&
         d.type != DiscountType.freeDelivery);
@@ -1400,10 +1582,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
 
   void _showItemSelectionDialog(
       List<String> selectedItemIds, StateSetter setState) async {
-    // Load all available items
+    // Load all available categories using ApiService
     List<ItemCategory> categories = [];
     try {
-      categories = await _apiService.getCategories(_business.id);
+      categories = await _apiService.getCategories(widget.business.id);
     } catch (e) {
       print('Error loading categories: $e');
       return;
@@ -1508,10 +1690,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
 
   void _showCategorySelectionDialog(
       List<String> selectedCategoryIds, StateSetter setState) async {
-    // Load all available categories
+    // Load all available categories using ApiService
     List<ItemCategory> categories = [];
     try {
-      categories = await _apiService.getCategories(_business.id);
+      categories = await _apiService.getCategories(widget.business.id);
     } catch (e) {
       print('Error loading categories: $e');
       return;
@@ -1620,10 +1802,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     String title,
     Function(String?) onItemSelected,
   ) async {
-    // Load all available items
+    // Load all available categories using ApiService
     List<ItemCategory> categories = [];
     try {
-      categories = await _apiService.getCategories(_business.id);
+      categories = await _apiService.getCategories(widget.business.id);
     } catch (e) {
       print('Error loading categories: $e');
       return;

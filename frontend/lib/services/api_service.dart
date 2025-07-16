@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:http/http.dart' as http;
 import '../models/dish.dart';
 import '../models/item_category.dart';
@@ -753,6 +752,268 @@ class ApiService {
     } else {
       print('Error searching items: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to search items.');
+    }
+  }
+
+  /// Sign in user and get authentication tokens plus business data
+  Future<Map<String, dynamic>> signIn({
+    required String email,
+    required String password,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/signin'),
+      headers: await _getAuthHeaders(isPublic: true),
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      print('SignIn API response: $responseData');
+      return responseData;
+    } else {
+      print('Error in signIn: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to sign in: ${response.body}');
+    }
+  }
+
+  // Discount Management Methods
+
+  /// Get all discounts for a business
+  Future<List<Map<String, dynamic>>> getDiscounts() async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/discounts'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true && data['discounts'] != null) {
+        return List<Map<String, dynamic>>.from(data['discounts']);
+      }
+      return [];
+    } else {
+      print('Error getting discounts: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to get discounts: ${response.body}');
+    }
+  }
+
+  /// Create a new discount
+  Future<Map<String, dynamic>> createDiscount(Map<String, dynamic> discountData) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/discounts'),
+      headers: headers,
+      body: jsonEncode(discountData),
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true && data['discount'] != null) {
+        return data['discount'];
+      }
+      throw Exception('Invalid response format');
+    } else {
+      print('Error creating discount: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to create discount: ${response.body}');
+    }
+  }
+
+  /// Get a specific discount by ID
+  Future<Map<String, dynamic>> getDiscount(String discountId) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/discounts/$discountId'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true && data['discount'] != null) {
+        return data['discount'];
+      }
+      throw Exception('Invalid response format');
+    } else {
+      print('Error getting discount: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to get discount: ${response.body}');
+    }
+  }
+
+  /// Update an existing discount
+  Future<Map<String, dynamic>> updateDiscount(String discountId, Map<String, dynamic> discountData) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/discounts/$discountId'),
+      headers: headers,
+      body: jsonEncode(discountData),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true && data['discount'] != null) {
+        return data['discount'];
+      }
+      throw Exception('Invalid response format');
+    } else {
+      print('Error updating discount: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to update discount: ${response.body}');
+    }
+  }
+
+  /// Delete a discount
+  Future<void> deleteDiscount(String discountId) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.delete(
+      Uri.parse('$baseUrl/discounts/$discountId'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] != true) {
+        throw Exception('Failed to delete discount');
+      }
+    } else {
+      print('Error deleting discount: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to delete discount: ${response.body}');
+    }
+  }
+
+  /// Toggle discount status (active/paused)
+  Future<Map<String, dynamic>> toggleDiscountStatus(String discountId) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.patch(
+      Uri.parse('$baseUrl/discounts/$discountId/toggle-status'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true && data['discount'] != null) {
+        return data['discount'];
+      }
+      throw Exception('Invalid response format');
+    } else {
+      print('Error toggling discount status: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to toggle discount status: ${response.body}');
+    }
+  }
+
+  /// Validate if discount can be applied to an order
+  Future<Map<String, dynamic>> validateDiscount({
+    required String discountId,
+    required double orderTotal,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/discounts/validate-discount'),
+      headers: headers,
+      body: jsonEncode({
+        'discountId': discountId,
+        'orderTotal': orderTotal,
+        'items': items,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        return data;
+      }
+      throw Exception('Discount validation failed');
+    } else {
+      print('Error validating discount: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to validate discount: ${response.body}');
+    }
+  }
+
+  /// Apply discount to an order
+  Future<Map<String, dynamic>> applyDiscount({
+    required String discountId,
+    required double orderTotal,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/discounts/apply-discount'),
+      headers: headers,
+      body: jsonEncode({
+        'discountId': discountId,
+        'orderTotal': orderTotal,
+        'items': items,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        return data;
+      }
+      throw Exception('Failed to apply discount');
+    } else {
+      print('Error applying discount: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to apply discount: ${response.body}');
+    }
+  }
+
+  /// Get discount usage statistics
+  Future<Map<String, dynamic>> getDiscountStats() async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/discounts/stats'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true && data['stats'] != null) {
+        return data['stats'];
+      }
+      throw Exception('Invalid response format');
+    } else {
+      print('Error getting discount stats: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to get discount stats: ${response.body}');
+    }
+  }
+
+  /// Validate Buy X Get Y discount specifically
+  Future<Map<String, dynamic>> validateBuyXGetYDiscount({
+    required String discountId,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/discounts/validate-buy-x-get-y'),
+      headers: headers,
+      body: jsonEncode({
+        'discountId': discountId,
+        'items': items,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        return data;
+      }
+      throw Exception('Buy X Get Y validation failed');
+    } else {
+      print('Error validating Buy X Get Y discount: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to validate Buy X Get Y discount: ${response.body}');
     }
   }
 }

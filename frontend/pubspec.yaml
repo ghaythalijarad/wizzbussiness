@@ -27,7 +27,7 @@ dependencies:
   latlong2: ^0.9.1
   provider: ^6.1.2
   get_it: ^7.6.7
-  web_socket_channel: ^2.4.0
+  web_socket_channel: ^3.0.3
   # AWS Amplify for Cognito authentication
   amplify_flutter: ^2.0.0
   amplify_auth_cognito: ^2.0.0

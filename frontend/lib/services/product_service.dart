@@ -70,8 +70,8 @@ class ProductService {
         'description': description,
         'price': price,
         'categoryId': categoryId,
-        'is_available': isAvailable,
-        if (imageUrl != null) 'image_url': imageUrl,
+        'isAvailable': isAvailable,
+        if (imageUrl != null) 'imageUrl': imageUrl,
         if (additionalData != null) ...additionalData,
       };
 
@@ -131,8 +131,8 @@ class ProductService {
       if (description != null) updateData['description'] = description;
       if (price != null) updateData['price'] = price;
       if (categoryId != null) updateData['categoryId'] = categoryId;
-      if (imageUrl != null) updateData['image_url'] = imageUrl;
-      if (isAvailable != null) updateData['is_available'] = isAvailable;
+      if (imageUrl != null) updateData['imageUrl'] = imageUrl;
+      if (isAvailable != null) updateData['isAvailable'] = isAvailable;
       if (additionalData != null) updateData.addAll(additionalData);
 
       final response = await http.put(

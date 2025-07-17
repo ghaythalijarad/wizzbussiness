@@ -317,7 +317,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752759637669-2025-07-17T13:40:37.669Z/unifiedAuth.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752763264987-2025-07-17T14:41:04.987Z/unifiedAuth.zip"
               },
               "Handler": "functions/auth/unified_auth_handler.handler",
               "Runtime": "nodejs20.x",
@@ -359,7 +359,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752759637669-2025-07-17T13:40:37.669Z/orderManagement.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752763264987-2025-07-17T14:41:04.987Z/orderManagement.zip"
               },
               "Handler": "functions/orders/order_management_handler.handler",
               "Runtime": "nodejs20.x",
@@ -401,7 +401,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752759637669-2025-07-17T13:40:37.669Z/discountManagement.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752763264987-2025-07-17T14:41:04.987Z/discountManagement.zip"
               },
               "Handler": "functions/discounts/discount_management_handler.handler",
               "Runtime": "nodejs20.x",
@@ -443,7 +443,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752759637669-2025-07-17T13:40:37.669Z/health.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752763264987-2025-07-17T14:41:04.987Z/health.zip"
               },
               "Handler": "functions/health_check.handler",
               "Runtime": "nodejs20.x",
@@ -485,7 +485,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752759637669-2025-07-17T13:40:37.669Z/imageUpload.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752763264987-2025-07-17T14:41:04.987Z/imageUpload.zip"
               },
               "Handler": "functions/upload/image_upload_handler.handler",
               "Runtime": "nodejs20.x",
@@ -527,7 +527,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752759637669-2025-07-17T13:40:37.669Z/posSettings.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752763264987-2025-07-17T14:41:04.987Z/posSettings.zip"
               },
               "Handler": "functions/pos/pos_settings_handler.handler",
               "Runtime": "nodejs20.x",
@@ -572,14 +572,14 @@
               "CodeSha256": "vwNCbwVs2P7ndLUTo2FAjObUBW+O5fPAzONH6iQFfyA="
             }
           },
-          "UnifiedAuthLambdaVersiondkiuBuB1YwhjaGNAbJUXu78XCla1huvvw4wiyJthQ": {
+          "OrderManagementLambdaVersionqsxtpdXbh4GPe93H4naZas6LM8uGGgsH1lSbdNPI0": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
-                "Ref": "UnifiedAuthLambdaFunction"
+                "Ref": "OrderManagementLambdaFunction"
               },
-              "CodeSha256": "Cp0mOyZS+6JusIKYcHWNkMG9HgU265B2eLYtKTmzP98="
+              "CodeSha256": "AkA1sIg9LI3poUlb7bYnuWBIznXpMPYftNHbMM8gpXg="
             }
           },
           "DiscountManagementLambdaVersionezIYxuBRtRhaMZjuw3AFZvST81q6JOLAdiCFbY6NE": {
@@ -592,14 +592,14 @@
               "CodeSha256": "b1fVdleFJBBAUOLUKJu7u2Oivnyhd7rtP9ro3jRqxH0="
             }
           },
-          "PosSettingsLambdaVersion0VReXiQ3sa6Z2b43D8IKPahSRYVrfbhXq7Xou4Otw": {
+          "UnifiedAuthLambdaVersiondkiuBuB1YwhjaGNAbJUXu78XCla1huvvw4wiyJthQ": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
-                "Ref": "PosSettingsLambdaFunction"
+                "Ref": "UnifiedAuthLambdaFunction"
               },
-              "CodeSha256": "5dGasCiuz+Yc+ybKsHCht9Cw/ldBXCQbfQaRFrrhbZ4="
+              "CodeSha256": "Cp0mOyZS+6JusIKYcHWNkMG9HgU265B2eLYtKTmzP98="
             }
           },
           "ImageUploadLambdaVersionp0XUM66fgMyvYaALb5DgSXOD2U7qrLsTJ8IjSFY": {
@@ -612,14 +612,14 @@
               "CodeSha256": "mROAaLdu3ion5LdaJH4CjMULtBUFRW6CCnfbQqYtWqQ="
             }
           },
-          "OrderManagementLambdaVersionTmMyGAjXdw3LekooKJbxLS4W5KgdvW6OMC646UPJhfU": {
+          "PosSettingsLambdaVersion0VReXiQ3sa6Z2b43D8IKPahSRYVrfbhXq7Xou4Otw": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
-                "Ref": "OrderManagementLambdaFunction"
+                "Ref": "PosSettingsLambdaFunction"
               },
-              "CodeSha256": "t+AINNNlyFiAlNkhT+17VdYGS/IXt0TVwZEedMoy/kE="
+              "CodeSha256": "5dGasCiuz+Yc+ybKsHCht9Cw/ldBXCQbfQaRFrrhbZ4="
             }
           },
           "ApiGatewayRestApi": {
@@ -3555,7 +3555,7 @@
               "PosSettingsLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1752759620905": {
+          "ApiGatewayDeployment1752763248539": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -3863,13 +3863,13 @@
               "Name": "sls-order-receiver-api-dev-HealthLambdaFunctionQualifiedArn"
             }
           },
-          "UnifiedAuthLambdaFunctionQualifiedArn": {
+          "OrderManagementLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "UnifiedAuthLambdaVersiondkiuBuB1YwhjaGNAbJUXu78XCla1huvvw4wiyJthQ"
+              "Ref": "OrderManagementLambdaVersionqsxtpdXbh4GPe93H4naZas6LM8uGGgsH1lSbdNPI0"
             },
             "Export": {
-              "Name": "sls-order-receiver-api-dev-UnifiedAuthLambdaFunctionQualifiedArn"
+              "Name": "sls-order-receiver-api-dev-OrderManagementLambdaFunctionQualifiedArn"
             }
           },
           "DiscountManagementLambdaFunctionQualifiedArn": {
@@ -3881,13 +3881,13 @@
               "Name": "sls-order-receiver-api-dev-DiscountManagementLambdaFunctionQualifiedArn"
             }
           },
-          "PosSettingsLambdaFunctionQualifiedArn": {
+          "UnifiedAuthLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "PosSettingsLambdaVersion0VReXiQ3sa6Z2b43D8IKPahSRYVrfbhXq7Xou4Otw"
+              "Ref": "UnifiedAuthLambdaVersiondkiuBuB1YwhjaGNAbJUXu78XCla1huvvw4wiyJthQ"
             },
             "Export": {
-              "Name": "sls-order-receiver-api-dev-PosSettingsLambdaFunctionQualifiedArn"
+              "Name": "sls-order-receiver-api-dev-UnifiedAuthLambdaFunctionQualifiedArn"
             }
           },
           "ImageUploadLambdaFunctionQualifiedArn": {
@@ -3899,13 +3899,13 @@
               "Name": "sls-order-receiver-api-dev-ImageUploadLambdaFunctionQualifiedArn"
             }
           },
-          "OrderManagementLambdaFunctionQualifiedArn": {
+          "PosSettingsLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "OrderManagementLambdaVersionTmMyGAjXdw3LekooKJbxLS4W5KgdvW6OMC646UPJhfU"
+              "Ref": "PosSettingsLambdaVersion0VReXiQ3sa6Z2b43D8IKPahSRYVrfbhXq7Xou4Otw"
             },
             "Export": {
-              "Name": "sls-order-receiver-api-dev-OrderManagementLambdaFunctionQualifiedArn"
+              "Name": "sls-order-receiver-api-dev-PosSettingsLambdaFunctionQualifiedArn"
             }
           },
           "ServiceEndpoint": {
@@ -4418,7 +4418,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "OrderManagementLambdaVersionTmMyGAjXdw3LekooKJbxLS4W5KgdvW6OMC646UPJhfU"
+        "versionLogicalId": "OrderManagementLambdaVersionqsxtpdXbh4GPe93H4naZas6LM8uGGgsH1lSbdNPI0"
       },
       "discountManagement": {
         "handler": "functions/discounts/discount_management_handler.handler",
@@ -4909,7 +4909,7 @@
       "package": {
         "individually": true,
         "artifactsS3KeyDirname": "serverless/order-receiver-api/dev/code-artifacts",
-        "artifactDirectoryName": "serverless/order-receiver-api/dev/1752759637669-2025-07-17T13:40:37.669Z"
+        "artifactDirectoryName": "serverless/order-receiver-api/dev/1752763264987-2025-07-17T14:41:04.987Z"
       },
       "custom": {
         "$ref": "$[\"service\"][\"custom\"]"
@@ -4942,7 +4942,7 @@
   },
   "package": {
     "individually": true,
-    "artifactDirectoryName": "serverless/order-receiver-api/dev/1752759637669-2025-07-17T13:40:37.669Z",
+    "artifactDirectoryName": "serverless/order-receiver-api/dev/1752763264987-2025-07-17T14:41:04.987Z",
     "artifact": ""
   }
 }

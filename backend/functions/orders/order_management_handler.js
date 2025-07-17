@@ -30,12 +30,12 @@ const BUSINESS_TYPE_CATEGORIES = {
         { name: 'Sandwiches', name_ar: 'الساندويتشات', description: 'Light meals and sandwiches' },
         { name: 'Cold Drinks', name_ar: 'المشروبات الباردة', description: 'Cold beverages and smoothies' }
     ],
-    caffe: [  // Add alias for caffe (same as cafe)
-        { name: 'Coffee', name_ar: 'القهوة', description: 'Coffee drinks and varieties' },
-        { name: 'Tea', name_ar: 'الشاي', description: 'Tea varieties and blends' },
-        { name: 'Pastries', name_ar: 'المعجنات', description: 'Baked goods and pastries' },
-        { name: 'Sandwiches', name_ar: 'الساندويتشات', description: 'Light meals and sandwiches' },
-        { name: 'Cold Drinks', name_ar: 'المشروبات الباردة', description: 'Cold beverages and smoothies' }
+    bakery: [
+        { name: 'Bread', name_ar: 'الخبز', description: 'Fresh baked bread varieties' },
+        { name: 'Cakes', name_ar: 'الكعك', description: 'Cakes and celebration desserts' },
+        { name: 'Pastries', name_ar: 'المعجنات', description: 'Sweet and savory pastries' },
+        { name: 'Cookies', name_ar: 'البسكويت', description: 'Cookies and biscuits' },
+        { name: 'Muffins & Cupcakes', name_ar: 'المافن والكب كيك', description: 'Individual baked treats' }
     ],
     store: [
         { name: 'Electronics', name_ar: 'الإلكترونيات', description: 'Electronic devices and gadgets' },
@@ -195,7 +195,7 @@ async function handleGetCategoriesByBusinessType(dynamodb, businessType) {
         // First, try to get existing categories
         const params = {
             TableName: CATEGORIES_TABLE,
-            IndexName: 'business-type-index',
+            IndexName: 'BusinessTypeIndex',
             KeyConditionExpression: 'businessType = :businessType',
             ExpressionAttributeValues: {
                 ':businessType': businessType.toLowerCase()

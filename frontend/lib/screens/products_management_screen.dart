@@ -143,10 +143,6 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
     }
   }
 
-  List<Product> get _displayedProducts {
-    return _filteredProducts;
-  }
-
   void _updateFilteredProducts() {
     List<Product> filtered = _products;
 

@@ -38,11 +38,13 @@ const BUSINESS_TYPE_CATEGORIES = {
         { name: 'Muffins & Cupcakes', name_ar: 'المافن والكب كيك', description: 'Individual baked treats' }
     ],
     store: [
-        { name: 'Electronics', name_ar: 'الإلكترونيات', description: 'Electronic devices and gadgets' },
-        { name: 'Clothing', name_ar: 'الملابس', description: 'Apparel and clothing items' },
-        { name: 'Home & Garden', name_ar: 'المنزل والحديقة', description: 'Home improvement and garden supplies' },
-        { name: 'Health & Beauty', name_ar: 'الصحة والجمال', description: 'Personal care and beauty products' },
-        { name: 'Sports & Outdoors', name_ar: 'الرياضة والأنشطة الخارجية', description: 'Sports equipment and outdoor gear' }
+        { name: 'Meat & Poultry', name_ar: 'اللحوم والدواجن', description: 'Fresh meat and poultry products' },
+        { name: 'Vegetables & Fruits', name_ar: 'الخضروات والفواكه', description: 'Fresh vegetables and fruits' },
+        { name: 'Dairy & Milk', name_ar: 'الألبان والحليب', description: 'Dairy products and milk' },
+        { name: 'Dry Foods & Grains', name_ar: 'الأطعمة الجافة والحبوب', description: 'Dry foods, grains, and pantry staples' },
+        { name: 'Beverages', name_ar: 'المشروبات', description: 'Soft drinks, juices, and beverages' },
+        { name: 'Snacks & Sweets', name_ar: 'الوجبات الخفيفة والحلويات', description: 'Snacks, candies, and sweet treats' },
+        { name: 'Household Items', name_ar: 'المواد المنزلية', description: 'Cleaning supplies and household essentials' }
     ],
     pharmacy: [
         { name: 'Prescription Medicines', name_ar: 'الأدوية بوصفة طبية', description: 'Prescription medications' },
@@ -50,6 +52,31 @@ const BUSINESS_TYPE_CATEGORIES = {
         { name: 'Personal Care', name_ar: 'العناية الشخصية', description: 'Personal hygiene and care products' },
         { name: 'Vitamins & Supplements', name_ar: 'الفيتامينات والمكملات', description: 'Health supplements and vitamins' },
         { name: 'Medical Devices', name_ar: 'الأجهزة الطبية', description: 'Medical equipment and devices' }
+    ],
+    herbalspices: [
+        { name: 'Fresh Herbs', name_ar: 'الأعشاب الطازجة', description: 'Fresh culinary and medicinal herbs' },
+        { name: 'Dried Spices', name_ar: 'التوابل المجففة', description: 'Ground and whole dried spices' },
+        { name: 'Spice Blends', name_ar: 'خلطات التوابل', description: 'Mixed spice blends and seasonings' },
+        { name: 'Medicinal Herbs', name_ar: 'الأعشاب الطبية', description: 'Traditional medicinal herbs and remedies' },
+        { name: 'Essential Oils', name_ar: 'الزيوت العطرية', description: 'Natural essential oils and aromatherapy products' },
+        { name: 'Tea & Infusions', name_ar: 'الشاي والمنقوعات', description: 'Herbal teas and health infusions' }
+    ],
+    cosmetics: [
+        { name: 'Face Makeup', name_ar: 'مكياج الوجه', description: 'Foundation, concealer, powder, and face makeup' },
+        { name: 'Eye Makeup', name_ar: 'مكياج العيون', description: 'Eyeshadow, mascara, eyeliner, and eye products' },
+        { name: 'Lip Products', name_ar: 'منتجات الشفاه', description: 'Lipstick, lip gloss, and lip care products' },
+        { name: 'Skincare', name_ar: 'العناية بالبشرة', description: 'Cleansers, moisturizers, and skincare treatments' },
+        { name: 'Nail Products', name_ar: 'منتجات الأظافر', description: 'Nail polish, nail care, and nail art supplies' },
+        { name: 'Hair Care', name_ar: 'العناية بالشعر', description: 'Shampoo, conditioner, and hair styling products' },
+        { name: 'Fragrance', name_ar: 'العطور', description: 'Perfumes, body sprays, and fragrance products' },
+        { name: 'Tools & Accessories', name_ar: 'الأدوات والإكسسوارات', description: 'Makeup brushes, sponges, and beauty tools' }
+    ],
+    betshop: [
+        { name: 'Sports Betting', name_ar: 'الرهان الرياضي', description: 'Football, basketball, and other sports betting' },
+        { name: 'Live Betting', name_ar: 'الرهان المباشر', description: 'In-play and live match betting' },
+        { name: 'Casino Games', name_ar: 'ألعاب الكازينو', description: 'Slot machines, poker, and casino games' },
+        { name: 'Virtual Sports', name_ar: 'الرياضات الافتراضية', description: 'Virtual football, racing, and simulated sports' },
+        { name: 'Lottery & Scratch Cards', name_ar: 'اليانصيب وبطاقات الخدش', description: 'Lottery tickets and instant win games' }
     ]
 };
 

@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 void main() async {
   print('🧪 Testing Category Loading for Different Business Types...\n');
   
-  final businessTypes = ['store', 'restaurant', 'pharmacy', 'cloudkitchen', 'caffe'];
+  final businessTypes = ['store', 'restaurant', 'pharmacy', 'cloudkitchen', 'caffe', 'bakery', 'herbalspices', 'cosmetics', 'betshop'];
   final baseUrl = 'https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev';
   
   for (final businessType in businessTypes) {

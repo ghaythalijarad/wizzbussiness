@@ -169,39 +169,76 @@ class ProductService {
   /// Delete a product
   static Future<Map<String, dynamic>> deleteProduct(String productId) async {
     try {
+      print('--- STARTING PRODUCT DELETION (BEARER TOKEN) ---');
+      print('Product ID: $productId');
+
+      // Use access token (not ID token) for API authorization
       final token = await AppAuthService.getAccessToken();
       if (token == null) {
+        print('❌ No access token found');
         return {
           'success': false,
-          'message': 'No access token found',
+          'message': 'Authentication token not found. Please sign in again.',
         };
       }
 
-      final response = await http.delete(
-        Uri.parse('$baseUrl/products/$productId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
+      print('✅ Access Token retrieved');
+      print('📝 Token length: ${token.length}');
+      print('📝 Token preview: ${token.substring(0, 20)}...');
+      
+      final url = Uri.parse('$baseUrl/products/$productId');
+      print('🌐 Request URL: $url');
+
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+
+      print('📋 Request headers:');
+      headers.forEach((key, value) {
+        if (key == 'Authorization') {
+          print('  $key: Bearer ${value.substring(7, 27)}...');
+        } else {
+          print('  $key: $value');
+        }
+      });
+
+      final response = await http.delete(url, headers: headers);
+      
+      print('--- RESPONSE ---');
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
+        print('✅ Success: Product deleted successfully.');
         return {
           'success': true,
           'message': 'Product deleted successfully',
         };
       } else {
-        final errorData = jsonDecode(response.body);
-        return {
-          'success': false,
-          'message': errorData['message'] ?? 'Failed to delete product',
-        };
+        print('❌ Error: Failed to delete product.');
+        try {
+          final errorData = jsonDecode(response.body);
+          return {
+            'success': false,
+            'message': errorData['message'] ?? 'Failed to delete product. Status code: ${response.statusCode}',
+          };
+        } catch (e) {
+          return {
+            'success': false,
+            'message': 'Failed to parse error response. Body: ${response.body}',
+          };
+        }
       }
     } catch (e) {
+      print('--- CATCH BLOCK ERROR ---');
+      print('An unexpected error occurred: ${e.toString()}');
       return {
         'success': false,
-        'message': 'Network error: ${e.toString()}',
+        'message': 'An unexpected network error occurred. Please try again.',
       };
+    } finally {
+      print('--- PRODUCT DELETION PROCESS COMPLETE ---');
     }
   }
 

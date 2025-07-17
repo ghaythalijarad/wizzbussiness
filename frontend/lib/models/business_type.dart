@@ -4,4 +4,8 @@ enum BusinessType {
   store,
   pharmacy,
   caffe,
+  bakery,
+  herbalspices,
+  cosmetics,
+  betshop,
 }

@@ -359,13 +359,28 @@ class AppAuthService {
 
   /// Get current access token from Cognito or shared preferences (fallbacks: access_token, auth_token)
   static Future<String?> getAccessToken() async {
-    try {
-      final session = await Amplify.Auth.fetchAuthSession();
-      final tokens = (session as CognitoAuthSession).userPoolTokensResult.value;
-      return tokens.accessToken.raw;
-    } catch (_) {
-      return null;
+    await initialize();
+    String? token;
+    if (AppConfig.isCognitoConfigured) {
+      try {
+        final session = await Amplify.Auth.fetchAuthSession();
+        if (session is CognitoAuthSession) {
+          final tokens = session.userPoolTokensResult.value;
+          final freshToken = tokens.accessToken.raw;
+          
+          // Update SharedPreferences with the fresh token for consistency
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('access_token', freshToken);
+          
+          return freshToken;
+        }
+      } catch (_) {
+        // fallback to stored
+      }
     }
+    final prefs = await SharedPreferences.getInstance();
+    token = prefs.getString('access_token');
+    return token;
   }
 
   /// Get current ID token from Cognito or shared preferences
@@ -377,7 +392,13 @@ class AppAuthService {
         final session = await Amplify.Auth.fetchAuthSession();
         if (session is CognitoAuthSession) {
           final tokens = session.userPoolTokensResult.value;
-          return tokens.idToken.raw;
+          final freshIdToken = tokens.idToken.raw;
+          
+          // Update SharedPreferences with the fresh token for consistency
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('id_token', freshIdToken);
+          
+          return freshIdToken;
         }
       } catch (_) {
         // fallback to stored

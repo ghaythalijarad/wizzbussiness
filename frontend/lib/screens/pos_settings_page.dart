@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
 import '../models/business.dart';
 import '../models/pos_settings.dart';
-import '../services/pos_service.dart';
 import '../services/api_service.dart';
 import '../services/app_auth_service.dart';
 import '../screens/login_page.dart';
+import 'other_settings_page.dart'; // Import the OtherSettingsPage
 
 class PosSettingsPage extends StatefulWidget {
   final Business business;
@@ -348,6 +348,17 @@ class _PosSettingsPageState extends State<PosSettingsPage>
           const SizedBox(height: 24),
           _buildActionButtons(),
           const SizedBox(height: 24),
+          // Add a button to navigate to the Other Settings page
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => OtherSettingsPage(),
+                ),
+              );
+            },
+            child: const Text('Other Settings'),
+          ),
         ],
       ),
     );
@@ -837,19 +848,54 @@ class _PosSettingsPageState extends State<PosSettingsPage>
               Text('1. ${loc.webhookStep1}'),
               Text('2. ${loc.webhookStep2}'),
               Text('3. ${loc.webhookStep3}'),
-              Text('4. ${loc.webhookStep4}'),
-              Text('5. ${loc.webhookStep5}'),
+              const SizedBox(height: 16),
+              TextFormField(
+                initialValue: 'https://your-webhook-url.com',
+                decoration: InputDecoration(
+                  labelText: 'Webhook URL',
+                  border: const OutlineInputBorder(),
+                ),
+              ),
             ],
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(loc.close),
+            onPressed: () {
+              // Handle webhook setup confirmation
+              Navigator.of(context).pop();
+            },
+            child: Text(loc.ok),
           ),
         ],
       ),
     );
+  }
+
+  IconData _getSyncStatusIcon(String status) {
+    switch (status) {
+      case 'success':
+        return Icons.check_circle;
+      case 'error':
+        return Icons.error;
+      case 'pending':
+        return Icons.hourglass_empty;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  Color _getSyncStatusColor(String status) {
+    switch (status) {
+      case 'success':
+        return Colors.green;
+      case 'error':
+        return Colors.red;
+      case 'pending':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
   }
 
   String _getPosSystemTypeName(PosSystemType type) {
@@ -866,32 +912,6 @@ class _PosSettingsPageState extends State<PosSettingsPage>
         return 'Shopify POS';
       case PosSystemType.woocommerce:
         return 'WooCommerce';
-    }
-  }
-
-  IconData _getSyncStatusIcon(String? status) {
-    switch (status) {
-      case 'success':
-        return Icons.check_circle;
-      case 'error':
-        return Icons.error;
-      case 'pending':
-        return Icons.pending;
-      default:
-        return Icons.help;
-    }
-  }
-
-  Color _getSyncStatusColor(String? status) {
-    switch (status) {
-      case 'success':
-        return Colors.green;
-      case 'error':
-        return Colors.red;
-      case 'pending':
-        return Colors.orange;
-      default:
-        return Colors.grey;
     }
   }
 }

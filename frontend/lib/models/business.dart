@@ -16,6 +16,7 @@ class Business {
   double? longitude;
   String? description;
   String? website;
+  String? businessPhotoUrl; // Added business photo URL field
   final List<Offer> offers;
   final Map<String, String> businessHours;
   final Map<String, dynamic> settings;
@@ -32,6 +33,7 @@ class Business {
     this.longitude,
     this.description,
     this.website,
+    this.businessPhotoUrl, // Added business photo URL parameter
     required this.offers,
     required this.businessHours,
     required this.settings,
@@ -79,6 +81,7 @@ class Business {
       longitude: lon,
       description: json['description'],
       website: json['website'],
+      businessPhotoUrl: json['businessPhotoUrl'] ?? json['business_photo_url'], // Added business photo URL parsing
       offers: (json['offers'] as List<dynamic>?)
               ?.map((offerJson) => Offer.fromJson(offerJson))
               .toList() ??
@@ -119,6 +122,7 @@ class Business {
     String? email,
     String? description,
     String? website,
+    String? businessPhotoUrl, // Added business photo URL parameter
   }) {
     if (name != null) this.name = name;
     if (ownerName != null) this.ownerName = ownerName;
@@ -129,6 +133,7 @@ class Business {
     if (email != null) this.email = email;
     if (description != null) this.description = description;
     if (website != null) this.website = website;
+    if (businessPhotoUrl != null) this.businessPhotoUrl = businessPhotoUrl; // Added business photo URL update
   }
 
   void updateSettings(String category, String key, dynamic value) {

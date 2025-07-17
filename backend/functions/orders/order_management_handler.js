@@ -248,7 +248,7 @@ async function handleGetProducts(dynamodb, userInfo) {
 
         const params = {
             TableName: PRODUCTS_TABLE,
-            IndexName: 'business-index',
+            IndexName: 'BusinessIdIndex',
             KeyConditionExpression: 'businessId = :businessId',
             ExpressionAttributeValues: {
                 ':businessId': businessInfo.businessId
@@ -502,7 +502,7 @@ async function handleSearchProducts(dynamodb, userInfo, query) {
         // Get all products for the business first
         const params = {
             TableName: PRODUCTS_TABLE,
-            IndexName: 'business-index',
+            IndexName: 'BusinessIdIndex',
             KeyConditionExpression: 'businessId = :businessId',
             ExpressionAttributeValues: {
                 ':businessId': businessInfo.businessId

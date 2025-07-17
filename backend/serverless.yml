@@ -6,20 +6,25 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs22.x
+  runtime: nodejs20.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
   memorySize: 512
   timeout: 29
   environment:
     ENVIRONMENT: ${self:provider.stage}
-    USERS_TABLE: order-receiver-users-${self:provider.stage}
-    BUSINESSES_TABLE: order-receiver-businesses-${self:provider.stage}
-    PRODUCTS_TABLE: order-receiver-products-${self:provider.stage}
-    CATEGORIES_TABLE: order-receiver-categories-${self:provider.stage}
-    DISCOUNTS_TABLE: order-receiver-discounts-${self:provider.stage}
+    USERS_TABLE: order-receiver-users-dev
+    BUSINESSES_TABLE: order-receiver-businesses-dev
+    PRODUCTS_TABLE: order-receiver-products-dev
+    CATEGORIES_TABLE: order-receiver-categories-dev
+    DISCOUNTS_TABLE: order-receiver-discounts-dev
+    BUSINESS_SETTINGS_TABLE: order-receiver-business-settings-dev
+    POS_LOGS_TABLE: order-receiver-pos-logs-dev
+    BUSINESS_PHOTOS_BUCKET: order-receiver-business-photos-dev
     COGNITO_USER_POOL_ID: ${self:params.CognitoUserPoolId}
     COGNITO_CLIENT_ID: ${self:params.CognitoClientId}
+    COGNITO_REGION: us-east-1
+    DYNAMODB_REGION: us-east-1
   iam:
     role:
       statements:
@@ -32,16 +37,21 @@ provider:
             - "dynamodb:Query"
             - "dynamodb:Scan"
           Resource:
-            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-users-${self:provider.stage}"
-            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-users-${self:provider.stage}/index/*"
-            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-businesses-${self:provider.stage}"
-            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-businesses-${self:provider.stage}/index/*"
-            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-products-${self:provider.stage}"
-            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-products-${self:provider.stage}/index/*"
-            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-categories-${self:provider.stage}"
-            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-categories-${self:provider.stage}/index/*"
-            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-discounts-${self:provider.stage}"
-            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/order-receiver-discounts-${self:provider.stage}/index/*"
+            # us-east-1 tables (where existing data is)
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-users-dev"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-users-dev/index/*"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-businesses-dev"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-businesses-dev/index/*"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-products-dev"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-products-dev/index/*"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-categories-dev"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-categories-dev/index/*"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-discounts-dev"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-discounts-dev/index/*"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-business-settings-dev"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-business-settings-dev/index/*"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-pos-logs-dev"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-pos-logs-dev/index/*"
         - Effect: "Allow"
           Action:
             - "cognito-idp:AdminGetUser"
@@ -52,7 +62,14 @@ provider:
             - "cognito-idp:ConfirmSignUp"
             - "cognito-idp:InitiateAuth"
             - "cognito-idp:ResendConfirmationCode"
-          Resource: "arn:aws:cognito-idp:${aws:region}:${aws:accountId}:userpool/${self:params.CognitoUserPoolId}"
+          Resource: "arn:aws:cognito-idp:us-east-1:${aws:accountId}:userpool/${self:params.CognitoUserPoolId}"
+        - Effect: "Allow"
+          Action:
+            - "s3:GetObject"
+            - "s3:PutObject"
+            - "s3:DeleteObject"
+            - "s3:PutObjectAcl"
+          Resource: "arn:aws:s3:::order-receiver-business-photos-dev/*"
 
 params:
   CognitoUserPoolId: us-east-1_bDqnKdrqo
@@ -190,6 +207,31 @@ functions:
           path: /upload/product-image
           method: delete
           cors: true
+      - http:
+          path: /upload/business-photo
+          method: post
+          cors: true
+  posSettings:
+    handler: functions/pos/pos_settings_handler.handler
+    name: order-receiver-${self:provider.stage}-pos-settings-v1-sls
+    events:
+      # POS Settings endpoints
+      - http:
+          path: /businesses/{businessId}/pos-settings
+          method: get
+          cors: true
+      - http:
+          path: /businesses/{businessId}/pos-settings
+          method: put
+          cors: true
+      - http:
+          path: /businesses/{businessId}/pos-settings/test-connection
+          method: post
+          cors: true
+      - http:
+          path: /businesses/{businessId}/pos-settings/sync-logs
+          method: get
+          cors: true
 
 package:
   individually: true
@@ -204,95 +246,9 @@ build:
 
 resources:
   Resources:
-    ProductsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: order-receiver-products-${self:provider.stage}
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: productId
-            AttributeType: S
-          - AttributeName: businessId
-            AttributeType: S
-          - AttributeName: categoryId
-            AttributeType: S
-        KeySchema:
-          - AttributeName: productId
-            KeyType: HASH
-        GlobalSecondaryIndexes:
-          - IndexName: business-index
-            KeySchema:
-              - AttributeName: businessId
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-          - IndexName: category-index
-            KeySchema:
-              - AttributeName: categoryId
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-          - IndexName: business-category-index
-            KeySchema:
-              - AttributeName: businessId
-                KeyType: HASH
-              - AttributeName: categoryId
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-
-    CategoriesTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: order-receiver-categories-${self:provider.stage}
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: categoryId
-            AttributeType: S
-          - AttributeName: businessType
-            AttributeType: S
-        KeySchema:
-          - AttributeName: categoryId
-            KeyType: HASH
-        GlobalSecondaryIndexes:
-          - IndexName: business-type-index
-            KeySchema:
-              - AttributeName: businessType
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-
-    DiscountsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: order-receiver-discounts-${self:provider.stage}
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: discountId
-            AttributeType: S
-          - AttributeName: businessId
-            AttributeType: S
-          - AttributeName: status
-            AttributeType: S
-        KeySchema:
-          - AttributeName: discountId
-            KeyType: HASH
-        GlobalSecondaryIndexes:
-          - IndexName: business-index
-            KeySchema:
-              - AttributeName: businessId
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-          - IndexName: business-status-index
-            KeySchema:
-              - AttributeName: businessId
-                KeyType: HASH
-              - AttributeName: status
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-
+    # Note: Using existing DynamoDB tables in us-east-1
+    # Tables are not created here as they already exist
+    
 outputs:
   ApiGatewayEndpoint:
     Description: "API Gateway endpoint URL"

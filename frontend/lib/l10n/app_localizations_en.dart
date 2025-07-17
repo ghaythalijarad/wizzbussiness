@@ -212,10 +212,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get posSettingsUpdated => 'POS settings updated successfully';
 
   @override
-  String get connectionSuccessful => 'Connection successful';
+  String get connectionSuccessful => 'Connection Successful';
 
   @override
-  String get connectionFailed => 'Connection failed';
+  String get connectionFailed => 'Connection Failed';
 
   @override
   String get testConnection => 'Test Connection';
@@ -273,7 +273,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enablePosIntegrationDescription =>
-      'Automatically sync orders with your POS system';
+      'Allow real-time synchronization with your POS system';
 
   @override
   String get autoSendOrders => 'Auto Send Orders';
@@ -352,7 +352,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get testMode => 'Test Mode';
 
   @override
-  String get testModeDescription => 'Enable test mode for development';
+  String get testModeDescription =>
+      'Enable test mode for development and debugging';
 
   @override
   String get webhooksIntegration => 'Webhooks Integration';
@@ -2197,4 +2198,449 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categories => 'Categories';
+
+  @override
+  String get helpSectionTitle => 'Help & Support';
+
+  @override
+  String get setupGuides => 'Setup Guides';
+
+  @override
+  String get troubleshootingSection => 'Troubleshooting';
+
+  @override
+  String get supportSection => 'Support';
+
+  @override
+  String get squareSetupTitle => 'Square POS Setup';
+
+  @override
+  String get squareSetupDescription =>
+      'Follow these steps to connect your Square POS system:';
+
+  @override
+  String get squareStep1 => '1. Log in to your Square Dashboard';
+
+  @override
+  String get squareStep2 => '2. Navigate to Apps & Integrations';
+
+  @override
+  String get squareStep3 => '3. Find and select Order Receiver App';
+
+  @override
+  String get squareStep4 => '4. Generate API credentials';
+
+  @override
+  String get squareStep5 => '5. Copy your Application ID and Access Token';
+
+  @override
+  String get squareStep6 => '6. Enter credentials in the form above';
+
+  @override
+  String get squareStep7 => '7. Select your business location';
+
+  @override
+  String get squareStep8 => '8. Test connection and save settings';
+
+  @override
+  String get toastSetupTitle => 'Toast POS Setup';
+
+  @override
+  String get toastSetupDescription =>
+      'Connect your Toast POS system with these steps:';
+
+  @override
+  String get toastStep1 => '1. Access Toast Web Dashboard';
+
+  @override
+  String get toastStep2 => '2. Go to Admin > Integrations';
+
+  @override
+  String get toastStep3 => '3. Search for Order Receiver integration';
+
+  @override
+  String get toastStep4 => '4. Click \'Connect\' and authorize access';
+
+  @override
+  String get toastStep5 => '5. Copy the generated API key';
+
+  @override
+  String get toastStep6 => '6. Enter API key in the configuration above';
+
+  @override
+  String get toastStep7 => '7. Select your restaurant location';
+
+  @override
+  String get toastStep8 => '8. Test the connection to verify setup';
+
+  @override
+  String get cloverSetupTitle => 'Clover POS Setup';
+
+  @override
+  String get cloverSetupDescription => 'Set up Clover POS integration:';
+
+  @override
+  String get cloverStep1 => '1. Open Clover Dashboard';
+
+  @override
+  String get cloverStep2 => '2. Navigate to Account & Setup > Integrations';
+
+  @override
+  String get cloverStep3 => '3. Find Order Receiver app';
+
+  @override
+  String get cloverStep4 => '4. Install and configure the app';
+
+  @override
+  String get cloverStep5 => '5. Generate API token';
+
+  @override
+  String get cloverStep6 => '6. Copy Merchant ID and API token';
+
+  @override
+  String get cloverStep7 => '7. Enter credentials in the form';
+
+  @override
+  String get cloverStep8 => '8. Test connection and save';
+
+  @override
+  String get shopifySetupTitle => 'Shopify POS Setup';
+
+  @override
+  String get shopifySetupDescription =>
+      'Connect Shopify POS to Order Receiver:';
+
+  @override
+  String get shopifyStep1 => '1. Log in to Shopify Admin';
+
+  @override
+  String get shopifyStep2 => '2. Go to Apps > App Store';
+
+  @override
+  String get shopifyStep3 => '3. Search for Order Receiver';
+
+  @override
+  String get shopifyStep4 => '4. Install the app';
+
+  @override
+  String get shopifyStep5 => '5. Authorize app permissions';
+
+  @override
+  String get shopifyStep6 => '6. Generate private app credentials';
+
+  @override
+  String get shopifyStep7 => '7. Copy API key and password';
+
+  @override
+  String get shopifyStep8 => '8. Enter shop domain and credentials';
+
+  @override
+  String get genericApiSetupTitle => 'Generic API Setup';
+
+  @override
+  String get genericApiSetupDescription => 'Configure custom API integration:';
+
+  @override
+  String get genericStep1 => '1. Prepare your API endpoint URL';
+
+  @override
+  String get genericStep2 => '2. Ensure API supports required order operations';
+
+  @override
+  String get genericStep3 => '3. Generate or obtain API key/token';
+
+  @override
+  String get genericStep4 => '4. Test API endpoint with tools like Postman';
+
+  @override
+  String get genericStep5 => '5. Enter API endpoint and authentication';
+
+  @override
+  String get genericStep6 => '6. Configure webhook URLs if supported';
+
+  @override
+  String get genericStep7 => '7. Test connection thoroughly';
+
+  @override
+  String get genericStep8 => '8. Monitor sync logs for any issues';
+
+  @override
+  String get connectionIssuesTitle => 'Connection Issues';
+
+  @override
+  String get connectionIssuesDescription =>
+      'Common connection problems and solutions';
+
+  @override
+  String get connectionIssue1 =>
+      'Check your internet connection and ensure it\'s stable';
+
+  @override
+  String get connectionIssue2 =>
+      'Verify that your POS system is online and accessible';
+
+  @override
+  String get connectionIssue3 =>
+      'Confirm that API credentials are correct and active';
+
+  @override
+  String get connectionIssue4 =>
+      'Check if firewall or security settings are blocking the connection';
+
+  @override
+  String get connectionIssue5 =>
+      'Ensure your POS system\'s API is not under maintenance';
+
+  @override
+  String get connectionIssue6 =>
+      'Try restarting your POS system and network equipment';
+
+  @override
+  String get connectionIssue7 =>
+      'Contact your POS system provider if issues persist';
+
+  @override
+  String get syncFailuresTitle => 'Sync Failures';
+
+  @override
+  String get syncFailuresDescription =>
+      'Troubleshooting data synchronization issues';
+
+  @override
+  String get syncFailure1 => '• Check sync logs for specific error details';
+
+  @override
+  String get syncFailure2 => '• Verify order data format compatibility';
+
+  @override
+  String get syncFailure3 => '• Ensure POS system is online and accessible';
+
+  @override
+  String get syncFailure4 => '• Check for data validation errors';
+
+  @override
+  String get syncFailure5 => '• Review API rate limits and quotas';
+
+  @override
+  String get syncFailure6 => '• Retry failed sync operations manually';
+
+  @override
+  String get syncFailure7 => '• Update API credentials if expired';
+
+  @override
+  String get apiErrorsTitle => 'API Errors';
+
+  @override
+  String get apiErrorsDescription => 'Resolving API-related errors and issues';
+
+  @override
+  String get apiError1 => '• 401 Unauthorized: Check API credentials';
+
+  @override
+  String get apiError2 => '• 403 Forbidden: Verify API permissions';
+
+  @override
+  String get apiError3 => '• 404 Not Found: Check endpoint URL';
+
+  @override
+  String get apiError4 => '• 429 Too Many Requests: Reduce request frequency';
+
+  @override
+  String get apiError5 => '• 500 Internal Server Error: Contact support';
+
+  @override
+  String get apiError6 => '• Timeout errors: Check network stability';
+
+  @override
+  String get apiError7 => '• SSL errors: Verify certificate validity';
+
+  @override
+  String get liveChatTitle => 'Live Chat Support';
+
+  @override
+  String get liveChatDescription => 'Get instant help from our support team';
+
+  @override
+  String get liveChatAvailability => 'Available weekdays 9 AM - 5 PM';
+
+  @override
+  String get liveChatNote =>
+      'Live chat feature coming soon. Use email support for immediate assistance.';
+
+  @override
+  String get emailSupportTitle => 'Email Support';
+
+  @override
+  String get emailSupportDescription =>
+      'Send us your questions and we\'ll respond within 24 hours';
+
+  @override
+  String get emailSupportAddress => 'support@orderreceiver.com';
+
+  @override
+  String get emailSupportResponseTime => 'We typically respond within 24 hours';
+
+  @override
+  String get webhookConfigTitle => 'Webhook Configuration';
+
+  @override
+  String get webhookConfigDescription =>
+      'Set up webhooks for real-time order updates:';
+
+  @override
+  String get webhookSetupTitle => 'Webhook Setup';
+
+  @override
+  String get webhookSetupDescription =>
+      'Configure webhook integration for real-time order synchronization';
+
+  @override
+  String get webhookStep1 => 'Copy the webhook URL from your POS settings';
+
+  @override
+  String get webhookStep2 => 'Log in to your POS system dashboard';
+
+  @override
+  String get webhookStep3 => 'Navigate to webhook/integration settings';
+
+  @override
+  String get webhookStep4 => 'Add new webhook endpoint';
+
+  @override
+  String get webhookStep5 =>
+      'Configure for order events (create, update, cancel)';
+
+  @override
+  String get webhookStep6 => '6. Test webhook delivery';
+
+  @override
+  String get webhookStep7 => '7. Monitor webhook logs for successful delivery';
+
+  @override
+  String get apiKeyRotationTitle => 'API Key Rotation';
+
+  @override
+  String get apiKeyRotationDescription =>
+      'Regularly rotate API keys for security:';
+
+  @override
+  String get rotationStep1 => '1. Generate new API key in your POS system';
+
+  @override
+  String get rotationStep2 => '2. Update Order Receiver with new credentials';
+
+  @override
+  String get rotationStep3 => '3. Test connection with new key';
+
+  @override
+  String get rotationStep4 => '4. Deactivate old API key';
+
+  @override
+  String get rotationStep5 => '5. Monitor sync operations for 24 hours';
+
+  @override
+  String get rotationStep6 => '6. Document rotation date for future reference';
+
+  @override
+  String get copyToClipboard => 'Copy to Clipboard';
+
+  @override
+  String get copied => 'Copied!';
+
+  @override
+  String get openEmailSupport => 'Open Email Support';
+
+  @override
+  String get startLiveChat => 'Start Live Chat';
+
+  @override
+  String get syncIssue1 =>
+      'Check if your POS system has pending transactions to sync';
+
+  @override
+  String get syncIssue2 =>
+      'Verify that both systems have the same time zone settings';
+
+  @override
+  String get syncIssue3 =>
+      'Ensure your POS system has sufficient permissions for data access';
+
+  @override
+  String get syncIssue4 => 'Check for any data format incompatibilities';
+
+  @override
+  String get syncIssue5 => 'Review sync logs for specific error messages';
+
+  @override
+  String get syncIssue6 =>
+      'Try manually triggering a sync to identify the issue';
+
+  @override
+  String get syncIssue7 =>
+      'Clear sync cache and restart the synchronization process';
+
+  @override
+  String get apiIssue1 => 'Verify your API keys are valid and not expired';
+
+  @override
+  String get apiIssue2 =>
+      'Check API rate limits and ensure you\'re not exceeding them';
+
+  @override
+  String get apiIssue3 =>
+      'Confirm that your subscription includes required API features';
+
+  @override
+  String get apiIssue4 => 'Review API endpoint URLs for any recent changes';
+
+  @override
+  String get apiIssue5 =>
+      'Check API documentation for required headers or parameters';
+
+  @override
+  String get apiIssue6 =>
+      'Test API calls using a tool like Postman to isolate issues';
+
+  @override
+  String get apiIssue7 => 'Contact technical support with specific error codes';
+
+  @override
+  String get liveChatHours => 'Monday-Friday, 9:00 AM - 5:00 PM EST';
+
+  @override
+  String get startChat => 'Start Chat';
+
+  @override
+  String get emailResponseTime => 'Typical response time: 4-24 hours';
+
+  @override
+  String get sendEmail => 'Send Email';
+
+  @override
+  String get syncInterval => 'Sync Interval';
+
+  @override
+  String get minutes => 'minutes';
+
+  @override
+  String get syncSettings => 'Sync Settings';
+
+  @override
+  String get noSyncLogsAvailable => 'No sync logs available';
+
+  @override
+  String get advanced => 'Advanced';
+
+  @override
+  String get general => 'General';
+
+  @override
+  String get posIntegration => 'POS Integration';
+
+  @override
+  String get contactSupport => 'Contact Support';
+
+  @override
+  String get contactSupportDescription =>
+      'Need help with POS integration? Our support team is here to assist you.';
 }

@@ -503,13 +503,13 @@ abstract class AppLocalizations {
   /// No description provided for @connectionSuccessful.
   ///
   /// In en, this message translates to:
-  /// **'Connection successful'**
+  /// **'Connection Successful'**
   String get connectionSuccessful;
 
   /// No description provided for @connectionFailed.
   ///
   /// In en, this message translates to:
-  /// **'Connection failed'**
+  /// **'Connection Failed'**
   String get connectionFailed;
 
   /// No description provided for @testConnection.
@@ -623,7 +623,7 @@ abstract class AppLocalizations {
   /// No description provided for @enablePosIntegrationDescription.
   ///
   /// In en, this message translates to:
-  /// **'Automatically sync orders with your POS system'**
+  /// **'Allow real-time synchronization with your POS system'**
   String get enablePosIntegrationDescription;
 
   /// No description provided for @autoSendOrders.
@@ -779,7 +779,7 @@ abstract class AppLocalizations {
   /// No description provided for @testModeDescription.
   ///
   /// In en, this message translates to:
-  /// **'Enable test mode for development'**
+  /// **'Enable test mode for development and debugging'**
   String get testModeDescription;
 
   /// No description provided for @webhooksIntegration.
@@ -4136,6 +4136,840 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Categories'**
   String get categories;
+
+  /// No description provided for @helpSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get helpSectionTitle;
+
+  /// No description provided for @setupGuides.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup Guides'**
+  String get setupGuides;
+
+  /// No description provided for @troubleshootingSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Troubleshooting'**
+  String get troubleshootingSection;
+
+  /// No description provided for @supportSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get supportSection;
+
+  /// No description provided for @squareSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Square POS Setup'**
+  String get squareSetupTitle;
+
+  /// No description provided for @squareSetupDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow these steps to connect your Square POS system:'**
+  String get squareSetupDescription;
+
+  /// No description provided for @squareStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Log in to your Square Dashboard'**
+  String get squareStep1;
+
+  /// No description provided for @squareStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Navigate to Apps & Integrations'**
+  String get squareStep2;
+
+  /// No description provided for @squareStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Find and select Order Receiver App'**
+  String get squareStep3;
+
+  /// No description provided for @squareStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'4. Generate API credentials'**
+  String get squareStep4;
+
+  /// No description provided for @squareStep5.
+  ///
+  /// In en, this message translates to:
+  /// **'5. Copy your Application ID and Access Token'**
+  String get squareStep5;
+
+  /// No description provided for @squareStep6.
+  ///
+  /// In en, this message translates to:
+  /// **'6. Enter credentials in the form above'**
+  String get squareStep6;
+
+  /// No description provided for @squareStep7.
+  ///
+  /// In en, this message translates to:
+  /// **'7. Select your business location'**
+  String get squareStep7;
+
+  /// No description provided for @squareStep8.
+  ///
+  /// In en, this message translates to:
+  /// **'8. Test connection and save settings'**
+  String get squareStep8;
+
+  /// No description provided for @toastSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Toast POS Setup'**
+  String get toastSetupTitle;
+
+  /// No description provided for @toastSetupDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your Toast POS system with these steps:'**
+  String get toastSetupDescription;
+
+  /// No description provided for @toastStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Access Toast Web Dashboard'**
+  String get toastStep1;
+
+  /// No description provided for @toastStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Go to Admin > Integrations'**
+  String get toastStep2;
+
+  /// No description provided for @toastStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Search for Order Receiver integration'**
+  String get toastStep3;
+
+  /// No description provided for @toastStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'4. Click \'Connect\' and authorize access'**
+  String get toastStep4;
+
+  /// No description provided for @toastStep5.
+  ///
+  /// In en, this message translates to:
+  /// **'5. Copy the generated API key'**
+  String get toastStep5;
+
+  /// No description provided for @toastStep6.
+  ///
+  /// In en, this message translates to:
+  /// **'6. Enter API key in the configuration above'**
+  String get toastStep6;
+
+  /// No description provided for @toastStep7.
+  ///
+  /// In en, this message translates to:
+  /// **'7. Select your restaurant location'**
+  String get toastStep7;
+
+  /// No description provided for @toastStep8.
+  ///
+  /// In en, this message translates to:
+  /// **'8. Test the connection to verify setup'**
+  String get toastStep8;
+
+  /// No description provided for @cloverSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clover POS Setup'**
+  String get cloverSetupTitle;
+
+  /// No description provided for @cloverSetupDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up Clover POS integration:'**
+  String get cloverSetupDescription;
+
+  /// No description provided for @cloverStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Open Clover Dashboard'**
+  String get cloverStep1;
+
+  /// No description provided for @cloverStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Navigate to Account & Setup > Integrations'**
+  String get cloverStep2;
+
+  /// No description provided for @cloverStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Find Order Receiver app'**
+  String get cloverStep3;
+
+  /// No description provided for @cloverStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'4. Install and configure the app'**
+  String get cloverStep4;
+
+  /// No description provided for @cloverStep5.
+  ///
+  /// In en, this message translates to:
+  /// **'5. Generate API token'**
+  String get cloverStep5;
+
+  /// No description provided for @cloverStep6.
+  ///
+  /// In en, this message translates to:
+  /// **'6. Copy Merchant ID and API token'**
+  String get cloverStep6;
+
+  /// No description provided for @cloverStep7.
+  ///
+  /// In en, this message translates to:
+  /// **'7. Enter credentials in the form'**
+  String get cloverStep7;
+
+  /// No description provided for @cloverStep8.
+  ///
+  /// In en, this message translates to:
+  /// **'8. Test connection and save'**
+  String get cloverStep8;
+
+  /// No description provided for @shopifySetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopify POS Setup'**
+  String get shopifySetupTitle;
+
+  /// No description provided for @shopifySetupDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Shopify POS to Order Receiver:'**
+  String get shopifySetupDescription;
+
+  /// No description provided for @shopifyStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Log in to Shopify Admin'**
+  String get shopifyStep1;
+
+  /// No description provided for @shopifyStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Go to Apps > App Store'**
+  String get shopifyStep2;
+
+  /// No description provided for @shopifyStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Search for Order Receiver'**
+  String get shopifyStep3;
+
+  /// No description provided for @shopifyStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'4. Install the app'**
+  String get shopifyStep4;
+
+  /// No description provided for @shopifyStep5.
+  ///
+  /// In en, this message translates to:
+  /// **'5. Authorize app permissions'**
+  String get shopifyStep5;
+
+  /// No description provided for @shopifyStep6.
+  ///
+  /// In en, this message translates to:
+  /// **'6. Generate private app credentials'**
+  String get shopifyStep6;
+
+  /// No description provided for @shopifyStep7.
+  ///
+  /// In en, this message translates to:
+  /// **'7. Copy API key and password'**
+  String get shopifyStep7;
+
+  /// No description provided for @shopifyStep8.
+  ///
+  /// In en, this message translates to:
+  /// **'8. Enter shop domain and credentials'**
+  String get shopifyStep8;
+
+  /// No description provided for @genericApiSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Generic API Setup'**
+  String get genericApiSetupTitle;
+
+  /// No description provided for @genericApiSetupDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure custom API integration:'**
+  String get genericApiSetupDescription;
+
+  /// No description provided for @genericStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Prepare your API endpoint URL'**
+  String get genericStep1;
+
+  /// No description provided for @genericStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Ensure API supports required order operations'**
+  String get genericStep2;
+
+  /// No description provided for @genericStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Generate or obtain API key/token'**
+  String get genericStep3;
+
+  /// No description provided for @genericStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'4. Test API endpoint with tools like Postman'**
+  String get genericStep4;
+
+  /// No description provided for @genericStep5.
+  ///
+  /// In en, this message translates to:
+  /// **'5. Enter API endpoint and authentication'**
+  String get genericStep5;
+
+  /// No description provided for @genericStep6.
+  ///
+  /// In en, this message translates to:
+  /// **'6. Configure webhook URLs if supported'**
+  String get genericStep6;
+
+  /// No description provided for @genericStep7.
+  ///
+  /// In en, this message translates to:
+  /// **'7. Test connection thoroughly'**
+  String get genericStep7;
+
+  /// No description provided for @genericStep8.
+  ///
+  /// In en, this message translates to:
+  /// **'8. Monitor sync logs for any issues'**
+  String get genericStep8;
+
+  /// No description provided for @connectionIssuesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection Issues'**
+  String get connectionIssuesTitle;
+
+  /// No description provided for @connectionIssuesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Common connection problems and solutions'**
+  String get connectionIssuesDescription;
+
+  /// No description provided for @connectionIssue1.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet connection and ensure it\'s stable'**
+  String get connectionIssue1;
+
+  /// No description provided for @connectionIssue2.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify that your POS system is online and accessible'**
+  String get connectionIssue2;
+
+  /// No description provided for @connectionIssue3.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm that API credentials are correct and active'**
+  String get connectionIssue3;
+
+  /// No description provided for @connectionIssue4.
+  ///
+  /// In en, this message translates to:
+  /// **'Check if firewall or security settings are blocking the connection'**
+  String get connectionIssue4;
+
+  /// No description provided for @connectionIssue5.
+  ///
+  /// In en, this message translates to:
+  /// **'Ensure your POS system\'s API is not under maintenance'**
+  String get connectionIssue5;
+
+  /// No description provided for @connectionIssue6.
+  ///
+  /// In en, this message translates to:
+  /// **'Try restarting your POS system and network equipment'**
+  String get connectionIssue6;
+
+  /// No description provided for @connectionIssue7.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact your POS system provider if issues persist'**
+  String get connectionIssue7;
+
+  /// No description provided for @syncFailuresTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Failures'**
+  String get syncFailuresTitle;
+
+  /// No description provided for @syncFailuresDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Troubleshooting data synchronization issues'**
+  String get syncFailuresDescription;
+
+  /// No description provided for @syncFailure1.
+  ///
+  /// In en, this message translates to:
+  /// **'• Check sync logs for specific error details'**
+  String get syncFailure1;
+
+  /// No description provided for @syncFailure2.
+  ///
+  /// In en, this message translates to:
+  /// **'• Verify order data format compatibility'**
+  String get syncFailure2;
+
+  /// No description provided for @syncFailure3.
+  ///
+  /// In en, this message translates to:
+  /// **'• Ensure POS system is online and accessible'**
+  String get syncFailure3;
+
+  /// No description provided for @syncFailure4.
+  ///
+  /// In en, this message translates to:
+  /// **'• Check for data validation errors'**
+  String get syncFailure4;
+
+  /// No description provided for @syncFailure5.
+  ///
+  /// In en, this message translates to:
+  /// **'• Review API rate limits and quotas'**
+  String get syncFailure5;
+
+  /// No description provided for @syncFailure6.
+  ///
+  /// In en, this message translates to:
+  /// **'• Retry failed sync operations manually'**
+  String get syncFailure6;
+
+  /// No description provided for @syncFailure7.
+  ///
+  /// In en, this message translates to:
+  /// **'• Update API credentials if expired'**
+  String get syncFailure7;
+
+  /// No description provided for @apiErrorsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'API Errors'**
+  String get apiErrorsTitle;
+
+  /// No description provided for @apiErrorsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolving API-related errors and issues'**
+  String get apiErrorsDescription;
+
+  /// No description provided for @apiError1.
+  ///
+  /// In en, this message translates to:
+  /// **'• 401 Unauthorized: Check API credentials'**
+  String get apiError1;
+
+  /// No description provided for @apiError2.
+  ///
+  /// In en, this message translates to:
+  /// **'• 403 Forbidden: Verify API permissions'**
+  String get apiError2;
+
+  /// No description provided for @apiError3.
+  ///
+  /// In en, this message translates to:
+  /// **'• 404 Not Found: Check endpoint URL'**
+  String get apiError3;
+
+  /// No description provided for @apiError4.
+  ///
+  /// In en, this message translates to:
+  /// **'• 429 Too Many Requests: Reduce request frequency'**
+  String get apiError4;
+
+  /// No description provided for @apiError5.
+  ///
+  /// In en, this message translates to:
+  /// **'• 500 Internal Server Error: Contact support'**
+  String get apiError5;
+
+  /// No description provided for @apiError6.
+  ///
+  /// In en, this message translates to:
+  /// **'• Timeout errors: Check network stability'**
+  String get apiError6;
+
+  /// No description provided for @apiError7.
+  ///
+  /// In en, this message translates to:
+  /// **'• SSL errors: Verify certificate validity'**
+  String get apiError7;
+
+  /// No description provided for @liveChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Chat Support'**
+  String get liveChatTitle;
+
+  /// No description provided for @liveChatDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Get instant help from our support team'**
+  String get liveChatDescription;
+
+  /// No description provided for @liveChatAvailability.
+  ///
+  /// In en, this message translates to:
+  /// **'Available weekdays 9 AM - 5 PM'**
+  String get liveChatAvailability;
+
+  /// No description provided for @liveChatNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Live chat feature coming soon. Use email support for immediate assistance.'**
+  String get liveChatNote;
+
+  /// No description provided for @emailSupportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Support'**
+  String get emailSupportTitle;
+
+  /// No description provided for @emailSupportDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Send us your questions and we\'ll respond within 24 hours'**
+  String get emailSupportDescription;
+
+  /// No description provided for @emailSupportAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'support@orderreceiver.com'**
+  String get emailSupportAddress;
+
+  /// No description provided for @emailSupportResponseTime.
+  ///
+  /// In en, this message translates to:
+  /// **'We typically respond within 24 hours'**
+  String get emailSupportResponseTime;
+
+  /// No description provided for @webhookConfigTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook Configuration'**
+  String get webhookConfigTitle;
+
+  /// No description provided for @webhookConfigDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up webhooks for real-time order updates:'**
+  String get webhookConfigDescription;
+
+  /// No description provided for @webhookSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook Setup'**
+  String get webhookSetupTitle;
+
+  /// No description provided for @webhookSetupDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure webhook integration for real-time order synchronization'**
+  String get webhookSetupDescription;
+
+  /// No description provided for @webhookStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy the webhook URL from your POS settings'**
+  String get webhookStep1;
+
+  /// No description provided for @webhookStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to your POS system dashboard'**
+  String get webhookStep2;
+
+  /// No description provided for @webhookStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigate to webhook/integration settings'**
+  String get webhookStep3;
+
+  /// No description provided for @webhookStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new webhook endpoint'**
+  String get webhookStep4;
+
+  /// No description provided for @webhookStep5.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure for order events (create, update, cancel)'**
+  String get webhookStep5;
+
+  /// No description provided for @webhookStep6.
+  ///
+  /// In en, this message translates to:
+  /// **'6. Test webhook delivery'**
+  String get webhookStep6;
+
+  /// No description provided for @webhookStep7.
+  ///
+  /// In en, this message translates to:
+  /// **'7. Monitor webhook logs for successful delivery'**
+  String get webhookStep7;
+
+  /// No description provided for @apiKeyRotationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'API Key Rotation'**
+  String get apiKeyRotationTitle;
+
+  /// No description provided for @apiKeyRotationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Regularly rotate API keys for security:'**
+  String get apiKeyRotationDescription;
+
+  /// No description provided for @rotationStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Generate new API key in your POS system'**
+  String get rotationStep1;
+
+  /// No description provided for @rotationStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Update Order Receiver with new credentials'**
+  String get rotationStep2;
+
+  /// No description provided for @rotationStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Test connection with new key'**
+  String get rotationStep3;
+
+  /// No description provided for @rotationStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'4. Deactivate old API key'**
+  String get rotationStep4;
+
+  /// No description provided for @rotationStep5.
+  ///
+  /// In en, this message translates to:
+  /// **'5. Monitor sync operations for 24 hours'**
+  String get rotationStep5;
+
+  /// No description provided for @rotationStep6.
+  ///
+  /// In en, this message translates to:
+  /// **'6. Document rotation date for future reference'**
+  String get rotationStep6;
+
+  /// No description provided for @copyToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to Clipboard'**
+  String get copyToClipboard;
+
+  /// No description provided for @copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied!'**
+  String get copied;
+
+  /// No description provided for @openEmailSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Email Support'**
+  String get openEmailSupport;
+
+  /// No description provided for @startLiveChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Live Chat'**
+  String get startLiveChat;
+
+  /// No description provided for @syncIssue1.
+  ///
+  /// In en, this message translates to:
+  /// **'Check if your POS system has pending transactions to sync'**
+  String get syncIssue1;
+
+  /// No description provided for @syncIssue2.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify that both systems have the same time zone settings'**
+  String get syncIssue2;
+
+  /// No description provided for @syncIssue3.
+  ///
+  /// In en, this message translates to:
+  /// **'Ensure your POS system has sufficient permissions for data access'**
+  String get syncIssue3;
+
+  /// No description provided for @syncIssue4.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for any data format incompatibilities'**
+  String get syncIssue4;
+
+  /// No description provided for @syncIssue5.
+  ///
+  /// In en, this message translates to:
+  /// **'Review sync logs for specific error messages'**
+  String get syncIssue5;
+
+  /// No description provided for @syncIssue6.
+  ///
+  /// In en, this message translates to:
+  /// **'Try manually triggering a sync to identify the issue'**
+  String get syncIssue6;
+
+  /// No description provided for @syncIssue7.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear sync cache and restart the synchronization process'**
+  String get syncIssue7;
+
+  /// No description provided for @apiIssue1.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your API keys are valid and not expired'**
+  String get apiIssue1;
+
+  /// No description provided for @apiIssue2.
+  ///
+  /// In en, this message translates to:
+  /// **'Check API rate limits and ensure you\'re not exceeding them'**
+  String get apiIssue2;
+
+  /// No description provided for @apiIssue3.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm that your subscription includes required API features'**
+  String get apiIssue3;
+
+  /// No description provided for @apiIssue4.
+  ///
+  /// In en, this message translates to:
+  /// **'Review API endpoint URLs for any recent changes'**
+  String get apiIssue4;
+
+  /// No description provided for @apiIssue5.
+  ///
+  /// In en, this message translates to:
+  /// **'Check API documentation for required headers or parameters'**
+  String get apiIssue5;
+
+  /// No description provided for @apiIssue6.
+  ///
+  /// In en, this message translates to:
+  /// **'Test API calls using a tool like Postman to isolate issues'**
+  String get apiIssue6;
+
+  /// No description provided for @apiIssue7.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact technical support with specific error codes'**
+  String get apiIssue7;
+
+  /// No description provided for @liveChatHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday-Friday, 9:00 AM - 5:00 PM EST'**
+  String get liveChatHours;
+
+  /// No description provided for @startChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Chat'**
+  String get startChat;
+
+  /// No description provided for @emailResponseTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Typical response time: 4-24 hours'**
+  String get emailResponseTime;
+
+  /// No description provided for @sendEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Email'**
+  String get sendEmail;
+
+  /// No description provided for @syncInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Interval'**
+  String get syncInterval;
+
+  /// No description provided for @minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'minutes'**
+  String get minutes;
+
+  /// No description provided for @syncSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Settings'**
+  String get syncSettings;
+
+  /// No description provided for @noSyncLogsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No sync logs available'**
+  String get noSyncLogsAvailable;
+
+  /// No description provided for @advanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get advanced;
+
+  /// No description provided for @general.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get general;
+
+  /// No description provided for @posIntegration.
+  ///
+  /// In en, this message translates to:
+  /// **'POS Integration'**
+  String get posIntegration;
+
+  /// No description provided for @contactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get contactSupport;
+
+  /// No description provided for @contactSupportDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Need help with POS integration? Our support team is here to assist you.'**
+  String get contactSupportDescription;
 }
 
 class _AppLocalizationsDelegate

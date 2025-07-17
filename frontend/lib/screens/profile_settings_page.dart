@@ -237,18 +237,10 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         children: [
           Row(
             children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.business,
-                  size: 30,
-                  color: Colors.white,
-                ),
+              _buildCircularBusinessPhoto(
+                _businessData?['business_photo_url'] ?? 
+                _userData?['business_photo_url'] ?? 
+                widget.business.businessPhotoUrl
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -313,6 +305,64 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  // Build circular business photo widget for header
+  Widget _buildCircularBusinessPhoto(String? businessPhotoUrl) {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 2,
+        ),
+      ),
+      child: ClipOval(
+        child: businessPhotoUrl != null && businessPhotoUrl.isNotEmpty
+            ? Image.network(
+                businessPhotoUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback to default icon if image fails to load
+                  return _buildCircularDefaultIcon();
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              )
+            : _buildCircularDefaultIcon(),
+      ),
+    );
+  }
+
+  // Build circular default business icon for header
+  Widget _buildCircularDefaultIcon() {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.business,
+        size: 30,
+        color: Colors.white,
       ),
     );
   }
@@ -461,207 +511,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         }
       }),
     );
-  }
-
-  Widget _buildBusinessInfoCard() {
-    final loc = AppLocalizations.of(context)!;
-
-    if (_isLoadingBusinessData) {
-      return Card(
-        elevation: 2,
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      );
-    }
-
-    // Extract business information
-    final businessName = _businessData?['business_name'] ??
-        _userData?['business_name'] ??
-        loc.businessName;
-
-    final businessAddress = _formatBusinessAddress();
-    final businessCategory = _getBusinessTypeDisplayName(
-        _businessData?['business_type'] ?? _userData?['business_type']);
-
-    // Debug output to verify data fetching
-    print('=== Business Information Debug ===');
-    print('_businessData: $_businessData');
-    print('_userData: $_userData');
-    print('businessName: $businessName');
-    print('businessAddress: $businessAddress');
-    print('businessCategory: $businessCategory');
-    print('================================');
-
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.business,
-                    color: Theme.of(context).primaryColor,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        loc.businessInformation,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        loc.businessAndOwnerInformation,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey[600],
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _buildInfoRow(
-              icon: Icons.store_outlined,
-              label: loc.businessName,
-              value: businessName,
-            ),
-            const SizedBox(height: 16),
-            _buildInfoRow(
-              icon: Icons.location_on_outlined,
-              label: loc.businessAddressLabel,
-              value: businessAddress,
-            ),
-            const SizedBox(height: 16),
-            _buildInfoRow(
-              icon: Icons.category_outlined,
-              label: loc.businessType,
-              value: businessCategory,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: Colors.grey[600],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value.isNotEmpty
-                    ? value
-                    : AppLocalizations.of(context)!.notSelected,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: value.isNotEmpty ? Colors.black87 : Colors.grey[500],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _formatBusinessAddress() {
-    // Try to get address from business data first, then user data
-    final businessAddress = _businessData?['address'];
-    final userAddress = _userData?['address'];
-
-    if (businessAddress != null) {
-      if (businessAddress is Map<String, dynamic>) {
-        // If it's a structured address
-        final street = businessAddress['street'] ?? '';
-        final city = businessAddress['city'] ?? '';
-        final country = businessAddress['country'] ?? '';
-
-        final parts =
-            [street, city, country].where((part) => part.isNotEmpty).toList();
-        return parts.join(', ');
-      } else if (businessAddress is String) {
-        return businessAddress;
-      }
-    }
-
-    if (userAddress != null) {
-      if (userAddress is Map<String, dynamic>) {
-        // If it's a structured address
-        final street = userAddress['street'] ?? '';
-        final city = userAddress['city'] ?? '';
-        final country = userAddress['country'] ?? '';
-
-        final parts =
-            [street, city, country].where((part) => part.isNotEmpty).toList();
-        return parts.join(', ');
-      } else if (userAddress is String) {
-        return userAddress;
-      }
-    }
-
-    return '';
   }
 
   Widget _buildModernSettingsCard({
@@ -850,7 +699,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               ),
               const SizedBox(height: 24),
               
-              // Logout Button with Modern Design
+              // Logout Button with Compact Design
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -859,12 +708,12 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.red.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -872,23 +721,23 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: _signOut,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(12),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(
                             Icons.logout_rounded,
                             color: Colors.white,
-                            size: 24,
+                            size: 20,
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           Text(
                             loc.logout,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -904,4 +753,5 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
       ),
     );
   }
+
 }

@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
+import '../utils/arabic_number_formatter.dart';
 
 class BusinessDetailsScreen extends StatefulWidget {
   final TextEditingController businessNameController;
@@ -136,11 +138,14 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                   prefixIcon: Icon(Icons.phone),
                 ),
                 keyboardType: TextInputType.phone,
+                textAlign: TextAlign.left,
+                textDirection: TextDirection.ltr,
+                inputFormatters: [ArabicNumberInputFormatter()],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your phone number';
                   }
-                  return null;
+                  return ArabicPhoneValidator.validate(value);
                 },
               ),
               const SizedBox(height: 24),

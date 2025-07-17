@@ -10,6 +10,66 @@ class ImageUploadService {
   static String get baseUrl => AppConfig.baseUrl;
   static const uuid = Uuid();
 
+  /// Upload business photo and return the URL
+  static Future<Map<String, dynamic>> uploadBusinessPhoto(File imageFile) async {
+    try {
+      // Use the dedicated business-photo endpoint
+      
+      // Read image file as bytes
+      final imageBytes = await imageFile.readAsBytes();
+      final fileName = 'business_${uuid.v4()}.jpg';
+      
+      // Create multipart request to business photo endpoint
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/upload/business-photo'), // Use dedicated business photo endpoint
+      );
+
+      // Add file to request
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'image',
+          imageBytes,
+          filename: fileName,
+        ),
+      );
+
+      // Send request
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print('Business photo upload response status: ${response.statusCode}');
+      print('Business photo upload response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData['success'] == true) {
+          return {
+            'success': true,
+            'imageUrl': responseData['imageUrl'],
+            'message': responseData['message'] ?? 'Business photo uploaded successfully',
+          };
+        } else {
+          return {
+            'success': false,
+            'message': responseData['message'] ?? 'Upload failed',
+          };
+        }
+      } else {
+        return {
+          'success': false,
+          'message': 'Upload failed with status: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      print('Error uploading business photo: $e');
+      return {
+        'success': false,
+        'message': 'Error uploading business photo: $e',
+      };
+    }
+  }
+
   /// Upload image file and return the URL
   static Future<Map<String, dynamic>> uploadProductImage(File imageFile) async {
     try {

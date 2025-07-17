@@ -360,128 +360,112 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
                 )
               : Column(
                   children: [
-                    // Compact Search Bar with Rounded Design
+                    // Search Field
                     Container(
-                      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                      margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                      height: 40,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF3399FF),
-                            const Color(0xFF00D4FF),
-                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
+                          colors: [
+                            const Color(0xFF3399FF).withOpacity(0.08),
+                            const Color(0xFF00C1E8).withOpacity(0.12),
+                          ],
                         ),
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: const Color(0xFF3399FF).withOpacity(0.2),
+                          width: 1,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF3399FF).withOpacity(0.25),
-                            blurRadius: 8,
+                            color: const Color(0xFF3399FF).withOpacity(0.1),
+                            blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          children: [
-                            // Search Field
-                            Container(
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 1),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search products...',
+                          hintStyle: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 13,
+                          ),
+                          prefixIcon: _isSearching
+                              ? Container(
+                                  width: 16,
+                                  height: 16,
+                                  padding: const EdgeInsets.all(12),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      const Color(0xFF3399FF),
+                                    ),
                                   ),
-                                ],
-                              ),
-                              child: TextField(
-                                controller: _searchController,
-                                decoration: InputDecoration(
-                                  hintText: 'Search products...',
-                                  hintStyle: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontSize: 14,
-                                  ),
-                                  prefixIcon: _isSearching
-                                      ? Container(
-                                          width: 20,
-                                          height: 20,
-                                          padding: const EdgeInsets.all(14),
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation<Color>(
-                                              const Color(0xFF3399FF),
-                                            ),
-                                          ),
-                                        )
-                                      : Icon(
-                                          Icons.search_rounded,
-                                          color: const Color(0xFF3399FF),
-                                          size: 22,
-                                        ),
-                                  suffixIcon: _searchController.text.isNotEmpty
-                                      ? IconButton(
-                                          icon: Icon(
-                                            Icons.clear_rounded,
-                                            color: Colors.grey[500],
-                                            size: 20,
-                                          ),
-                                          onPressed: () {
-                                            _searchController.clear();
-                                            setState(() {
-                                              _searchQuery = '';
-                                            });
-                                            _updateFilteredProducts();
-                                          },
-                                        )
-                                      : null,
-                                  border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 12,
-                                  ),
+                                )
+                              : Icon(
+                                  Icons.search_rounded,
+                                  color: const Color(0xFF3399FF),
+                                  size: 20,
                                 ),
-                                style: const TextStyle(fontSize: 15),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(
+                                    Icons.clear_rounded,
+                                    color: Colors.grey[500],
+                                    size: 18,
+                                  ),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {
+                                      _searchQuery = '';
+                                    });
+                                    _updateFilteredProducts();
+                                  },
+                                  padding: const EdgeInsets.all(8),
+                                  constraints: const BoxConstraints(),
+                                )
+                              : null,
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                        ),
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+
+                    // Search Results Summary
+                    if (_searchQuery.isNotEmpty)
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline_rounded,
+                              color: Colors.grey[600],
+                              size: 12,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                '${_filteredProducts.length} results for "${_searchQuery}"',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            
-                            // Compact Search Results Summary
-                            if (_searchQuery.isNotEmpty) ...[
-                              const SizedBox(height: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.info_outline_rounded,
-                                      color: Colors.white.withOpacity(0.9),
-                                      size: 14,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Expanded(
-                                      child: Text(
-                                        '${_filteredProducts.length} results for "${_searchQuery}"',
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.9),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                       ),
-                    ),
 
                     // Products List
                     Expanded(

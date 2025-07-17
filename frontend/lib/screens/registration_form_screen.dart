@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:hadhir_business/l10n/app_localizations.dart';
+import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import '../services/app_auth_service.dart';
+import '../services/image_upload_service.dart';
+import '../utils/arabic_number_formatter.dart';
 
 class RegistrationFormScreen extends StatefulWidget {
   const RegistrationFormScreen({Key? key}) : super(key: key);
@@ -39,9 +42,13 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
   File? _identityFile;
   File? _healthCertificateFile;
   File? _ownerPhotoFile;
+  File? _businessPhotoFile;
 
   // Business Type
   String _selectedBusinessType = 'restaurant';
+
+  // Image picker instance
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -83,6 +90,65 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error picking file: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _pickBusinessPhoto() async {
+    try {
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Choose from Gallery'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final XFile? image = await _imagePicker.pickImage(
+                      source: ImageSource.gallery,
+                      imageQuality: 80,
+                      maxWidth: 1024,
+                      maxHeight: 1024,
+                    );
+                    if (image != null) {
+                      setState(() {
+                        _businessPhotoFile = File(image.path);
+                      });
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_camera),
+                  title: const Text('Take Photo'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final XFile? image = await _imagePicker.pickImage(
+                      source: ImageSource.camera,
+                      imageQuality: 80,
+                      maxWidth: 1024,
+                      maxHeight: 1024,
+                    );
+                    if (image != null) {
+                      setState(() {
+                        _businessPhotoFile = File(image.path);
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error picking image: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );
@@ -261,13 +327,31 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                   prefixIcon: Icon(Icons.phone),
                 ),
                 keyboardType: TextInputType.phone,
+                textAlign: TextAlign.left,
+                textDirection: TextDirection.ltr,
+                inputFormatters: [ArabicNumberInputFormatter()],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your phone number';
                   }
-                  return null;
+                  return ArabicPhoneValidator.validate(value);
                 },
               ),
+              const SizedBox(height: 32),
+
+              // Business Photo Section
+              _buildSectionHeader('Business Photo *'),
+              const SizedBox(height: 8),
+              const Text(
+                'Add a photo to showcase your business (required)',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              _buildBusinessPhotoCard(),
               const SizedBox(height: 32),
 
               // Business Address Section
@@ -335,38 +419,9 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                   color: Colors.grey,
                 ),
               ),
-              const SizedBox(height: 16),
-
-              _buildDocumentUploadCard(
-                title: 'Business License',
-                file: _licenseFile,
-                onPressed: () => _pickDocument(
-                    (file) => setState(() => _licenseFile = file)),
-              ),
               const SizedBox(height: 12),
 
-              _buildDocumentUploadCard(
-                title: 'Owner Identity',
-                file: _identityFile,
-                onPressed: () => _pickDocument(
-                    (file) => setState(() => _identityFile = file)),
-              ),
-              const SizedBox(height: 12),
-
-              _buildDocumentUploadCard(
-                title: 'Health Certificate',
-                file: _healthCertificateFile,
-                onPressed: () => _pickDocument(
-                    (file) => setState(() => _healthCertificateFile = file)),
-              ),
-              const SizedBox(height: 12),
-
-              _buildDocumentUploadCard(
-                title: 'Owner Photo',
-                file: _ownerPhotoFile,
-                onPressed: () => _pickDocument(
-                    (file) => setState(() => _ownerPhotoFile = file)),
-              ),
+              _buildCompactDocumentsGrid(),
               const SizedBox(height: 32),
 
               // Email Verification Section (Conditional)
@@ -443,49 +498,238 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     );
   }
 
-  Widget _buildDocumentUploadCard({
+  Widget _buildCompactDocumentsGrid() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildCompactDocumentCard(
+                  title: 'Business License',
+                  icon: Icons.description,
+                  file: _licenseFile,
+                  onPressed: () => _pickDocument(
+                      (file) => setState(() => _licenseFile = file)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildCompactDocumentCard(
+                  title: 'Owner Identity',
+                  icon: Icons.person,
+                  file: _identityFile,
+                  onPressed: () => _pickDocument(
+                      (file) => setState(() => _identityFile = file)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildCompactDocumentCard(
+                  title: 'Health Certificate',
+                  icon: Icons.local_hospital,
+                  file: _healthCertificateFile,
+                  onPressed: () => _pickDocument(
+                      (file) => setState(() => _healthCertificateFile = file)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildCompactDocumentCard(
+                  title: 'Owner Photo',
+                  icon: Icons.camera_alt,
+                  file: _ownerPhotoFile,
+                  onPressed: () => _pickDocument(
+                      (file) => setState(() => _ownerPhotoFile = file)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactDocumentCard({
     required String title,
+    required IconData icon,
     required File? file,
     required VoidCallback onPressed,
   }) {
+    final bool hasFile = file != null;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: hasFile ? Colors.green.shade300 : Colors.grey.shade300,
+          width: hasFile ? 2 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: hasFile ? Colors.green.shade50 : Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        hasFile ? Icons.check_circle : icon,
+                        size: 18,
+                        color: hasFile ? Colors.green.shade600 : Colors.blue.shade600,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: hasFile ? Colors.green : Colors.blue.shade600,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        hasFile ? 'UPLOADED' : 'UPLOAD',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  hasFile ? file.path.split('/').last : 'Tap to select file',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: hasFile ? Colors.green.shade700 : Colors.grey.shade600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBusinessPhotoCard() {
     return Card(
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            'Business Photo',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            '*',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _businessPhotoFile != null
+                            ? _businessPhotoFile!.path.split('/').last
+                            : 'Required - Please add a photo',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: _businessPhotoFile != null ? Colors.green : Colors.red,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    file != null
-                        ? file.path.split('/').last
-                        : 'No file selected',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: file != null ? Colors.green : Colors.grey,
-                    ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _pickBusinessPhoto,
+                  icon: Icon(_businessPhotoFile != null ? Icons.change_circle : Icons.camera_alt),
+                  label: Text(_businessPhotoFile != null ? 'Change' : 'Add Photo'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _businessPhotoFile != null ? Colors.orange : Colors.blue,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            ElevatedButton.icon(
-              onPressed: onPressed,
-              icon: Icon(file != null ? Icons.change_circle : Icons.upload),
-              label: Text(file != null ? 'Change' : 'Upload'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: file != null ? Colors.orange : Colors.blue,
+            if (_businessPhotoFile != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                height: 100,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    _businessPhotoFile!,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -497,6 +741,17 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all required fields'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Check if business photo is provided (mandatory)
+    if (_businessPhotoFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Business photo is required. Please add a photo of your business.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -530,7 +785,35 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
           return;
         }
 
-        // Step 2: Register with business data
+        // Step 2: Upload business photo (required)
+        String? businessPhotoUrl;
+        try {
+          final uploadResult = await ImageUploadService.uploadBusinessPhoto(_businessPhotoFile!);
+          if (uploadResult['success'] == true) {
+            businessPhotoUrl = uploadResult['imageUrl'];
+            print('✅ Business photo uploaded successfully: $businessPhotoUrl');
+          } else {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to upload business photo: ${uploadResult['message']}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+        } catch (e) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error uploading business photo: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
+        // Step 3: Register with business data
         final businessData = {
           'businessName': _businessNameController.text.trim(),
           'firstName': _firstNameController.text.trim(),
@@ -543,6 +826,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
             'street': _businessStreetController.text.trim(),
             'country': _businessCountryController.text.trim(),
           },
+          'businessPhotoUrl': businessPhotoUrl, // Always included since it's mandatory
         };
 
         final registerResult = await AppAuthService.registerWithBusiness(

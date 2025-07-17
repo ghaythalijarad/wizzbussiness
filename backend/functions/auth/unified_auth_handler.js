@@ -60,7 +60,8 @@ async function handleRegisterWithBusiness(body) {
         city = '',
         district = '',
         country = 'Iraq',
-        street = ''
+        street = '',
+        businessPhotoUrl
     } = body;
 
     const email = rawEmail ? rawEmail.toLowerCase().trim() : '';
@@ -118,6 +119,7 @@ async function handleRegisterWithBusiness(body) {
             district,
             country,
             street,
+            business_photo_url: businessPhotoUrl || null,
             is_active: true,
             status: 'pending_verification',
             created_at: timestamp,

@@ -13,7 +13,7 @@ class ApiService {
   final String baseUrl = AppConfig.baseUrl;
 
   /// Get authorization headers with stored token
-  Future<Map<String, String>> _getAuthHeaders({bool isPublic = false}) async {
+  Future<Map<String, String>> _getAuthHeaders({bool isPublic = false, bool useAccessToken = false}) async {
     final headers = <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     };
@@ -23,10 +23,20 @@ class ApiService {
     }
 
     if (AppConfig.useCognito && AppConfig.isCognitoConfigured) {
-      // Use ID Token for Cognito User Pool authorizer (not Access Token)
-      String? authToken = await AppAuthService.getIdToken();
-      print(
-          'ApiService: Cognito ID token retrieved: ${authToken != null ? "Yes" : "No"}');
+      String? authToken;
+      
+      if (useAccessToken) {
+        // Use Access Token for specific endpoints that require it
+        authToken = await AppAuthService.getAccessToken();
+        print(
+            'ApiService: Cognito Access token retrieved: ${authToken != null ? "Yes" : "No"}');
+      } else {
+        // Use ID Token for Cognito User Pool authorizer (default)
+        authToken = await AppAuthService.getIdToken();
+        print(
+            'ApiService: Cognito ID token retrieved: ${authToken != null ? "Yes" : "No"}');
+      }
+      
       if (authToken == null) {
         final prefs = await SharedPreferences.getInstance();
         authToken = prefs.getString('access_token');
@@ -40,9 +50,9 @@ class ApiService {
             : authToken;
         headers['Authorization'] =
             'Bearer $authToken'; // Re-add "Bearer" prefix
-        print('ApiService: Authorization header set with ID token: $truncated');
+        print('ApiService: Authorization header set with ${useAccessToken ? "Access" : "ID"} token: $truncated');
       } else {
-        print('ApiService: No ID token available for Authorization header');
+        print('ApiService: No ${useAccessToken ? "Access" : "ID"} token available for Authorization header');
       }
     } else {
       final prefs = await SharedPreferences.getInstance();
@@ -337,14 +347,14 @@ class ApiService {
     final headers = await _getAuthHeaders();
 
     final response = await http.get(
-      Uri.parse('$baseUrl/api/pos/$businessId/settings'),
+      Uri.parse('$baseUrl/businesses/$businessId/pos-settings'),
       headers: headers,
     );
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to load POS settings');
+      throw Exception('Failed to get POS settings');
     }
   }
 
@@ -353,8 +363,8 @@ class ApiService {
       String businessId, Map<String, dynamic> settings) async {
     final headers = await _getAuthHeaders();
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/pos/$businessId/settings'),
+    final response = await http.put(
+      Uri.parse('$baseUrl/businesses/$businessId/pos-settings'),
       headers: headers,
       body: jsonEncode(settings),
     );
@@ -372,7 +382,7 @@ class ApiService {
     final headers = await _getAuthHeaders();
 
     final response = await http.put(
-      Uri.parse('$baseUrl/api/pos/$businessId/settings'),
+      Uri.parse('$baseUrl/businesses/$businessId/pos-settings'),
       headers: headers,
       body: jsonEncode(settings),
     );
@@ -389,7 +399,7 @@ class ApiService {
     final headers = await _getAuthHeaders();
 
     final response = await http.delete(
-      Uri.parse('$baseUrl/api/pos/$businessId/settings'),
+      Uri.parse('$baseUrl/businesses/$businessId/pos-settings'),
       headers: headers,
     );
 
@@ -404,7 +414,7 @@ class ApiService {
     final headers = await _getAuthHeaders();
 
     final response = await http.post(
-      Uri.parse('$baseUrl/api/pos/$businessId/test-connection'),
+      Uri.parse('$baseUrl/businesses/$businessId/pos-settings/test-connection'),
       headers: headers,
       body: jsonEncode(testConfig),
     );
@@ -422,14 +432,18 @@ class ApiService {
     final headers = await _getAuthHeaders();
 
     final response = await http.get(
-      Uri.parse(
-          '$baseUrl/api/pos/$businessId/sync-logs?limit=$limit&skip=$skip'),
+      Uri.parse('$baseUrl/businesses/$businessId/pos-settings/sync-logs?limit=$limit&skip=$skip'),
       headers: headers,
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
-      return body.cast<Map<String, dynamic>>();
+      final body = jsonDecode(response.body);
+      if (body['success'] == true && body['logs'] != null) {
+        List<dynamic> logs = body['logs'];
+        return logs.cast<Map<String, dynamic>>();
+      } else {
+        return [];
+      }
     } else {
       throw Exception('Failed to load POS sync logs');
     }
@@ -783,7 +797,7 @@ class ApiService {
 
   /// Get all discounts for a business
   Future<List<Map<String, dynamic>>> getDiscounts() async {
-    final headers = await _getAuthHeaders();
+    final headers = await _getAuthHeaders(useAccessToken: true);
 
     final response = await http.get(
       Uri.parse('$baseUrl/discounts'),
@@ -804,7 +818,7 @@ class ApiService {
 
   /// Create a new discount
   Future<Map<String, dynamic>> createDiscount(Map<String, dynamic> discountData) async {
-    final headers = await _getAuthHeaders();
+    final headers = await _getAuthHeaders(useAccessToken: true);
 
     final response = await http.post(
       Uri.parse('$baseUrl/discounts'),
@@ -826,7 +840,7 @@ class ApiService {
 
   /// Get a specific discount by ID
   Future<Map<String, dynamic>> getDiscount(String discountId) async {
-    final headers = await _getAuthHeaders();
+    final headers = await _getAuthHeaders(useAccessToken: true);
 
     final response = await http.get(
       Uri.parse('$baseUrl/discounts/$discountId'),
@@ -847,7 +861,7 @@ class ApiService {
 
   /// Update an existing discount
   Future<Map<String, dynamic>> updateDiscount(String discountId, Map<String, dynamic> discountData) async {
-    final headers = await _getAuthHeaders();
+    final headers = await _getAuthHeaders(useAccessToken: true);
 
     final response = await http.put(
       Uri.parse('$baseUrl/discounts/$discountId'),
@@ -869,7 +883,7 @@ class ApiService {
 
   /// Delete a discount
   Future<void> deleteDiscount(String discountId) async {
-    final headers = await _getAuthHeaders();
+    final headers = await _getAuthHeaders(useAccessToken: true);
 
     final response = await http.delete(
       Uri.parse('$baseUrl/discounts/$discountId'),
@@ -889,7 +903,7 @@ class ApiService {
 
   /// Toggle discount status (active/paused)
   Future<Map<String, dynamic>> toggleDiscountStatus(String discountId) async {
-    final headers = await _getAuthHeaders();
+    final headers = await _getAuthHeaders(useAccessToken: true);
 
     final response = await http.patch(
       Uri.parse('$baseUrl/discounts/$discountId/toggle-status'),
@@ -914,7 +928,7 @@ class ApiService {
     required double orderTotal,
     required List<Map<String, dynamic>> items,
   }) async {
-    final headers = await _getAuthHeaders();
+    final headers = await _getAuthHeaders(useAccessToken: true);
 
     final response = await http.post(
       Uri.parse('$baseUrl/discounts/validate-discount'),
@@ -944,7 +958,7 @@ class ApiService {
     required double orderTotal,
     required List<Map<String, dynamic>> items,
   }) async {
-    final headers = await _getAuthHeaders();
+    final headers = await _getAuthHeaders(useAccessToken: true);
 
     final response = await http.post(
       Uri.parse('$baseUrl/discounts/apply-discount'),
@@ -970,7 +984,7 @@ class ApiService {
 
   /// Get discount usage statistics
   Future<Map<String, dynamic>> getDiscountStats() async {
-    final headers = await _getAuthHeaders();
+    final headers = await _getAuthHeaders(useAccessToken: true);
 
     final response = await http.get(
       Uri.parse('$baseUrl/discounts/stats'),
@@ -994,7 +1008,7 @@ class ApiService {
     required String discountId,
     required List<Map<String, dynamic>> items,
   }) async {
-    final headers = await _getAuthHeaders();
+    final headers = await _getAuthHeaders(useAccessToken: true);
 
     final response = await http.post(
       Uri.parse('$baseUrl/discounts/validate-buy-x-get-y'),

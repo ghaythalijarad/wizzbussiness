@@ -6,6 +6,7 @@ import '../widgets/custom_button.dart';
 import 'signin_screen.dart';
 import 'email_verification_screen.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/arabic_number_formatter.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -254,11 +255,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
           labelText: l10n.phoneNumber,
           prefixIcon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
+          textAlign: TextAlign.left,
+          textDirection: TextDirection.ltr,
+          inputFormatters: [ArabicNumberInputFormatter()],
           validator: (value) {
             if (value?.isEmpty ?? true) {
               return l10n.phoneNumberRequired;
             }
-            return null;
+            return ArabicPhoneValidator.validate(value);
           },
         ),
       ],

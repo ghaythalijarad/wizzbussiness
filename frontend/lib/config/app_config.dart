@@ -10,11 +10,11 @@ import 'dart:io';
 ///
 /// Note: MongoDB/Beanie backend has been removed and replaced with DynamoDB
 class AppConfig {
-  // Use deployed AWS API Gateway URL for development/testing (us-east-1)
+  // Use deployed AWS API Gateway URL for development/testing (eu-north-1)
   static const String _defaultLocalUrl =
-      'https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev';
+      'https://clgs5798k1.execute-api.eu-north-1.amazonaws.com/dev';
   static const String _defaultAndroidUrl =
-      'https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev';
+      'https://clgs5798k1.execute-api.eu-north-1.amazonaws.com/dev';
 
   // Environment configuration
   static const String _awsApiUrl = String.fromEnvironment(

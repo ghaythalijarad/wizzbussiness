@@ -210,13 +210,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get changePassword => 'تغيير كلمة المرور';
 
   @override
-  String get posSettingsUpdated => 'تم تحديث إعدادات نقاط البيع بنجاح';
+  String get posSettingsUpdated => 'تم تحديث إعدادات POS بنجاح';
 
   @override
   String get connectionSuccessful => 'نجح الاتصال';
 
   @override
-  String get connectionFailed => 'فشل اختبار الاتصال';
+  String get connectionFailed => 'فشل الاتصال';
 
   @override
   String get testConnection => 'اختبار الاتصال';
@@ -225,10 +225,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get close => 'إغلاق';
 
   @override
-  String get posSystemType => 'نوع نظام نقاط البيع';
+  String get posSystemType => 'نوع نظام POS';
 
   @override
-  String get selectPosSystem => 'اختر نظام نقاط البيع';
+  String get selectPosSystem => 'اختر نظام POS';
 
   @override
   String get apiConfiguration => 'تكوين API';
@@ -270,11 +270,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get posIntegrationSettings => 'إعدادات تكامل نقاط البيع';
 
   @override
-  String get enablePosIntegration => 'تفعيل تكامل نقاط البيع';
+  String get enablePosIntegration => 'تمكين تكامل POS';
 
   @override
   String get enablePosIntegrationDescription =>
-      'مزامنة تلقائية للطلبات مع نظام نقاط البيع';
+      'السماح بالمزامنة في الوقت الفعلي مع نظام POS الخاص بك';
 
   @override
   String get autoSendOrders => 'إرسال الطلبات تلقائياً';
@@ -347,13 +347,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get timeoutSeconds => 'ثواني المهلة الزمنية';
 
   @override
-  String get retryAttempts => 'محاولات الإعادة';
+  String get retryAttempts => 'محاولات إعادة المحاولة';
 
   @override
   String get testMode => 'وضع الاختبار';
 
   @override
-  String get testModeDescription => 'تفعيل وضع الاختبار للتطوير والاختبار';
+  String get testModeDescription => 'تمكين وضع الاختبار للتطوير وإزالة الأخطاء';
 
   @override
   String get webhooksIntegration => 'تكامل Webhooks';
@@ -2197,4 +2197,437 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get categories => 'الفئات';
+
+  @override
+  String get helpSectionTitle => 'المساعدة والدعم';
+
+  @override
+  String get setupGuides => 'أدلة الإعداد';
+
+  @override
+  String get troubleshootingSection => 'استكشاف الأخطاء وإصلاحها';
+
+  @override
+  String get supportSection => 'الدعم';
+
+  @override
+  String get squareSetupTitle => 'إعداد Square POS';
+
+  @override
+  String get squareSetupDescription => 'اتبع هذه الخطوات لربط نظام Square POS:';
+
+  @override
+  String get squareStep1 => '1. سجل الدخول إلى لوحة تحكم Square';
+
+  @override
+  String get squareStep2 => '2. انتقل إلى التطبيقات والتكاملات';
+
+  @override
+  String get squareStep3 => '3. ابحث عن تطبيق Order Receiver واختره';
+
+  @override
+  String get squareStep4 => '4. قم بإنشاء بيانات اعتماد API';
+
+  @override
+  String get squareStep5 => '5. انسخ معرف التطبيق ورمز الوصول';
+
+  @override
+  String get squareStep6 => '6. أدخل بيانات الاعتماد في النموذج أعلاه';
+
+  @override
+  String get squareStep7 => '7. اختر موقع عملك';
+
+  @override
+  String get squareStep8 => '8. اختبر الاتصال واحفظ الإعدادات';
+
+  @override
+  String get toastSetupTitle => 'إعداد Toast POS';
+
+  @override
+  String get toastSetupDescription => 'اربط نظام Toast POS باتباع هذه الخطوات:';
+
+  @override
+  String get toastStep1 => '1. ادخل إلى لوحة تحكم Toast Web';
+
+  @override
+  String get toastStep2 => '2. انتقل إلى المشرف > التكاملات';
+
+  @override
+  String get toastStep3 => '3. ابحث عن تكامل Order Receiver';
+
+  @override
+  String get toastStep4 => '4. انقر على \'اتصال\' وامنح الإذن للوصول';
+
+  @override
+  String get toastStep5 => '5. انسخ مفتاح API المُنشأ';
+
+  @override
+  String get toastStep6 => '6. أدخل مفتاح API في التكوين أعلاه';
+
+  @override
+  String get toastStep7 => '7. اختر موقع مطعمك';
+
+  @override
+  String get toastStep8 => '8. اختبر الاتصال للتحقق من الإعداد';
+
+  @override
+  String get cloverSetupTitle => 'إعداد Clover POS';
+
+  @override
+  String get cloverSetupDescription => 'قم بإعداد تكامل Clover POS:';
+
+  @override
+  String get cloverStep1 => '1. افتح لوحة تحكم Clover';
+
+  @override
+  String get cloverStep2 => '2. انتقل إلى الحساب والإعداد > التكاملات';
+
+  @override
+  String get cloverStep3 => '3. ابحث عن تطبيق Order Receiver';
+
+  @override
+  String get cloverStep4 => '4. قم بتثبيت وتكوين التطبيق';
+
+  @override
+  String get cloverStep5 => '5. قم بإنشاء رمز API';
+
+  @override
+  String get cloverStep6 => '6. انسخ معرف التاجر ورمز API';
+
+  @override
+  String get cloverStep7 => '7. أدخل بيانات الاعتماد في النموذج';
+
+  @override
+  String get cloverStep8 => '8. اختبر الاتصال واحفظ';
+
+  @override
+  String get shopifySetupTitle => 'إعداد Shopify POS';
+
+  @override
+  String get shopifySetupDescription => 'اربط Shopify POS بـ Order Receiver:';
+
+  @override
+  String get shopifyStep1 => '1. سجل الدخول إلى مشرف Shopify';
+
+  @override
+  String get shopifyStep2 => '2. انتقل إلى التطبيقات > متجر التطبيقات';
+
+  @override
+  String get shopifyStep3 => '3. ابحث عن Order Receiver';
+
+  @override
+  String get shopifyStep4 => '4. قم بتثبيت التطبيق';
+
+  @override
+  String get shopifyStep5 => '5. امنح أذونات التطبيق';
+
+  @override
+  String get shopifyStep6 => '6. قم بإنشاء بيانات اعتماد تطبيق خاص';
+
+  @override
+  String get shopifyStep7 => '7. انسخ مفتاح API وكلمة المرور';
+
+  @override
+  String get shopifyStep8 => '8. أدخل نطاق المتجر وبيانات الاعتماد';
+
+  @override
+  String get genericApiSetupTitle => 'إعداد API عام';
+
+  @override
+  String get genericApiSetupDescription => 'تكوين تكامل API مخصص:';
+
+  @override
+  String get genericStep1 => '1. حضر رابط نقطة نهاية API';
+
+  @override
+  String get genericStep2 => '2. تأكد من أن API يدعم عمليات الطلب المطلوبة';
+
+  @override
+  String get genericStep3 => '3. قم بإنشاء أو الحصول على مفتاح/رمز API';
+
+  @override
+  String get genericStep4 =>
+      '4. اختبر نقطة نهاية API باستخدام أدوات مثل Postman';
+
+  @override
+  String get genericStep5 => '5. أدخل نقطة نهاية API والمصادقة';
+
+  @override
+  String get genericStep6 => '6. قم بتكوين روابط webhook إذا كانت مدعومة';
+
+  @override
+  String get genericStep7 => '7. اختبر الاتصال بدقة';
+
+  @override
+  String get genericStep8 => '8. راقب سجلات المزامنة لأي مشاكل';
+
+  @override
+  String get connectionIssuesTitle => 'مشاكل الاتصال';
+
+  @override
+  String get connectionIssuesDescription => 'مشاكل الاتصال الشائعة والحلول';
+
+  @override
+  String get connectionIssue1 => 'تحقق من اتصال الإنترنت وتأكد من أنه مستقر';
+
+  @override
+  String get connectionIssue2 => 'تحقق من أن نظام POS متصل ويمكن الوصول إليه';
+
+  @override
+  String get connectionIssue3 => 'تأكد من أن بيانات اعتماد API صحيحة ونشطة';
+
+  @override
+  String get connectionIssue4 =>
+      'تحقق من أن جدار الحماية أو إعدادات الأمان لا تحجب الاتصال';
+
+  @override
+  String get connectionIssue5 => 'تأكد من أن API لنظام POS ليس تحت الصيانة';
+
+  @override
+  String get connectionIssue6 => 'جرب إعادة تشغيل نظام POS ومعدات الشبكة';
+
+  @override
+  String get connectionIssue7 => 'اتصل بمزود نظام POS إذا استمرت المشاكل';
+
+  @override
+  String get syncFailuresTitle => 'فشل المزامنة';
+
+  @override
+  String get syncFailuresDescription =>
+      'استكشاف أخطاء مزامنة البيانات وإصلاحها';
+
+  @override
+  String get syncFailure1 =>
+      '• تحقق من سجلات المزامنة للحصول على تفاصيل أخطاء محددة';
+
+  @override
+  String get syncFailure2 => '• تأكد من توافق تنسيق بيانات الطلب';
+
+  @override
+  String get syncFailure3 => '• تأكد من أن نظام POS متصل ويمكن الوصول إليه';
+
+  @override
+  String get syncFailure4 => '• تحقق من أخطاء التحقق من صحة البيانات';
+
+  @override
+  String get syncFailure5 => '• راجع حدود معدل API والحصص';
+
+  @override
+  String get syncFailure6 => '• أعد محاولة عمليات المزامنة الفاشلة يدوياً';
+
+  @override
+  String get syncFailure7 => '• قم بتحديث بيانات اعتماد API إذا انتهت صلاحيتها';
+
+  @override
+  String get apiErrorsTitle => 'أخطاء API';
+
+  @override
+  String get apiErrorsDescription =>
+      'حل الأخطاء والمشاكل المتعلقة بواجهة برمجة التطبيقات';
+
+  @override
+  String get apiError1 => '• 401 غير مصرح: تحقق من بيانات اعتماد API';
+
+  @override
+  String get apiError2 => '• 403 محظور: تأكد من أذونات API';
+
+  @override
+  String get apiError3 => '• 404 غير موجود: تحقق من رابط نقطة النهاية';
+
+  @override
+  String get apiError4 => '• 429 طلبات كثيرة جداً: قلل من تكرار الطلبات';
+
+  @override
+  String get apiError5 => '• 500 خطأ خادم داخلي: اتصل بالدعم';
+
+  @override
+  String get apiError6 => '• أخطاء انتهاء المهلة: تحقق من استقرار الشبكة';
+
+  @override
+  String get apiError7 => '• أخطاء SSL: تأكد من صحة الشهادة';
+
+  @override
+  String get liveChatTitle => 'دعم المحادثة المباشرة';
+
+  @override
+  String get liveChatDescription => 'احصل على مساعدة فورية من فريق الدعم لدينا';
+
+  @override
+  String get liveChatAvailability => 'متاح أيام الأسبوع من 9 صباحاً - 5 مساءً';
+
+  @override
+  String get liveChatNote =>
+      'ميزة المحادثة المباشرة قادمة قريباً. استخدم دعم البريد الإلكتروني للحصول على مساعدة فورية.';
+
+  @override
+  String get emailSupportTitle => 'دعم البريد الإلكتروني';
+
+  @override
+  String get emailSupportDescription => 'أرسل لنا أسئلتك وسنرد خلال 24 ساعة';
+
+  @override
+  String get emailSupportAddress => 'support@orderreceiver.com';
+
+  @override
+  String get emailSupportResponseTime => 'نرد عادة خلال 24 ساعة';
+
+  @override
+  String get webhookConfigTitle => 'تكوين Webhook';
+
+  @override
+  String get webhookConfigDescription =>
+      'قم بإعداد webhooks للحصول على تحديثات الطلبات في الوقت الفعلي:';
+
+  @override
+  String get webhookSetupTitle => 'إعداد Webhook';
+
+  @override
+  String get webhookSetupDescription =>
+      'تكوين تكامل webhook لمزامنة الطلبات في الوقت الفعلي';
+
+  @override
+  String get webhookStep1 => 'انسخ رابط webhook من إعدادات POS';
+
+  @override
+  String get webhookStep2 => 'سجل الدخول إلى لوحة تحكم نظام POS';
+
+  @override
+  String get webhookStep3 => 'انتقل إلى إعدادات webhook/التكامل';
+
+  @override
+  String get webhookStep4 => 'أضف نقطة نهاية webhook جديدة';
+
+  @override
+  String get webhookStep5 =>
+      'قم بالتكوين لأحداث الطلبات (الإنشاء، التحديث، الإلغاء)';
+
+  @override
+  String get webhookStep6 => '6. اختبر توصيل webhook';
+
+  @override
+  String get webhookStep7 => '7. راقب سجلات webhook للتأكد من التوصيل الناجح';
+
+  @override
+  String get apiKeyRotationTitle => 'تدوير مفتاح API';
+
+  @override
+  String get apiKeyRotationDescription =>
+      'قم بتدوير مفاتيح API بانتظام من أجل الأمان:';
+
+  @override
+  String get rotationStep1 => '1. قم بإنشاء مفتاح API جديد في نظام POS';
+
+  @override
+  String get rotationStep2 => '2. حدث Order Receiver بالبيانات الجديدة';
+
+  @override
+  String get rotationStep3 => '3. اختبر الاتصال بالمفتاح الجديد';
+
+  @override
+  String get rotationStep4 => '4. قم بإلغاء تفعيل مفتاح API القديم';
+
+  @override
+  String get rotationStep5 => '5. راقب عمليات المزامنة لمدة 24 ساعة';
+
+  @override
+  String get rotationStep6 => '6. وثق تاريخ التدوير للمرجع المستقبلي';
+
+  @override
+  String get copyToClipboard => 'نسخ إلى الحافظة';
+
+  @override
+  String get copied => 'تم النسخ!';
+
+  @override
+  String get openEmailSupport => 'فتح دعم البريد الإلكتروني';
+
+  @override
+  String get startLiveChat => 'بدء محادثة مباشرة';
+
+  @override
+  String get syncIssue1 => 'تحقق من وجود معاملات معلقة للمزامنة في نظام POS';
+
+  @override
+  String get syncIssue2 =>
+      'تحقق من أن كلا النظامين لهما نفس إعدادات المنطقة الزمنية';
+
+  @override
+  String get syncIssue3 =>
+      'تأكد من أن نظام POS لديه صلاحيات كافية للوصول للبيانات';
+
+  @override
+  String get syncIssue4 => 'تحقق من أي تعارضات في تنسيق البيانات';
+
+  @override
+  String get syncIssue5 => 'راجع سجلات المزامنة لرسائل الخطأ المحددة';
+
+  @override
+  String get syncIssue6 => 'جرب تشغيل المزامنة يدوياً لتحديد المشكلة';
+
+  @override
+  String get syncIssue7 =>
+      'امسح ذاكرة التخزين المؤقت للمزامنة وأعد تشغيل العملية';
+
+  @override
+  String get apiIssue1 => 'تحقق من أن مفاتيح API صالحة وغير منتهية الصلاحية';
+
+  @override
+  String get apiIssue2 => 'تحقق من حدود معدل API وتأكد من عدم تجاوزها';
+
+  @override
+  String get apiIssue3 => 'تأكد من أن اشتراكك يتضمن ميزات API المطلوبة';
+
+  @override
+  String get apiIssue4 => 'راجع عناوين URL لنقاط نهاية API لأي تغييرات حديثة';
+
+  @override
+  String get apiIssue5 => 'تحقق من وثائق API للرؤوس أو المعاملات المطلوبة';
+
+  @override
+  String get apiIssue6 =>
+      'اختبر استدعاءات API باستخدام أداة مثل Postman لعزل المشاكل';
+
+  @override
+  String get apiIssue7 => 'اتصل بالدعم الفني مع رموز الخطأ المحددة';
+
+  @override
+  String get liveChatHours =>
+      'الاثنين-الجمعة، 9:00 صباحاً - 5:00 مساءً بتوقيت شرق الولايات المتحدة';
+
+  @override
+  String get startChat => 'بدء المحادثة';
+
+  @override
+  String get emailResponseTime => 'وقت الاستجابة المعتاد: 4-24 ساعة';
+
+  @override
+  String get sendEmail => 'إرسال بريد إلكتروني';
+
+  @override
+  String get syncInterval => 'فترة المزامنة';
+
+  @override
+  String get minutes => 'دقائق';
+
+  @override
+  String get syncSettings => 'إعدادات المزامنة';
+
+  @override
+  String get noSyncLogsAvailable => 'لا توجد سجلات مزامنة متاحة';
+
+  @override
+  String get advanced => 'متقدم';
+
+  @override
+  String get general => 'عام';
+
+  @override
+  String get posIntegration => 'تكامل POS';
+
+  @override
+  String get contactSupport => 'اتصل بالدعم';
+
+  @override
+  String get contactSupportDescription =>
+      'تحتاج مساعدة في تكامل POS؟ فريق الدعم لدينا هنا لمساعدتك.';
 }

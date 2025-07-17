@@ -166,8 +166,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
       return 'Price must be greater than 0';
     }
 
-    if (price > 9999.99) {
-      return 'Price cannot exceed \$9999.99';
+    if (price > 300000) {
+      return 'Price cannot exceed IQD 300000';
     }
 
     return null;
@@ -379,8 +379,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
               // Price
               WizzBusinessTextFormField(
                 controller: _priceController,
-                labelText: 'Price (\$) *',
-                prefixIcon: const Icon(Icons.attach_money),
+                labelText: 'Price (IQD) *',
+                prefixIcon: const Text('IQD '),
                 validator: _validatePrice,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),

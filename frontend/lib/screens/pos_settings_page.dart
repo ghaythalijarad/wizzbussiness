@@ -6,7 +6,6 @@ import '../models/pos_settings.dart';
 import '../services/api_service.dart';
 import '../services/app_auth_service.dart';
 import '../screens/login_page.dart';
-import 'other_settings_page.dart'; // Import the OtherSettingsPage
 
 class PosSettingsPage extends StatefulWidget {
   final Business business;
@@ -347,18 +346,6 @@ class _PosSettingsPageState extends State<PosSettingsPage>
           _buildApiConfigCard(),
           const SizedBox(height: 24),
           _buildActionButtons(),
-          const SizedBox(height: 24),
-          // Add a button to navigate to the Other Settings page
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => OtherSettingsPage(),
-                ),
-              );
-            },
-            child: const Text('Other Settings'),
-          ),
         ],
       ),
     );

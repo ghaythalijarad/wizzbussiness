@@ -233,6 +233,20 @@ functions:
           method: get
           cors: true
 
+  locationSettings:
+    handler: functions/location_settings_handler.handler
+    name: order-receiver-${self:provider.stage}-location-settings-v1-sls
+    events:
+      # Location Settings endpoints
+      - http:
+          path: /businesses/{businessId}/location-settings
+          method: get
+          cors: true
+      - http:
+          path: /businesses/{businessId}/location-settings
+          method: put
+          cors: true
+
 package:
   individually: true
 

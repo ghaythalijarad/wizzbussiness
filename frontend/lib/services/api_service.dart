@@ -1030,4 +1030,22 @@ class ApiService {
       throw Exception('Failed to validate Buy X Get Y discount: ${response.body}');
     }
   }
+
+  /// Update business location settings
+  Future<Map<String, dynamic>> updateBusinessLocationSettings(
+      String businessId, Map<String, dynamic> locationSettings) async {
+    final headers = await _getAuthHeaders();
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/businesses/$businessId/location-settings'),
+      headers: headers,
+      body: jsonEncode(locationSettings),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to update business location settings');
+    }
+  }
 }

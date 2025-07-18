@@ -9,6 +9,7 @@ class LocationSettingsWidget extends StatefulWidget {
   final double? initialLongitude;
   final String? initialAddress;
   final Function(double?, double?, String?) onLocationChanged;
+  final bool isLoading;
 
   const LocationSettingsWidget({
     Key? key,
@@ -16,6 +17,7 @@ class LocationSettingsWidget extends StatefulWidget {
     this.initialLongitude,
     this.initialAddress,
     required this.onLocationChanged,
+    this.isLoading = false,
   }) : super(key: key);
 
   @override
@@ -61,8 +63,8 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
 
             // Get address from coordinates
             final address = await LocationService.getAddressFromCoordinates(
-              latitude: location['latitude'] ?? 0.0,
-              longitude: location['longitude'] ?? 0.0,
+              latitude: location.latitude,
+              longitude: location.longitude,
             );
 
             setState(() {
@@ -185,8 +187,8 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: _isLoading ? null : _openMapPicker,
-                      icon: _isLoading
+                      onPressed: (_isLoading || widget.isLoading) ? null : _openMapPicker,
+                      icon: (_isLoading || widget.isLoading)
                           ? const SizedBox(
                               width: 16,
                               height: 16,
@@ -241,13 +243,13 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _openMapPicker,
+                  onPressed: (_isLoading || widget.isLoading) ? null : _openMapPicker,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00c1e8),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  icon: _isLoading
+                  icon: (_isLoading || widget.isLoading)
                       ? const SizedBox(
                           width: 16,
                           height: 16,

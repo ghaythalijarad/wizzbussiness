@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import './account_settings_page.dart';
 import './pos_settings_page.dart';
 import './change_password_screen.dart';
+import './other_settings_page.dart';
 import '../l10n/app_localizations.dart';
 import '../models/business.dart';
 import '../models/order.dart';
@@ -9,6 +10,7 @@ import '../services/app_state.dart';
 import '../services/app_auth_service.dart';
 import '../services/api_service.dart';
 import '../screens/login_page.dart';
+import './working_hours_settings_screen.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
   final Business business;
@@ -693,6 +695,36 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                     MaterialPageRoute(
                       builder: (context) =>
                           PosSettingsPage(business: widget.business),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildModernSettingsCard(
+                icon: Icons.location_on_rounded,
+                title: 'Location Settings',
+                subtitle: 'Manage business location and GPS coordinates',
+                color: const Color(0xFF4CAF50),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => OtherSettingsPage(business: widget.business),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildModernSettingsCard(
+                icon: Icons.access_time_rounded,
+                title: 'Working Hours Settings',
+                subtitle: 'Set up opening and closing hours for your business',
+                color: const Color(0xFF2196F3),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WorkingHoursSettingsScreen(),
                     ),
                   );
                 },

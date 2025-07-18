@@ -91,39 +91,37 @@ async function handleRegisterWithBusiness(body) {
 
         const userItem = {
             userId: userId,
-            user_id: userId,
-            cognito_user_id: userSub,
-            email,
-            first_name: firstName || 'User',
-            last_name: lastName || '',
-            phone_number: finalPhoneNumber || '',
-            business_id: businessId,
-            is_active: true,
-            email_verified: false,
-            created_at: timestamp,
-            updated_at: timestamp
+            cognitoUserId: userSub,
+            email: email,
+            firstName: firstName || 'User',
+            lastName: lastName || '',
+            phoneNumber: finalPhoneNumber || '',
+            businessId: businessId,
+            isActive: true,
+            emailVerified: false,
+            createdAt: timestamp,
+            updatedAt: timestamp
         };
 
         const businessItem = {
             businessId: businessId,
-            business_id: businessId,
-            cognito_user_id: userSub,
-            email,
-            owner_id: userId,
-            owner_name: finalOwnerName || 'Business Owner',
-            business_name: finalBusinessName,
-            business_type: finalBusinessType,
-            phone_number: finalPhoneNumber || '',
-            address,
-            city,
-            district,
-            country,
-            street,
-            business_photo_url: businessPhotoUrl || null,
-            is_active: true,
+            cognitoUserId: userSub,
+            email: email,
+            ownerId: userId,
+            ownerName: finalOwnerName || 'Business Owner',
+            businessName: finalBusinessName,
+            businessType: finalBusinessType,
+            phoneNumber: finalPhoneNumber || '',
+            address: address,
+            city: city,
+            district: district,
+            country: country,
+            street: street,
+            businessPhotoUrl: businessPhotoUrl || null,
+            isActive: true,
             status: 'pending_verification',
-            created_at: timestamp,
-            updated_at: timestamp
+            createdAt: timestamp,
+            updatedAt: timestamp
         };
 
         await dynamodb.put({ TableName: USERS_TABLE, Item: userItem }).promise();
@@ -202,7 +200,7 @@ async function handleConfirmSignup(body) {
         console.log(`Query found ${Items ? Items.length : 0} users with email: ${email}`);
 
         if (Items && Items.length > 0) {
-            const user = Items[0];
+            const user = Items[0]; // user has camelCase fields now
             console.log(`Found user record:`, JSON.stringify(user, null, 2));
             
             // Check both possible userId fields

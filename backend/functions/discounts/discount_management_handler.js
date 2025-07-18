@@ -38,23 +38,23 @@ exports.handler = async (event) => {
 
         // Route the request based on HTTP method and path
         if (httpMethod === 'GET' && path === '/discounts') {
-            return await handleGetDiscounts(dynamodb, businessInfo.businessId);
+            return await handleGetDiscounts(dynamodb, businessInfo.business_id);
         } else if (httpMethod === 'POST' && path === '/discounts') {
-            return await handleCreateDiscount(dynamodb, businessInfo.businessId, JSON.parse(body || '{}'));
+            return await handleCreateDiscount(dynamodb, businessInfo.business_id, JSON.parse(body || '{}'));
         } else if (httpMethod === 'GET' && pathParameters?.discountId) {
-            return await handleGetDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId);
+            return await handleGetDiscount(dynamodb, businessInfo.business_id, pathParameters.discountId);
         } else if (httpMethod === 'PUT' && pathParameters?.discountId) {
-            return await handleUpdateDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId, JSON.parse(body || '{}'));
+            return await handleUpdateDiscount(dynamodb, businessInfo.business_id, pathParameters.discountId, JSON.parse(body || '{}'));
         } else if (httpMethod === 'DELETE' && pathParameters?.discountId) {
-            return await handleDeleteDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId);
+            return await handleDeleteDiscount(dynamodb, businessInfo.business_id, pathParameters.discountId);
         } else if (httpMethod === 'PATCH' && pathParameters?.discountId && path.includes('/toggle-status')) {
-            return await handleToggleDiscountStatus(dynamodb, businessInfo.businessId, pathParameters.discountId);
+            return await handleToggleDiscountStatus(dynamodb, businessInfo.business_id, pathParameters.discountId);
         } else if (httpMethod === 'POST' && path.includes('/validate-discount')) {
-            return await handleValidateDiscount(dynamodb, businessInfo.businessId, JSON.parse(body || '{}'));
+            return await handleValidateDiscount(dynamodb, businessInfo.business_id, JSON.parse(body || '{}'));
         } else if (httpMethod === 'POST' && path.includes('/apply-discount')) {
-            return await handleApplyDiscount(dynamodb, businessInfo.businessId, JSON.parse(body || '{}'));
+            return await handleApplyDiscount(dynamodb, businessInfo.business_id, JSON.parse(body || '{}'));
         } else if (httpMethod === 'GET' && path.includes('/stats')) {
-            return await handleGetDiscountStats(dynamodb, businessInfo.businessId);
+            return await handleGetDiscountStats(dynamodb, businessInfo.business_id);
         } else {
             return createResponse(404, { success: false, message: 'Endpoint not found' });
         }
@@ -107,9 +107,9 @@ async function handleGetDiscounts(dynamodb, businessId) {
     try {
         const params = {
             TableName: DISCOUNTS_TABLE,
-            KeyConditionExpression: 'businessId = :businessId',
+            KeyConditionExpression: 'business_id = :business_id',
             ExpressionAttributeValues: {
-                ':businessId': businessId
+                ':business_id': businessId
             },
             ScanIndexForward: false // Sort by creation date descending
         };
@@ -173,28 +173,27 @@ async function handleCreateDiscount(dynamodb, businessId, discountData) {
 
         const discountId = uuidv4();
         const now = new Date().toISOString();
-        
         const discount = {
-            businessId,
-            discountId,
+            business_id: businessId,
+            discount_id: discountId,
             id: discountId, // For frontend compatibility
             title: discountData.title,
             description: discountData.description || '',
             type: discountData.type,
             value: parseFloat(discountData.value),
             applicability: discountData.applicability || 'allItems',
-            applicableItemIds: discountData.applicableItemIds || [],
-            applicableCategoryIds: discountData.applicableCategoryIds || [],
-            minimumOrderAmount: parseFloat(discountData.minimumOrderAmount || 0),
-            validFrom: discountData.validFrom,
-            validTo: discountData.validTo,
-            usageLimit: discountData.usageLimit || null,
-            usageCount: 0,
+            applicable_item_ids: discountData.applicableItemIds || [],
+            applicable_category_ids: discountData.applicableCategoryIds || [],
+            minimum_order_amount: parseFloat(discountData.minimumOrderAmount || 0),
+            valid_from: discountData.validFrom,
+            valid_to: discountData.validTo,
+            usage_limit: discountData.usageLimit || null,
+            usage_count: 0,
             status: discountData.status || 'active',
-            conditionalRule: discountData.conditionalRule || null,
-            conditionalParameters: discountData.conditionalParameters || {},
-            createdAt: now,
-            updatedAt: now
+            conditional_rule: discountData.conditionalRule || null,
+            conditional_parameters: discountData.conditionalParameters || {},
+            created_at: now,
+            updated_at: now
         };
 
         const params = {
@@ -221,8 +220,8 @@ async function handleGetDiscount(dynamodb, businessId, discountId) {
         const params = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                businessId,
-                discountId
+                business_id: businessId,
+                discount_id: discountId
             }
         };
 
@@ -230,6 +229,11 @@ async function handleGetDiscount(dynamodb, businessId, discountId) {
         
         if (!result.Item) {
             return createResponse(404, { success: false, message: 'Discount not found' });
+        }
+
+        // Check if the discount belongs to the business
+        if (result.Item.business_id !== businessId) {
+            return createResponse(403, { success: false, message: 'Access denied to this discount' });
         }
 
         return createResponse(200, {
@@ -245,58 +249,83 @@ async function handleGetDiscount(dynamodb, businessId, discountId) {
 // PUT /discounts/{discountId} - Update a discount
 async function handleUpdateDiscount(dynamodb, businessId, discountId, updateData) {
     try {
-        // First, check if discount exists
-        const getParams = {
-            TableName: DISCOUNTS_TABLE,
-            Key: {
-                businessId,
-                discountId
-            }
-        };
-
-        const existingItem = await dynamodb.get(getParams).promise();
-        if (!existingItem.Item) {
-            return createResponse(404, { success: false, message: 'Discount not found' });
+        // First, verify the discount exists and belongs to the user's business
+        const existingDiscount = await handleGetDiscount(dynamodb, businessId, discountId);
+        if (existingDiscount.statusCode !== 200) {
+            return existingDiscount;
         }
 
-        // Build update expression
-        const updateExpressions = [];
-        const expressionAttributeValues = {};
-        const expressionAttributeNames = {};
+        let updateExpression = 'SET updated_at = :timestamp';
+        const expressionAttributeValues = {
+            ':timestamp': new Date().toISOString()
+        };
 
-        // Updatable fields
-        const updatableFields = [
-            'title', 'description', 'value', 'applicability', 'applicableItemIds',
-            'applicableCategoryIds', 'minimumOrderAmount', 'validFrom', 'validTo',
-            'usageLimit', 'status', 'conditionalRule', 'conditionalParameters'
-        ];
-
-        for (const field of updatableFields) {
-            if (updateData[field] !== undefined) {
-                updateExpressions.push(`#${field} = :${field}`);
-                expressionAttributeValues[`:${field}`] = updateData[field];
-                expressionAttributeNames[`#${field}`] = field;
-            }
+        if (updateData.title !== undefined) {
+            updateExpression += ', title = :title';
+            expressionAttributeValues[':title'] = updateData.title;
+        }
+        if (updateData.description !== undefined) {
+            updateExpression += ', description = :description';
+            expressionAttributeValues[':description'] = updateData.description;
+        }
+        if (updateData.value !== undefined) {
+            updateExpression += ', value = :value';
+            expressionAttributeValues[':value'] = parseFloat(updateData.value);
+        }
+        if (updateData.applicability !== undefined) {
+            updateExpression += ', applicability = :applicability';
+            expressionAttributeValues[':applicability'] = updateData.applicability;
+        }
+        if (updateData.applicableItemIds !== undefined) {
+            updateExpression += ', applicable_item_ids = :applicable_item_ids';
+            expressionAttributeValues[':applicable_item_ids'] = updateData.applicableItemIds;
+        }
+        if (updateData.applicableCategoryIds !== undefined) {
+            updateExpression += ', applicable_category_ids = :applicable_category_ids';
+            expressionAttributeValues[':applicable_category_ids'] = updateData.applicableCategoryIds;
+        }
+        if (updateData.minimumOrderAmount !== undefined) {
+            updateExpression += ', minimum_order_amount = :minimum_order_amount';
+            expressionAttributeValues[':minimum_order_amount'] = parseFloat(updateData.minimumOrderAmount);
+        }
+        if (updateData.validFrom !== undefined) {
+            updateExpression += ', valid_from = :valid_from';
+            expressionAttributeValues[':valid_from'] = updateData.validFrom;
+        }
+        if (updateData.validTo !== undefined) {
+            updateExpression += ', valid_to = :valid_to';
+            expressionAttributeValues[':valid_to'] = updateData.validTo;
+        }
+        if (updateData.usageLimit !== undefined) {
+            updateExpression += ', usage_limit = :usage_limit';
+            expressionAttributeValues[':usage_limit'] = updateData.usageLimit;
+        }
+        if (updateData.status !== undefined) {
+            updateExpression += ', status = :status';
+            expressionAttributeValues[':status'] = updateData.status;
+        }
+        if (updateData.conditionalRule !== undefined) {
+            updateExpression += ', conditional_rule = :conditional_rule';
+            expressionAttributeValues[':conditional_rule'] = updateData.conditionalRule;
+        }
+        if (updateData.conditionalParameters !== undefined) {
+            updateExpression += ', conditional_parameters = :conditional_parameters';
+            expressionAttributeValues[':conditional_parameters'] = updateData.conditionalParameters;
         }
 
         // Always update the updatedAt timestamp
-        updateExpressions.push('#updatedAt = :updatedAt');
+        updateExpression += ', updated_at = :updatedAt';
         expressionAttributeValues[':updatedAt'] = new Date().toISOString();
-        expressionAttributeNames['#updatedAt'] = 'updatedAt';
 
-        const updateParams = {
+        const params = {
             TableName: DISCOUNTS_TABLE,
-            Key: {
-                businessId,
-                discountId
-            },
-            UpdateExpression: `SET ${updateExpressions.join(', ')}`,
+            Key: { business_id: businessId, discount_id: discountId },
+            UpdateExpression: updateExpression,
             ExpressionAttributeValues: expressionAttributeValues,
-            ExpressionAttributeNames: expressionAttributeNames,
             ReturnValues: 'ALL_NEW'
         };
 
-        const result = await dynamodb.update(updateParams).promise();
+        const result = await dynamodb.update(params).promise();
         
         return createResponse(200, {
             success: true,
@@ -312,20 +341,15 @@ async function handleUpdateDiscount(dynamodb, businessId, discountId, updateData
 // DELETE /discounts/{discountId} - Delete a discount
 async function handleDeleteDiscount(dynamodb, businessId, discountId) {
     try {
-        const params = {
-            TableName: DISCOUNTS_TABLE,
-            Key: {
-                businessId,
-                discountId
-            },
-            ReturnValues: 'ALL_OLD'
-        };
-
-        const result = await dynamodb.delete(params).promise();
-        
-        if (!result.Attributes) {
-            return createResponse(404, { success: false, message: 'Discount not found' });
+        const existingDiscount = await handleGetDiscount(dynamodb, businessId, discountId);
+        if (existingDiscount.statusCode !== 200) {
+            return existingDiscount;
         }
+
+        await dynamodb.delete({
+            TableName: DISCOUNTS_TABLE,
+            Key: { business_id: businessId, discount_id: discountId }
+        }).promise();
 
         return createResponse(200, {
             success: true,
@@ -344,8 +368,8 @@ async function handleToggleDiscountStatus(dynamodb, businessId, discountId) {
         const getParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                businessId,
-                discountId
+                business_id: businessId,
+                discount_id: discountId
             }
         };
 
@@ -360,8 +384,8 @@ async function handleToggleDiscountStatus(dynamodb, businessId, discountId) {
         const updateParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                businessId,
-                discountId
+                business_id: businessId,
+                discount_id: discountId
             },
             UpdateExpression: 'SET #status = :status, #updatedAt = :updatedAt',
             ExpressionAttributeNames: {
@@ -404,8 +428,8 @@ async function handleValidateDiscount(dynamodb, businessId, orderData) {
         const getParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                businessId,
-                discountId
+                business_id: businessId,
+                discount_id: discountId
             }
         };
 
@@ -490,8 +514,8 @@ async function handleApplyDiscount(dynamodb, businessId, orderData) {
         const updateParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                businessId,
-                discountId
+                business_id: businessId,
+                discount_id: discountId
             },
             UpdateExpression: 'SET #usageCount = #usageCount + :inc, #updatedAt = :updatedAt',
             ExpressionAttributeNames: {
@@ -524,9 +548,9 @@ async function handleGetDiscountStats(dynamodb, businessId) {
     try {
         const params = {
             TableName: DISCOUNTS_TABLE,
-            KeyConditionExpression: 'businessId = :businessId',
+            KeyConditionExpression: 'business_id = :business_id',
             ExpressionAttributeValues: {
-                ':businessId': businessId
+                ':business_id': businessId
             }
         };
 
@@ -568,12 +592,12 @@ function calculateDiscountAmount(discount, orderTotal, items) {
             break;
         case 'specificItems':
             discountableAmount = items
-                .filter(item => discount.applicableItemIds.includes(item.dishId || item.id))
+                .filter(item => discount.applicable_item_ids.includes(item.dishId || item.id))
                 .reduce((sum, item) => sum + (item.price * item.quantity), 0);
             break;
         case 'specificCategories':
             discountableAmount = items
-                .filter(item => discount.applicableCategoryIds.includes(item.categoryId))
+                .filter(item => discount.applicable_category_ids.includes(item.categoryId))
                 .reduce((sum, item) => sum + (item.price * item.quantity), 0);
             break;
         case 'minimumOrder':

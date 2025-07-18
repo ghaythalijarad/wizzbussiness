@@ -19,6 +19,7 @@ provider:
     CATEGORIES_TABLE: order-receiver-categories-dev
     DISCOUNTS_TABLE: order-receiver-discounts-dev
     BUSINESS_SETTINGS_TABLE: order-receiver-business-settings-dev
+    BUSINESS_WORKING_HOURS_TABLE: order-receiver-business-working-hours-dev
     POS_LOGS_TABLE: order-receiver-pos-logs-dev
     BUSINESS_PHOTOS_BUCKET: order-receiver-business-photos-dev
     COGNITO_USER_POOL_ID: ${self:params.CognitoUserPoolId}
@@ -50,6 +51,8 @@ provider:
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-discounts-dev/index/*"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-business-settings-dev"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-business-settings-dev/index/*"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-business-working-hours-dev"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-business-working-hours-dev/index/*"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-pos-logs-dev"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-pos-logs-dev/index/*"
         - Effect: "Allow"
@@ -244,6 +247,14 @@ functions:
           cors: true
       - http:
           path: /businesses/{businessId}/location-settings
+          method: put
+          cors: true
+      - http:
+          path: /businesses/{businessId}/working-hours
+          method: get
+          cors: true
+      - http:
+          path: /businesses/{businessId}/working-hours
           method: put
           cors: true
 

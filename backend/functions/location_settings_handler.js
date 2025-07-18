@@ -7,6 +7,7 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 // Table names from environment variables
 const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev';
 const BUSINESS_SETTINGS_TABLE = process.env.BUSINESS_SETTINGS_TABLE || 'order-receiver-business-settings-dev';
+const BUSINESS_WORKING_HOURS_TABLE = process.env.BUSINESS_WORKING_HOURS_TABLE || 'order-receiver-business-working-hours-dev';
 
 // CORS headers
 const corsHeaders = {
@@ -96,6 +97,10 @@ exports.handler = async (event) => {
       return await handleGetLocationSettings(businessId);
     } else if (method === 'PUT' && path.includes('/location-settings')) {
       return await handleUpdateLocationSettings(businessId, event.body);
+    } else if (method === 'GET' && path.includes('/working-hours')) {
+      return await handleGetWorkingHours(businessId);
+    } else if (method === 'PUT' && path.includes('/working-hours')) {
+      return await handleUpdateWorkingHours(businessId, event.body);
     } else {
       return {
         statusCode: 404,
@@ -292,6 +297,84 @@ async function handleUpdateLocationSettings(businessId, requestBody) {
         message: 'Failed to update location settings',
         error: error.message
       })
+    };
+  }
+}
+
+/**
+ * Get working hours for a business
+ */
+async function handleGetWorkingHours(businessId) {
+  try {
+    const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const results = await Promise.all(
+      weekdays.map(day =>
+        dynamodb.get({
+          TableName: BUSINESS_WORKING_HOURS_TABLE,
+          Key: { business_id: businessId, weekday: day }
+        }).promise()
+      )
+    );
+    const workingHours = {};
+    weekdays.forEach((day, idx) => {
+      workingHours[day] = results[idx].Item ? {
+        opening: results[idx].Item.opening,
+        closing: results[idx].Item.closing
+      } : { opening: null, closing: null };
+    });
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: JSON.stringify({ success: true, workingHours })
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers: corsHeaders,
+      body: JSON.stringify({ success: false, message: 'Failed to retrieve working hours', error: error.message })
+    };
+  }
+}
+
+/**
+ * Update working hours for a business
+ */
+async function handleUpdateWorkingHours(businessId, requestBody) {
+  try {
+    if (!requestBody) {
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({ success: false, message: 'Request body is required' })
+      };
+    }
+    const workingHours = JSON.parse(requestBody);
+    const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    await Promise.all(
+      weekdays.map(day => {
+        const hours = workingHours[day] || {};
+        return dynamodb.put({
+          TableName: BUSINESS_WORKING_HOURS_TABLE,
+          Item: {
+            business_id: businessId,
+            weekday: day,
+            opening: hours.opening || null,
+            closing: hours.closing || null,
+            updated_at: new Date().toISOString()
+          }
+        }).promise();
+      })
+    );
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: JSON.stringify({ success: true, message: 'Working hours updated successfully' })
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers: corsHeaders,
+      body: JSON.stringify({ success: false, message: 'Failed to update working hours', error: error.message })
     };
   }
 }

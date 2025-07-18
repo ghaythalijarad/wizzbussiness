@@ -19,6 +19,7 @@
         "CATEGORIES_TABLE": "order-receiver-categories-dev",
         "DISCOUNTS_TABLE": "order-receiver-discounts-dev",
         "BUSINESS_SETTINGS_TABLE": "order-receiver-business-settings-dev",
+        "BUSINESS_WORKING_HOURS_TABLE": "order-receiver-business-working-hours-dev",
         "POS_LOGS_TABLE": "order-receiver-pos-logs-dev",
         "BUSINESS_PHOTOS_BUCKET": "order-receiver-business-photos-dev",
         "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
@@ -52,6 +53,8 @@
                 "arn:aws:dynamodb:us-east-1:109804294167:table/order-receiver-discounts-dev/index/*",
                 "arn:aws:dynamodb:us-east-1:109804294167:table/order-receiver-business-settings-dev",
                 "arn:aws:dynamodb:us-east-1:109804294167:table/order-receiver-business-settings-dev/index/*",
+                "arn:aws:dynamodb:us-east-1:109804294167:table/order-receiver-business-working-hours-dev",
+                "arn:aws:dynamodb:us-east-1:109804294167:table/order-receiver-business-working-hours-dev/index/*",
                 "arn:aws:dynamodb:us-east-1:109804294167:table/order-receiver-pos-logs-dev",
                 "arn:aws:dynamodb:us-east-1:109804294167:table/order-receiver-pos-logs-dev/index/*"
               ]
@@ -329,7 +332,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752799923924-2025-07-18T00:52:03.924Z/unifiedAuth.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752804420927-2025-07-18T02:07:00.927Z/unifiedAuth.zip"
               },
               "Handler": "functions/auth/unified_auth_handler.handler",
               "Runtime": "nodejs20.x",
@@ -345,6 +348,7 @@
                   "CATEGORIES_TABLE": "order-receiver-categories-dev",
                   "DISCOUNTS_TABLE": "order-receiver-discounts-dev",
                   "BUSINESS_SETTINGS_TABLE": "order-receiver-business-settings-dev",
+                  "BUSINESS_WORKING_HOURS_TABLE": "order-receiver-business-working-hours-dev",
                   "POS_LOGS_TABLE": "order-receiver-pos-logs-dev",
                   "BUSINESS_PHOTOS_BUCKET": "order-receiver-business-photos-dev",
                   "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
@@ -371,7 +375,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752799923924-2025-07-18T00:52:03.924Z/orderManagement.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752804420927-2025-07-18T02:07:00.927Z/orderManagement.zip"
               },
               "Handler": "functions/orders/order_management_handler.handler",
               "Runtime": "nodejs20.x",
@@ -387,6 +391,7 @@
                   "CATEGORIES_TABLE": "order-receiver-categories-dev",
                   "DISCOUNTS_TABLE": "order-receiver-discounts-dev",
                   "BUSINESS_SETTINGS_TABLE": "order-receiver-business-settings-dev",
+                  "BUSINESS_WORKING_HOURS_TABLE": "order-receiver-business-working-hours-dev",
                   "POS_LOGS_TABLE": "order-receiver-pos-logs-dev",
                   "BUSINESS_PHOTOS_BUCKET": "order-receiver-business-photos-dev",
                   "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
@@ -413,7 +418,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752799923924-2025-07-18T00:52:03.924Z/discountManagement.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752804420927-2025-07-18T02:07:00.927Z/discountManagement.zip"
               },
               "Handler": "functions/discounts/discount_management_handler.handler",
               "Runtime": "nodejs20.x",
@@ -429,6 +434,7 @@
                   "CATEGORIES_TABLE": "order-receiver-categories-dev",
                   "DISCOUNTS_TABLE": "order-receiver-discounts-dev",
                   "BUSINESS_SETTINGS_TABLE": "order-receiver-business-settings-dev",
+                  "BUSINESS_WORKING_HOURS_TABLE": "order-receiver-business-working-hours-dev",
                   "POS_LOGS_TABLE": "order-receiver-pos-logs-dev",
                   "BUSINESS_PHOTOS_BUCKET": "order-receiver-business-photos-dev",
                   "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
@@ -455,7 +461,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752799923924-2025-07-18T00:52:03.924Z/health.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752804420927-2025-07-18T02:07:00.927Z/health.zip"
               },
               "Handler": "functions/health_check.handler",
               "Runtime": "nodejs20.x",
@@ -471,6 +477,7 @@
                   "CATEGORIES_TABLE": "order-receiver-categories-dev",
                   "DISCOUNTS_TABLE": "order-receiver-discounts-dev",
                   "BUSINESS_SETTINGS_TABLE": "order-receiver-business-settings-dev",
+                  "BUSINESS_WORKING_HOURS_TABLE": "order-receiver-business-working-hours-dev",
                   "POS_LOGS_TABLE": "order-receiver-pos-logs-dev",
                   "BUSINESS_PHOTOS_BUCKET": "order-receiver-business-photos-dev",
                   "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
@@ -497,7 +504,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752799923924-2025-07-18T00:52:03.924Z/imageUpload.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752804420927-2025-07-18T02:07:00.927Z/imageUpload.zip"
               },
               "Handler": "functions/upload/image_upload_handler.handler",
               "Runtime": "nodejs20.x",
@@ -513,6 +520,7 @@
                   "CATEGORIES_TABLE": "order-receiver-categories-dev",
                   "DISCOUNTS_TABLE": "order-receiver-discounts-dev",
                   "BUSINESS_SETTINGS_TABLE": "order-receiver-business-settings-dev",
+                  "BUSINESS_WORKING_HOURS_TABLE": "order-receiver-business-working-hours-dev",
                   "POS_LOGS_TABLE": "order-receiver-pos-logs-dev",
                   "BUSINESS_PHOTOS_BUCKET": "order-receiver-business-photos-dev",
                   "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
@@ -539,7 +547,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752799923924-2025-07-18T00:52:03.924Z/posSettings.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752804420927-2025-07-18T02:07:00.927Z/posSettings.zip"
               },
               "Handler": "functions/pos/pos_settings_handler.handler",
               "Runtime": "nodejs20.x",
@@ -555,6 +563,7 @@
                   "CATEGORIES_TABLE": "order-receiver-categories-dev",
                   "DISCOUNTS_TABLE": "order-receiver-discounts-dev",
                   "BUSINESS_SETTINGS_TABLE": "order-receiver-business-settings-dev",
+                  "BUSINESS_WORKING_HOURS_TABLE": "order-receiver-business-working-hours-dev",
                   "POS_LOGS_TABLE": "order-receiver-pos-logs-dev",
                   "BUSINESS_PHOTOS_BUCKET": "order-receiver-business-photos-dev",
                   "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
@@ -581,7 +590,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752799923924-2025-07-18T00:52:03.924Z/locationSettings.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1752804420927-2025-07-18T02:07:00.927Z/locationSettings.zip"
               },
               "Handler": "functions/location_settings_handler.handler",
               "Runtime": "nodejs20.x",
@@ -597,6 +606,7 @@
                   "CATEGORIES_TABLE": "order-receiver-categories-dev",
                   "DISCOUNTS_TABLE": "order-receiver-discounts-dev",
                   "BUSINESS_SETTINGS_TABLE": "order-receiver-business-settings-dev",
+                  "BUSINESS_WORKING_HOURS_TABLE": "order-receiver-business-working-hours-dev",
                   "POS_LOGS_TABLE": "order-receiver-pos-logs-dev",
                   "BUSINESS_PHOTOS_BUCKET": "order-receiver-business-photos-dev",
                   "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
@@ -616,7 +626,7 @@
               "LocationSettingsLogGroup"
             ]
           },
-          "HealthLambdaVersionJdvtkw608l3oMQ7Id8A07qIuyccyxzWe9cPrIfQNx0s": {
+          "HealthLambdaVersionTGpHZq7z4cXwFDEQ9zW7J2XuxgyahLrS3LkhG9QY": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
@@ -626,7 +636,7 @@
               "CodeSha256": "vwNCbwVs2P7ndLUTo2FAjObUBW+O5fPAzONH6iQFfyA="
             }
           },
-          "DiscountManagementLambdaVersionezIYxuBRtRhaMZjuw3AFZvST81q6JOLAdiCFbY6NE": {
+          "DiscountManagementLambdaVersionPdYSItWSNVSXu90mNdxGnOoD3E7orQhSPw00aM1NI8": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
@@ -636,17 +646,7 @@
               "CodeSha256": "b1fVdleFJBBAUOLUKJu7u2Oivnyhd7rtP9ro3jRqxH0="
             }
           },
-          "UnifiedAuthLambdaVersiondkiuBuB1YwhjaGNAbJUXu78XCla1huvvw4wiyJthQ": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "UnifiedAuthLambdaFunction"
-              },
-              "CodeSha256": "Cp0mOyZS+6JusIKYcHWNkMG9HgU265B2eLYtKTmzP98="
-            }
-          },
-          "OrderManagementLambdaVersionH3Lsl9zl4Cz3bzyqxu9BP7u5FKEfhnRRjO7OwrtuqM": {
+          "OrderManagementLambdaVersionzERKnQfo2bBOBpc8wykMZ8sEWonAY6jK3Jf8ZxP4": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
@@ -656,7 +656,17 @@
               "CodeSha256": "YSPDU6zUGPMusjSpz8KJEy0L379AeePHcXg86aGZsAQ="
             }
           },
-          "ImageUploadLambdaVersionp0XUM66fgMyvYaALb5DgSXOD2U7qrLsTJ8IjSFY": {
+          "UnifiedAuthLambdaVersionN9TTMI3YjyYYa3BykqfVs3UxEk91j9gdVoyAxON5g": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "UnifiedAuthLambdaFunction"
+              },
+              "CodeSha256": "Cp0mOyZS+6JusIKYcHWNkMG9HgU265B2eLYtKTmzP98="
+            }
+          },
+          "ImageUploadLambdaVersiongvzsGjsaFWgBXOzO15yGDxjTtJ5YrTL2aj5fDWE6zJg": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
@@ -666,17 +676,17 @@
               "CodeSha256": "mROAaLdu3ion5LdaJH4CjMULtBUFRW6CCnfbQqYtWqQ="
             }
           },
-          "LocationSettingsLambdaVersionpjKAXwdEdQ9PWBCAulgimH2amfWB1qriVWUn8S2IzQ": {
+          "LocationSettingsLambdaVersionyDZc7r7c9OtyIOX1wpUo1FWFrL6nmq41IWVqjr1ncw": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "LocationSettingsLambdaFunction"
               },
-              "CodeSha256": "TmfB8NsHSN9N0o0FOuofiIoAzzBoMPUvHausob79g3Y="
+              "CodeSha256": "01S+fg79fxAvMo3kCMnfkg9H3XaKKISQeXvN+/htziE="
             }
           },
-          "PosSettingsLambdaVersion0VReXiQ3sa6Z2b43D8IKPahSRYVrfbhXq7Xou4Otw": {
+          "PosSettingsLambdaVersion1vw0sBFZYnwmgjML0jYtvkNiJt6njRVXLJESMsks4": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
@@ -1074,6 +1084,18 @@
                 "Ref": "ApiGatewayResourceBusinessesBusinessidVar"
               },
               "PathPart": "location-settings",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceBusinessesBusinessidVarWorkingDashhours": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceBusinessesBusinessidVar"
+              },
+              "PathPart": "working-hours",
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
               }
@@ -2198,6 +2220,51 @@
               },
               "ResourceId": {
                 "Ref": "ApiGatewayResourceBusinessesBusinessidVarLocationDashsettings"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodBusinessesBusinessidVarWorkingDashhoursOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,PUT,GET'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceBusinessesBusinessidVarWorkingDashhours"
               },
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
@@ -3768,7 +3835,99 @@
               "LocationSettingsLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1752799905848": {
+          "ApiGatewayMethodBusinessesBusinessidVarWorkingDashhoursGet": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "GET",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceBusinessesBusinessidVarWorkingDashhours"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "LocationSettingsLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "LocationSettingsLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayMethodBusinessesBusinessidVarWorkingDashhoursPut": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "PUT",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceBusinessesBusinessidVarWorkingDashhours"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "LocationSettingsLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "LocationSettingsLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayDeployment1752804401845": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -3802,6 +3961,7 @@
               "ApiGatewayMethodBusinessesBusinessidVarPosDashsettingsTestDashconnectionOptions",
               "ApiGatewayMethodBusinessesBusinessidVarPosDashsettingsSyncDashlogsOptions",
               "ApiGatewayMethodBusinessesBusinessidVarLocationDashsettingsOptions",
+              "ApiGatewayMethodBusinessesBusinessidVarWorkingDashhoursOptions",
               "ApiGatewayMethodAuthRegisterDashwithDashbusinessPost",
               "ApiGatewayMethodAuthConfirmPost",
               "ApiGatewayMethodAuthCheckDashemailPost",
@@ -3835,7 +3995,9 @@
               "ApiGatewayMethodBusinessesBusinessidVarPosDashsettingsTestDashconnectionPost",
               "ApiGatewayMethodBusinessesBusinessidVarPosDashsettingsSyncDashlogsGet",
               "ApiGatewayMethodBusinessesBusinessidVarLocationDashsettingsGet",
-              "ApiGatewayMethodBusinessesBusinessidVarLocationDashsettingsPut"
+              "ApiGatewayMethodBusinessesBusinessidVarLocationDashsettingsPut",
+              "ApiGatewayMethodBusinessesBusinessidVarWorkingDashhoursGet",
+              "ApiGatewayMethodBusinessesBusinessidVarWorkingDashhoursPut"
             ]
           },
           "UnifiedAuthLambdaPermissionApiGateway": {
@@ -4110,7 +4272,7 @@
           "HealthLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "HealthLambdaVersionJdvtkw608l3oMQ7Id8A07qIuyccyxzWe9cPrIfQNx0s"
+              "Ref": "HealthLambdaVersionTGpHZq7z4cXwFDEQ9zW7J2XuxgyahLrS3LkhG9QY"
             },
             "Export": {
               "Name": "sls-order-receiver-api-dev-HealthLambdaFunctionQualifiedArn"
@@ -4119,34 +4281,34 @@
           "DiscountManagementLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "DiscountManagementLambdaVersionezIYxuBRtRhaMZjuw3AFZvST81q6JOLAdiCFbY6NE"
+              "Ref": "DiscountManagementLambdaVersionPdYSItWSNVSXu90mNdxGnOoD3E7orQhSPw00aM1NI8"
             },
             "Export": {
               "Name": "sls-order-receiver-api-dev-DiscountManagementLambdaFunctionQualifiedArn"
             }
           },
-          "UnifiedAuthLambdaFunctionQualifiedArn": {
-            "Description": "Current Lambda function version",
-            "Value": {
-              "Ref": "UnifiedAuthLambdaVersiondkiuBuB1YwhjaGNAbJUXu78XCla1huvvw4wiyJthQ"
-            },
-            "Export": {
-              "Name": "sls-order-receiver-api-dev-UnifiedAuthLambdaFunctionQualifiedArn"
-            }
-          },
           "OrderManagementLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "OrderManagementLambdaVersionH3Lsl9zl4Cz3bzyqxu9BP7u5FKEfhnRRjO7OwrtuqM"
+              "Ref": "OrderManagementLambdaVersionzERKnQfo2bBOBpc8wykMZ8sEWonAY6jK3Jf8ZxP4"
             },
             "Export": {
               "Name": "sls-order-receiver-api-dev-OrderManagementLambdaFunctionQualifiedArn"
             }
           },
+          "UnifiedAuthLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "UnifiedAuthLambdaVersionN9TTMI3YjyYYa3BykqfVs3UxEk91j9gdVoyAxON5g"
+            },
+            "Export": {
+              "Name": "sls-order-receiver-api-dev-UnifiedAuthLambdaFunctionQualifiedArn"
+            }
+          },
           "ImageUploadLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ImageUploadLambdaVersionp0XUM66fgMyvYaALb5DgSXOD2U7qrLsTJ8IjSFY"
+              "Ref": "ImageUploadLambdaVersiongvzsGjsaFWgBXOzO15yGDxjTtJ5YrTL2aj5fDWE6zJg"
             },
             "Export": {
               "Name": "sls-order-receiver-api-dev-ImageUploadLambdaFunctionQualifiedArn"
@@ -4155,7 +4317,7 @@
           "LocationSettingsLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "LocationSettingsLambdaVersionpjKAXwdEdQ9PWBCAulgimH2amfWB1qriVWUn8S2IzQ"
+              "Ref": "LocationSettingsLambdaVersionyDZc7r7c9OtyIOX1wpUo1FWFrL6nmq41IWVqjr1ncw"
             },
             "Export": {
               "Name": "sls-order-receiver-api-dev-LocationSettingsLambdaFunctionQualifiedArn"
@@ -4164,7 +4326,7 @@
           "PosSettingsLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "PosSettingsLambdaVersion0VReXiQ3sa6Z2b43D8IKPahSRYVrfbhXq7Xou4Otw"
+              "Ref": "PosSettingsLambdaVersion1vw0sBFZYnwmgjML0jYtvkNiJt6njRVXLJESMsks4"
             },
             "Export": {
               "Name": "sls-order-receiver-api-dev-PosSettingsLambdaFunctionQualifiedArn"
@@ -4474,7 +4636,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "UnifiedAuthLambdaVersiondkiuBuB1YwhjaGNAbJUXu78XCla1huvvw4wiyJthQ"
+        "versionLogicalId": "UnifiedAuthLambdaVersionN9TTMI3YjyYYa3BykqfVs3UxEk91j9gdVoyAxON5g"
       },
       "orderManagement": {
         "handler": "functions/orders/order_management_handler.handler",
@@ -4680,7 +4842,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "OrderManagementLambdaVersionH3Lsl9zl4Cz3bzyqxu9BP7u5FKEfhnRRjO7OwrtuqM"
+        "versionLogicalId": "OrderManagementLambdaVersionzERKnQfo2bBOBpc8wykMZ8sEWonAY6jK3Jf8ZxP4"
       },
       "discountManagement": {
         "handler": "functions/discounts/discount_management_handler.handler",
@@ -4910,7 +5072,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "DiscountManagementLambdaVersionezIYxuBRtRhaMZjuw3AFZvST81q6JOLAdiCFbY6NE"
+        "versionLogicalId": "DiscountManagementLambdaVersionPdYSItWSNVSXu90mNdxGnOoD3E7orQhSPw00aM1NI8"
       },
       "health": {
         "handler": "functions/health_check.handler",
@@ -4948,7 +5110,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "HealthLambdaVersionJdvtkw608l3oMQ7Id8A07qIuyccyxzWe9cPrIfQNx0s"
+        "versionLogicalId": "HealthLambdaVersionTGpHZq7z4cXwFDEQ9zW7J2XuxgyahLrS3LkhG9QY"
       },
       "imageUpload": {
         "handler": "functions/upload/image_upload_handler.handler",
@@ -5034,7 +5196,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "ImageUploadLambdaVersionp0XUM66fgMyvYaALb5DgSXOD2U7qrLsTJ8IjSFY"
+        "versionLogicalId": "ImageUploadLambdaVersiongvzsGjsaFWgBXOzO15yGDxjTtJ5YrTL2aj5fDWE6zJg"
       },
       "posSettings": {
         "handler": "functions/pos/pos_settings_handler.handler",
@@ -5144,7 +5306,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "PosSettingsLambdaVersion0VReXiQ3sa6Z2b43D8IKPahSRYVrfbhXq7Xou4Otw"
+        "versionLogicalId": "PosSettingsLambdaVersion1vw0sBFZYnwmgjML0jYtvkNiJt6njRVXLJESMsks4"
       },
       "locationSettings": {
         "handler": "functions/location_settings_handler.handler",
@@ -5197,6 +5359,54 @@
               },
               "integration": "AWS_PROXY"
             }
+          },
+          {
+            "http": {
+              "path": "businesses/{businessId}/working-hours",
+              "method": "get",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "GET"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY"
+            }
+          },
+          {
+            "http": {
+              "path": "businesses/{businessId}/working-hours",
+              "method": "put",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "PUT"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY"
+            }
           }
         ],
         "package": {
@@ -5206,7 +5416,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "LocationSettingsLambdaVersionpjKAXwdEdQ9PWBCAulgimH2amfWB1qriVWUn8S2IzQ"
+        "versionLogicalId": "LocationSettingsLambdaVersionyDZc7r7c9OtyIOX1wpUo1FWFrL6nmq41IWVqjr1ncw"
       }
     },
     "resources": {
@@ -5233,7 +5443,7 @@
       "package": {
         "individually": true,
         "artifactsS3KeyDirname": "serverless/order-receiver-api/dev/code-artifacts",
-        "artifactDirectoryName": "serverless/order-receiver-api/dev/1752799923924-2025-07-18T00:52:03.924Z"
+        "artifactDirectoryName": "serverless/order-receiver-api/dev/1752804420927-2025-07-18T02:07:00.927Z"
       },
       "custom": {
         "$ref": "$[\"service\"][\"custom\"]"
@@ -5266,7 +5476,7 @@
   },
   "package": {
     "individually": true,
-    "artifactDirectoryName": "serverless/order-receiver-api/dev/1752799923924-2025-07-18T00:52:03.924Z",
+    "artifactDirectoryName": "serverless/order-receiver-api/dev/1752804420927-2025-07-18T02:07:00.927Z",
     "artifact": ""
   }
 }

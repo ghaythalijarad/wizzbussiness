@@ -107,7 +107,11 @@ async function handleGetDiscounts(dynamodb, businessId) {
     try {
         const params = {
             TableName: DISCOUNTS_TABLE,
+<<<<<<< HEAD
             KeyConditionExpression: 'business_id = :business_id',
+=======
+            KeyConditionExpression: 'business_id = :businessId',
+>>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
             ExpressionAttributeValues: {
                 ':business_id': businessId
             },
@@ -175,7 +179,11 @@ async function handleCreateDiscount(dynamodb, businessId, discountData) {
         const now = new Date().toISOString();
         const discount = {
             business_id: businessId,
+<<<<<<< HEAD
             discount_id: discountId,
+=======
+            discountId,
+>>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
             id: discountId, // For frontend compatibility
             title: discountData.title,
             description: discountData.description || '',
@@ -221,7 +229,11 @@ async function handleGetDiscount(dynamodb, businessId, discountId) {
             TableName: DISCOUNTS_TABLE,
             Key: {
                 business_id: businessId,
+<<<<<<< HEAD
                 discount_id: discountId
+=======
+                discountId
+>>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
             }
         };
 
@@ -319,8 +331,16 @@ async function handleUpdateDiscount(dynamodb, businessId, discountId, updateData
 
         const params = {
             TableName: DISCOUNTS_TABLE,
+<<<<<<< HEAD
             Key: { business_id: businessId, discount_id: discountId },
             UpdateExpression: updateExpression,
+=======
+            Key: {
+                business_id: businessId,
+                discountId
+            },
+            UpdateExpression: `SET ${updateExpressions.join(', ')}`,
+>>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
             ExpressionAttributeValues: expressionAttributeValues,
             ReturnValues: 'ALL_NEW'
         };
@@ -341,9 +361,25 @@ async function handleUpdateDiscount(dynamodb, businessId, discountId, updateData
 // DELETE /discounts/{discountId} - Delete a discount
 async function handleDeleteDiscount(dynamodb, businessId, discountId) {
     try {
+<<<<<<< HEAD
         const existingDiscount = await handleGetDiscount(dynamodb, businessId, discountId);
         if (existingDiscount.statusCode !== 200) {
             return existingDiscount;
+=======
+        const params = {
+            TableName: DISCOUNTS_TABLE,
+            Key: {
+                business_id: businessId,
+                discountId
+            },
+            ReturnValues: 'ALL_OLD'
+        };
+
+        const result = await dynamodb.delete(params).promise();
+        
+        if (!result.Attributes) {
+            return createResponse(404, { success: false, message: 'Discount not found' });
+>>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
         }
 
         await dynamodb.delete({
@@ -369,7 +405,11 @@ async function handleToggleDiscountStatus(dynamodb, businessId, discountId) {
             TableName: DISCOUNTS_TABLE,
             Key: {
                 business_id: businessId,
+<<<<<<< HEAD
                 discount_id: discountId
+=======
+                discountId
+>>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
             }
         };
 
@@ -385,7 +425,11 @@ async function handleToggleDiscountStatus(dynamodb, businessId, discountId) {
             TableName: DISCOUNTS_TABLE,
             Key: {
                 business_id: businessId,
+<<<<<<< HEAD
                 discount_id: discountId
+=======
+                discountId
+>>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
             },
             UpdateExpression: 'SET #status = :status, #updatedAt = :updatedAt',
             ExpressionAttributeNames: {
@@ -429,7 +473,11 @@ async function handleValidateDiscount(dynamodb, businessId, orderData) {
             TableName: DISCOUNTS_TABLE,
             Key: {
                 business_id: businessId,
+<<<<<<< HEAD
                 discount_id: discountId
+=======
+                discountId
+>>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
             }
         };
 
@@ -515,7 +563,11 @@ async function handleApplyDiscount(dynamodb, businessId, orderData) {
             TableName: DISCOUNTS_TABLE,
             Key: {
                 business_id: businessId,
+<<<<<<< HEAD
                 discount_id: discountId
+=======
+                discountId
+>>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
             },
             UpdateExpression: 'SET #usageCount = #usageCount + :inc, #updatedAt = :updatedAt',
             ExpressionAttributeNames: {

@@ -297,9 +297,16 @@ async function handleGetProducts(dynamodb, userInfo) {
 
         const params = {
             TableName: PRODUCTS_TABLE,
+<<<<<<< HEAD
             FilterExpression: 'business_id = :business_id',
             ExpressionAttributeValues: {
                 ':business_id': businessInfo.business_id
+=======
+            IndexName: 'BusinessIdIndex',
+            KeyConditionExpression: 'business_id = :businessId',
+            ExpressionAttributeValues: {
+                ':businessId': businessInfo.business_id
+>>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
             }
         };
         const result = await dynamodb.scan(params).promise();
@@ -397,9 +404,15 @@ async function handleCreateProduct(dynamodb, userInfo, productData) {
         const timestamp = new Date().toISOString();
 
         const product = {
+<<<<<<< HEAD
             productId: productId,
             business_id: businessInfo.business_id,
             category_id: categoryId,
+=======
+            productId,
+            business_id: businessInfo.business_id,
+            categoryId,
+>>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
             name,
             name_ar: name_ar || '',
             description: description || '',
@@ -543,9 +556,16 @@ async function handleSearchProducts(dynamodb, userInfo, query) {
         // Use scan since BusinessIdIndex does not exist
         const params = {
             TableName: PRODUCTS_TABLE,
+<<<<<<< HEAD
             FilterExpression: 'business_id = :business_id',
             ExpressionAttributeValues: {
                 ':business_id': businessInfo.business_id
+=======
+            IndexName: 'BusinessIdIndex',
+            KeyConditionExpression: 'business_id = :businessId',
+            ExpressionAttributeValues: {
+                ':businessId': businessInfo.business_id
+>>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
             }
         };
         const result = await dynamodb.scan(params).promise();

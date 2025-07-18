@@ -161,7 +161,7 @@ async function handleGetPosSettings(businessId) {
     const params = {
       TableName: BUSINESS_SETTINGS_TABLE,
       Key: { 
-        business_id: businessId,
+        businessId: businessId,
         setting_type: 'pos_settings'
       }
     };
@@ -272,7 +272,7 @@ async function handleUpdatePosSettings(businessId, requestBody) {
     const params = {
       TableName: BUSINESS_SETTINGS_TABLE,
       Key: {
-        business_id: businessId,
+        businessId: businessId,
         setting_type: 'pos_settings'
       },
       UpdateExpression: 'SET settings = :settings, updated_at = :updated_at',
@@ -408,9 +408,9 @@ async function handleGetSyncLogs(businessId) {
     const params = {
       TableName: POS_LOGS_TABLE,
       IndexName: 'business-id-timestamp-index',
-      KeyConditionExpression: 'business_id = :business_id',
+      KeyConditionExpression: 'businessId = :businessId',
       ExpressionAttributeValues: {
-        ':business_id': businessId
+        ':businessId': businessId
       },
       ScanIndexForward: false, // Most recent first
       Limit: 50
@@ -636,7 +636,7 @@ async function logPosSettingsChange(businessId, action, details) {
   try {
     const logEntry = {
       id: `${businessId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      business_id: businessId,
+      businessId: businessId,
       timestamp: new Date().toISOString(),
       action: action,
       details: details,

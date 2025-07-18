@@ -311,7 +311,7 @@ async function handleGetWorkingHours(businessId) {
       weekdays.map(day =>
         dynamodb.get({
           TableName: BUSINESS_WORKING_HOURS_TABLE,
-          Key: { business_id: businessId, weekday: day }
+          Key: { businessId: businessId, weekday: day }
         }).promise()
       )
     );
@@ -356,7 +356,7 @@ async function handleUpdateWorkingHours(businessId, requestBody) {
         return dynamodb.put({
           TableName: BUSINESS_WORKING_HOURS_TABLE,
           Item: {
-            business_id: businessId,
+            businessId: businessId,
             weekday: day,
             opening: hours.opening || null,
             closing: hours.closing || null,

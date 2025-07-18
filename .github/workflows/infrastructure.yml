@@ -85,7 +85,7 @@ jobs:
 
       - name: Upload Terraform Plan
         if: ${{ github.event.inputs.action == 'plan' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: terraform-plan-${{ github.event.inputs.environment }}
           path: infrastructure/tfplan

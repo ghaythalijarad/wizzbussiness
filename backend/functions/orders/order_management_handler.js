@@ -276,9 +276,9 @@ async function handleGetProducts(dynamodb, userInfo) {
         const params = {
             TableName: PRODUCTS_TABLE,
             IndexName: 'BusinessIdIndex',
-            KeyConditionExpression: 'businessId = :businessId',
+            KeyConditionExpression: 'business_id = :businessId',
             ExpressionAttributeValues: {
-                ':businessId': businessInfo.businessId
+                ':businessId': businessInfo.business_id
             }
         };
 
@@ -311,7 +311,7 @@ async function handleGetProduct(dynamodb, userInfo, productId) {
 
         // Verify the product belongs to the user's business
         const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
-        if (result.Item.businessId !== businessInfo?.businessId) {
+        if (result.Item.business_id !== businessInfo?.business_id) {
             return createResponse(403, { success: false, message: 'Access denied to this product' });
         }
 
@@ -378,7 +378,7 @@ async function handleCreateProduct(dynamodb, userInfo, productData) {
 
         const product = {
             productId,
-            businessId: businessInfo.businessId,
+            business_id: businessInfo.business_id,
             categoryId,
             name,
             name_ar: name_ar || '',
@@ -530,9 +530,9 @@ async function handleSearchProducts(dynamodb, userInfo, query) {
         const params = {
             TableName: PRODUCTS_TABLE,
             IndexName: 'BusinessIdIndex',
-            KeyConditionExpression: 'businessId = :businessId',
+            KeyConditionExpression: 'business_id = :businessId',
             ExpressionAttributeValues: {
-                ':businessId': businessInfo.businessId
+                ':businessId': businessInfo.business_id
             }
         };
 

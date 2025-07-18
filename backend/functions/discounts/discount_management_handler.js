@@ -38,23 +38,23 @@ exports.handler = async (event) => {
 
         // Route the request based on HTTP method and path
         if (httpMethod === 'GET' && path === '/discounts') {
-            return await handleGetDiscounts(dynamodb, businessInfo.businessId);
+            return await handleGetDiscounts(dynamodb, businessInfo.business_id);
         } else if (httpMethod === 'POST' && path === '/discounts') {
-            return await handleCreateDiscount(dynamodb, businessInfo.businessId, JSON.parse(body || '{}'));
+            return await handleCreateDiscount(dynamodb, businessInfo.business_id, JSON.parse(body || '{}'));
         } else if (httpMethod === 'GET' && pathParameters?.discountId) {
-            return await handleGetDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId);
+            return await handleGetDiscount(dynamodb, businessInfo.business_id, pathParameters.discountId);
         } else if (httpMethod === 'PUT' && pathParameters?.discountId) {
-            return await handleUpdateDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId, JSON.parse(body || '{}'));
+            return await handleUpdateDiscount(dynamodb, businessInfo.business_id, pathParameters.discountId, JSON.parse(body || '{}'));
         } else if (httpMethod === 'DELETE' && pathParameters?.discountId) {
-            return await handleDeleteDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId);
+            return await handleDeleteDiscount(dynamodb, businessInfo.business_id, pathParameters.discountId);
         } else if (httpMethod === 'PATCH' && pathParameters?.discountId && path.includes('/toggle-status')) {
-            return await handleToggleDiscountStatus(dynamodb, businessInfo.businessId, pathParameters.discountId);
+            return await handleToggleDiscountStatus(dynamodb, businessInfo.business_id, pathParameters.discountId);
         } else if (httpMethod === 'POST' && path.includes('/validate-discount')) {
-            return await handleValidateDiscount(dynamodb, businessInfo.businessId, JSON.parse(body || '{}'));
+            return await handleValidateDiscount(dynamodb, businessInfo.business_id, JSON.parse(body || '{}'));
         } else if (httpMethod === 'POST' && path.includes('/apply-discount')) {
-            return await handleApplyDiscount(dynamodb, businessInfo.businessId, JSON.parse(body || '{}'));
+            return await handleApplyDiscount(dynamodb, businessInfo.business_id, JSON.parse(body || '{}'));
         } else if (httpMethod === 'GET' && path.includes('/stats')) {
-            return await handleGetDiscountStats(dynamodb, businessInfo.businessId);
+            return await handleGetDiscountStats(dynamodb, businessInfo.business_id);
         } else {
             return createResponse(404, { success: false, message: 'Endpoint not found' });
         }
@@ -107,7 +107,7 @@ async function handleGetDiscounts(dynamodb, businessId) {
     try {
         const params = {
             TableName: DISCOUNTS_TABLE,
-            KeyConditionExpression: 'businessId = :businessId',
+            KeyConditionExpression: 'business_id = :businessId',
             ExpressionAttributeValues: {
                 ':businessId': businessId
             },
@@ -175,7 +175,7 @@ async function handleCreateDiscount(dynamodb, businessId, discountData) {
         const now = new Date().toISOString();
         
         const discount = {
-            businessId,
+            business_id: businessId,
             discountId,
             id: discountId, // For frontend compatibility
             title: discountData.title,
@@ -221,7 +221,7 @@ async function handleGetDiscount(dynamodb, businessId, discountId) {
         const params = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                businessId,
+                business_id: businessId,
                 discountId
             }
         };
@@ -287,7 +287,7 @@ async function handleUpdateDiscount(dynamodb, businessId, discountId, updateData
         const updateParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                businessId,
+                business_id: businessId,
                 discountId
             },
             UpdateExpression: `SET ${updateExpressions.join(', ')}`,
@@ -315,7 +315,7 @@ async function handleDeleteDiscount(dynamodb, businessId, discountId) {
         const params = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                businessId,
+                business_id: businessId,
                 discountId
             },
             ReturnValues: 'ALL_OLD'
@@ -344,7 +344,7 @@ async function handleToggleDiscountStatus(dynamodb, businessId, discountId) {
         const getParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                businessId,
+                business_id: businessId,
                 discountId
             }
         };
@@ -360,7 +360,7 @@ async function handleToggleDiscountStatus(dynamodb, businessId, discountId) {
         const updateParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                businessId,
+                business_id: businessId,
                 discountId
             },
             UpdateExpression: 'SET #status = :status, #updatedAt = :updatedAt',
@@ -404,7 +404,7 @@ async function handleValidateDiscount(dynamodb, businessId, orderData) {
         const getParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                businessId,
+                business_id: businessId,
                 discountId
             }
         };
@@ -490,7 +490,7 @@ async function handleApplyDiscount(dynamodb, businessId, orderData) {
         const updateParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                businessId,
+                business_id: businessId,
                 discountId
             },
             UpdateExpression: 'SET #usageCount = #usageCount + :inc, #updatedAt = :updatedAt',

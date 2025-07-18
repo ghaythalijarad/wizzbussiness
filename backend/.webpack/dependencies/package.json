@@ -1,0 +1,10 @@
+{
+  "name": "order-receiver-api",
+  "version": "1.0.0",
+  "description": "Packaged externals for order-receiver-api",
+  "private": true,
+  "scripts": {},
+  "dependencies": {
+    "aws-sdk": "^2.1692.0"
+  }
+}

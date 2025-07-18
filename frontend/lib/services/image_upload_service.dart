@@ -11,18 +11,20 @@ class ImageUploadService {
   static const uuid = Uuid();
 
   /// Upload business photo and return the URL
-  static Future<Map<String, dynamic>> uploadBusinessPhoto(File imageFile) async {
+  static Future<Map<String, dynamic>> uploadBusinessPhoto(
+      File imageFile) async {
     try {
       // Use the dedicated business-photo endpoint
-      
+
       // Read image file as bytes
       final imageBytes = await imageFile.readAsBytes();
       final fileName = 'business_${uuid.v4()}.jpg';
-      
+
       // Create multipart request to business photo endpoint
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('$baseUrl/upload/business-photo'), // Use dedicated business photo endpoint
+        Uri.parse(
+            '$baseUrl/upload/business-photo'), // Use dedicated business photo endpoint
       );
 
       // Add file to request
@@ -47,7 +49,8 @@ class ImageUploadService {
           return {
             'success': true,
             'imageUrl': responseData['imageUrl'],
-            'message': responseData['message'] ?? 'Business photo uploaded successfully',
+            'message': responseData['message'] ??
+                'Business photo uploaded successfully',
           };
         } else {
           return {
@@ -84,7 +87,7 @@ class ImageUploadService {
       // Read image file as bytes
       final imageBytes = await imageFile.readAsBytes();
       final fileName = '${uuid.v4()}.jpg';
-      
+
       // Create multipart request
       final request = http.MultipartRequest(
         'POST',
@@ -146,7 +149,7 @@ class ImageUploadService {
       }
 
       final uniqueFileName = '${uuid.v4()}_$fileName';
-      
+
       // Create multipart request
       final request = http.MultipartRequest(
         'POST',
@@ -194,7 +197,8 @@ class ImageUploadService {
   }
 
   /// Delete uploaded image
-  static Future<Map<String, dynamic>> deleteProductImage(String imageUrl) async {
+  static Future<Map<String, dynamic>> deleteProductImage(
+      String imageUrl) async {
     try {
       final token = await AppAuthService.getAccessToken();
       if (token == null) {

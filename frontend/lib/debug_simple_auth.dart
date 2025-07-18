@@ -13,7 +13,7 @@ class SimpleAuthDebug {
     try {
       // Get token using the same method as ProductService
       final token = await AppAuthService.getAccessToken();
-      
+
       if (token == null) {
         print('❌ No token found');
         return;
@@ -25,8 +25,10 @@ class SimpleAuthDebug {
       print('📝 Token ends with: ...${token.substring(token.length - 20)}');
 
       // Check for any whitespace or problematic characters
-      print('🔍 Token has leading/trailing whitespace: ${token != token.trim()}');
-      print('🔍 Token contains newlines: ${token.contains('\n') || token.contains('\r')}');
+      print(
+          '🔍 Token has leading/trailing whitespace: ${token != token.trim()}');
+      print(
+          '🔍 Token contains newlines: ${token.contains('\n') || token.contains('\r')}');
       print('🔍 Token contains spaces: ${token.contains(' ')}');
 
       // Build authorization header exactly as ProductService does
@@ -34,7 +36,7 @@ class SimpleAuthDebug {
       print('\n🔑 Authorization header:');
       print('📏 Header length: ${authHeader.length}');
       print('📝 Header starts with: ${authHeader.substring(0, 30)}...');
-      
+
       // Check if Bearer prefix is correct
       final hasBearerPrefix = authHeader.startsWith('Bearer ');
       print('✅ Has correct Bearer prefix: $hasBearerPrefix');
@@ -46,7 +48,7 @@ class SimpleAuthDebug {
 
       // Test with a simple GET request first (products list)
       print('\n🧪 Testing with GET /products request...');
-      
+
       final response = await http.get(
         Uri.parse('${AppConfig.baseUrl}/products'),
         headers: {
@@ -60,8 +62,9 @@ class SimpleAuthDebug {
         print('📤 GET Response Headers: ${response.headers}');
         print('📤 GET Response Body: ${response.body}');
       } else {
-        print('✅ GET request successful - authorization header is working for GET');
-        
+        print(
+            '✅ GET request successful - authorization header is working for GET');
+
         // Now test with DELETE request to a non-existent product (should give 404, not 403)
         print('\n🧪 Testing DELETE with non-existent product...');
         final deleteResponse = await http.delete(
@@ -71,18 +74,17 @@ class SimpleAuthDebug {
             'Authorization': authHeader,
           },
         );
-        
+
         print('📤 DELETE Response Status: ${deleteResponse.statusCode}');
         print('📤 DELETE Response Headers: ${deleteResponse.headers}');
         print('📤 DELETE Response Body: ${deleteResponse.body}');
-        
+
         if (deleteResponse.statusCode == 403) {
           print('❌ Still getting 403 - authorization issue persists');
         } else {
           print('✅ No 403 error - authorization is working');
         }
       }
-
     } catch (e, stackTrace) {
       print('💥 Error: $e');
       print('📚 Stack: $stackTrace');
@@ -96,18 +98,20 @@ class SimpleAuthDebug {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Check what's actually stored
       final storedToken = prefs.getString('access_token');
       print('📱 Token in SharedPreferences: ${storedToken != null}');
-      
+
       if (storedToken != null) {
         print('📏 Stored token length: ${storedToken.length}');
         print('📝 Stored token starts: ${storedToken.substring(0, 20)}...');
-        print('📝 Stored token ends: ...${storedToken.substring(storedToken.length - 20)}');
-        
+        print(
+            '📝 Stored token ends: ...${storedToken.substring(storedToken.length - 20)}');
+
         // Check if stored token has issues
-        print('🔍 Stored token trimmed differs: ${storedToken != storedToken.trim()}');
+        print(
+            '🔍 Stored token trimmed differs: ${storedToken != storedToken.trim()}');
         if (storedToken != storedToken.trim()) {
           print('⚠️ FOUND WHITESPACE ISSUE!');
           print('📝 Original: "${storedToken}"');
@@ -119,9 +123,10 @@ class SimpleAuthDebug {
       final serviceToken = await AppAuthService.getAccessToken();
       if (serviceToken != null) {
         print('\n📱 Token from AppAuthService: ${serviceToken.length} chars');
-        
+
         if (storedToken != null) {
-          print('🔍 Service token matches stored: ${serviceToken == storedToken}');
+          print(
+              '🔍 Service token matches stored: ${serviceToken == storedToken}');
           if (serviceToken != storedToken) {
             print('⚠️ TOKEN MISMATCH DETECTED!');
             print('📝 Stored length: ${storedToken.length}');
@@ -129,7 +134,6 @@ class SimpleAuthDebug {
           }
         }
       }
-
     } catch (e) {
       print('💥 Storage debug error: $e');
     }

@@ -187,7 +187,9 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: (_isLoading || widget.isLoading) ? null : _openMapPicker,
+                      onPressed: (_isLoading || widget.isLoading)
+                          ? null
+                          : _openMapPicker,
                       icon: (_isLoading || widget.isLoading)
                           ? const SizedBox(
                               width: 16,
@@ -243,7 +245,8 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: (_isLoading || widget.isLoading) ? null : _openMapPicker,
+                  onPressed:
+                      (_isLoading || widget.isLoading) ? null : _openMapPicker,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00c1e8),
                     foregroundColor: Colors.white,

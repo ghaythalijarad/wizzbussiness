@@ -240,10 +240,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
           Row(
             children: [
               _buildCircularBusinessPhoto(
-                _businessData?['business_photo_url'] ?? 
-                _userData?['business_photo_url'] ?? 
-                widget.business.businessPhotoUrl
-              ),
+                  _businessData?['business_photo_url'] ??
+                      _userData?['business_photo_url'] ??
+                      widget.business.businessPhotoUrl),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -709,7 +708,8 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => OtherSettingsPage(business: widget.business),
+                      builder: (context) =>
+                          OtherSettingsPage(business: widget.business),
                     ),
                   );
                 },
@@ -730,7 +730,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 },
               ),
               const SizedBox(height: 24),
-              
+
               // Logout Button with Compact Design
               Container(
                 width: double.infinity,
@@ -785,5 +785,4 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
       ),
     );
   }
-
 }

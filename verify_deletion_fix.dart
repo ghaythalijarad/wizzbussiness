@@ -20,7 +20,7 @@ void main() async {
     print('\n2️⃣ Checking stored access token...');
     final prefs = await SharedPreferences.getInstance();
     final storedToken = prefs.getString('access_token');
-    
+
     if (storedToken != null) {
       print('✅ Access token found in SharedPreferences');
       print('Token length: ${storedToken.length}');
@@ -28,9 +28,10 @@ void main() async {
     } else {
       print('❌ No access token in SharedPreferences');
       print('Setting up a test token for demonstration...');
-      
+
       // For demonstration, we'll use a token from our debug script
-      const testToken = 'eyJraWQiOiJva3B1RDh5MnAyTllUa2xrOXhVVVhXWllGRUNlTU53ejFEWHRycXhmWGNJPSIsImFsZyI6IlJTMjU2In0.test';
+      const testToken =
+          'eyJraWQiOiJva3B1RDh5MnAyTllUa2xrOXhVVVhXWllGRUNlTU53ejFEWHRycXhmWGNJPSIsImFsZyI6IlJTMjU2In0.test';
       await prefs.setString('access_token', testToken);
       print('✅ Test token stored');
     }
@@ -38,7 +39,7 @@ void main() async {
     // Test getAccessToken method
     print('\n3️⃣ Testing AppAuthService.getAccessToken()...');
     final token = await AppAuthService.getAccessToken();
-    
+
     if (token != null) {
       print('✅ getAccessToken() returned token successfully');
       print('Token length: ${token.length}');
@@ -49,19 +50,21 @@ void main() async {
 
     // Test product deletion simulation (without actually calling the API)
     print('\n4️⃣ Testing product deletion authorization headers...');
-    print('This simulates the authorization header setup in ProductService.deleteProduct()');
-    
+    print(
+        'This simulates the authorization header setup in ProductService.deleteProduct()');
+
     if (token != null) {
       final authHeader = 'Bearer $token';
       print('✅ Authorization header formatted correctly:');
       print('   ${authHeader.substring(0, 50)}...');
-      
+
       // Check for any problematic characters
       final cleanToken = token.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '');
       if (cleanToken.length == token.length) {
         print('✅ Token contains only valid characters');
       } else {
-        print('⚠️ Token contains ${token.length - cleanToken.length} potentially problematic characters');
+        print(
+            '⚠️ Token contains ${token.length - cleanToken.length} potentially problematic characters');
       }
     } else {
       print('❌ Cannot test authorization header - no token available');
@@ -69,10 +72,12 @@ void main() async {
 
     print('\n✅ Fix verification completed');
     print('\nSUMMARY:');
-    print('- AppAuthService.getAccessToken() now falls back to SharedPreferences');
-    print('- This should resolve the "missing equal sign in authorization header" error');
-    print('- The error was caused by getAccessToken() returning null instead of stored tokens');
-
+    print(
+        '- AppAuthService.getAccessToken() now falls back to SharedPreferences');
+    print(
+        '- This should resolve the "missing equal sign in authorization header" error');
+    print(
+        '- The error was caused by getAccessToken() returning null instead of stored tokens');
   } catch (e) {
     print('❌ Test failed with error: $e');
   }

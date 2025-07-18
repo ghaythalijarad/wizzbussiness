@@ -16,7 +16,7 @@ class FlutterDeleteDebugger {
       // Step 1: Get the token using the same method as the app
       print('1. Getting access token...');
       final token = await AppAuthService.getAccessToken();
-      
+
       if (token == null) {
         print('❌ No access token found');
         return;
@@ -24,8 +24,9 @@ class FlutterDeleteDebugger {
 
       print('✅ Token retrieved');
       print('📝 Token length: ${token.length}');
-      print('📝 Token first 50 chars: ${token.substring(0, token.length > 50 ? 50 : token.length)}...');
-      
+      print(
+          '📝 Token first 50 chars: ${token.substring(0, token.length > 50 ? 50 : token.length)}...');
+
       // Check SharedPreferences directly too
       final prefs = await SharedPreferences.getInstance();
       final storedToken = prefs.getString('access_token');
@@ -37,7 +38,7 @@ class FlutterDeleteDebugger {
       // Check for problematic characters
       final invalidChars = token.contains(RegExp(r'[^A-Za-z0-9._-]'));
       print('🔍 Token has non-standard chars: $invalidChars');
-      
+
       // Check for common problematic characters
       final hasNewlines = token.contains('\n') || token.contains('\r');
       final hasSpaces = token.contains(' ');
@@ -57,36 +58,39 @@ class FlutterDeleteDebugger {
       );
 
       print('📤 Products request status: ${productsResponse.statusCode}');
-      
+
       if (productsResponse.statusCode == 200) {
         final data = jsonDecode(productsResponse.body);
         final products = data['products'] as List?;
-        
+
         if (products != null && products.isNotEmpty) {
           final testProduct = products.first;
           final productId = testProduct['productId'];
-          print('✅ Found test product: ${testProduct['name']} (ID: $productId)');
+          print(
+              '✅ Found test product: ${testProduct['name']} (ID: $productId)');
 
           // Step 3: Attempt delete with detailed logging
           print('\n3. Attempting DELETE request...');
-          
+
           final deleteUrl = '$baseUrl/products/$productId';
           final authHeader = 'Bearer $token';
-          
+
           print('🌐 URL: $deleteUrl');
           print('🔑 Auth header length: ${authHeader.length}');
-          print('🔑 Auth header: ${authHeader.substring(0, authHeader.length > 70 ? 70 : authHeader.length)}...');
-          
+          print(
+              '🔑 Auth header: ${authHeader.substring(0, authHeader.length > 70 ? 70 : authHeader.length)}...');
+
           // Create headers map
           final headers = {
             'Content-Type': 'application/json',
             'Authorization': authHeader,
           };
-          
+
           print('📋 All headers:');
           headers.forEach((key, value) {
             if (key == 'Authorization') {
-              print('  $key: ${value.substring(0, value.length > 70 ? 70 : value.length)}...');
+              print(
+                  '  $key: ${value.substring(0, value.length > 70 ? 70 : value.length)}...');
             } else {
               print('  $key: $value');
             }
@@ -105,7 +109,7 @@ class FlutterDeleteDebugger {
 
           if (deleteResponse.statusCode != 200) {
             print('\n❌ DELETE FAILED - Analyzing error...');
-            
+
             // Try to parse error response
             try {
               final errorData = jsonDecode(deleteResponse.body);
@@ -120,19 +124,17 @@ class FlutterDeleteDebugger {
             final altHeaders = <String, String>{};
             altHeaders['Content-Type'] = 'application/json';
             altHeaders['Authorization'] = 'Bearer $token';
-            
+
             final altResponse = await http.delete(
               Uri.parse(deleteUrl),
               headers: altHeaders,
             );
-            
+
             print('📤 Alternative response status: ${altResponse.statusCode}');
             print('📤 Alternative response body: ${altResponse.body}');
-
           } else {
             print('✅ DELETE SUCCESSFUL!');
           }
-
         } else {
           print('❌ No products found for testing');
         }
@@ -140,7 +142,6 @@ class FlutterDeleteDebugger {
         print('❌ Failed to get products: ${productsResponse.statusCode}');
         print('📤 Response: ${productsResponse.body}');
       }
-
     } catch (e, stackTrace) {
       print('💥 Exception during debug: $e');
       print('📚 Stack trace: $stackTrace');
@@ -177,7 +178,6 @@ class FlutterDeleteDebugger {
           print('💾 Prefs first 30: ${tokenFromPrefs.substring(0, 30)}...');
         }
       }
-
     } catch (e) {
       print('💥 Error comparing tokens: $e');
     }

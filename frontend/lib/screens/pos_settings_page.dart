@@ -248,7 +248,8 @@ class _PosSettingsPageState extends State<PosSettingsPage>
           content: Text(result['success'] == true
               ? loc.connectionSuccessful
               : loc.connectionFailed),
-          backgroundColor: result['success'] == true ? Colors.green : Colors.red,
+          backgroundColor:
+              result['success'] == true ? Colors.green : Colors.red,
         ),
       );
     } catch (e) {
@@ -353,7 +354,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
 
   Widget _buildConnectionStatusCard() {
     final loc = AppLocalizations.of(context)!;
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -375,8 +376,8 @@ class _PosSettingsPageState extends State<PosSettingsPage>
             ),
             const SizedBox(height: 8),
             Text(
-              _posSettings.enabled 
-                  ? loc.connectionSuccessful 
+              _posSettings.enabled
+                  ? loc.connectionSuccessful
                   : loc.connectionFailed,
               style: TextStyle(
                 color: _posSettings.enabled ? Colors.green : Colors.red,
@@ -390,7 +391,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
 
   Widget _buildToggleCard() {
     final loc = AppLocalizations.of(context)!;
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -420,7 +421,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
 
   Widget _buildSystemTypeSelector() {
     final loc = AppLocalizations.of(context)!;
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -460,7 +461,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
 
   Widget _buildApiConfigCard() {
     final loc = AppLocalizations.of(context)!;
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -579,7 +580,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
 
   Widget _buildSyncLogsTab() {
     final loc = AppLocalizations.of(context)!;
-    
+
     return RefreshIndicator(
       onRefresh: _loadSyncLogs,
       child: _isLoadingSyncLogs
@@ -645,7 +646,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
 
   Widget _buildAdvancedSettingsTab() {
     final loc = AppLocalizations.of(context)!;
-    
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -661,7 +662,8 @@ class _PosSettingsPageState extends State<PosSettingsPage>
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  initialValue: _posSettings.maxProcessingTimeMinutes.toString(),
+                  initialValue:
+                      _posSettings.maxProcessingTimeMinutes.toString(),
                   decoration: InputDecoration(
                     labelText: '${loc.syncInterval} (${loc.minutes})',
                     border: const OutlineInputBorder(),
@@ -735,7 +737,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
 
   Widget _buildHelpTab() {
     final loc = AppLocalizations.of(context)!;
-    
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -747,7 +749,8 @@ class _PosSettingsPageState extends State<PosSettingsPage>
               children: [
                 Text(
                   loc.troubleshootingSection,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 16),
                 _buildTroubleshootingItem(
@@ -783,7 +786,8 @@ class _PosSettingsPageState extends State<PosSettingsPage>
               children: [
                 Text(
                   loc.contactSupport,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 8),
                 Text(loc.contactSupportDescription),
@@ -820,7 +824,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
 
   void _showWebhookSetupDialog() {
     final loc = AppLocalizations.of(context)!;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

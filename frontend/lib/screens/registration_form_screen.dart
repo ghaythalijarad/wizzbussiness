@@ -307,14 +307,23 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
               // Business Type Dropdown
               DropdownButtonFormField<String>(
                 value: _selectedBusinessType,
-                items: ['restaurant','cloudkitchen','kitchen','store','pharmacy','cafe']
-                    .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+                items: [
+                  'restaurant',
+                  'cloudkitchen',
+                  'kitchen',
+                  'store',
+                  'pharmacy',
+                  'cafe'
+                ]
+                    .map((type) =>
+                        DropdownMenuItem(value: type, child: Text(type)))
                     .toList(),
                 decoration: const InputDecoration(
                   labelText: 'Business Type',
                   border: OutlineInputBorder(),
                 ),
-                onChanged: (value) => setState(() => _selectedBusinessType = value!),
+                onChanged: (value) =>
+                    setState(() => _selectedBusinessType = value!),
               ),
               const SizedBox(height: 16),
 
@@ -567,7 +576,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     required VoidCallback onPressed,
   }) {
     final bool hasFile = file != null;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -600,18 +609,23 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: hasFile ? Colors.green.shade50 : Colors.blue.shade50,
+                        color: hasFile
+                            ? Colors.green.shade50
+                            : Colors.blue.shade50,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Icon(
                         hasFile ? Icons.check_circle : icon,
                         size: 18,
-                        color: hasFile ? Colors.green.shade600 : Colors.blue.shade600,
+                        color: hasFile
+                            ? Colors.green.shade600
+                            : Colors.blue.shade600,
                       ),
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: hasFile ? Colors.green : Colors.blue.shade600,
                         borderRadius: BorderRadius.circular(12),
@@ -642,7 +656,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                   hasFile ? file.path.split('/').last : 'Tap to select file',
                   style: TextStyle(
                     fontSize: 11,
-                    color: hasFile ? Colors.green.shade700 : Colors.grey.shade600,
+                    color:
+                        hasFile ? Colors.green.shade700 : Colors.grey.shade600,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -696,7 +711,9 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                             : 'Required - Please add a photo',
                         style: TextStyle(
                           fontSize: 14,
-                          color: _businessPhotoFile != null ? Colors.green : Colors.red,
+                          color: _businessPhotoFile != null
+                              ? Colors.green
+                              : Colors.red,
                         ),
                       ),
                     ],
@@ -704,10 +721,15 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                 ),
                 ElevatedButton.icon(
                   onPressed: _pickBusinessPhoto,
-                  icon: Icon(_businessPhotoFile != null ? Icons.change_circle : Icons.camera_alt),
-                  label: Text(_businessPhotoFile != null ? 'Change' : 'Add Photo'),
+                  icon: Icon(_businessPhotoFile != null
+                      ? Icons.change_circle
+                      : Icons.camera_alt),
+                  label:
+                      Text(_businessPhotoFile != null ? 'Change' : 'Add Photo'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _businessPhotoFile != null ? Colors.orange : Colors.blue,
+                    backgroundColor: _businessPhotoFile != null
+                        ? Colors.orange
+                        : Colors.blue,
                   ),
                 ),
               ],
@@ -751,7 +773,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     if (_businessPhotoFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Business photo is required. Please add a photo of your business.'),
+          content: Text(
+              'Business photo is required. Please add a photo of your business.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -788,7 +811,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         // Step 2: Upload business photo (required)
         String? businessPhotoUrl;
         try {
-          final uploadResult = await ImageUploadService.uploadBusinessPhoto(_businessPhotoFile!);
+          final uploadResult =
+              await ImageUploadService.uploadBusinessPhoto(_businessPhotoFile!);
           if (uploadResult['success'] == true) {
             businessPhotoUrl = uploadResult['imageUrl'];
             print('✅ Business photo uploaded successfully: $businessPhotoUrl');
@@ -796,7 +820,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
             setState(() => _isLoading = false);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Failed to upload business photo: ${uploadResult['message']}'),
+                content: Text(
+                    'Failed to upload business photo: ${uploadResult['message']}'),
                 backgroundColor: Colors.red,
               ),
             );
@@ -826,7 +851,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
             'street': _businessStreetController.text.trim(),
             'country': _businessCountryController.text.trim(),
           },
-          'businessPhotoUrl': businessPhotoUrl, // Always included since it's mandatory
+          'businessPhotoUrl':
+              businessPhotoUrl, // Always included since it's mandatory
         };
 
         final registerResult = await AppAuthService.registerWithBusiness(

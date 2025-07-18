@@ -150,8 +150,9 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       });
 
       final discountsData = await _apiService.getDiscounts();
-      final discounts = discountsData.map((data) => Discount.fromJson(data)).toList();
-      
+      final discounts =
+          discountsData.map((data) => Discount.fromJson(data)).toList();
+
       setState(() {
         _discounts = discounts;
         _isLoading = false;
@@ -161,7 +162,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       setState(() {
         _isLoading = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -175,24 +176,26 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
 
   Future<void> _loadProducts() async {
     try {
-      print('DiscountManagementPage: Loading products for business ${widget.business.id}');
+      print(
+          'DiscountManagementPage: Loading products for business ${widget.business.id}');
       final result = await ProductService.getProducts();
-      
+
       if (result['success'] && result['products'] != null) {
         final productsList = result['products'] as List;
-        final products = productsList.map((json) => Product.fromJson(json)).toList();
-        
+        final products =
+            productsList.map((json) => Product.fromJson(json)).toList();
+
         setState(() {
           _products = products;
         });
-        
+
         print('DiscountManagementPage: Loaded ${products.length} products');
       } else {
         throw Exception(result['message'] ?? 'Failed to load products');
       }
     } catch (e) {
       print('DiscountManagementPage: Error loading products: $e');
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -206,25 +209,30 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
 
   Future<void> _loadCategories() async {
     try {
-      final businessTypeString = _getBusinessTypeString(widget.business.businessType);
-      print('DiscountManagementPage: Loading categories for business type $businessTypeString');
-      final result = await ProductService.getCategoriesForBusinessType(businessTypeString);
-      
+      final businessTypeString =
+          _getBusinessTypeString(widget.business.businessType);
+      print(
+          'DiscountManagementPage: Loading categories for business type $businessTypeString');
+      final result =
+          await ProductService.getCategoriesForBusinessType(businessTypeString);
+
       if (result['success'] && result['categories'] != null) {
         final categoriesList = result['categories'] as List;
-        final categories = categoriesList.map((json) => ProductCategory.fromJson(json)).toList();
-        
+        final categories = categoriesList
+            .map((json) => ProductCategory.fromJson(json))
+            .toList();
+
         setState(() {
           _categories = categories;
         });
-        
+
         print('DiscountManagementPage: Loaded ${categories.length} categories');
       } else {
         throw Exception(result['message'] ?? 'Failed to load categories');
       }
     } catch (e) {
       print('DiscountManagementPage: Error loading categories: $e');
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -261,9 +269,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       });
 
       final discountData = discount.toJson();
-      final createdDiscountData = await _apiService.createDiscount(discountData);
+      final createdDiscountData =
+          await _apiService.createDiscount(discountData);
       final createdDiscount = Discount.fromJson(createdDiscountData);
-      
+
       setState(() {
         _discounts.add(createdDiscount);
         _isLoading = false;
@@ -282,7 +291,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       setState(() {
         _isLoading = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -301,9 +310,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       });
 
       final discountData = discount.toJson();
-      final updatedDiscountData = await _apiService.updateDiscount(discount.id, discountData);
+      final updatedDiscountData =
+          await _apiService.updateDiscount(discount.id, discountData);
       final updatedDiscount = Discount.fromJson(updatedDiscountData);
-      
+
       setState(() {
         final index = _discounts.indexWhere((d) => d.id == discount.id);
         if (index != -1) {
@@ -325,7 +335,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       setState(() {
         _isLoading = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -344,7 +354,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       });
 
       await _apiService.deleteDiscount(discountId);
-      
+
       setState(() {
         _discounts.removeWhere((d) => d.id == discountId);
         _isLoading = false;
@@ -363,7 +373,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       setState(() {
         _isLoading = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -454,7 +464,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                           AppLocalizations.of(context)!.allDiscounts, 'all'),
                       const SizedBox(width: 8),
                       _buildFilterChip(
-                          AppLocalizations.of(context)!.activeDiscounts, 'active'),
+                          AppLocalizations.of(context)!.activeDiscounts,
+                          'active'),
                       const SizedBox(width: 8),
                       _buildFilterChip(
                           AppLocalizations.of(context)!.scheduledDiscounts,
@@ -479,7 +490,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                           return DiscountCard(
                             discount: discount,
                             onEdit: () => _showEditDiscountDialog(discount),
-                            onDelete: () => _showDeleteConfirmationDialog(discount),
+                            onDelete: () =>
+                                _showDeleteConfirmationDialog(discount),
                           );
                         },
                       ),
@@ -1573,7 +1585,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                   }
 
                   Navigator.of(context).pop();
-                  
+
                   // Call API methods to create or update the discount
                   try {
                     if (isEditing) {
@@ -1581,10 +1593,11 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                       // Update free delivery discount if needed
                       if (freeDeliveryDiscount != null) {
                         // Try to find existing free delivery discount for this main discount
-                        final existingFreeDelivery = _discounts.where(
-                          (d) => d.type == DiscountType.freeDelivery && 
-                                 d.title.contains(newDiscount.title)
-                        ).firstOrNull;
+                        final existingFreeDelivery = _discounts
+                            .where((d) =>
+                                d.type == DiscountType.freeDelivery &&
+                                d.title.contains(newDiscount.title))
+                            .firstOrNull;
                         if (existingFreeDelivery == null) {
                           await _createDiscount(freeDeliveryDiscount);
                         } else {
@@ -1684,9 +1697,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       // Find the category name for this product
       final category = _categories.firstWhere(
         (cat) => cat.id == product.categoryId,
-        orElse: () => ProductCategory(id: '', name: 'Unknown', businessType: '', sortOrder: 0),
+        orElse: () => ProductCategory(
+            id: '', name: 'Unknown', businessType: '', sortOrder: 0),
       );
-      
+
       allItems.add({
         'id': product.id,
         'name': product.name,
@@ -1899,9 +1913,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       // Find the category name for this product
       final category = _categories.firstWhere(
         (cat) => cat.id == product.categoryId,
-        orElse: () => ProductCategory(id: '', name: 'Unknown', businessType: '', sortOrder: 0),
+        orElse: () => ProductCategory(
+            id: '', name: 'Unknown', businessType: '', sortOrder: 0),
       );
-      
+
       allItems.add({
         'id': product.id,
         'name': product.name,

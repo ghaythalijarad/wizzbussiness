@@ -26,7 +26,7 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
   List<ProductCategory> _categories = [];
   bool _isLoading = true;
   String? _error;
-  
+
   // Search functionality
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
@@ -102,7 +102,7 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
         final categoriesList = result['categories'] as List;
         print('📦 Raw categories list length: ${categoriesList.length}');
         print('📦 Raw categories data: $categoriesList');
-        
+
         _categories = categoriesList
             .map((json) => ProductCategory.fromJson(json))
             .toList();
@@ -111,7 +111,8 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
           print('   - ${category.name} (ID: ${category.id})');
         }
       } else {
-        print('❌ No categories available, this should not happen with the updated service');
+        print(
+            '❌ No categories available, this should not happen with the updated service');
         print('   Result success: ${result['success']}');
         print('   Result categories: ${result['categories']}');
         _categories = [];
@@ -151,21 +152,22 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
       final query = _searchQuery.toLowerCase();
       filtered = filtered.where((product) {
         final nameMatch = product.name.toLowerCase().contains(query);
-        final descriptionMatch = product.description.toLowerCase().contains(query);
-        
+        final descriptionMatch =
+            product.description.toLowerCase().contains(query);
+
         // Check for ingredients match if product has additionalData
         bool ingredientsMatch = false;
-        if (product.additionalData != null && 
+        if (product.additionalData != null &&
             product.additionalData!['ingredients'] != null) {
           final ingredients = product.additionalData!['ingredients'];
           if (ingredients is List) {
-            ingredientsMatch = ingredients.any((ingredient) => 
-              ingredient.toString().toLowerCase().contains(query));
+            ingredientsMatch = ingredients.any((ingredient) =>
+                ingredient.toString().toLowerCase().contains(query));
           } else if (ingredients is String) {
             ingredientsMatch = ingredients.toLowerCase().contains(query);
           }
         }
-        
+
         return nameMatch || descriptionMatch || ingredientsMatch;
       }).toList();
     }
@@ -187,7 +189,7 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
 
   Future<void> _performSearch() async {
     final query = _searchController.text.trim();
-    
+
     setState(() {
       _isSearching = true;
       _searchQuery = query;
@@ -200,18 +202,19 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
       } else {
         // Perform backend search for more comprehensive results
         final searchResult = await ProductService.searchProducts(query);
-        
+
         if (searchResult['success']) {
           final searchProducts = searchResult['products'] as List;
-          final products = searchProducts.map((json) => Product.fromJson(json)).toList();
-          
+          final products =
+              searchProducts.map((json) => Product.fromJson(json)).toList();
+
           setState(() {
             _filteredProducts = products;
           });
         } else {
           // Fallback to local search if backend search fails
           _updateFilteredProducts();
-          
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -439,7 +442,8 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
                     if (_searchQuery.isNotEmpty)
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 16),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
                         child: Row(
                           children: [
                             Icon(

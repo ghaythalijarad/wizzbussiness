@@ -144,10 +144,11 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
       // First try to get detailed business data from API
       final apiService = ApiService();
       List<Map<String, dynamic>>? businesses;
-      
+
       try {
         businesses = await apiService.getUserBusinesses();
-        print('🏢 Account Settings: Fetched ${businesses.length} businesses from API');
+        print(
+            '🏢 Account Settings: Fetched ${businesses.length} businesses from API');
       } catch (e) {
         print('⚠️ Account Settings: Could not fetch businesses from API: $e');
       }
@@ -159,32 +160,38 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         Map<String, dynamic>? businessData;
         if (businesses != null && businesses.isNotEmpty) {
           businessData = businesses.firstWhere(
-            (business) => business['businessId'] == widget.business.id ||
-                         business['business_id'] == widget.business.id ||
-                         business['id'] == widget.business.id,
+            (business) =>
+                business['businessId'] == widget.business.id ||
+                business['business_id'] == widget.business.id ||
+                business['id'] == widget.business.id,
             orElse: () => businesses!.first,
           );
-          print('📋 Account Settings: Using business data: ${businessData['business_name']} with owner: ${businessData['owner_name']}');
+          print(
+              '📋 Account Settings: Using business data: ${businessData['business_name']} with owner: ${businessData['owner_name']}');
         }
 
         setState(() {
           _userData = {
-            'business_name': businessData?['business_name'] ?? widget.business.name,
-            'owner_name': businessData?['owner_name'] ?? 
-                          widget.business.ownerName ?? 
-                          currentUser['name'] ?? 
-                          currentUser['given_name'] ?? 
-                          '${currentUser['given_name'] ?? ''} ${currentUser['family_name'] ?? ''}'.trim() ?? 
-                          '',
+            'business_name':
+                businessData?['business_name'] ?? widget.business.name,
+            'owner_name': businessData?['owner_name'] ??
+                widget.business.ownerName ??
+                currentUser['name'] ??
+                currentUser['given_name'] ??
+                '${currentUser['given_name'] ?? ''} ${currentUser['family_name'] ?? ''}'
+                    .trim() ??
+                '',
             'email': currentUser['email'] ?? '',
-            'phone_number': businessData?['phone_number'] ?? 
-                           currentUser['phone_number'] ?? 
-                           widget.business.phone ?? '',
-            'business_type': businessData?['business_type'] ?? 
-                            widget.business.businessType.toString().split('.').last,
+            'phone_number': businessData?['phone_number'] ??
+                currentUser['phone_number'] ??
+                widget.business.phone ??
+                '',
+            'business_type': businessData?['business_type'] ??
+                widget.business.businessType.toString().split('.').last,
             'address': {
               'home_address': '',
-              'street': businessData?['address'] ?? widget.business.address ?? '',
+              'street':
+                  businessData?['address'] ?? widget.business.address ?? '',
               'neighborhood': '',
               'district': businessData?['district'] ?? '',
               'city': businessData?['city'] ?? '',
@@ -198,8 +205,9 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
           _businessNameController.text = _userData?['business_name'] ?? '';
           _ownerNameController.text = _userData?['owner_name'] ?? '';
           _addressController.text = _formatAddress(_userData?['address']);
-          
-          print('✅ Account Settings: Owner name set to: ${_userData?['owner_name']}');
+
+          print(
+              '✅ Account Settings: Owner name set to: ${_userData?['owner_name']}');
         });
       } else {
         setState(() {
@@ -263,7 +271,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: CustomScrollView(
@@ -349,7 +357,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
               ),
             ],
           ),
-          
+
           // Content
           SliverToBoxAdapter(
             child: _isLoadingUserData
@@ -484,28 +492,28 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         children: [
           // Account Overview Card
           _buildAccountOverviewCard(l10n, theme),
-          
+
           const SizedBox(height: 24),
-          
+
           // Personal Information Section
           _buildSectionHeader('Personal Information', Icons.person_rounded),
           const SizedBox(height: 16),
           _buildPersonalInfoCard(l10n, theme),
-          
+
           const SizedBox(height: 32),
-          
+
           // Business Information Section
           _buildSectionHeader('Business Information', Icons.business_rounded),
           const SizedBox(height: 16),
           _buildBusinessInfoCard(l10n, theme),
-          
+
           const SizedBox(height: 32),
-          
+
           // Account Status Section
           _buildSectionHeader('Account Status', Icons.verified_user_rounded),
           const SizedBox(height: 16),
           _buildAccountStatusCard(l10n, theme),
-          
+
           const SizedBox(height: 40),
         ],
       ),
@@ -544,7 +552,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     final businessName = _userData?['business_name'] ?? 'Business';
     final ownerName = _userData?['owner_name'] ?? 'Owner';
     final email = _userData?['email'] ?? '';
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -727,7 +735,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   Widget _buildAccountStatusCard(AppLocalizations l10n, ThemeData theme) {
     final createdAt = _userData?['created_at'];
     final registrationDate = _formatDate(createdAt);
-    
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -828,14 +836,16 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     );
   }
 
-  Widget _buildStatusChip(String label, bool isActive, Color color, IconData icon) {
+  Widget _buildStatusChip(
+      String label, bool isActive, Color color, IconData icon) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isActive ? color.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isActive ? color.withOpacity(0.3) : Colors.grey.withOpacity(0.3),
+          color:
+              isActive ? color.withOpacity(0.3) : Colors.grey.withOpacity(0.3),
           width: 1,
         ),
       ),

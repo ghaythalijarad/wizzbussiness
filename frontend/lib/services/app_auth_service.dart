@@ -367,11 +367,11 @@ class AppAuthService {
         if (session is CognitoAuthSession) {
           final tokens = session.userPoolTokensResult.value;
           final freshToken = tokens.accessToken.raw;
-          
+
           // Update SharedPreferences with the fresh token for consistency
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('access_token', freshToken);
-          
+
           return freshToken;
         }
       } catch (_) {
@@ -393,11 +393,11 @@ class AppAuthService {
         if (session is CognitoAuthSession) {
           final tokens = session.userPoolTokensResult.value;
           final freshIdToken = tokens.idToken.raw;
-          
+
           // Update SharedPreferences with the fresh token for consistency
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('id_token', freshIdToken);
-          
+
           return freshIdToken;
         }
       } catch (_) {

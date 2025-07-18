@@ -185,7 +185,7 @@ class ProductService {
       print('✅ Access Token retrieved');
       print('📝 Token length: ${token.length}');
       print('📝 Token preview: ${token.substring(0, 20)}...');
-      
+
       final url = Uri.parse('$baseUrl/products/$productId');
       print('🌐 Request URL: $url');
 
@@ -204,7 +204,7 @@ class ProductService {
       });
 
       final response = await http.delete(url, headers: headers);
-      
+
       print('--- RESPONSE ---');
       print('Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
@@ -221,7 +221,8 @@ class ProductService {
           final errorData = jsonDecode(response.body);
           return {
             'success': false,
-            'message': errorData['message'] ?? 'Failed to delete product. Status code: ${response.statusCode}',
+            'message': errorData['message'] ??
+                'Failed to delete product. Status code: ${response.statusCode}',
           };
         } catch (e) {
           return {
@@ -285,12 +286,13 @@ class ProductService {
   /// Get categories for a specific business type
   static Future<Map<String, dynamic>> getCategoriesForBusinessType(
       String businessType) async {
-    print('🔗 ProductService: Getting categories for business type: $businessType');
-    
+    print(
+        '🔗 ProductService: Getting categories for business type: $businessType');
+
     try {
       final url = '$baseUrl/categories/business-type/$businessType';
       print('🌐 ProductService: Making request to: $url');
-      
+
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -300,14 +302,15 @@ class ProductService {
 
       print('📊 ProductService: API response status: ${response.statusCode}');
       print('📄 ProductService: API response body: ${response.body}');
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final apiCategories = data['categories'] ?? [];
-        
-        print('✅ ProductService: API returned ${apiCategories.length} categories');
+
+        print(
+            '✅ ProductService: API returned ${apiCategories.length} categories');
         print('📦 ProductService: Categories data: $apiCategories');
-        
+
         return {
           'success': true,
           'categories': apiCategories,

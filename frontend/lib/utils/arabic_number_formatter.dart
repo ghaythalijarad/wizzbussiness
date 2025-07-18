@@ -10,10 +10,10 @@ class ArabicNumberInputFormatter extends TextInputFormatter {
   ) {
     // Convert Western numerals to Arabic-Indic numerals
     String convertedText = _convertToArabicNumbers(newValue.text);
-    
+
     // Filter out any non-Arabic numerals
     String filteredText = convertedText.replaceAll(RegExp(r'[^٠-٩]'), '');
-    
+
     return TextEditingValue(
       text: filteredText,
       selection: TextSelection.collapsed(offset: filteredText.length),
@@ -61,8 +61,8 @@ class ArabicPhoneValidator {
     // Check for exact 10 digits (without country code ٩٦٤)
     if (cleanNumber.length == 10) {
       // Mobile numbers should start with ٧٧, ٧٨, or ٧٩
-      if (cleanNumber.startsWith('٧٧') || 
-          cleanNumber.startsWith('٧٨') || 
+      if (cleanNumber.startsWith('٧٧') ||
+          cleanNumber.startsWith('٧٨') ||
           cleanNumber.startsWith('٧٩')) {
         return null; // Valid mobile number
       }
@@ -70,8 +70,8 @@ class ArabicPhoneValidator {
 
     // Check for 11 digits with ٠ prefix
     if (cleanNumber.length == 11) {
-      if (cleanNumber.startsWith('٠٧٧') || 
-          cleanNumber.startsWith('٠٧٨') || 
+      if (cleanNumber.startsWith('٠٧٧') ||
+          cleanNumber.startsWith('٠٧٨') ||
           cleanNumber.startsWith('٠٧٩')) {
         return null; // Valid mobile number with ٠ prefix
       }
@@ -88,7 +88,7 @@ class ArabicPhoneValidator {
   /// Formats the phone number for display
   static String formatPhoneNumber(String phoneNumber) {
     String cleanNumber = phoneNumber.replaceAll(RegExp(r'[^٠-٩]'), '');
-    
+
     if (cleanNumber.length == 10) {
       // Format as: ٧٧XX XXX XXX
       return '${cleanNumber.substring(0, 4)} ${cleanNumber.substring(4, 7)} ${cleanNumber.substring(7)}';
@@ -96,7 +96,7 @@ class ArabicPhoneValidator {
       // Format as: ٠٧٧X XXX XXX
       return '${cleanNumber.substring(0, 5)} ${cleanNumber.substring(5, 8)} ${cleanNumber.substring(8)}';
     }
-    
+
     return cleanNumber;
   }
 }

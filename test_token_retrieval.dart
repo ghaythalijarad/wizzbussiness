@@ -51,7 +51,6 @@ void main() async {
     }
 
     print('\n✅ Test completed');
-
   } catch (e) {
     print('❌ Test failed with error: $e');
   }

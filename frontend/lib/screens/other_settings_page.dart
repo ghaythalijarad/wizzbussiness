@@ -119,7 +119,7 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
         print('📍 Current latitude: ${widget.business!.latitude}');
         print('📍 Current longitude: ${widget.business!.longitude}');
         print('🏠 Current address: ${widget.business!.address}');
-        
+
         // Load from existing business data
         setState(() {
           _latitude = widget.business!.latitude;
@@ -127,14 +127,14 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
           _address = widget.business!.address;
           _isLoadingSettings = false;
         });
-        
+
         print('✅ Location settings loaded from business object');
       } else {
         print('❌ No business object provided, loading from API...');
         // Load from API
         final apiService = ApiService();
         final businesses = await apiService.getUserBusinesses();
-        
+
         if (businesses.isNotEmpty) {
           final businessData = businesses.first;
           setState(() {
@@ -159,12 +159,13 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
     }
   }
 
-  Future<void> _saveBusinessLocation(double? latitude, double? longitude, String? address) async {
+  Future<void> _saveBusinessLocation(
+      double? latitude, double? longitude, String? address) async {
     setState(() => _isLoading = true);
 
     try {
       final apiService = ApiService();
-      
+
       // Get business ID
       String businessId;
       if (widget.business != null) {
@@ -174,7 +175,9 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
         if (businesses.isEmpty) {
           throw Exception('No business found for user');
         }
-        businessId = businesses.first['businessId'] ?? businesses.first['id'] ?? businesses.first['business_id'];
+        businessId = businesses.first['businessId'] ??
+            businesses.first['id'] ??
+            businesses.first['business_id'];
       }
 
       // Prepare location settings
@@ -185,9 +188,10 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
         'updated_at': DateTime.now().toIso8601String(),
       };
 
-      // Save to business settings table via existing POS settings endpoint 
+      // Save to business settings table via existing POS settings endpoint
       // (we'll reuse the infrastructure for business settings)
-      await apiService.updateBusinessLocationSettings(businessId, locationSettings);
+      await apiService.updateBusinessLocationSettings(
+          businessId, locationSettings);
 
       setState(() {
         _latitude = latitude;
@@ -205,7 +209,7 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
       );
     } catch (e) {
       setState(() => _isLoading = false);
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to save location: $e'),
@@ -310,7 +314,7 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Location settings widget
                       LocationSettingsWidget(
                         initialLatitude: _latitude,
@@ -319,9 +323,9 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                         onLocationChanged: _saveBusinessLocation,
                         isLoading: _isLoading,
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Additional information card
                       Card(
                         elevation: 1,

@@ -50,7 +50,7 @@ class AppConfig {
 
   // New getter for AWS region for API Gateway
   static String get awsRegion {
-    // Use us-east-1 consistently 
+    // Use us-east-1 consistently
     return 'us-east-1';
   }
 

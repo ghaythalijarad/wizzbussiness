@@ -81,7 +81,8 @@ class Business {
       longitude: lon,
       description: json['description'],
       website: json['website'],
-      businessPhotoUrl: json['businessPhotoUrl'] ?? json['business_photo_url'], // Added business photo URL parsing
+      businessPhotoUrl: json['businessPhotoUrl'] ??
+          json['business_photo_url'], // Added business photo URL parsing
       offers: (json['offers'] as List<dynamic>?)
               ?.map((offerJson) => Offer.fromJson(offerJson))
               .toList() ??
@@ -133,7 +134,9 @@ class Business {
     if (email != null) this.email = email;
     if (description != null) this.description = description;
     if (website != null) this.website = website;
-    if (businessPhotoUrl != null) this.businessPhotoUrl = businessPhotoUrl; // Added business photo URL update
+    if (businessPhotoUrl != null)
+      this.businessPhotoUrl =
+          businessPhotoUrl; // Added business photo URL update
   }
 
   void updateSettings(String category, String key, dynamic value) {

@@ -236,14 +236,15 @@ class _LoginPageState extends State<LoginPage> {
                           inputFormatters: [
                             // Only allow English Latin letters, numbers, and common password symbols
                             FilteringTextInputFormatter.allow(
-                              RegExp(r'[a-zA-Z0-9!@#$%^&*()_+=\-\[\]{}|;:,.<>?/~`]'),
+                              RegExp(
+                                  r'[a-zA-Z0-9!@#$%^&*()_+=\-\[\]{}|;:,.<>?/~`]'),
                             ),
                           ],
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _isPasswordVisible 
-                                ? Icons.visibility_off_rounded 
-                                : Icons.visibility_rounded,
+                              _isPasswordVisible
+                                  ? Icons.visibility_off_rounded
+                                  : Icons.visibility_rounded,
                               color: const Color(0xFF3399FF),
                               size: 22,
                             ),

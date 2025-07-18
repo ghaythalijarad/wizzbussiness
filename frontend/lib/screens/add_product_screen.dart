@@ -79,7 +79,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
     try {
       String? finalImageUrl = _uploadedImageUrl;
-      
+
       // If user entered a manual URL and no image was uploaded, use the manual URL
       if (finalImageUrl == null && _imageUrlController.text.trim().isNotEmpty) {
         finalImageUrl = _imageUrlController.text.trim();
@@ -197,7 +197,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         maxHeight: 1024,
         imageQuality: 80,
       );
-      
+
       if (image != null) {
         setState(() {
           _selectedImage = File(image.path);
@@ -224,7 +224,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         maxHeight: 1024,
         imageQuality: 80,
       );
-      
+
       if (image != null) {
         setState(() {
           _selectedImage = File(image.path);
@@ -251,14 +251,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
     });
 
     try {
-      final result = await ImageUploadService.uploadProductImage(_selectedImage!);
-      
+      final result =
+          await ImageUploadService.uploadProductImage(_selectedImage!);
+
       if (result['success']) {
         setState(() {
           _uploadedImageUrl = result['imageUrl'];
           _imageUrlController.clear(); // Clear manual URL if image was uploaded
         });
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -435,8 +436,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                 _selectedCategoryId = newValue;
                               });
                             },
-                            items: currentFilteredCategories
-                                .map((category) {
+                            items: currentFilteredCategories.map((category) {
                               return DropdownMenuItem<String>(
                                 value: category.id,
                                 child: Text(category.name),
@@ -474,9 +474,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Image Preview
-                    if (_selectedImage != null || _uploadedImageUrl != null) ...[
+                    if (_selectedImage != null ||
+                        _uploadedImageUrl != null) ...[
                       Container(
                         height: 200,
                         width: double.infinity,
@@ -495,7 +496,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                   ? Image.network(
                                       _uploadedImageUrl!,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
                                         return Container(
                                           color: Colors.grey[200],
                                           child: const Center(
@@ -512,7 +514,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      
+
                       // Remove Image Button
                       Row(
                         children: [
@@ -531,23 +533,27 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       ),
                       const SizedBox(height: 16),
                     ],
-                    
+
                     // Upload Options
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: _isUploadingImage ? null : _showImageSourceDialog,
+                            onPressed: _isUploadingImage
+                                ? null
+                                : _showImageSourceDialog,
                             icon: _isUploadingImage
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
                                   )
                                 : const Icon(Icons.add_a_photo),
                             label: Text(_isUploadingImage
                                 ? 'Uploading...'
-                                : (_selectedImage != null || _uploadedImageUrl != null)
+                                : (_selectedImage != null ||
+                                        _uploadedImageUrl != null)
                                     ? 'Change Image'
                                     : 'Add Image'),
                             style: ElevatedButton.styleFrom(
@@ -558,11 +564,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 8),
-                    
+
                     // Manual URL Input (Alternative)
                     const Text(
                       'Or enter image URL manually:',
@@ -578,7 +584,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       prefixIcon: const Icon(Icons.link),
                       validator: _validateImageUrl,
                       keyboardType: TextInputType.url,
-                      enabled: _uploadedImageUrl == null, // Disable if image was uploaded
+                      enabled: _uploadedImageUrl ==
+                          null, // Disable if image was uploaded
                     ),
                   ],
                 ),

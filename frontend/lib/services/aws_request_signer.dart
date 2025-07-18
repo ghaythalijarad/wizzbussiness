@@ -44,9 +44,10 @@ class AwsRequestSigner {
 
     final client = http.Client();
     final bodyBytes = await signedRequest.body.expand((i) => i).toList();
-    final httpRequest = http.Request(signedRequest.method.name, signedRequest.uri)
-      ..headers.addAll(signedRequest.headers)
-      ..bodyBytes = bodyBytes;
+    final httpRequest =
+        http.Request(signedRequest.method.name, signedRequest.uri)
+          ..headers.addAll(signedRequest.headers)
+          ..bodyBytes = bodyBytes;
 
     return client.send(httpRequest);
   }

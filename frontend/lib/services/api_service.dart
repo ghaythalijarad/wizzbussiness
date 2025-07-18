@@ -13,7 +13,8 @@ class ApiService {
   final String baseUrl = AppConfig.baseUrl;
 
   /// Get authorization headers with stored token
-  Future<Map<String, String>> _getAuthHeaders({bool isPublic = false, bool useAccessToken = false}) async {
+  Future<Map<String, String>> _getAuthHeaders(
+      {bool isPublic = false, bool useAccessToken = false}) async {
     final headers = <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     };
@@ -24,7 +25,7 @@ class ApiService {
 
     if (AppConfig.useCognito && AppConfig.isCognitoConfigured) {
       String? authToken;
-      
+
       if (useAccessToken) {
         // Use Access Token for specific endpoints that require it
         authToken = await AppAuthService.getAccessToken();
@@ -36,7 +37,7 @@ class ApiService {
         print(
             'ApiService: Cognito ID token retrieved: ${authToken != null ? "Yes" : "No"}');
       }
-      
+
       if (authToken == null) {
         final prefs = await SharedPreferences.getInstance();
         authToken = prefs.getString('access_token');
@@ -50,9 +51,11 @@ class ApiService {
             : authToken;
         headers['Authorization'] =
             'Bearer $authToken'; // Re-add "Bearer" prefix
-        print('ApiService: Authorization header set with ${useAccessToken ? "Access" : "ID"} token: $truncated');
+        print(
+            'ApiService: Authorization header set with ${useAccessToken ? "Access" : "ID"} token: $truncated');
       } else {
-        print('ApiService: No ${useAccessToken ? "Access" : "ID"} token available for Authorization header');
+        print(
+            'ApiService: No ${useAccessToken ? "Access" : "ID"} token available for Authorization header');
       }
     } else {
       final prefs = await SharedPreferences.getInstance();
@@ -432,7 +435,8 @@ class ApiService {
     final headers = await _getAuthHeaders();
 
     final response = await http.get(
-      Uri.parse('$baseUrl/businesses/$businessId/pos-settings/sync-logs?limit=$limit&skip=$skip'),
+      Uri.parse(
+          '$baseUrl/businesses/$businessId/pos-settings/sync-logs?limit=$limit&skip=$skip'),
       headers: headers,
     );
 
@@ -811,13 +815,15 @@ class ApiService {
       }
       return [];
     } else {
-      print('Error getting discounts: ${response.statusCode} - ${response.body}');
+      print(
+          'Error getting discounts: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to get discounts: ${response.body}');
     }
   }
 
   /// Create a new discount
-  Future<Map<String, dynamic>> createDiscount(Map<String, dynamic> discountData) async {
+  Future<Map<String, dynamic>> createDiscount(
+      Map<String, dynamic> discountData) async {
     final headers = await _getAuthHeaders(useAccessToken: true);
 
     final response = await http.post(
@@ -833,7 +839,8 @@ class ApiService {
       }
       throw Exception('Invalid response format');
     } else {
-      print('Error creating discount: ${response.statusCode} - ${response.body}');
+      print(
+          'Error creating discount: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to create discount: ${response.body}');
     }
   }
@@ -854,13 +861,15 @@ class ApiService {
       }
       throw Exception('Invalid response format');
     } else {
-      print('Error getting discount: ${response.statusCode} - ${response.body}');
+      print(
+          'Error getting discount: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to get discount: ${response.body}');
     }
   }
 
   /// Update an existing discount
-  Future<Map<String, dynamic>> updateDiscount(String discountId, Map<String, dynamic> discountData) async {
+  Future<Map<String, dynamic>> updateDiscount(
+      String discountId, Map<String, dynamic> discountData) async {
     final headers = await _getAuthHeaders(useAccessToken: true);
 
     final response = await http.put(
@@ -876,7 +885,8 @@ class ApiService {
       }
       throw Exception('Invalid response format');
     } else {
-      print('Error updating discount: ${response.statusCode} - ${response.body}');
+      print(
+          'Error updating discount: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to update discount: ${response.body}');
     }
   }
@@ -896,7 +906,8 @@ class ApiService {
         throw Exception('Failed to delete discount');
       }
     } else {
-      print('Error deleting discount: ${response.statusCode} - ${response.body}');
+      print(
+          'Error deleting discount: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to delete discount: ${response.body}');
     }
   }
@@ -917,7 +928,8 @@ class ApiService {
       }
       throw Exception('Invalid response format');
     } else {
-      print('Error toggling discount status: ${response.statusCode} - ${response.body}');
+      print(
+          'Error toggling discount status: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to toggle discount status: ${response.body}');
     }
   }
@@ -947,7 +959,8 @@ class ApiService {
       }
       throw Exception('Discount validation failed');
     } else {
-      print('Error validating discount: ${response.statusCode} - ${response.body}');
+      print(
+          'Error validating discount: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to validate discount: ${response.body}');
     }
   }
@@ -977,7 +990,8 @@ class ApiService {
       }
       throw Exception('Failed to apply discount');
     } else {
-      print('Error applying discount: ${response.statusCode} - ${response.body}');
+      print(
+          'Error applying discount: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to apply discount: ${response.body}');
     }
   }
@@ -998,7 +1012,8 @@ class ApiService {
       }
       throw Exception('Invalid response format');
     } else {
-      print('Error getting discount stats: ${response.statusCode} - ${response.body}');
+      print(
+          'Error getting discount stats: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to get discount stats: ${response.body}');
     }
   }
@@ -1026,8 +1041,10 @@ class ApiService {
       }
       throw Exception('Buy X Get Y validation failed');
     } else {
-      print('Error validating Buy X Get Y discount: ${response.statusCode} - ${response.body}');
-      throw Exception('Failed to validate Buy X Get Y discount: ${response.body}');
+      print(
+          'Error validating Buy X Get Y discount: ${response.statusCode} - ${response.body}');
+      throw Exception(
+          'Failed to validate Buy X Get Y discount: ${response.body}');
     }
   }
 

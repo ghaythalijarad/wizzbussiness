@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 class WorkingHoursSettingsScreen extends StatefulWidget {
   @override
-  _WorkingHoursSettingsScreenState createState() => _WorkingHoursSettingsScreenState();
+  _WorkingHoursSettingsScreenState createState() =>
+      _WorkingHoursSettingsScreenState();
 }
 
-class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen> {
+class _WorkingHoursSettingsScreenState
+    extends State<WorkingHoursSettingsScreen> {
   final Map<String, TimeOfDay?> openingHours = {
     'Monday': null,
     'Tuesday': null,
@@ -26,7 +28,8 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
     'Sunday': null,
   };
 
-  Future<void> _selectTime(BuildContext context, String day, bool isOpening) async {
+  Future<void> _selectTime(
+      BuildContext context, String day, bool isOpening) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
@@ -66,7 +69,8 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Opening: ${openingHours[day]?.format(context) ?? 'Not set'}'),
+                      Text(
+                          'Opening: ${openingHours[day]?.format(context) ?? 'Not set'}'),
                       ElevatedButton(
                         onPressed: () => _selectTime(context, day, true),
                         child: Text('Set Opening'),
@@ -76,7 +80,8 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Closing: ${closingHours[day]?.format(context) ?? 'Not set'}'),
+                      Text(
+                          'Closing: ${closingHours[day]?.format(context) ?? 'Not set'}'),
                       ElevatedButton(
                         onPressed: () => _selectTime(context, day, false),
                         child: Text('Set Closing'),

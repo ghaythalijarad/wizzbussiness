@@ -3,18 +3,28 @@ import 'package:http/http.dart' as http;
 
 void main() async {
   print('🧪 Testing Category Loading for Different Business Types...\n');
-  
-  final businessTypes = ['store', 'restaurant', 'pharmacy', 'cloudkitchen', 'caffe', 'bakery', 'herbalspices', 'cosmetics', 'betshop'];
+
+  final businessTypes = [
+    'store',
+    'restaurant',
+    'pharmacy',
+    'cloudkitchen',
+    'caffe',
+    'bakery',
+    'herbalspices',
+    'cosmetics',
+    'betshop'
+  ];
   final baseUrl = 'https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev';
-  
+
   for (final businessType in businessTypes) {
     print('🏪 Testing business type: $businessType');
     print('─' * 50);
-    
+
     try {
       final url = '$baseUrl/categories/business-type/$businessType';
       print('📡 Making request to: $url');
-      
+
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -23,11 +33,11 @@ void main() async {
       );
 
       print('📊 Status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final categories = data['categories'] as List? ?? [];
-        
+
         print('✅ Success: ${categories.length} categories found');
         for (int i = 0; i < categories.length; i++) {
           final category = categories[i];
@@ -45,26 +55,26 @@ void main() async {
     } catch (e) {
       print('💥 Network Error: $e');
     }
-    
+
     print('');
   }
 
   // Test the enum conversion logic
   print('🔄 Testing Business Type Enum Conversion...');
   print('─' * 50);
-  
+
   final testBusinessTypes = [
     'BusinessType.kitchen',
-    'BusinessType.cloudkitchen', 
+    'BusinessType.cloudkitchen',
     'BusinessType.store',
     'BusinessType.pharmacy',
     'BusinessType.caffe'
   ];
-  
+
   for (final enumString in testBusinessTypes) {
     final typeStr = enumString.split('.').last.toLowerCase();
     String apiString;
-    
+
     switch (typeStr) {
       case 'kitchen':
         apiString = 'restaurant';
@@ -84,7 +94,7 @@ void main() async {
       default:
         apiString = 'restaurant';
     }
-    
+
     print('$enumString → $apiString');
   }
 }

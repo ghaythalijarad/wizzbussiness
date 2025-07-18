@@ -1065,4 +1065,33 @@ class ApiService {
       throw Exception('Failed to update business location settings');
     }
   }
+
+  /// Get business working hours
+  Future<Map<String, dynamic>> getBusinessWorkingHours(String businessId) async {
+    final headers = await _getAuthHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/businesses/$businessId/working-hours'),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to get business working hours');
+    }
+  }
+
+  /// Update business working hours
+  Future<Map<String, dynamic>> updateBusinessWorkingHours(String businessId, Map<String, dynamic> workingHours) async {
+    final headers = await _getAuthHeaders();
+    final response = await http.put(
+      Uri.parse('$baseUrl/businesses/$businessId/working-hours'),
+      headers: headers,
+      body: jsonEncode(workingHours),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to update business working hours');
+    }
+  }
 }

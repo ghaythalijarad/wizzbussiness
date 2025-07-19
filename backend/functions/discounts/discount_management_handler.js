@@ -107,15 +107,11 @@ async function handleGetDiscounts(dynamodb, businessId) {
     try {
         const params = {
             TableName: DISCOUNTS_TABLE,
-<<<<<<< HEAD
-            KeyConditionExpression: 'business_id = :business_id',
-=======
-            KeyConditionExpression: 'business_id = :businessId',
->>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
+            IndexName: 'BusinessIdIndex',
+            KeyConditionExpression: 'businessId = :businessId',
             ExpressionAttributeValues: {
-                ':business_id': businessId
-            },
-            ScanIndexForward: false // Sort by creation date descending
+                ':businessId': businessId
+            }
         };
 
         const result = await dynamodb.query(params).promise();
@@ -127,7 +123,8 @@ async function handleGetDiscounts(dynamodb, businessId) {
         });
     } catch (error) {
         console.error('Error getting discounts:', error);
-        return createResponse(500, { success: false, message: 'Failed to retrieve discounts' });
+        // Include error message in response for debugging
+        return createResponse(500, { success: false, message: 'Failed to retrieve discounts', error: error.message });
     }
 }
 
@@ -178,12 +175,8 @@ async function handleCreateDiscount(dynamodb, businessId, discountData) {
         const discountId = uuidv4();
         const now = new Date().toISOString();
         const discount = {
-            business_id: businessId,
-<<<<<<< HEAD
-            discount_id: discountId,
-=======
-            discountId,
->>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
+            businessId: businessId,
+            discountId: discountId,
             id: discountId, // For frontend compatibility
             title: discountData.title,
             description: discountData.description || '',
@@ -228,12 +221,7 @@ async function handleGetDiscount(dynamodb, businessId, discountId) {
         const params = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                business_id: businessId,
-<<<<<<< HEAD
-                discount_id: discountId
-=======
-                discountId
->>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
+                discountId: discountId
             }
         };
 
@@ -244,7 +232,7 @@ async function handleGetDiscount(dynamodb, businessId, discountId) {
         }
 
         // Check if the discount belongs to the business
-        if (result.Item.business_id !== businessId) {
+        if (result.Item.businessId !== businessId) {
             return createResponse(403, { success: false, message: 'Access denied to this discount' });
         }
 
@@ -331,16 +319,10 @@ async function handleUpdateDiscount(dynamodb, businessId, discountId, updateData
 
         const params = {
             TableName: DISCOUNTS_TABLE,
-<<<<<<< HEAD
-            Key: { business_id: businessId, discount_id: discountId },
-            UpdateExpression: updateExpression,
-=======
             Key: {
-                business_id: businessId,
-                discountId
+                discountId: discountId
             },
-            UpdateExpression: `SET ${updateExpressions.join(', ')}`,
->>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
+            UpdateExpression: updateExpression,
             ExpressionAttributeValues: expressionAttributeValues,
             ReturnValues: 'ALL_NEW'
         };
@@ -361,16 +343,30 @@ async function handleUpdateDiscount(dynamodb, businessId, discountId, updateData
 // DELETE /discounts/{discountId} - Delete a discount
 async function handleDeleteDiscount(dynamodb, businessId, discountId) {
     try {
-<<<<<<< HEAD
-        const existingDiscount = await handleGetDiscount(dynamodb, businessId, discountId);
-        if (existingDiscount.statusCode !== 200) {
-            return existingDiscount;
-=======
+        // First get the discount to verify ownership
+        const getParams = {
+            TableName: DISCOUNTS_TABLE,
+            Key: {
+                discountId: discountId
+            }
+        };
+
+        const getResult = await dynamodb.get(getParams).promise();
+        
+        if (!getResult.Item) {
+            return createResponse(404, { success: false, message: 'Discount not found' });
+        }
+
+        // Check if the discount belongs to the business
+        if (getResult.Item.businessId !== businessId) {
+            return createResponse(403, { success: false, message: 'Access denied to this discount' });
+        }
+
+        // Now delete the discount
         const params = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                business_id: businessId,
-                discountId
+                discountId: discountId
             },
             ReturnValues: 'ALL_OLD'
         };
@@ -379,13 +375,7 @@ async function handleDeleteDiscount(dynamodb, businessId, discountId) {
         
         if (!result.Attributes) {
             return createResponse(404, { success: false, message: 'Discount not found' });
->>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
         }
-
-        await dynamodb.delete({
-            TableName: DISCOUNTS_TABLE,
-            Key: { business_id: businessId, discount_id: discountId }
-        }).promise();
 
         return createResponse(200, {
             success: true,
@@ -404,12 +394,7 @@ async function handleToggleDiscountStatus(dynamodb, businessId, discountId) {
         const getParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                business_id: businessId,
-<<<<<<< HEAD
-                discount_id: discountId
-=======
-                discountId
->>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
+                discountId: discountId
             }
         };
 
@@ -418,18 +403,18 @@ async function handleToggleDiscountStatus(dynamodb, businessId, discountId) {
             return createResponse(404, { success: false, message: 'Discount not found' });
         }
 
+        // Check if the discount belongs to the business
+        if (result.Item.businessId !== businessId) {
+            return createResponse(403, { success: false, message: 'Access denied to this discount' });
+        }
+
         const currentStatus = result.Item.status;
         const newStatus = currentStatus === 'active' ? 'paused' : 'active';
 
         const updateParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                business_id: businessId,
-<<<<<<< HEAD
-                discount_id: discountId
-=======
-                discountId
->>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
+                discountId: discountId
             },
             UpdateExpression: 'SET #status = :status, #updatedAt = :updatedAt',
             ExpressionAttributeNames: {
@@ -472,12 +457,7 @@ async function handleValidateDiscount(dynamodb, businessId, orderData) {
         const getParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                business_id: businessId,
-<<<<<<< HEAD
-                discount_id: discountId
-=======
-                discountId
->>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
+                discountId: discountId
             }
         };
 
@@ -487,6 +467,11 @@ async function handleValidateDiscount(dynamodb, businessId, orderData) {
         }
 
         const discount = result.Item;
+
+        // Check if the discount belongs to the business
+        if (discount.businessId !== businessId) {
+            return createResponse(403, { success: false, message: 'Access denied to this discount' });
+        }
 
         // Validate discount is active
         if (discount.status !== 'active') {
@@ -562,12 +547,7 @@ async function handleApplyDiscount(dynamodb, businessId, orderData) {
         const updateParams = {
             TableName: DISCOUNTS_TABLE,
             Key: {
-                business_id: businessId,
-<<<<<<< HEAD
-                discount_id: discountId
-=======
-                discountId
->>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
+                discountId: discountId
             },
             UpdateExpression: 'SET #usageCount = #usageCount + :inc, #updatedAt = :updatedAt',
             ExpressionAttributeNames: {
@@ -600,9 +580,10 @@ async function handleGetDiscountStats(dynamodb, businessId) {
     try {
         const params = {
             TableName: DISCOUNTS_TABLE,
-            KeyConditionExpression: 'business_id = :business_id',
+            IndexName: 'BusinessIdIndex',
+            KeyConditionExpression: 'businessId = :businessId',
             ExpressionAttributeValues: {
-                ':business_id': businessId
+                ':businessId': businessId
             }
         };
 

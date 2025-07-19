@@ -129,31 +129,79 @@ class Discount {
   /// Create a Discount instance from JSON map
   factory Discount.fromJson(Map<String, dynamic> json) {
     return Discount(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      type: DiscountType.values.firstWhere((e) => e.name == json['type']),
-      value: (json['value'] as num).toDouble(),
-      applicability: DiscountApplicability.values
-          .firstWhere((e) => e.name == json['applicability']),
-      applicableItemIds: List<String>.from(json['applicableItemIds'] ?? []),
-      applicableCategoryIds:
-          List<String>.from(json['applicableCategoryIds'] ?? []),
-      minimumOrderAmount:
-          (json['minimumOrderAmount'] as num?)?.toDouble() ?? 0.0,
-      validFrom: DateTime.parse(json['validFrom'] as String),
-      validTo: DateTime.parse(json['validTo'] as String),
-      usageLimit: json['usageLimit'] as int?,
-      usageCount: json['usageCount'] as int? ?? 0,
-      status: DiscountStatus.values.firstWhere((e) => e.name == json['status']),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      conditionalRule: json['conditionalRule'] != null
+      id: json['id'] ?? json['discountId'] ?? json['discount_id'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      type: _parseDiscountType(json['type']),
+      value: (json['value'] as num?)?.toDouble() ?? 0.0,
+      applicability: _parseDiscountApplicability(json['applicability']),
+      applicableItemIds: List<String>.from(json['applicableItemIds'] ?? json['applicable_item_ids'] ?? []),
+      applicableCategoryIds: List<String>.from(json['applicableCategoryIds'] ?? json['applicable_category_ids'] ?? []),
+      minimumOrderAmount: (json['minimumOrderAmount'] ?? json['minimum_order_amount'] as num?)?.toDouble() ?? 0.0,
+      validFrom: _parseDateTime(json['validFrom'] ?? json['valid_from']),
+      validTo: _parseDateTime(json['validTo'] ?? json['valid_to']),
+      usageLimit: json['usageLimit'] ?? json['usage_limit'] as int?,
+      usageCount: (json['usageCount'] ?? json['usage_count'] as int?) ?? 0,
+      status: _parseDiscountStatus(json['status']),
+      createdAt: _parseDateTime(json['createdAt'] ?? json['created_at']),
+      updatedAt: _parseDateTime(json['updatedAt'] ?? json['updated_at']),
+      conditionalRule: json['conditionalRule'] != null || json['conditional_rule'] != null
           ? ConditionalDiscountRule.values
-              .firstWhere((e) => e.name == json['conditionalRule'])
+              .firstWhere((e) => e.name == (json['conditionalRule'] ?? json['conditional_rule']), orElse: () => ConditionalDiscountRule.buyXGetY)
           : null,
-      conditionalParameters:
-          Map<String, dynamic>.from(json['conditionalParameters'] ?? {}),
+      conditionalParameters: Map<String, dynamic>.from(json['conditionalParameters'] ?? json['conditional_parameters'] ?? {}),
     );
+  }
+
+  static DiscountType _parseDiscountType(dynamic type) {
+    if (type == null) return DiscountType.percentage;
+    return DiscountType.values.firstWhere(
+      (e) => e.name == type.toString(),
+      orElse: () => DiscountType.others,
+    );
+  }
+
+  static DiscountApplicability _parseDiscountApplicability(dynamic applicability) {
+    if (applicability == null) return DiscountApplicability.allItems;
+    return DiscountApplicability.values.firstWhere(
+      (e) => e.name == applicability.toString(),
+      orElse: () => DiscountApplicability.allItems,
+    );
+  }
+
+  static DiscountStatus _parseDiscountStatus(dynamic status) {
+    if (status == null) return DiscountStatus.active;
+    return DiscountStatus.values.firstWhere(
+      (e) => e.name == status.toString(),
+      orElse: () => DiscountStatus.active,
+    );
+  }
+
+  static DateTime _parseDateTime(dynamic dateTime) {
+    if (dateTime == null) return DateTime.now();
+    
+    try {
+      // Handle string dates from backend
+      if (dateTime is String) {
+        // Remove microseconds if present for compatibility
+        String dateStr = dateTime;
+        if (dateStr.contains('.') && !dateStr.endsWith('Z')) {
+          // Format like "2025-07-18T02:43:32.014670" needs to be converted
+          dateStr = dateStr.split('.')[0] + 'Z';
+        }
+        return DateTime.parse(dateStr);
+      }
+      
+      // Handle DateTime objects
+      if (dateTime is DateTime) {
+        return dateTime;
+      }
+      
+      // Fallback to current time
+      return DateTime.now();
+    } catch (e) {
+      print('Error parsing date: $dateTime, error: $e');
+      return DateTime.now();
+    }
   }
 }

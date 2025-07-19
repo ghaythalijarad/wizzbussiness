@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/business.dart';
 import '../../l10n/app_localizations.dart';
-import '../orders_page.dart';
+import '../orders_preview_page.dart';
 import '../profile_settings_page.dart';
 import '../discount_management_page.dart';
 import '../products_management_screen.dart';
@@ -86,39 +86,11 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
     });
   }
 
-  Future<void> _refreshOrders() async {
-    // This would typically fetch fresh orders from the API
-    // For now, we'll just trigger a rebuild to show new orders
-    // In a real implementation, you'd call the API service to fetch latest orders
-    setState(() {
-      // The orders will be refreshed through the normal flow
-      // when new orders are created via simulation
-    });
-  }
-
   Widget _buildDashboardBody() {
-    // Ensure the business object passed to child pages is always the latest one from the widget.
-    // This prevents stale data if the dashboard is ever rebuilt with new business info.
-    final currentBusiness = widget.business;
-
     switch (_selectedIndex) {
       case 0:
-        return OrdersPage(
-          orders: _orders,
-          businessId: widget.business.id,
-          onOrderUpdated: (orderId, status) {
-            // Handle order status updates
-            final orderIndex =
-                _orders.indexWhere((order) => order.id == orderId);
-            if (orderIndex != -1) {
-              setState(() {
-                _orders[orderIndex] =
-                    _orders[orderIndex].copyWith(status: status);
-              });
-            }
-          },
-          onOrdersRefresh: _refreshOrders,
-        );
+        // Use preview page with mock data for demonstration
+        return OrdersPreviewPage();
       case 1:
         return ProductsManagementScreen(business: widget.business);
       case 2:
@@ -135,7 +107,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
           businessesData: widget.businessesData,
         );
       default:
-        return Center(child: Text(AppLocalizations.of(context)!.error));
+        return Center(child: Text(AppLocalizations.of(context)!.errorOccurred));
     }
   }
 

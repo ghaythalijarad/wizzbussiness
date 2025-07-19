@@ -86,7 +86,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signOutAndRetry => 'Sign out and try again';
 
   @override
+  String get signOut => 'Sign Out';
+
+  @override
+  String get signOutConfirmation => 'Are you sure you want to sign out?';
+
+  @override
   String get userAlreadySignedIn => 'User is already signed in';
+
+  @override
+  String get userNotLoggedIn => 'User not logged in';
 
   @override
   String get forceSignInOption => 'Force sign in';
@@ -188,6 +197,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageSettings => 'Language Settings';
 
   @override
+  String get locationSettings => 'Location Settings';
+
+  @override
+  String get workingHoursSettings => 'Working Hours Settings';
+
+  @override
+  String get monday => 'Monday';
+
+  @override
+  String get tuesday => 'Tuesday';
+
+  @override
+  String get wednesday => 'Wednesday';
+
+  @override
+  String get thursday => 'Thursday';
+
+  @override
+  String get friday => 'Friday';
+
+  @override
+  String get saturday => 'Saturday';
+
+  @override
+  String get sunday => 'Sunday';
+
+  @override
+  String get openingTime => 'Opening Time';
+
+  @override
+  String get closingTime => 'Closing Time';
+
+  @override
+  String get setOpeningTime => 'Set Opening Time';
+
+  @override
+  String get setClosingTime => 'Set Closing Time';
+
+  @override
+  String get notSet => 'Not set';
+
+  @override
+  String get workingHoursSaved => 'Working hours saved successfully';
+
+  @override
+  String get businessManagement => 'Business Management';
+
+  @override
   String get logout => 'Logout';
 
   @override
@@ -212,10 +269,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get posSettingsUpdated => 'POS settings updated successfully';
 
   @override
-  String get connectionSuccessful => 'Connection Successful';
+  String get connectionSuccessful => 'Connection successful';
 
   @override
-  String get connectionFailed => 'Connection Failed';
+  String get connectionFailed => 'Connection failed';
 
   @override
   String get testConnection => 'Test Connection';
@@ -273,7 +330,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enablePosIntegrationDescription =>
-      'Allow real-time synchronization with your POS system';
+      'Automatically sync orders with your POS system';
 
   @override
   String get autoSendOrders => 'Auto Send Orders';
@@ -313,6 +370,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noSyncLogsFound => 'No sync logs found';
 
   @override
+  String get general => 'General';
+
+  @override
+  String get advanced => 'Advanced';
+
+  @override
+  String get posIntegration => 'POS Integration';
+
+  @override
+  String get noSyncLogsAvailable => 'No sync logs available';
+
+  @override
+  String get syncSettings => 'Sync Settings';
+
+  @override
+  String get syncInterval => 'Sync Interval';
+
+  @override
+  String get minutes => 'minutes';
+
+  @override
   String get status => 'Status';
 
   @override
@@ -340,6 +418,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderSyncRetryInitiated => 'Order sync retry initiated';
 
   @override
+  String get webhookSetupTitle => 'Webhook Setup Guide';
+
+  @override
+  String get webhookSetupDescription =>
+      'Follow these steps to configure webhooks';
+
+  @override
+  String get contactSupport => 'Contact Support';
+
+  @override
+  String get contactSupportDescription =>
+      'Need help with POS integration? Contact our support team';
+
+  @override
+  String get webhookConfigTitle => 'Webhook Configuration';
+
+  @override
+  String get webhookConfigDescription =>
+      'Configure webhook endpoints for real-time synchronization';
+
+  @override
+  String get webhookStep1 => 'Step 1: Create webhook endpoint';
+
+  @override
+  String get webhookStep2 => 'Step 2: Configure authentication';
+
+  @override
+  String get webhookStep3 => 'Step 3: Test connection';
+
+  @override
   String get advancedConfiguration => 'Advanced Configuration';
 
   @override
@@ -352,8 +460,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get testMode => 'Test Mode';
 
   @override
-  String get testModeDescription =>
-      'Enable test mode for development and debugging';
+  String get testModeDescription => 'Enable test mode for development';
 
   @override
   String get webhooksIntegration => 'Webhooks Integration';
@@ -497,6 +604,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get freeDelivery => 'Free Delivery';
 
   @override
+  String freeDeliveryTitle(String title) {
+    return 'Free Delivery: $title';
+  }
+
+  @override
+  String freeDeliveryIncludedWith(String title) {
+    return 'Free delivery included with $title';
+  }
+
+  @override
+  String categoryAndPrice(String category, String currency, String price) {
+    return '$category • $currency $price';
+  }
+
+  @override
   String get others => 'Others';
 
   @override
@@ -512,6 +634,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String minimumOrderAmount(String amount) {
     return 'Minimum order amount: $amount';
   }
+
+  @override
+  String get minimumOrder => 'Minimum Order';
 
   @override
   String get startDate => 'Start Date';
@@ -539,6 +664,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get expired => 'Expired';
+
+  @override
+  String get validityPeriod => 'Validity Period';
+
+  @override
+  String get unknownStatus => 'Unknown Status';
 
   @override
   String get sampleItem => 'Sample Item';
@@ -1154,6 +1285,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sendTestNotification => 'Send Test Notification';
 
   @override
+  String get showLocalNotifications => 'Show Local Notifications';
+
+  @override
+  String get showLocalNotificationsDescription =>
+      'Display notifications on this device';
+
+  @override
+  String get playNotificationSounds => 'Play Notification Sounds';
+
+  @override
+  String get playNotificationSoundsDescription =>
+      'Play sounds when notifications are received';
+
+  @override
+  String get testNotifications => 'Test Notifications';
+
+  @override
+  String get testNotificationDescription =>
+      'Send a test notification to verify settings';
+
+  @override
   String get notConnectedToNotifications =>
       'Not connected to real-time notifications';
 
@@ -1699,465 +1851,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Error syncing all businesses to platform';
 
   @override
-  String get failedToGetPlatformSyncStatus =>
-      'Failed to get platform sync status';
-
-  @override
-  String get errorGettingPlatformSyncStatus =>
-      'Error getting platform sync status';
-
-  @override
-  String get failedToSetupCentralizedPlatform =>
-      'Failed to setup centralized platform';
-
-  @override
-  String get errorSettingUpCentralizedPlatform =>
-      'Error setting up centralized platform';
-
-  @override
-  String get uncategorized => 'Uncategorized';
-
-  @override
-  String get searchFailed => 'Search failed';
-
-  @override
-  String get userNotLoggedIn => 'User not logged in. Please log in first.';
-
-  @override
-  String get signOut => 'Sign Out';
-
-  @override
-  String get signOutConfirmation => 'Are you sure you want to sign out?';
-
-  @override
-  String get showLocalNotifications => 'Show Local Notifications';
-
-  @override
-  String get showLocalNotificationsDescription =>
-      'Display notifications in system notification area';
-
-  @override
-  String get playNotificationSounds => 'Play Notification Sounds';
-
-  @override
-  String get playNotificationSoundsDescription =>
-      'Play sound when notifications are received';
-
-  @override
-  String get testNotifications => 'Test Notifications';
-
-  @override
-  String get testNotificationDescription =>
-      'This will send a test notification to verify your settings are working correctly.';
-
-  @override
-  String get photoLibrary => 'Photo Library';
-
-  @override
-  String get camera => 'Camera';
-
-  @override
-  String get errorSelectingDocument => 'Error selecting document';
-
-  @override
-  String get errorSelectingImage => 'Error selecting image';
-
-  @override
-  String get orderSimulation => 'Order Simulation';
-
-  @override
-  String get later => 'Later';
-
-  @override
-  String get viewOrder => 'View Order';
-
-  @override
-  String get understood => 'Understood';
-
-  @override
-  String get error => 'Error';
-
-  @override
-  String get minimumOrder => 'Minimum Order';
-
-  @override
-  String freeDeliveryIncludedWith(String title) {
-    return 'Free delivery included with $title';
-  }
-
-  @override
-  String freeDeliveryTitle(String title) {
-    return '$title - Free Delivery';
-  }
-
-  @override
-  String get kwd => 'KWD';
-
-  @override
-  String categoryAndPrice(String category, String currency, String price) {
-    return '$category • $currency $price';
-  }
-
-  @override
-  String availableUntil(String date) {
-    return 'Available until $date';
-  }
-
-  @override
-  String get joinOrderReceiver => 'Join Order Receiver';
-
-  @override
-  String get signUpSubtitle => 'Start managing your business with ease';
-
-  @override
-  String get personalInformation => 'Personal Information';
-
-  @override
-  String get accountSecurity => 'Account Security';
-
-  @override
-  String get iAgreeToThe => 'I agree to the ';
-
-  @override
-  String get termsOfService => 'Terms of Service';
-
-  @override
-  String get and => 'and';
-
-  @override
-  String get privacyPolicy => 'Privacy Policy';
-
-  @override
-  String get back => 'Back';
-
-  @override
-  String get next => 'Next';
-
-  @override
-  String get alreadyHaveAccount => 'Already have an account? ';
-
-  @override
-  String get backTo => 'Back to ';
-
-  @override
-  String get verificationCode => 'Verification Code';
-
-  @override
-  String get verifyYourEmail => 'Verify Your Email';
-
-  @override
-  String verificationCodeSentTo(String email) {
-    return 'A verification code has been sent to $email';
-  }
-
-  @override
-  String get pleaseEnterVerificationCode =>
-      'Please enter the verification code';
-
-  @override
-  String get verificationFailed => 'Verification failed. Please try again.';
-
-  @override
-  String get failedToResendCode => 'Failed to resend verification code';
-
-  @override
-  String get verificationCodeRequired => 'Verification code is required';
-
-  @override
-  String get invalidVerificationCode => 'Invalid verification code';
-
-  @override
-  String get verificationCodeExpired => 'Verification code has expired';
-
-  @override
-  String get resendVerificationCode => 'Resend Verification Code';
-
-  @override
-  String get verificationSuccess => 'Verification successful';
-
-  @override
-  String get verificationFailure => 'Verification failed';
-
-  @override
-  String get emailNotVerified => 'Email not verified';
-
-  @override
-  String get emailVerificationPending => 'Email verification pending';
-
-  @override
-  String get emailVerificationCompleted => 'Email verification completed';
-
-  @override
-  String get emailVerificationFailed => 'Email verification failed';
-
-  @override
-  String get emailVerificationResendSuccess =>
-      'Verification code resent successfully';
-
-  @override
-  String get emailVerificationResendFailure =>
-      'Failed to resend verification code';
-
-  @override
-  String get emailVerificationInstructions =>
-      'Please check your email for the verification code to complete your registration.';
-
-  @override
-  String get emailVerificationCodeSent =>
-      'A verification code has been sent to your email. Please enter the code to verify your email address.';
-
-  @override
-  String get emailVerificationCodePlaceholder => 'Enter verification code';
-
-  @override
-  String get emailVerificationCodeInvalid =>
-      'The verification code is invalid. Please check and try again.';
-
-  @override
-  String get emailVerificationCodeExpiredMessage =>
-      'The verification code has expired. Please request a new code.';
-
-  @override
-  String get emailVerificationCodeResendSuccess =>
-      'A new verification code has been sent to your email.';
-
-  @override
-  String get emailVerificationCodeResendFailure =>
-      'Failed to resend the verification code. Please try again later.';
-
-  @override
-  String get emailVerificationComplete =>
-      'Your email has been verified successfully. You can now log in to your account.';
-
-  @override
-  String get emailVerificationFailedMessage =>
-      'Email verification failed. Please try again or contact support.';
-
-  @override
-  String get emailVerificationPendingMessage =>
-      'Your email verification is pending. Please check your email for the verification code.';
-
-  @override
-  String get emailVerificationInstructionsResend =>
-      'If you didn\'t receive the code, you can request a new one.';
-
-  @override
-  String get emailVerificationCodeRequestSuccess =>
-      'Verification code sent successfully. Please check your email.';
-
-  @override
-  String get emailVerificationCodeRequestFailure =>
-      'Failed to send verification code. Please try again later.';
-
-  @override
-  String get emailVerificationCodeRequestPending =>
-      'Verification code request is pending. Please wait...';
-
-  @override
-  String get emailVerificationCodeRequestCompleted =>
-      'Verification code request completed. Please check your email.';
-
-  @override
-  String get emailVerificationCodeRequestFailed =>
-      'Verification code request failed. Please try again.';
-
-  @override
-  String get emailVerificationCodeRequestResendSuccess =>
-      'Verification code resent successfully. Please check your email.';
-
-  @override
-  String get emailVerificationCodeRequestResendFailure =>
-      'Failed to resend verification code. Please try again later.';
-
-  @override
-  String get emailVerificationCodeRequestResendPending =>
-      'Verification code resend is pending. Please wait...';
-
-  @override
-  String get emailVerificationCodeRequestResendCompleted =>
-      'Verification code resend completed. Please check your email.';
-
-  @override
-  String get emailVerificationCodeRequestResendFailed =>
-      'Verification code resend failed. Please try again.';
-
-  @override
-  String get emailVerificationCodeRequestAlreadySent =>
-      'A verification code has already been sent to your email. Please check your email.';
-
-  @override
-  String get emailVerificationCodeRequestNotSent =>
-      'Verification code request not sent. Please try again.';
-
-  @override
-  String get emailVerificationCodeRequestInvalidEmail =>
-      'Invalid email address. Please enter a valid email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailSent =>
-      'Verification code email sent. Please check your inbox.';
-
-  @override
-  String get emailVerificationCodeRequestEmailNotSent =>
-      'Verification code email not sent. Please try again.';
-
-  @override
-  String get emailVerificationCodeRequestEmailAlreadyVerified =>
-      'This email address is already verified.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationPending =>
-      'Email verification is pending. Please check your email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationFailed =>
-      'Email verification failed. Please try again.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationSuccess =>
-      'Email verification successful. You can now log in.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationResendSuccess =>
-      'Verification code resent successfully. Please check your email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationResendFailure =>
-      'Failed to resend verification code. Please try again later.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationResendPending =>
-      'Verification code resend is pending. Please wait...';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationResendCompleted =>
-      'Verification code resend completed. Please check your email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationResendFailed =>
-      'Verification code resend failed. Please try again.';
-
-  @override
-  String get emailVerificationCodeRequestEmailAlreadyExists =>
-      'An account with this email already exists. Please log in.';
-
-  @override
-  String get emailVerificationCodeRequestEmailNotRegistered =>
-      'This email is not registered. Please sign up.';
-
-  @override
-  String get emailVerificationCodeRequestEmailInvalidFormat =>
-      'Invalid email format. Please enter a valid email address.';
-
-  @override
-  String get emailVerificationCodeRequestEmailEmpty =>
-      'Email address cannot be empty. Please enter your email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailTooLong =>
-      'Email address is too long. Please enter a shorter email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailTooShort =>
-      'Email address is too short. Please enter a longer email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailContainsInvalidCharacters =>
-      'Email address contains invalid characters. Please enter a valid email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailStartsWithInvalidCharacter =>
-      'Email address starts with an invalid character. Please enter a valid email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailEndsWithInvalidCharacter =>
-      'Email address ends with an invalid character. Please enter a valid email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailDuplicate =>
-      'This email address is already in use. Please use a different email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailNotAllowed =>
-      'Email address not allowed. Please use a different email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailBlocked =>
-      'Email address blocked. Please contact support.';
-
-  @override
-  String get emailVerificationCodeRequestEmailUnverified =>
-      'Email address unverified. Please verify your email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationRequired =>
-      'Email verification required. Please verify your email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationOptional =>
-      'Email verification optional. You can verify your email later.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationCompleted =>
-      'Email verification completed. You can now log in.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationFailedMessage =>
-      'Email verification failed. Please try again or contact support.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationPendingMessage =>
-      'Your email verification is pending. Please check your email for the verification code.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationInstructions =>
-      'Please check your email for the verification code to complete your registration.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationCodeSent =>
-      'A verification code has been sent to your email. Please enter the code to verify your email address.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationCodePlaceholder =>
-      'Enter verification code';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationCodeInvalid =>
-      'The verification code is invalid. Please check and try again.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationCodeExpiredMessage =>
-      'The verification code has expired. Please request a new code.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationCodeResendSuccess =>
-      'A new verification code has been sent to your email.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationCodeResendFailure =>
-      'Failed to resend the verification code. Please try again later.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationComplete =>
-      'Your email has been verified successfully. You can now log in to your account.';
-
-  @override
-  String get emailVerificationCodeRequestEmailVerificationInstructionsResend =>
-      'If you didn\'t receive the code, you can request a new one.';
-
-  @override
-  String get wrongEmail => 'Wrong email?';
-
-  @override
-  String get wrongEmailStartOver => 'Wrong email? Start over';
-
-  @override
-  String get startOver => 'Start Over';
-
-  @override
-  String get createAnAccount => 'Create an account';
-
-  @override
   String get language => 'Language';
 
   @override
@@ -2369,42 +2062,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get connectionIssuesDescription =>
-      'Common connection problems and solutions';
+      'Troubleshoot common connection problems:';
 
   @override
-  String get connectionIssue1 =>
-      'Check your internet connection and ensure it\'s stable';
+  String get connectionIssue1 => '• Check internet connectivity';
 
   @override
-  String get connectionIssue2 =>
-      'Verify that your POS system is online and accessible';
+  String get connectionIssue2 => '• Verify API credentials are correct';
 
   @override
-  String get connectionIssue3 =>
-      'Confirm that API credentials are correct and active';
+  String get connectionIssue3 => '• Ensure API endpoint URL is accessible';
 
   @override
   String get connectionIssue4 =>
-      'Check if firewall or security settings are blocking the connection';
+      '• Check for firewall or security restrictions';
 
   @override
-  String get connectionIssue5 =>
-      'Ensure your POS system\'s API is not under maintenance';
+  String get connectionIssue5 => '• Verify API key has sufficient permissions';
 
   @override
-  String get connectionIssue6 =>
-      'Try restarting your POS system and network equipment';
+  String get connectionIssue6 => '• Try regenerating API credentials';
 
   @override
   String get connectionIssue7 =>
-      'Contact your POS system provider if issues persist';
+      '• Contact POS system support if issues persist';
 
   @override
   String get syncFailuresTitle => 'Sync Failures';
 
   @override
-  String get syncFailuresDescription =>
-      'Troubleshooting data synchronization issues';
+  String get syncFailuresDescription => 'Resolve order synchronization issues:';
 
   @override
   String get syncFailure1 => '• Check sync logs for specific error details';
@@ -2431,7 +2118,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get apiErrorsTitle => 'API Errors';
 
   @override
-  String get apiErrorsDescription => 'Resolving API-related errors and issues';
+  String get apiErrorsDescription => 'Common API error codes and solutions:';
 
   @override
   String get apiError1 => '• 401 Unauthorized: Check API credentials';
@@ -2449,198 +2136,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get apiError5 => '• 500 Internal Server Error: Contact support';
 
   @override
-  String get apiError6 => '• Timeout errors: Check network stability';
+  String get joinOrderReceiver => 'Join Order Receiver';
 
   @override
-  String get apiError7 => '• SSL errors: Verify certificate validity';
+  String get kwd => 'KWD';
 
   @override
-  String get liveChatTitle => 'Live Chat Support';
+  String get signUpSubtitle => 'Create your account to get started';
 
   @override
-  String get liveChatDescription => 'Get instant help from our support team';
+  String get personalInformation => 'Personal Information';
 
   @override
-  String get liveChatAvailability => 'Available weekdays 9 AM - 5 PM';
+  String get accountSecurity => 'Account Security';
 
   @override
-  String get liveChatNote =>
-      'Live chat feature coming soon. Use email support for immediate assistance.';
+  String get iAgreeToThe => 'I agree to the';
 
   @override
-  String get emailSupportTitle => 'Email Support';
+  String get termsOfService => 'Terms of Service';
 
   @override
-  String get emailSupportDescription =>
-      'Send us your questions and we\'ll respond within 24 hours';
+  String get and => 'and';
 
   @override
-  String get emailSupportAddress => 'support@orderreceiver.com';
+  String get privacyPolicy => 'Privacy Policy';
 
   @override
-  String get emailSupportResponseTime => 'We typically respond within 24 hours';
+  String get back => 'Back';
 
   @override
-  String get webhookConfigTitle => 'Webhook Configuration';
+  String get next => 'Next';
 
   @override
-  String get webhookConfigDescription =>
-      'Set up webhooks for real-time order updates:';
+  String get alreadyHaveAccount => 'Already have an account?';
 
   @override
-  String get webhookSetupTitle => 'Webhook Setup';
+  String get verificationCode => 'Verification Code';
 
   @override
-  String get webhookSetupDescription =>
-      'Configure webhook integration for real-time order synchronization';
+  String get verificationCodeRequired => 'Please enter the verification code';
 
   @override
-  String get webhookStep1 => 'Copy the webhook URL from your POS settings';
+  String get verifyYourEmail => 'Verify Your Email';
 
   @override
-  String get webhookStep2 => 'Log in to your POS system dashboard';
+  String get verificationFailed => 'Verification failed';
 
   @override
-  String get webhookStep3 => 'Navigate to webhook/integration settings';
+  String get failedToResendCode => 'Failed to resend verification code';
 
   @override
-  String get webhookStep4 => 'Add new webhook endpoint';
-
-  @override
-  String get webhookStep5 =>
-      'Configure for order events (create, update, cancel)';
-
-  @override
-  String get webhookStep6 => '6. Test webhook delivery';
-
-  @override
-  String get webhookStep7 => '7. Monitor webhook logs for successful delivery';
-
-  @override
-  String get apiKeyRotationTitle => 'API Key Rotation';
-
-  @override
-  String get apiKeyRotationDescription =>
-      'Regularly rotate API keys for security:';
-
-  @override
-  String get rotationStep1 => '1. Generate new API key in your POS system';
-
-  @override
-  String get rotationStep2 => '2. Update Order Receiver with new credentials';
-
-  @override
-  String get rotationStep3 => '3. Test connection with new key';
-
-  @override
-  String get rotationStep4 => '4. Deactivate old API key';
-
-  @override
-  String get rotationStep5 => '5. Monitor sync operations for 24 hours';
-
-  @override
-  String get rotationStep6 => '6. Document rotation date for future reference';
-
-  @override
-  String get copyToClipboard => 'Copy to Clipboard';
-
-  @override
-  String get copied => 'Copied!';
-
-  @override
-  String get openEmailSupport => 'Open Email Support';
-
-  @override
-  String get startLiveChat => 'Start Live Chat';
-
-  @override
-  String get syncIssue1 =>
-      'Check if your POS system has pending transactions to sync';
-
-  @override
-  String get syncIssue2 =>
-      'Verify that both systems have the same time zone settings';
-
-  @override
-  String get syncIssue3 =>
-      'Ensure your POS system has sufficient permissions for data access';
-
-  @override
-  String get syncIssue4 => 'Check for any data format incompatibilities';
-
-  @override
-  String get syncIssue5 => 'Review sync logs for specific error messages';
-
-  @override
-  String get syncIssue6 =>
-      'Try manually triggering a sync to identify the issue';
-
-  @override
-  String get syncIssue7 =>
-      'Clear sync cache and restart the synchronization process';
-
-  @override
-  String get apiIssue1 => 'Verify your API keys are valid and not expired';
-
-  @override
-  String get apiIssue2 =>
-      'Check API rate limits and ensure you\'re not exceeding them';
-
-  @override
-  String get apiIssue3 =>
-      'Confirm that your subscription includes required API features';
-
-  @override
-  String get apiIssue4 => 'Review API endpoint URLs for any recent changes';
-
-  @override
-  String get apiIssue5 =>
-      'Check API documentation for required headers or parameters';
-
-  @override
-  String get apiIssue6 =>
-      'Test API calls using a tool like Postman to isolate issues';
-
-  @override
-  String get apiIssue7 => 'Contact technical support with specific error codes';
-
-  @override
-  String get liveChatHours => 'Monday-Friday, 9:00 AM - 5:00 PM EST';
-
-  @override
-  String get startChat => 'Start Chat';
-
-  @override
-  String get emailResponseTime => 'Typical response time: 4-24 hours';
-
-  @override
-  String get sendEmail => 'Send Email';
-
-  @override
-  String get syncInterval => 'Sync Interval';
-
-  @override
-  String get minutes => 'minutes';
-
-  @override
-  String get syncSettings => 'Sync Settings';
-
-  @override
-  String get noSyncLogsAvailable => 'No sync logs available';
-
-  @override
-  String get advanced => 'Advanced';
-
-  @override
-  String get general => 'General';
-
-  @override
-  String get posIntegration => 'POS Integration';
-
-  @override
-  String get contactSupport => 'Contact Support';
-
-  @override
-  String get contactSupportDescription =>
-      'Need help with POS integration? Our support team is here to assist you.';
+  String verificationCodeSentTo(String email) {
+    return 'Verification code sent to $email';
+  }
 }

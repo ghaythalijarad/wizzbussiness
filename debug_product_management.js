@@ -91,6 +91,24 @@ async function debugProductManagement() {
             console.log(`ℹ️  Token validation endpoint not available or failed: ${error.response?.status}`);
         }
 
+        console.log('\n5. Testing GET /discounts endpoint...');
+        try {
+            const discountsResponse = await axios.get(`${baseUrl}/discounts`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authHeader
+                }
+            });
+            console.log(`✅ Discounts endpoint status: ${discountsResponse.status}`);
+            console.log(`🗒️ Discounts response:`, JSON.stringify(discountsResponse.data, null, 2));
+        } catch (error) {
+            console.log(`❌ Discounts endpoint failed: ${error.response?.status} - ${error.response?.statusText}`);
+            if (error.response?.data) {
+                console.log(`📄 Error response:`, JSON.stringify(error.response.data, null, 2));
+            }
+            console.log(`🔍 Full error:`, error.message);
+        }
+
     } catch (error) {
         console.error('💥 Unexpected error:', error.message);
     }

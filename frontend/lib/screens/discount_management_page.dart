@@ -805,26 +805,66 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                             const SizedBox(width: 12),
                             Expanded(
                               flex: 1,
-                              child: TextFormField(
-                                controller: valueController,
-                                decoration: InputDecoration(
-                                  labelText:
-                                      AppLocalizations.of(context)!.value,
-                                  border: const OutlineInputBorder(),
-                                ),
-                                keyboardType: TextInputType.number,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return AppLocalizations.of(context)!
-                                        .pleaseEnterValue;
-                                  }
-                                  if (double.tryParse(value) == null) {
-                                    return AppLocalizations.of(context)!
-                                        .pleaseEnterValidNumber;
-                                  }
-                                  return null;
-                                },
-                              ),
+                              child: discountType == DiscountType.percentage
+                                  ? DropdownButtonFormField<double>(
+                                      value: double.tryParse(valueController.text) ??
+                                          10.0,
+                                      decoration: InputDecoration(
+                                        labelText:
+                                            AppLocalizations.of(context)!.value,
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                      items: [
+                                        10,
+                                        15,
+                                        20,
+                                        25,
+                                        30,
+                                        35,
+                                        40,
+                                        45,
+                                        50
+                                      ]
+                                          .map((percent) => DropdownMenuItem<double>(
+                                                value: percent.toDouble(),
+                                                child: Text('$percent%'),
+                                              ))
+                                          .toList(),
+                                      onChanged: (value) {
+                                        if (value != null) {
+                                          setState(() {
+                                            valueController.text = value.toString();
+                                          });
+                                        }
+                                      },
+                                      validator: (value) {
+                                        if (value == null) {
+                                          return AppLocalizations.of(context)!
+                                              .pleaseEnterValue;
+                                        }
+                                        return null;
+                                      },
+                                    )
+                                  : TextFormField(
+                                      controller: valueController,
+                                      decoration: InputDecoration(
+                                        labelText:
+                                            AppLocalizations.of(context)!.value,
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return AppLocalizations.of(context)!
+                                              .pleaseEnterValue;
+                                        }
+                                        if (double.tryParse(value) == null) {
+                                          return AppLocalizations.of(context)!
+                                              .pleaseEnterValidNumber;
+                                        }
+                                        return null;
+                                      },
+                                    ),
                             ),
                           ],
                         ),

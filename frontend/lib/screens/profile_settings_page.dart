@@ -701,7 +701,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               const SizedBox(height: 16),
               _buildModernSettingsCard(
                 icon: Icons.location_on_rounded,
-                title: 'Location Settings',
+                title: AppLocalizations.of(context)!.locationSettings,
                 subtitle: 'Manage business location and GPS coordinates',
                 color: const Color(0xFF4CAF50),
                 onTap: () {
@@ -717,7 +717,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               const SizedBox(height: 16),
               _buildModernSettingsCard(
                 icon: Icons.access_time_rounded,
-                title: 'Working Hours Settings',
+                title: AppLocalizations.of(context)!.workingHoursSettings,
                 subtitle: 'Set up opening and closing hours for your business',
                 color: const Color(0xFF2196F3),
                 onTap: () {

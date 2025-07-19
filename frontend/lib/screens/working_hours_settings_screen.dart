@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import '../models/business.dart';
 
@@ -30,6 +31,29 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
   };
   bool isLoading = false;
   String? errorMsg;
+
+  // Helper method to get localized day name
+  String getLocalizedDayName(String englishDay) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (englishDay) {
+      case 'Monday':
+        return l10n.monday;
+      case 'Tuesday':
+        return l10n.tuesday;
+      case 'Wednesday':
+        return l10n.wednesday;
+      case 'Thursday':
+        return l10n.thursday;
+      case 'Friday':
+        return l10n.friday;
+      case 'Saturday':
+        return l10n.saturday;
+      case 'Sunday':
+        return l10n.sunday;
+      default:
+        return englishDay;
+    }
+  }
 
   @override
   void initState() {
@@ -102,7 +126,7 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
       
       if (result['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Working hours saved successfully'),
+          content: Text(AppLocalizations.of(context)!.workingHoursSaved),
           backgroundColor: Colors.green,
         ));
       } else {
@@ -141,62 +165,161 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('Working Hours Settings'),
+        title: Text(l10n.workingHoursSettings),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : errorMsg != null
-              ? Center(child: Text(errorMsg!))
-              : ListView.builder(
-                  itemCount: openingHours.keys.length,
-                  itemBuilder: (context, index) {
-                    String day = openingHours.keys.elementAt(index);
-                    return Card(
-                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              day,
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      SizedBox(height: 16),
+                      Text(errorMsg!, style: TextStyle(color: Colors.red)),
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadWorkingHours,
+                        child: Text(l10n.retry),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        padding: EdgeInsets.all(16),
+                        itemCount: openingHours.keys.length,
+                        itemBuilder: (context, index) {
+                          String day = openingHours.keys.elementAt(index);
+                          String localizedDay = getLocalizedDayName(day);
+                          
+                          return Card(
+                            margin: EdgeInsets.only(bottom: 12),
+                            elevation: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    localizedDay,
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                  ),
+                                  SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              l10n.openingTime,
+                                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              openingHours[day]?.format(context) ?? l10n.notSet,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: openingHours[day] != null 
+                                                    ? Colors.black87 
+                                                    : Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      ElevatedButton.icon(
+                                        onPressed: () => _selectTime(context, day, true),
+                                        icon: Icon(Icons.access_time, size: 18),
+                                        label: Text(l10n.setOpeningTime),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Theme.of(context).primaryColor,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              l10n.closingTime,
+                                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              closingHours[day]?.format(context) ?? l10n.notSet,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: closingHours[day] != null 
+                                                    ? Colors.black87 
+                                                    : Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      ElevatedButton.icon(
+                                        onPressed: () => _selectTime(context, day, false),
+                                        icon: Icon(Icons.access_time, size: 18),
+                                        label: Text(l10n.setClosingTime),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Theme.of(context).primaryColor,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Opening: ${openingHours[day]?.format(context) ?? 'Not set'}'),
-                                ElevatedButton(
-                                  onPressed: () => _selectTime(context, day, true),
-                                  child: Text('Set Opening'),
-                                ),
-                              ],
+                          );
+                        },
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(16),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: isLoading ? null : _saveWorkingHours,
+                          icon: Icon(Icons.save, size: 20),
+                          label: Text(
+                            l10n.saveSettings,
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Closing: ${closingHours[day]?.format(context) ?? 'Not set'}'),
-                                ElevatedButton(
-                                  onPressed: () => _selectTime(context, day, false),
-                                  child: Text('Set Closing'),
-                                ),
-                              ],
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ElevatedButton(
-          onPressed: isLoading ? null : _saveWorkingHours,
-          child: Text('Save Settings'),
-        ),
-      ),
     );
   }
 }

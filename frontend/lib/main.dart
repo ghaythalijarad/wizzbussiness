@@ -238,7 +238,10 @@ class _MyAppState extends State<MyApp> {
                   changeLanguage(locale.languageCode),
             ),
       routes: {
-        '/signup': (_) => const SignUpScreen(),
+        '/signup': (context) => SignUpScreen(
+              onLanguageChanged: (locale) =>
+                  changeLanguage(locale.languageCode),
+            ),
         '/login': (_) => LoginPage(
               onLanguageChanged: (locale) =>
                   changeLanguage(locale.languageCode),

@@ -7,10 +7,12 @@ class WorkingHoursSettingsScreen extends StatefulWidget {
   final Business? business;
   const WorkingHoursSettingsScreen({Key? key, this.business}) : super(key: key);
   @override
-  _WorkingHoursSettingsScreenState createState() => _WorkingHoursSettingsScreenState();
+  _WorkingHoursSettingsScreenState createState() =>
+      _WorkingHoursSettingsScreenState();
 }
 
-class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen> {
+class _WorkingHoursSettingsScreenState
+    extends State<WorkingHoursSettingsScreen> {
   final Map<String, TimeOfDay?> openingHours = {
     'Monday': null,
     'Tuesday': null,
@@ -63,7 +65,10 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
 
   Future<void> _loadWorkingHours() async {
     if (widget.business == null) return;
-    setState(() { isLoading = true; errorMsg = null; });
+    setState(() {
+      isLoading = true;
+      errorMsg = null;
+    });
     try {
       final api = ApiService();
       final result = await api.getBusinessWorkingHours(widget.business!.id);
@@ -83,7 +88,9 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
     } catch (e) {
       errorMsg = 'Failed to load working hours';
     }
-    setState(() { isLoading = false; });
+    setState(() {
+      isLoading = false;
+    });
   }
 
   TimeOfDay? _parseTimeOfDay(dynamic value) {
@@ -101,36 +108,46 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
   Future<void> _saveWorkingHours() async {
     if (widget.business == null) {
       print('❌ No business object provided');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No business information available')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No business information available')));
       return;
     }
-    
+
     print('💾 Saving working hours for business: ${widget.business!.id}');
-    setState(() { isLoading = true; errorMsg = null; });
-    
+    setState(() {
+      isLoading = true;
+      errorMsg = null;
+    });
+
     final api = ApiService();
     final Map<String, dynamic> wh = {};
-    
+
     openingHours.forEach((day, open) {
       wh[day] = {
-        'opening': open != null ? '${open.hour.toString().padLeft(2, '0')}:${open.minute.toString().padLeft(2, '0')}' : null,
-        'closing': closingHours[day] != null ? '${closingHours[day]!.hour.toString().padLeft(2, '0')}:${closingHours[day]!.minute.toString().padLeft(2, '0')}' : null,
+        'opening': open != null
+            ? '${open.hour.toString().padLeft(2, '0')}:${open.minute.toString().padLeft(2, '0')}'
+            : null,
+        'closing': closingHours[day] != null
+            ? '${closingHours[day]!.hour.toString().padLeft(2, '0')}:${closingHours[day]!.minute.toString().padLeft(2, '0')}'
+            : null,
       };
     });
-    
+
     print('📊 Working hours data to save: $wh');
-    
+
     try {
-      final result = await api.updateBusinessWorkingHours(widget.business!.id, wh);
+      final result =
+          await api.updateBusinessWorkingHours(widget.business!.id, wh);
       print('✅ API response: $result');
-      
+
       if (result['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(AppLocalizations.of(context)!.workingHoursSaved),
           backgroundColor: Colors.green,
         ));
       } else {
-        errorMsg = 'Failed to save working hours: ${result['message'] ?? 'Unknown error'}';
+        errorMsg =
+            'Failed to save working hours: ${result['message'] ?? 'Unknown error'}';
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(errorMsg!),
           backgroundColor: Colors.red,
@@ -144,10 +161,13 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
         backgroundColor: Colors.red,
       ));
     }
-    setState(() { isLoading = false; });
+    setState(() {
+      isLoading = false;
+    });
   }
 
-  Future<void> _selectTime(BuildContext context, String day, bool isOpening) async {
+  Future<void> _selectTime(
+      BuildContext context, String day, bool isOpening) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
@@ -166,7 +186,7 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.workingHoursSettings),
@@ -199,7 +219,7 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
                         itemBuilder: (context, index) {
                           String day = openingHours.keys.elementAt(index);
                           String localizedDay = getLocalizedDayName(day);
-                          
+
                           return Card(
                             margin: EdgeInsets.only(bottom: 12),
                             elevation: 2,
@@ -210,31 +230,40 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
                                 children: [
                                   Text(
                                     localizedDay,
-                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).primaryColor,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: Theme.of(context).primaryColor,
+                                        ),
                                   ),
                                   SizedBox(height: 12),
                                   Row(
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               l10n.openingTime,
-                                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                                fontWeight: FontWeight.w500,
-                                              ),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                             ),
                                             SizedBox(height: 4),
                                             Text(
-                                              openingHours[day]?.format(context) ?? l10n.notSet,
+                                              openingHours[day]
+                                                      ?.format(context) ??
+                                                  l10n.notSet,
                                               style: TextStyle(
                                                 fontSize: 16,
-                                                color: openingHours[day] != null 
-                                                    ? Colors.black87 
+                                                color: openingHours[day] != null
+                                                    ? Colors.black87
                                                     : Colors.grey[600],
                                               ),
                                             ),
@@ -242,11 +271,13 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
                                         ),
                                       ),
                                       ElevatedButton.icon(
-                                        onPressed: () => _selectTime(context, day, true),
+                                        onPressed: () =>
+                                            _selectTime(context, day, true),
                                         icon: Icon(Icons.access_time, size: 18),
                                         label: Text(l10n.setOpeningTime),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Theme.of(context).primaryColor,
+                                          backgroundColor:
+                                              Theme.of(context).primaryColor,
                                           foregroundColor: Colors.white,
                                         ),
                                       ),
@@ -257,21 +288,27 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               l10n.closingTime,
-                                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                                fontWeight: FontWeight.w500,
-                                              ),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                             ),
                                             SizedBox(height: 4),
                                             Text(
-                                              closingHours[day]?.format(context) ?? l10n.notSet,
+                                              closingHours[day]
+                                                      ?.format(context) ??
+                                                  l10n.notSet,
                                               style: TextStyle(
                                                 fontSize: 16,
-                                                color: closingHours[day] != null 
-                                                    ? Colors.black87 
+                                                color: closingHours[day] != null
+                                                    ? Colors.black87
                                                     : Colors.grey[600],
                                               ),
                                             ),
@@ -279,11 +316,13 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
                                         ),
                                       ),
                                       ElevatedButton.icon(
-                                        onPressed: () => _selectTime(context, day, false),
+                                        onPressed: () =>
+                                            _selectTime(context, day, false),
                                         icon: Icon(Icons.access_time, size: 18),
                                         label: Text(l10n.setClosingTime),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Theme.of(context).primaryColor,
+                                          backgroundColor:
+                                              Theme.of(context).primaryColor,
                                           foregroundColor: Colors.white,
                                         ),
                                       ),
@@ -305,7 +344,8 @@ class _WorkingHoursSettingsScreenState extends State<WorkingHoursSettingsScreen>
                           icon: Icon(Icons.save, size: 20),
                           label: Text(
                             l10n.saveSettings,
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).primaryColor,

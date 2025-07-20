@@ -226,12 +226,39 @@ async function handleConfirmSignup(body) {
             const updateResult = await dynamodb.update(updateParams).promise();
             console.log(`DynamoDB update result:`, JSON.stringify(updateResult, null, 2));
             console.log(`✅ Updated email verification status for user: ${userIdKey}`);
+
+            // After successful verification, get user's businesses and return login data
+            console.log(`🔍 Fetching user businesses for dashboard navigation...`);
+            
+            // Query businesses by user email
+            const businessQueryParams = {
+                TableName: BUSINESSES_TABLE,
+                IndexName: 'email-index',
+                KeyConditionExpression: 'email = :email',
+                ExpressionAttributeValues: { ':email': email }
+            };
+            
+            const businessResult = await dynamodb.query(businessQueryParams).promise();
+            const businesses = businessResult.Items || [];
+            console.log(`Found ${businesses.length} businesses for user`);
+
+            // Return user and business data for frontend to handle dashboard navigation
+            return createResponse(200, { 
+                success: true, 
+                message: 'Email verified successfully! Welcome to your business dashboard.',
+                verified: true,
+                user: {
+                    userId: userIdKey,
+                    email: email,
+                    firstName: user.firstName || user.first_name,
+                    lastName: user.lastName || user.last_name
+                },
+                businesses: businesses
+            });
         } else {
             console.error(`❌ No user found with email: ${email}`);
             throw new Error('User not found in database');
         }
-
-        return createResponse(200, { success: true, message: 'Email verified successfully. You can now sign in.' });
 
     } catch (error) {
         console.error('Error confirming signup:', error);

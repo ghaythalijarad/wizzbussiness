@@ -71,7 +71,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get errorInvalidCredentials =>
-      'Invalid email or password. Please check your credentials and try again.';
+      'البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى التحقق من البيانات والمحاولة مرة أخرى.';
 
   @override
   String get sessionConflictTitle => 'Already Signed In';

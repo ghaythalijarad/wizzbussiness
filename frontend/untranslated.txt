@@ -3,7 +3,6 @@
     "signIn",
     "emailRequired",
     "loginFailedMessage",
-    "errorInvalidCredentials",
     "sessionConflictTitle",
     "sessionConflictMessage",
     "continueCurrentSession",

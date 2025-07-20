@@ -297,14 +297,23 @@ class AppAuthService {
       );
 
       if (result['success'] == true) {
-        // Store authentication tokens
-        await _storeAuthTokens(result);
-
-        return ConfirmResult(
-          success: true,
-          message: result['message'] ?? 'Registration confirmed successfully',
-          user: result['user'],
-        );
+        // Check if the backend returned user and business data (new auto-login flow)
+        if (result['verified'] == true && result['user'] != null && result['businesses'] != null) {
+          return ConfirmResult(
+            success: true,
+            message: result['message'] ?? 'Registration confirmed successfully',
+            user: result['user'],
+            business: result['businesses']?.isNotEmpty == true ? result['businesses'][0] : null,
+          );
+        } else {
+          // Old flow - store authentication tokens if provided
+          await _storeAuthTokens(result);
+          return ConfirmResult(
+            success: true,
+            message: result['message'] ?? 'Registration confirmed successfully',
+            user: result['user'],
+          );
+        }
       } else {
         return ConfirmResult(
           success: false,

@@ -36,6 +36,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _login() async {
+    final loc = AppLocalizations.of(context)!;
+
     debugPrint('🎯 LOGIN BUTTON PRESSED - Starting validation');
 
     if (_formKey.currentState!.validate()) {
@@ -122,11 +124,37 @@ class _LoginPageState extends State<LoginPage> {
           }
         } else if (mounted) {
           debugPrint('❌ Login failed: ${response.message}');
-          // Login failed
+          // Provide user-friendly message for invalid credentials
+          String errorMsg;
+          final responseMessage = response.message.toLowerCase();
+
+          if (responseMessage.contains('password') ||
+              responseMessage.contains('email') ||
+              responseMessage.contains('incorrect') ||
+              responseMessage.contains('invalid') ||
+              responseMessage.contains('unauthorized') ||
+              responseMessage.contains('authentication') ||
+              responseMessage.contains('credentials') ||
+              responseMessage.contains('not found') ||
+              responseMessage.contains('401')) {
+            errorMsg = loc.errorInvalidCredentials;
+          } else if (responseMessage.contains('network') ||
+              responseMessage.contains('connection')) {
+            errorMsg =
+                'Network error. Please check your internet connection and try again.';
+          } else if (responseMessage.contains('server') ||
+              responseMessage.contains('500')) {
+            errorMsg = 'Server error. Please try again later.';
+          } else {
+            errorMsg = loc
+                .errorInvalidCredentials; // Default to credential error for security
+          }
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response.message),
+              content: Text(errorMsg),
               backgroundColor: Colors.red,
+              duration: Duration(seconds: 4),
             ),
           );
         }
@@ -299,7 +327,9 @@ class _LoginPageState extends State<LoginPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const RegistrationFormScreen(),
+                                        RegistrationFormScreen(
+                                          onLanguageChanged: widget.onLanguageChanged,
+                                        ),
                                   ),
                                 );
                               },

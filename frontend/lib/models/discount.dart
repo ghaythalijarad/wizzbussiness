@@ -135,9 +135,15 @@ class Discount {
       type: _parseDiscountType(json['type']),
       value: (json['value'] as num?)?.toDouble() ?? 0.0,
       applicability: _parseDiscountApplicability(json['applicability']),
-      applicableItemIds: List<String>.from(json['applicableItemIds'] ?? json['applicable_item_ids'] ?? []),
-      applicableCategoryIds: List<String>.from(json['applicableCategoryIds'] ?? json['applicable_category_ids'] ?? []),
-      minimumOrderAmount: (json['minimumOrderAmount'] ?? json['minimum_order_amount'] as num?)?.toDouble() ?? 0.0,
+      applicableItemIds: List<String>.from(
+          json['applicableItemIds'] ?? json['applicable_item_ids'] ?? []),
+      applicableCategoryIds: List<String>.from(json['applicableCategoryIds'] ??
+          json['applicable_category_ids'] ??
+          []),
+      minimumOrderAmount:
+          (json['minimumOrderAmount'] ?? json['minimum_order_amount'] as num?)
+                  ?.toDouble() ??
+              0.0,
       validFrom: _parseDateTime(json['validFrom'] ?? json['valid_from']),
       validTo: _parseDateTime(json['validTo'] ?? json['valid_to']),
       usageLimit: json['usageLimit'] ?? json['usage_limit'] as int?,
@@ -145,11 +151,18 @@ class Discount {
       status: _parseDiscountStatus(json['status']),
       createdAt: _parseDateTime(json['createdAt'] ?? json['created_at']),
       updatedAt: _parseDateTime(json['updatedAt'] ?? json['updated_at']),
-      conditionalRule: json['conditionalRule'] != null || json['conditional_rule'] != null
-          ? ConditionalDiscountRule.values
-              .firstWhere((e) => e.name == (json['conditionalRule'] ?? json['conditional_rule']), orElse: () => ConditionalDiscountRule.buyXGetY)
-          : null,
-      conditionalParameters: Map<String, dynamic>.from(json['conditionalParameters'] ?? json['conditional_parameters'] ?? {}),
+      conditionalRule:
+          json['conditionalRule'] != null || json['conditional_rule'] != null
+              ? ConditionalDiscountRule.values.firstWhere(
+                  (e) =>
+                      e.name ==
+                      (json['conditionalRule'] ?? json['conditional_rule']),
+                  orElse: () => ConditionalDiscountRule.buyXGetY)
+              : null,
+      conditionalParameters: Map<String, dynamic>.from(
+          json['conditionalParameters'] ??
+              json['conditional_parameters'] ??
+              {}),
     );
   }
 
@@ -161,7 +174,8 @@ class Discount {
     );
   }
 
-  static DiscountApplicability _parseDiscountApplicability(dynamic applicability) {
+  static DiscountApplicability _parseDiscountApplicability(
+      dynamic applicability) {
     if (applicability == null) return DiscountApplicability.allItems;
     return DiscountApplicability.values.firstWhere(
       (e) => e.name == applicability.toString(),
@@ -179,7 +193,7 @@ class Discount {
 
   static DateTime _parseDateTime(dynamic dateTime) {
     if (dateTime == null) return DateTime.now();
-    
+
     try {
       // Handle string dates from backend
       if (dateTime is String) {
@@ -191,12 +205,12 @@ class Discount {
         }
         return DateTime.parse(dateStr);
       }
-      
+
       // Handle DateTime objects
       if (dateTime is DateTime) {
         return dateTime;
       }
-      
+
       // Fallback to current time
       return DateTime.now();
     } catch (e) {

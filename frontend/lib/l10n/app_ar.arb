@@ -14,6 +14,8 @@
   "failedToFetchProfile": "فشل في جلب الملف الشخصي",
   "noBusinessFoundForUser": "لم يتم العثور على نشاط تجاري لهذا المستخدم",
   "loginFailed": "فشل تسجيل الدخول",
+  "errorInvalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى التحقق من البيانات والمحاولة مرة أخرى.",
+  "errorOccurred": "حدث خطأ",
   "email": "البريد الإلكتروني",
   "password": "كلمة المرور",
   "businessType": "نوع النشاط التجاري",

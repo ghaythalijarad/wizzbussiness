@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const { createResponse } = require('../auth/utils');
 
 // Environment variables
+const ORDERS_TABLE = process.env.ORDERS_TABLE;
 const PRODUCTS_TABLE = process.env.PRODUCTS_TABLE;
 const CATEGORIES_TABLE = process.env.CATEGORIES_TABLE;
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
@@ -111,7 +112,9 @@ exports.handler = async (event) => {
         }
 
         // Route the request based on HTTP method and path
-        if (httpMethod === 'GET' && path === '/products') {
+        if (httpMethod === 'POST' && path === '/orders') {
+            return await handleCreateOrder(dynamodb, userInfo, JSON.parse(body || '{}'));
+        } else if (httpMethod === 'GET' && path === '/products') {
             return await handleGetProducts(dynamodb, userInfo);
         } else if (httpMethod === 'GET' && path === '/products/search') {
             const query = event.queryStringParameters?.q || '';
@@ -155,6 +158,7 @@ async function getUserInfoFromToken(cognito, accessToken) {
 
 // Helper function to get business info for user
 async function getBusinessInfoForUser(dynamodb, email) {
+    console.log(`Attempting to get business info for email: ${email}`); // Enhanced logging
     try {
         // First, try to query using the GSI for efficiency
         const queryParams = {
@@ -166,10 +170,12 @@ async function getBusinessInfoForUser(dynamodb, email) {
         const result = await dynamodb.query(queryParams).promise();
         
         if (result.Items && result.Items.length > 0) {
+            console.log(`Successfully found business info for email ${email} via GSI.`); // Enhanced logging
             return result.Items[0];
         }
         
         // If no items found via query, it means no business for that email.
+        console.warn(`Business information not found for email via GSI: ${email}. This may not be an error if a scan fallback is expected.`); // Enhanced logging
         throw new Error(`Business information not found for email: ${email}`);
 
     } catch (error) {
@@ -185,8 +191,10 @@ async function getBusinessInfoForUser(dynamodb, email) {
             const businessInfo = scanResult.Items?.[0] || null;
 
             if (!businessInfo) {
+                console.error(`Business information not found for email (after scan fallback): ${email}`); // Enhanced logging
                 throw new Error(`Business information not found for email (after scan fallback): ${email}`);
             }
+            console.log(`Successfully found business info for email ${email} via scan fallback.`); // Enhanced logging
             return businessInfo;
         }
         
@@ -280,7 +288,7 @@ async function handleGetCategories(dynamodb, userInfo) {
             return createResponse(404, { success: false, message: 'Business not found for user' });
         }
 
-        return await handleGetCategoriesByBusinessType(dynamodb, businessInfo.business_type);
+        return await handleGetCategoriesByBusinessType(dynamodb, businessInfo.businessType);
     } catch (error) {
         console.error('Error getting categories:', error);
         return createResponse(500, { success: false, message: 'Failed to get categories' });
@@ -289,29 +297,36 @@ async function handleGetCategories(dynamodb, userInfo) {
 
 // Get all products for the authenticated user's business
 async function handleGetProducts(dynamodb, userInfo) {
+    console.log('handleGetProducts - UserInfo:', JSON.stringify(userInfo, null, 2)); // Enhanced logging
     try {
         const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
-        if (!businessInfo) {
-            return createResponse(404, { success: false, message: 'Business not found for user' });
+        console.log('handleGetProducts - BusinessInfo:', JSON.stringify(businessInfo, null, 2)); // Enhanced logging
+
+        if (!businessInfo || !businessInfo.businessId) {
+            console.error('Failed to retrieve valid business info or businessId.');
+            return createResponse(404, { success: false, message: 'Business not found for the user' });
         }
 
         const params = {
             TableName: PRODUCTS_TABLE,
             IndexName: 'BusinessIdIndex',
-            KeyConditionExpression: 'business_id = :businessId',
+            KeyConditionExpression: 'businessId = :businessId',
             ExpressionAttributeValues: {
-                ':businessId': businessInfo.business_id
+                ':businessId': businessInfo.businessId
             }
         };
-        const result = await dynamodb.query(params).promise();
 
-        return createResponse(200, {
-            success: true,
-            products: result.Items,
-            count: result.Items.length
-        });
+        console.log('Querying products with params:', JSON.stringify(params, null, 2)); // Enhanced logging
+        const result = await dynamodb.query(params).promise();
+        console.log('Product query result:', JSON.stringify(result, null, 2)); // Enhanced logging
+
+        return createResponse(200, { success: true, products: result.Items });
     } catch (error) {
-        console.error('Error getting products:', error);
+        console.error('Error in handleGetProducts:', error);
+        // Return a more specific error message if business info is the issue
+        if (error.message.includes('Business information not found')) {
+            return createResponse(404, { success: false, message: 'Business not found for the user.' });
+        }
         return createResponse(500, { success: false, message: 'Failed to get products' });
     }
 }
@@ -332,7 +347,7 @@ async function handleGetProduct(dynamodb, userInfo, productId) {
 
         // Verify the product belongs to the user's business
         const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
-        if (result.Item.business_id !== businessInfo?.business_id) {
+        if (result.Item.businessId !== businessInfo?.businessId) {
             return createResponse(403, { success: false, message: 'Access denied to this product' });
         }
 
@@ -387,7 +402,7 @@ async function handleCreateProduct(dynamodb, userInfo, productData) {
             return createResponse(400, { success: false, message: 'Category not found' });
         }
 
-        if (categoryResult.Item.businessType !== businessInfo.business_type) {
+        if (categoryResult.Item.businessType !== businessInfo.businessType) {
             return createResponse(400, { 
                 success: false, 
                 message: 'Category does not match business type' 
@@ -399,7 +414,7 @@ async function handleCreateProduct(dynamodb, userInfo, productData) {
 
         const product = {
             productId,
-            business_id: businessInfo.business_id,
+            businessId: businessInfo.businessId,
             categoryId,
             name,
             name_ar: name_ar || '',
@@ -544,16 +559,9 @@ async function handleSearchProducts(dynamodb, userInfo, query) {
         // Use scan since BusinessIdIndex does not exist
         const params = {
             TableName: PRODUCTS_TABLE,
-<<<<<<< HEAD
             FilterExpression: 'business_id = :business_id',
             ExpressionAttributeValues: {
                 ':business_id': businessInfo.business_id
-=======
-            IndexName: 'BusinessIdIndex',
-            KeyConditionExpression: 'business_id = :businessId',
-            ExpressionAttributeValues: {
-                ':businessId': businessInfo.business_id
->>>>>>> a17ac519937c0d49f3c16284383433cca1f58803
             }
         };
         const result = await dynamodb.scan(params).promise();
@@ -601,5 +609,53 @@ async function handleDeleteProduct(dynamodb, userInfo, productId) {
     } catch (error) {
         console.error('Error deleting product:', error);
         return createResponse(500, { success: false, message: 'Failed to delete product' });
+    }
+}
+
+// Create a new order
+async function handleCreateOrder(dynamodb, userInfo, orderData) {
+    try {
+        const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
+        if (!businessInfo) {
+            return createResponse(404, { success: false, message: 'Business not found for user' });
+        }
+
+        const { items, totalAmount, customerName, customerPhone, deliveryAddress, notes } = orderData;
+
+        if (!items || !totalAmount || !customerName) {
+            return createResponse(400, { success: false, message: 'Missing required order fields' });
+        }
+
+        const orderId = uuidv4();
+        const timestamp = new Date().toISOString();
+
+        const order = {
+            orderId,
+            businessId: businessInfo.businessId,
+            customerId: userInfo.userId, // Assuming the user placing the order is the customer
+            customerName,
+            customerPhone,
+            deliveryAddress,
+            items,
+            totalAmount: parseFloat(totalAmount),
+            status: 'pending',
+            notes: notes || '',
+            createdAt: timestamp,
+            updatedAt: timestamp,
+        };
+
+        await dynamodb.put({
+            TableName: ORDERS_TABLE,
+            Item: order
+        }).promise();
+
+        return createResponse(201, {
+            success: true,
+            message: 'Order created successfully',
+            order
+        });
+    } catch (error) {
+        console.error('Error creating order:', error);
+        return createResponse(500, { success: false, message: 'Failed to create order' });
     }
 }

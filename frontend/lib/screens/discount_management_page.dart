@@ -257,6 +257,16 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         return 'store';
       case 'pharmacy':
         return 'pharmacy';
+      case 'caffe':
+        return 'cafe'; // ✅ FIXED: API expects 'cafe' not 'caffe'
+      case 'bakery':
+        return 'bakery';
+      case 'herbalspices':
+        return 'store'; // Fallback to store for unsupported types
+      case 'cosmetics':
+        return 'store'; // Fallback to store for unsupported types
+      case 'betshop':
+        return 'store'; // Fallback to store for unsupported types
       default:
         return 'restaurant'; // Default fallback
     }
@@ -797,6 +807,11 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                   if (value != null) {
                                     setState(() {
                                       discountType = value;
+                                      // Initialize value controller when switching to percentage
+                                      if (value == DiscountType.percentage &&
+                                          valueController.text.isEmpty) {
+                                        valueController.text = '10.0';
+                                      }
                                     });
                                   }
                                 },
@@ -807,8 +822,30 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                               flex: 1,
                               child: discountType == DiscountType.percentage
                                   ? DropdownButtonFormField<double>(
-                                      value: double.tryParse(valueController.text) ??
+                                      value: () {
+                                        double? parsed = double.tryParse(
+                                            valueController.text);
+                                        List<double> validValues = [
                                           10.0,
+                                          15.0,
+                                          20.0,
+                                          25.0,
+                                          30.0,
+                                          35.0,
+                                          40.0,
+                                          45.0,
+                                          50.0
+                                        ];
+                                        if (parsed != null &&
+                                            validValues.contains(parsed)) {
+                                          return parsed;
+                                        }
+                                        // Default to 10% if no valid value
+                                        if (valueController.text.isEmpty) {
+                                          valueController.text = '10.0';
+                                        }
+                                        return 10.0;
+                                      }(),
                                       decoration: InputDecoration(
                                         labelText:
                                             AppLocalizations.of(context)!.value,
@@ -825,7 +862,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                         45,
                                         50
                                       ]
-                                          .map((percent) => DropdownMenuItem<double>(
+                                          .map((percent) =>
+                                              DropdownMenuItem<double>(
                                                 value: percent.toDouble(),
                                                 child: Text('$percent%'),
                                               ))
@@ -833,7 +871,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                       onChanged: (value) {
                                         if (value != null) {
                                           setState(() {
-                                            valueController.text = value.toString();
+                                            valueController.text =
+                                                value.toString();
                                           });
                                         }
                                       },

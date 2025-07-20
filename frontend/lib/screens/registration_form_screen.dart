@@ -6,9 +6,14 @@ import 'package:image_picker/image_picker.dart';
 import '../services/app_auth_service.dart';
 import '../services/image_upload_service.dart';
 import '../utils/arabic_number_formatter.dart';
+import '../models/business.dart';
+import '../screens/dashboards/business_dashboard.dart';
+import 'login_page.dart';
 
 class RegistrationFormScreen extends StatefulWidget {
-  const RegistrationFormScreen({Key? key}) : super(key: key);
+  final Function(Locale)? onLanguageChanged;
+
+  const RegistrationFormScreen({Key? key, this.onLanguageChanged}) : super(key: key);
 
   @override
   _RegistrationFormScreenState createState() => _RegistrationFormScreenState();
@@ -904,8 +909,53 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
               backgroundColor: Colors.green,
             ),
           );
-          // Navigate to home screen
-          Navigator.of(context).pushReplacementNamed('/home');
+          
+          // Check if we have user and business data for auto-navigation
+          if (confirmResult.user != null && confirmResult.business != null) {
+            // User verified successfully with business data - navigate to dashboard
+            final businessData = Map<String, dynamic>.from(confirmResult.business as Map);
+            
+            // Ensure email is included in business data
+            businessData['email'] = businessData['email'] ?? confirmResult.user!['email'] ?? _emailController.text.trim();
+
+            try {
+              final business = Business.fromJson(businessData);
+              
+              // Navigate to business dashboard
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BusinessDashboard(
+                    business: business,
+                    onLanguageChanged: widget.onLanguageChanged ?? (Locale locale) {},
+                    userData: confirmResult.user,
+                    businessesData: [businessData],
+                  ),
+                ),
+              );
+            } catch (businessError) {
+              print('Error creating business object: $businessError');
+              // Fall back to login screen if business data is invalid
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LoginPage(
+                    onLanguageChanged: widget.onLanguageChanged ?? (Locale locale) {},
+                  ),
+                ),
+              );
+            }
+          } else {
+            // Original flow - navigate to login
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LoginPage(
+                  onLanguageChanged: widget.onLanguageChanged ?? (Locale locale) {},
+                ),
+              ),
+            );
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

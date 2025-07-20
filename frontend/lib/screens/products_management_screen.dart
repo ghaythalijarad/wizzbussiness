@@ -41,10 +41,40 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
   }
 
   @override
+  void didUpdateWidget(ProductsManagementScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Check if the business context has changed (different business ID)
+    if (oldWidget.business.id != widget.business.id) {
+      print(
+          '🔄 Business context changed from ${oldWidget.business.id} to ${widget.business.id}');
+      print('   Previous business: ${oldWidget.business.name}');
+      print('   New business: ${widget.business.name}');
+
+      // Clear cached data and reload for the new business
+      _clearCachedData();
+      _loadData();
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     _debounceTimer?.cancel();
     super.dispose();
+  }
+
+  /// Clears all cached data when switching business contexts
+  void _clearCachedData() {
+    setState(() {
+      _products = [];
+      _filteredProducts = [];
+      _categories = [];
+      _error = null;
+      _searchQuery = '';
+      _searchController.clear();
+    });
+    print('🧹 Cleared cached products, categories, and search data');
   }
 
   Future<void> _loadData() async {
@@ -138,7 +168,15 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
       case 'pharmacy':
         return 'pharmacy';
       case 'caffe':
-        return 'caffe';
+        return 'cafe'; // ✅ FIXED: API expects 'cafe' not 'caffe'
+      case 'bakery':
+        return 'bakery';
+      case 'herbalspices':
+        return 'store'; // Fallback to store for unsupported types
+      case 'cosmetics':
+        return 'store'; // Fallback to store for unsupported types
+      case 'betshop':
+        return 'store'; // Fallback to store for unsupported types
       default:
         return 'restaurant'; // Default fallback
     }

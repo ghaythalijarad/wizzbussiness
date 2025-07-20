@@ -120,7 +120,12 @@ class _SignInScreenState extends State<SignInScreen> {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const SignUpScreen()),
+              MaterialPageRoute(builder: (context) => SignUpScreen(
+                onLanguageChanged: (Locale locale) {
+                  // Handle language change if needed
+                  debugPrint('Language changed to: ${locale.languageCode}');
+                },
+              )),
             );
           },
           child: Text(

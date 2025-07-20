@@ -4,17 +4,21 @@ import '../services/app_auth_service.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../l10n/app_localizations.dart';
+import '../models/business.dart';
 import 'signin_screen.dart';
 import 'signup_screen.dart';
+import 'dashboards/business_dashboard.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
   final Map<String, dynamic>? businessData; // Add business data to preserve it
+  final Function(Locale)? onLanguageChanged; // Add language change callback
 
   const EmailVerificationScreen({
     Key? key,
     required this.email,
     this.businessData,
+    this.onLanguageChanged,
   }) : super(key: key);
 
   @override
@@ -227,21 +231,54 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     });
 
     try {
-      final result = await AppAuthService.confirmSignUp(
-        username: widget.email,
-        code: _verificationController.text.trim(),
+      final result = await AppAuthService.confirmRegistration(
+        email: widget.email,
+        confirmationCode: _verificationController.text.trim(),
       );
 
       if (result.success) {
         _showSuccessSnackBar(result.message ?? 'Verification successful');
 
-        // Navigate to sign in
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const SignInScreen(),
-          ),
-        );
+        // Check if we have user and business data for auto-navigation
+        if (result.user != null && result.business != null) {
+          // User verified successfully with business data - navigate to dashboard
+          final businessData = Map<String, dynamic>.from(result.business as Map);
+          businessData['email'] = businessData['email'] ?? result.user!['email'] ?? widget.email;
+
+          try {
+            final business = Business.fromJson(businessData);
+            
+            // Navigate to business dashboard
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BusinessDashboard(
+                  business: business,
+                  onLanguageChanged: widget.onLanguageChanged ?? (Locale locale) {},
+                  userData: result.user,
+                  businessesData: [businessData],
+                ),
+              ),
+            );
+          } catch (businessError) {
+            print('Error creating business object: $businessError');
+            // Fall back to sign in screen if business data is invalid
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SignInScreen(),
+              ),
+            );
+          }
+        } else {
+          // Original flow - navigate to sign in
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SignInScreen(),
+            ),
+          );
+        }
       } else {
         _showErrorSnackBar(result.message ?? 'Verification failed');
       }
@@ -344,7 +381,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       // In a full implementation, you'd want to update the backend
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => const SignUpScreen(),
+          builder: (context) => SignUpScreen(
+            onLanguageChanged: widget.onLanguageChanged,
+          ),
         ),
         (Route<dynamic> route) => false,
       );

@@ -724,7 +724,8 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => WorkingHoursSettingsScreen(business: widget.business),
+                      builder: (context) =>
+                          WorkingHoursSettingsScreen(business: widget.business),
                     ),
                   );
                 },

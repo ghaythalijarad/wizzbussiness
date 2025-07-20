@@ -38,23 +38,23 @@ exports.handler = async (event) => {
 
         // Route the request based on HTTP method and path
         if (httpMethod === 'GET' && path === '/discounts') {
-            return await handleGetDiscounts(dynamodb, businessInfo.business_id);
+            return await handleGetDiscounts(dynamodb, businessInfo.businessId);
         } else if (httpMethod === 'POST' && path === '/discounts') {
-            return await handleCreateDiscount(dynamodb, businessInfo.business_id, JSON.parse(body || '{}'));
+            return await handleCreateDiscount(dynamodb, businessInfo.businessId, JSON.parse(body || '{}'));
         } else if (httpMethod === 'GET' && pathParameters?.discountId) {
-            return await handleGetDiscount(dynamodb, businessInfo.business_id, pathParameters.discountId);
+            return await handleGetDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId);
         } else if (httpMethod === 'PUT' && pathParameters?.discountId) {
-            return await handleUpdateDiscount(dynamodb, businessInfo.business_id, pathParameters.discountId, JSON.parse(body || '{}'));
+            return await handleUpdateDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId, JSON.parse(body || '{}'));
         } else if (httpMethod === 'DELETE' && pathParameters?.discountId) {
-            return await handleDeleteDiscount(dynamodb, businessInfo.business_id, pathParameters.discountId);
+            return await handleDeleteDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId);
         } else if (httpMethod === 'PATCH' && pathParameters?.discountId && path.includes('/toggle-status')) {
-            return await handleToggleDiscountStatus(dynamodb, businessInfo.business_id, pathParameters.discountId);
+            return await handleToggleDiscountStatus(dynamodb, businessInfo.businessId, pathParameters.discountId);
         } else if (httpMethod === 'POST' && path.includes('/validate-discount')) {
-            return await handleValidateDiscount(dynamodb, businessInfo.business_id, JSON.parse(body || '{}'));
+            return await handleValidateDiscount(dynamodb, businessInfo.businessId, JSON.parse(body || '{}'));
         } else if (httpMethod === 'POST' && path.includes('/apply-discount')) {
-            return await handleApplyDiscount(dynamodb, businessInfo.business_id, JSON.parse(body || '{}'));
+            return await handleApplyDiscount(dynamodb, businessInfo.businessId, JSON.parse(body || '{}'));
         } else if (httpMethod === 'GET' && path.includes('/stats')) {
-            return await handleGetDiscountStats(dynamodb, businessInfo.business_id);
+            return await handleGetDiscountStats(dynamodb, businessInfo.businessId);
         } else {
             return createResponse(404, { success: false, message: 'Endpoint not found' });
         }

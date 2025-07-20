@@ -55,6 +55,10 @@ provider:
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-business-working-hours-dev/index/*"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-pos-logs-dev"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-pos-logs-dev/index/*"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.ordersTable}"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.productsTable}"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.categoriesTable}"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.productsTable}/index/BusinessIdIndex"
         - Effect: "Allow"
           Action:
             - "cognito-idp:AdminGetUser"
@@ -115,6 +119,12 @@ functions:
     handler: functions/orders/order_management_handler.handler
     name: order-receiver-${self:provider.stage}-order-management-v1-sls
     events:
+      # Order endpoints
+      - http:
+          path: /orders
+          method: post
+          cors: true
+          authorizer: aws_iam
       # Product endpoints
       - http:
           path: /products
@@ -265,6 +275,9 @@ custom:
   webpack:
     webpackConfig: ./webpack.config.js
     includeModules: true
+  ordersTable: order-receiver-orders-${sls:stage}
+  productsTable: order-receiver-products-${sls:stage}
+  categoriesTable: order-receiver-categories-${sls:stage}
 
 build:
   esbuild: false
@@ -273,7 +286,40 @@ resources:
   Resources:
     # Note: Using existing DynamoDB tables in us-east-1
     # Tables are not created here as they already exist
-    
+    OrdersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.ordersTable}
+        AttributeDefinitions:
+          - AttributeName: orderId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: orderId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    # ProductsTable:
+    #   Type: AWS::DynamoDB::Table
+    #   Properties:
+    #     TableName: ${self:custom.productsTable}
+    #     AttributeDefinitions:
+    #       - AttributeName: productId
+    #         AttributeType: S
+    #     KeySchema:
+    #       - AttributeName: productId
+    #         KeyType: HASH
+    #     BillingMode: PAY_PER_REQUEST
+    # CategoriesTable:
+    #   Type: AWS::DynamoDB::Table
+    #   Properties:
+    #     TableName: ${self:custom.categoriesTable}
+    #     AttributeDefinitions:
+    #       - AttributeName: categoryId
+    #         AttributeType: S
+    #     KeySchema:
+    #       - AttributeName: categoryId
+    #         KeyType: HASH
+    #     BillingMode: PAY_PER_REQUEST
+
 outputs:
   ApiGatewayEndpoint:
     Description: "API Gateway endpoint URL"

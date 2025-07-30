@@ -19,7 +19,8 @@ const uploadToS3 = async (imageBuffer, key, contentType = 'image/jpeg') => {
         Bucket: bucketName,
         Key: key,
         Body: imageBuffer,
-        ContentType: contentType
+        ContentType: contentType,
+        ACL: 'public-read'  // Ensure images are publicly accessible
     };
     
     console.log(`Uploading to S3: ${bucketName}/${key}`);
@@ -84,7 +85,22 @@ const parseMultipartForm = (event) => {
         });
         
         // Write the body data to busboy
-        const bodyBuffer = Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'utf8');
+        // Handle API Gateway binary data properly
+        let bodyBuffer;
+        if (event.isBase64Encoded) {
+            // API Gateway encodes binary data as base64
+            bodyBuffer = Buffer.from(event.body, 'base64');
+        } else {
+            // For multipart form data, treat as binary even when not base64 encoded
+            // This prevents UTF-8 corruption of binary image data
+            bodyBuffer = Buffer.from(event.body, 'binary');
+        }
+        
+        console.log(`Event body length: ${event.body ? event.body.length : 0}`);
+        console.log(`Body buffer length: ${bodyBuffer.length}`);
+        console.log(`Is base64 encoded: ${event.isBase64Encoded}`);
+        console.log(`Body buffer first 20 bytes:`, bodyBuffer.slice(0, 20));
+        
         busboy.write(bodyBuffer);
         busboy.end();
     });
@@ -93,21 +109,54 @@ const parseMultipartForm = (event) => {
 exports.handler = async (event) => {
     console.log('Image Upload Handler - Event:', JSON.stringify(event, null, 2));
 
-    const { httpMethod, path, headers, body } = event;
+    // Handle Base64 encoded request body
+    let requestBody = event.body;
+    if (event.isBase64Encoded && requestBody) {
+        try {
+            requestBody = Buffer.from(requestBody, 'base64').toString('utf-8');
+            console.log('📝 Decoded Base64 request body');
+        } catch (decodeError) {
+            console.error('❌ Failed to decode Base64 body:', decodeError);
+        }
+    }
+
+    const { httpMethod, path, headers } = event;
+    const body = requestBody; // Use decoded body
 
     try {
-        // Handle business photo upload during registration
-        if (httpMethod === 'POST' && (path.includes('/upload/business-photo') || path.includes('/upload/product-image'))) {
+        // Handle document and image uploads
+        if (httpMethod === 'POST' && path.includes('/upload/')) {
             
-            // Check if this is a business photo upload
-            const isBusinessPhoto = headers['x-upload-type'] === 'business-photo' || 
-                                   path.includes('/upload/business-photo') ||
-                                   (body && body.includes('business-photo'));
+            // Determine upload type based on path
+            let uploadType = 'product-image'; // default
+            let folderName = 'product-images';
+            
+            if (path.includes('/upload/business-photo')) {
+                uploadType = 'business-photo';
+                folderName = 'business-photos';
+            } else if (path.includes('/upload/business-license')) {
+                uploadType = 'business-license';
+                folderName = 'business-documents/licenses';
+            } else if (path.includes('/upload/owner-identity')) {
+                uploadType = 'owner-identity';
+                folderName = 'business-documents/identities';
+            } else if (path.includes('/upload/health-certificate')) {
+                uploadType = 'health-certificate';
+                folderName = 'business-documents/health-certificates';
+            } else if (path.includes('/upload/owner-photo')) {
+                uploadType = 'owner-photo';
+                folderName = 'business-documents/owner-photos';
+            } else if (path.includes('/upload/product-image')) {
+                uploadType = 'product-image';
+                folderName = 'product-images';
+            }
+            
+            console.log(`Upload type detected: ${uploadType}, folder: ${folderName}`);
             
             if (!body) {
                 return createResponse(400, {
                     success: false,
-                    message: 'No image data provided'
+                    message: 'No file data provided'
                 });
             }
 
@@ -115,7 +164,12 @@ exports.handler = async (event) => {
             let contentType = 'image/jpeg';
 
             // Check if this is multipart form data
-            const isMultipart = headers['content-type'] && headers['content-type'].includes('multipart/form-data');
+            const contentTypeHeader = headers['content-type'] || headers['Content-Type'] || '';
+            const isMultipart = contentTypeHeader.toLowerCase().includes('multipart/form-data');
+
+            console.log(`Content-Type: ${contentTypeHeader}`);
+            console.log(`Is multipart: ${isMultipart}`);
+            console.log(`Body length: ${body ? body.length : 0}`);
 
             if (isMultipart) {
                 try {
@@ -123,11 +177,12 @@ exports.handler = async (event) => {
                     console.log('Processing multipart form data with busboy');
                     
                     const { fields, files } = await parseMultipartForm(event);
-                    console.log('Parsed fields:', fields);
+                    console.log('Parsed fields:', Object.keys(fields));
                     console.log('Parsed files:', Object.keys(files));
                     
                     if (!files.image) {
-                        throw new Error('No image file found in multipart form');
+                        console.error('Available files:', Object.keys(files));
+                        throw new Error('No image file found in multipart form. Available: ' + Object.keys(files).join(', '));
                     }
                     
                     imageBuffer = files.image.buffer;
@@ -137,6 +192,7 @@ exports.handler = async (event) => {
 
                 } catch (multipartError) {
                     console.error('Failed to parse multipart data:', multipartError);
+                    console.error('Event headers:', JSON.stringify(headers, null, 2));
                     return createResponse(400, {
                         success: false,
                         message: 'Invalid multipart form data: ' + multipartError.message
@@ -144,6 +200,7 @@ exports.handler = async (event) => {
                 }
             } else {
                 // Handle base64 JSON data (legacy format)
+                console.log('Processing as base64/JSON data');
                 let imageData;
                 let parsedBody;
 
@@ -161,13 +218,15 @@ exports.handler = async (event) => {
                         throw new Error('No image data found in request body');
                     }
                 } catch (parseError) {
+                    console.log('JSON parse failed, checking if body is direct base64...');
                     // If JSON parsing fails, assume the body is the image data directly
                     if (typeof body === 'string' && body.startsWith('data:')) {
                         imageData = body;
                     } else {
+                        console.error('Body does not appear to be valid JSON or base64:', body.substring(0, 100));
                         return createResponse(400, {
                             success: false,
-                            message: 'Invalid request body format'
+                            message: 'Invalid request body format. Expected JSON with image data or direct base64.'
                         });
                     }
                 }
@@ -187,22 +246,44 @@ exports.handler = async (event) => {
                 }
             }
 
-            // Generate unique filename
+            // Generate unique filename with proper extension based on content type
             const imageId = uuidv4();
-            const fileExtension = contentType.includes('png') ? 'png' : 'jpg';
-            const fileName = isBusinessPhoto 
-                ? `business-photos/${imageId}.${fileExtension}`
-                : `product-images/${imageId}.${fileExtension}`;
+            let fileExtension = 'jpg'; // default
+            let finalContentType = contentType;
+            
+            // Determine file extension and normalize content type - support PDFs for documents
+            if (contentType.includes('png') || contentType === 'image/png') {
+                fileExtension = 'png';
+                finalContentType = 'image/png';
+            } else if (contentType.includes('jpeg') || contentType.includes('jpg') || contentType === 'image/jpeg') {
+                fileExtension = 'jpg';
+                finalContentType = 'image/jpeg';
+            } else if (contentType.includes('pdf') || contentType === 'application/pdf') {
+                fileExtension = 'pdf';
+                finalContentType = 'application/pdf';
+            } else {
+                // Default to JPEG for unknown types (but log it)
+                console.log(`Unknown content type: ${contentType}, defaulting to JPEG`);
+                fileExtension = 'jpg';
+                finalContentType = 'image/jpeg';
+            }
+            
+            const fileName = `${folderName}/${imageId}.${fileExtension}`;
+
+            console.log(`Uploading file: ${fileName}, Content-Type: ${finalContentType}`);
 
             try {
-                // Upload to S3
-                const imageUrl = await uploadToS3(imageBuffer, fileName, contentType);
+                // Upload to S3 with correct content type
+                const imageUrl = await uploadToS3(imageBuffer, fileName, finalContentType);
                 
-                console.log(`${isBusinessPhoto ? 'Business' : 'Product'} photo uploaded successfully:`, imageUrl);
+                console.log(`${uploadType} uploaded successfully:`, imageUrl);
+                
+                // Create user-friendly message
+                const displayName = uploadType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                 
                 return createResponse(200, {
                     success: true,
-                    message: `${isBusinessPhoto ? 'Business' : 'Product'} photo uploaded successfully`,
+                    message: `${displayName} uploaded successfully`,
                     imageUrl: imageUrl
                 });
                 

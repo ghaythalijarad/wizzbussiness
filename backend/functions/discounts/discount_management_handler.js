@@ -13,7 +13,18 @@ exports.handler = async (event) => {
     const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.AWS_REGION || 'us-east-1' });
     const dynamodb = new AWS.DynamoDB.DocumentClient({ region: process.env.AWS_REGION || 'us-east-1' });
 
-    const { httpMethod, path, pathParameters, body, headers } = event;
+    const { httpMethod, path, pathParameters, headers } = event;
+    
+    // Handle Base64 encoded request body from API Gateway
+    let requestBody = event.body;
+    if (event.isBase64Encoded && requestBody) {
+        try {
+            requestBody = Buffer.from(requestBody, 'base64').toString('utf-8');
+            console.log('📝 Decoded Base64 request body');
+        } catch (decodeError) {
+            console.error('❌ Failed to decode Base64 body:', decodeError);
+        }
+    }
 
     try {
         // Extract access token from Authorization header
@@ -40,19 +51,19 @@ exports.handler = async (event) => {
         if (httpMethod === 'GET' && path === '/discounts') {
             return await handleGetDiscounts(dynamodb, businessInfo.businessId);
         } else if (httpMethod === 'POST' && path === '/discounts') {
-            return await handleCreateDiscount(dynamodb, businessInfo.businessId, JSON.parse(body || '{}'));
+            return await handleCreateDiscount(dynamodb, businessInfo.businessId, JSON.parse(requestBody || '{}'));
         } else if (httpMethod === 'GET' && pathParameters?.discountId) {
             return await handleGetDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId);
         } else if (httpMethod === 'PUT' && pathParameters?.discountId) {
-            return await handleUpdateDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId, JSON.parse(body || '{}'));
+            return await handleUpdateDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId, JSON.parse(requestBody || '{}'));
         } else if (httpMethod === 'DELETE' && pathParameters?.discountId) {
             return await handleDeleteDiscount(dynamodb, businessInfo.businessId, pathParameters.discountId);
         } else if (httpMethod === 'PATCH' && pathParameters?.discountId && path.includes('/toggle-status')) {
             return await handleToggleDiscountStatus(dynamodb, businessInfo.businessId, pathParameters.discountId);
         } else if (httpMethod === 'POST' && path.includes('/validate-discount')) {
-            return await handleValidateDiscount(dynamodb, businessInfo.businessId, JSON.parse(body || '{}'));
+            return await handleValidateDiscount(dynamodb, businessInfo.businessId, JSON.parse(requestBody || '{}'));
         } else if (httpMethod === 'POST' && path.includes('/apply-discount')) {
-            return await handleApplyDiscount(dynamodb, businessInfo.businessId, JSON.parse(body || '{}'));
+            return await handleApplyDiscount(dynamodb, businessInfo.businessId, JSON.parse(requestBody || '{}'));
         } else if (httpMethod === 'GET' && path.includes('/stats')) {
             return await handleGetDiscountStats(dynamodb, businessInfo.businessId);
         } else {

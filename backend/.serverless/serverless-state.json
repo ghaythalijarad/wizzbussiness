@@ -11,6 +11,11 @@
       "region": "us-east-1",
       "memorySize": 512,
       "timeout": 29,
+      "apiGateway": {
+        "binaryMediaTypes": [
+          "*/*"
+        ]
+      },
       "environment": {
         "ENVIRONMENT": "dev",
         "USERS_TABLE": "order-receiver-users-dev",
@@ -206,6 +211,12 @@
               "LogGroupName": "/aws/lambda/order-receiver-dev-location-settings-v1-sls"
             }
           },
+          "AdminManagementLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/order-receiver-dev-admin-management-v1-sls"
+            }
+          },
           "IamRoleLambdaExecution": {
             "Type": "AWS::IAM::Role",
             "Properties": {
@@ -268,6 +279,9 @@
                           },
                           {
                             "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/order-receiver-dev-location-settings-v1-sls:*"
+                          },
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/order-receiver-dev-admin-management-v1-sls:*"
                           }
                         ]
                       },
@@ -297,6 +311,9 @@
                           },
                           {
                             "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/order-receiver-dev-location-settings-v1-sls:*:*"
+                          },
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/order-receiver-dev-admin-management-v1-sls:*:*"
                           }
                         ]
                       },
@@ -336,7 +353,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752980418508-2025-07-20T03:00:18.508Z/unifiedAuth.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1753870399306-2025-07-30T10:13:19.306Z/unifiedAuth.zip"
               },
               "Handler": "functions/auth/unified_auth_handler.handler",
               "Runtime": "nodejs20.x",
@@ -379,7 +396,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752980418508-2025-07-20T03:00:18.508Z/orderManagement.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1753870399306-2025-07-30T10:13:19.306Z/orderManagement.zip"
               },
               "Handler": "functions/orders/order_management_handler.handler",
               "Runtime": "nodejs20.x",
@@ -422,7 +439,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752980418508-2025-07-20T03:00:18.508Z/discountManagement.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1753870399306-2025-07-30T10:13:19.306Z/discountManagement.zip"
               },
               "Handler": "functions/discounts/discount_management_handler.handler",
               "Runtime": "nodejs20.x",
@@ -465,7 +482,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752980418508-2025-07-20T03:00:18.508Z/health.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1753870399306-2025-07-30T10:13:19.306Z/health.zip"
               },
               "Handler": "functions/health_check.handler",
               "Runtime": "nodejs20.x",
@@ -508,7 +525,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752980418508-2025-07-20T03:00:18.508Z/imageUpload.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1753870399306-2025-07-30T10:13:19.306Z/imageUpload.zip"
               },
               "Handler": "functions/upload/image_upload_handler.handler",
               "Runtime": "nodejs20.x",
@@ -551,7 +568,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752980418508-2025-07-20T03:00:18.508Z/posSettings.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1753870399306-2025-07-30T10:13:19.306Z/posSettings.zip"
               },
               "Handler": "functions/pos/pos_settings_handler.handler",
               "Runtime": "nodejs20.x",
@@ -594,7 +611,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/order-receiver-api/dev/1752980418508-2025-07-20T03:00:18.508Z/locationSettings.zip"
+                "S3Key": "serverless/order-receiver-api/dev/1753870399306-2025-07-30T10:13:19.306Z/locationSettings.zip"
               },
               "Handler": "functions/location_settings_handler.handler",
               "Runtime": "nodejs20.x",
@@ -630,6 +647,49 @@
               "LocationSettingsLogGroup"
             ]
           },
+          "AdminManagementLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/order-receiver-api/dev/1753870399306-2025-07-30T10:13:19.306Z/adminManagement.zip"
+              },
+              "Handler": "functions/admin/admin_management_handler.handler",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "order-receiver-dev-admin-management-v1-sls",
+              "MemorySize": 512,
+              "Timeout": 29,
+              "Environment": {
+                "Variables": {
+                  "ENVIRONMENT": "dev",
+                  "USERS_TABLE": "order-receiver-users-dev",
+                  "BUSINESSES_TABLE": "order-receiver-businesses-dev",
+                  "PRODUCTS_TABLE": "order-receiver-products-dev",
+                  "CATEGORIES_TABLE": "order-receiver-categories-dev",
+                  "DISCOUNTS_TABLE": "order-receiver-discounts-dev",
+                  "BUSINESS_SETTINGS_TABLE": "order-receiver-business-settings-dev",
+                  "BUSINESS_WORKING_HOURS_TABLE": "order-receiver-business-working-hours-dev",
+                  "POS_LOGS_TABLE": "order-receiver-pos-logs-dev",
+                  "BUSINESS_PHOTOS_BUCKET": "order-receiver-business-photos-dev",
+                  "COGNITO_USER_POOL_ID": "us-east-1_bDqnKdrqo",
+                  "COGNITO_CLIENT_ID": "6n752vrmqmbss6nmlg6be2nn9a",
+                  "COGNITO_REGION": "us-east-1",
+                  "DYNAMODB_REGION": "us-east-1"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "AdminManagementLogGroup"
+            ]
+          },
           "HealthLambdaVersionTGpHZq7z4cXwFDEQ9zW7J2XuxgyahLrS3LkhG9QY": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
@@ -640,70 +700,83 @@
               "CodeSha256": "vwNCbwVs2P7ndLUTo2FAjObUBW+O5fPAzONH6iQFfyA="
             }
           },
-          "UnifiedAuthLambdaVersionBCPSsKtUhuC4CIUAXu9G5kXBBt13xKMqHKRynsvsc": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "UnifiedAuthLambdaFunction"
-              },
-              "CodeSha256": "LRdbqwry26OXHEW2she5CZgjQEWIJ7SOQ82f3NwrPv8="
-            }
-          },
-          "OrderManagementLambdaVersionGx87FmgqgfCaDDEV94F0K3ioUdecCArVqnzpzCZjms": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "OrderManagementLambdaFunction"
-              },
-              "CodeSha256": "twBin4yordo7ZTtEKwUSKrX+6eFAfMLu/iFiQZApSSs="
-            }
-          },
-          "LocationSettingsLambdaVersionROWhw0Xcab8MJqDHoPuF2l3kGE8OTZTxqI2qCLZ3NQ": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "LocationSettingsLambdaFunction"
-              },
-              "CodeSha256": "DbaYBohD4j9pGItd9NL5samjeth29OHgkzEvl+zw6qs="
-            }
-          },
-          "DiscountManagementLambdaVersion2Y40DyjsrWMNfBMSd6nhKPSeytsxz5QVbmbNopEQ74": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "DiscountManagementLambdaFunction"
-              },
-              "CodeSha256": "N1ydqJLi1Em5OXL58+QFSwJ1d+VAbhlRclt12U0DlQ0="
-            }
-          },
-          "PosSettingsLambdaVersiondM2jAYKGxZejpsegSJ0n2JSUFYRozYXtbLTZp6ip0YQ": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "PosSettingsLambdaFunction"
-              },
-              "CodeSha256": "rkFevX6NewUja453INbVEE0izcLgAkFaryeimV7/YQg="
-            }
-          },
-          "ImageUploadLambdaVersiongvzsGjsaFWgBXOzO15yGDxjTtJ5YrTL2aj5fDWE6zJg": {
+          "ImageUploadLambdaVersionPAMy8ryfSBaqMcxYKmlyWqqhe4GPe7UgaEZlLwc0": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ImageUploadLambdaFunction"
               },
-              "CodeSha256": "mROAaLdu3ion5LdaJH4CjMULtBUFRW6CCnfbQqYtWqQ="
+              "CodeSha256": "AtZtT9Vw0DXM528EIq8ojWVQnY0O35J4NYtRCLFElXo="
+            }
+          },
+          "AdminManagementLambdaVersionGgo7XfvVReHLwUCPpzewgE8WSHW4QMQdoJ5Kg5b0": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "AdminManagementLambdaFunction"
+              },
+              "CodeSha256": "FoBTZeUly/mzSO0Pobu2oHtj17kPZoUMc8MICV3mIAc="
+            }
+          },
+          "LocationSettingsLambdaVersionOwSnlwoIGeaEkRQ23NN3xZYrupO4O0geH8ub1Xmqijc": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "LocationSettingsLambdaFunction"
+              },
+              "CodeSha256": "8FDOiKo39YDqKtNG5lwowy42LxxfjfBBG+ea3+J1s/g="
+            }
+          },
+          "OrderManagementLambdaVersionIsNQiREURa2gIM98qlhmR0AUa2EdxG5ZCm3E5y4I": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "OrderManagementLambdaFunction"
+              },
+              "CodeSha256": "JUBV7BiKIOkqaWrDdUGlzXeaTF+P89dWvPMlCCkH/4s="
+            }
+          },
+          "PosSettingsLambdaVersiondMFJqXarMTln39uXc5Oyo1DtziqnwjJsxekqr7oCTw": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "PosSettingsLambdaFunction"
+              },
+              "CodeSha256": "LNGq8QVKftPoCSbSKZzAwqqxzN4mowekW1fDfuqBGNo="
+            }
+          },
+          "UnifiedAuthLambdaVersionYZ4daooUd5nTo2XXMtuQSLPOnE53kwzKYsTRdeXpx0": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "UnifiedAuthLambdaFunction"
+              },
+              "CodeSha256": "WY0x8imGCx6w0SFAhmcCcmfIctiP+IfTteNYzjDm4lk="
+            }
+          },
+          "DiscountManagementLambdaVersionUn7citEcDxDhMEzLEcalXX2poHgCuh7jxCPbtWx2XY": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "DiscountManagementLambdaFunction"
+              },
+              "CodeSha256": "/rWER3JQYBtp5OGr52CQPuCEZMr2w3tFdemDDtc7ix0="
             }
           },
           "ApiGatewayRestApi": {
             "Type": "AWS::ApiGateway::RestApi",
             "Properties": {
               "Name": "dev-order-receiver-api",
+              "BinaryMediaTypes": [
+                "*/*"
+              ],
               "EndpointConfiguration": {
                 "Types": [
                   "EDGE"
@@ -1033,6 +1106,54 @@
               }
             }
           },
+          "ApiGatewayResourceUploadBusinessDashlicense": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceUpload"
+              },
+              "PathPart": "business-license",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceUploadOwnerDashidentity": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceUpload"
+              },
+              "PathPart": "owner-identity",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceUploadHealthDashcertificate": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceUpload"
+              },
+              "PathPart": "health-certificate",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceUploadOwnerDashphoto": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceUpload"
+              },
+              "PathPart": "owner-photo",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
           "ApiGatewayResourceBusinesses": {
             "Type": "AWS::ApiGateway::Resource",
             "Properties": {
@@ -1115,6 +1236,69 @@
                 "Ref": "ApiGatewayResourceBusinessesBusinessidVar"
               },
               "PathPart": "working-hours",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceAdmin": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
+              "PathPart": "admin",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceAdminBusinesses": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceAdmin"
+              },
+              "PathPart": "businesses",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceAdminBusinessesBusinessidVar": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceAdminBusinesses"
+              },
+              "PathPart": "{businessId}",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceAdminBusinessesBusinessidVarApprove": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceAdminBusinessesBusinessidVar"
+              },
+              "PathPart": "approve",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceAdminBusinessesBusinessidVarReject": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceAdminBusinessesBusinessidVar"
+              },
+              "PathPart": "reject",
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
               }
@@ -2110,6 +2294,186 @@
               }
             }
           },
+          "ApiGatewayMethodUploadBusinessDashlicenseOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceUploadBusinessDashlicense"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodUploadOwnerDashidentityOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceUploadOwnerDashidentity"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodUploadHealthDashcertificateOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceUploadHealthDashcertificate"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodUploadOwnerDashphotoOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceUploadOwnerDashphoto"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
           "ApiGatewayMethodBusinessesBusinessidVarPosDashsettingsOptions": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
@@ -2329,6 +2693,141 @@
               },
               "ResourceId": {
                 "Ref": "ApiGatewayResourceBusinessesBusinessidVarWorkingDashhours"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodAdminBusinessesOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceAdminBusinesses"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodAdminBusinessesBusinessidVarApproveOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceAdminBusinessesBusinessidVarApprove"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodAdminBusinessesBusinessidVarRejectOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceAdminBusinessesBusinessidVarReject"
               },
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
@@ -3669,6 +4168,190 @@
               "ImageUploadLambdaPermissionApiGateway"
             ]
           },
+          "ApiGatewayMethodUploadBusinessDashlicensePost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceUploadBusinessDashlicense"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "ImageUploadLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "ImageUploadLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayMethodUploadOwnerDashidentityPost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceUploadOwnerDashidentity"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "ImageUploadLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "ImageUploadLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayMethodUploadHealthDashcertificatePost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceUploadHealthDashcertificate"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "ImageUploadLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "ImageUploadLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayMethodUploadOwnerDashphotoPost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceUploadOwnerDashphoto"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "ImageUploadLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "ImageUploadLambdaPermissionApiGateway"
+            ]
+          },
           "ApiGatewayMethodBusinessesBusinessidVarPosDashsettingsGet": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
@@ -4037,7 +4720,145 @@
               "LocationSettingsLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1752980401282": {
+          "ApiGatewayMethodAdminBusinessesGet": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "GET",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceAdminBusinesses"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "AdminManagementLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "AdminManagementLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayMethodAdminBusinessesBusinessidVarApprovePost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceAdminBusinessesBusinessidVarApprove"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "AdminManagementLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "AdminManagementLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayMethodAdminBusinessesBusinessidVarRejectPost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceAdminBusinessesBusinessidVarReject"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "AdminManagementLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "AdminManagementLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayDeployment1753870379922": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -4068,11 +4889,18 @@
               "ApiGatewayMethodHealthOptions",
               "ApiGatewayMethodUploadProductDashimageOptions",
               "ApiGatewayMethodUploadBusinessDashphotoOptions",
+              "ApiGatewayMethodUploadBusinessDashlicenseOptions",
+              "ApiGatewayMethodUploadOwnerDashidentityOptions",
+              "ApiGatewayMethodUploadHealthDashcertificateOptions",
+              "ApiGatewayMethodUploadOwnerDashphotoOptions",
               "ApiGatewayMethodBusinessesBusinessidVarPosDashsettingsOptions",
               "ApiGatewayMethodBusinessesBusinessidVarPosDashsettingsTestDashconnectionOptions",
               "ApiGatewayMethodBusinessesBusinessidVarPosDashsettingsSyncDashlogsOptions",
               "ApiGatewayMethodBusinessesBusinessidVarLocationDashsettingsOptions",
               "ApiGatewayMethodBusinessesBusinessidVarWorkingDashhoursOptions",
+              "ApiGatewayMethodAdminBusinessesOptions",
+              "ApiGatewayMethodAdminBusinessesBusinessidVarApproveOptions",
+              "ApiGatewayMethodAdminBusinessesBusinessidVarRejectOptions",
               "ApiGatewayMethodAuthRegisterDashwithDashbusinessPost",
               "ApiGatewayMethodAuthConfirmPost",
               "ApiGatewayMethodAuthCheckDashemailPost",
@@ -4102,6 +4930,10 @@
               "ApiGatewayMethodUploadProductDashimagePost",
               "ApiGatewayMethodUploadProductDashimageDelete",
               "ApiGatewayMethodUploadBusinessDashphotoPost",
+              "ApiGatewayMethodUploadBusinessDashlicensePost",
+              "ApiGatewayMethodUploadOwnerDashidentityPost",
+              "ApiGatewayMethodUploadHealthDashcertificatePost",
+              "ApiGatewayMethodUploadOwnerDashphotoPost",
               "ApiGatewayMethodBusinessesBusinessidVarPosDashsettingsGet",
               "ApiGatewayMethodBusinessesBusinessidVarPosDashsettingsPut",
               "ApiGatewayMethodBusinessesBusinessidVarPosDashsettingsTestDashconnectionPost",
@@ -4109,7 +4941,10 @@
               "ApiGatewayMethodBusinessesBusinessidVarLocationDashsettingsGet",
               "ApiGatewayMethodBusinessesBusinessidVarLocationDashsettingsPut",
               "ApiGatewayMethodBusinessesBusinessidVarWorkingDashhoursGet",
-              "ApiGatewayMethodBusinessesBusinessidVarWorkingDashhoursPut"
+              "ApiGatewayMethodBusinessesBusinessidVarWorkingDashhoursPut",
+              "ApiGatewayMethodAdminBusinessesGet",
+              "ApiGatewayMethodAdminBusinessesBusinessidVarApprovePost",
+              "ApiGatewayMethodAdminBusinessesBusinessidVarRejectPost"
             ]
           },
           "UnifiedAuthLambdaPermissionApiGateway": {
@@ -4371,6 +5206,43 @@
               }
             }
           },
+          "AdminManagementLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "AdminManagementLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          },
           "OrdersTable": {
             "Type": "AWS::DynamoDB::Table",
             "Properties": {
@@ -4409,58 +5281,67 @@
               "Name": "sls-order-receiver-api-dev-HealthLambdaFunctionQualifiedArn"
             }
           },
-          "UnifiedAuthLambdaFunctionQualifiedArn": {
+          "ImageUploadLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "UnifiedAuthLambdaVersionBCPSsKtUhuC4CIUAXu9G5kXBBt13xKMqHKRynsvsc"
+              "Ref": "ImageUploadLambdaVersionPAMy8ryfSBaqMcxYKmlyWqqhe4GPe7UgaEZlLwc0"
             },
             "Export": {
-              "Name": "sls-order-receiver-api-dev-UnifiedAuthLambdaFunctionQualifiedArn"
+              "Name": "sls-order-receiver-api-dev-ImageUploadLambdaFunctionQualifiedArn"
             }
           },
-          "OrderManagementLambdaFunctionQualifiedArn": {
+          "AdminManagementLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "OrderManagementLambdaVersionGx87FmgqgfCaDDEV94F0K3ioUdecCArVqnzpzCZjms"
+              "Ref": "AdminManagementLambdaVersionGgo7XfvVReHLwUCPpzewgE8WSHW4QMQdoJ5Kg5b0"
             },
             "Export": {
-              "Name": "sls-order-receiver-api-dev-OrderManagementLambdaFunctionQualifiedArn"
+              "Name": "sls-order-receiver-api-dev-AdminManagementLambdaFunctionQualifiedArn"
             }
           },
           "LocationSettingsLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "LocationSettingsLambdaVersionROWhw0Xcab8MJqDHoPuF2l3kGE8OTZTxqI2qCLZ3NQ"
+              "Ref": "LocationSettingsLambdaVersionOwSnlwoIGeaEkRQ23NN3xZYrupO4O0geH8ub1Xmqijc"
             },
             "Export": {
               "Name": "sls-order-receiver-api-dev-LocationSettingsLambdaFunctionQualifiedArn"
             }
           },
-          "DiscountManagementLambdaFunctionQualifiedArn": {
+          "OrderManagementLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "DiscountManagementLambdaVersion2Y40DyjsrWMNfBMSd6nhKPSeytsxz5QVbmbNopEQ74"
+              "Ref": "OrderManagementLambdaVersionIsNQiREURa2gIM98qlhmR0AUa2EdxG5ZCm3E5y4I"
             },
             "Export": {
-              "Name": "sls-order-receiver-api-dev-DiscountManagementLambdaFunctionQualifiedArn"
+              "Name": "sls-order-receiver-api-dev-OrderManagementLambdaFunctionQualifiedArn"
             }
           },
           "PosSettingsLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "PosSettingsLambdaVersiondM2jAYKGxZejpsegSJ0n2JSUFYRozYXtbLTZp6ip0YQ"
+              "Ref": "PosSettingsLambdaVersiondMFJqXarMTln39uXc5Oyo1DtziqnwjJsxekqr7oCTw"
             },
             "Export": {
               "Name": "sls-order-receiver-api-dev-PosSettingsLambdaFunctionQualifiedArn"
             }
           },
-          "ImageUploadLambdaFunctionQualifiedArn": {
+          "UnifiedAuthLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ImageUploadLambdaVersiongvzsGjsaFWgBXOzO15yGDxjTtJ5YrTL2aj5fDWE6zJg"
+              "Ref": "UnifiedAuthLambdaVersionYZ4daooUd5nTo2XXMtuQSLPOnE53kwzKYsTRdeXpx0"
             },
             "Export": {
-              "Name": "sls-order-receiver-api-dev-ImageUploadLambdaFunctionQualifiedArn"
+              "Name": "sls-order-receiver-api-dev-UnifiedAuthLambdaFunctionQualifiedArn"
+            }
+          },
+          "DiscountManagementLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "DiscountManagementLambdaVersionUn7citEcDxDhMEzLEcalXX2poHgCuh7jxCPbtWx2XY"
+            },
+            "Export": {
+              "Name": "sls-order-receiver-api-dev-DiscountManagementLambdaFunctionQualifiedArn"
             }
           },
           "ServiceEndpoint": {
@@ -4770,7 +5651,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "UnifiedAuthLambdaVersionBCPSsKtUhuC4CIUAXu9G5kXBBt13xKMqHKRynsvsc"
+        "versionLogicalId": "UnifiedAuthLambdaVersionYZ4daooUd5nTo2XXMtuQSLPOnE53kwzKYsTRdeXpx0"
       },
       "orderManagement": {
         "handler": "functions/orders/order_management_handler.handler",
@@ -5005,7 +5886,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "OrderManagementLambdaVersionGx87FmgqgfCaDDEV94F0K3ioUdecCArVqnzpzCZjms"
+        "versionLogicalId": "OrderManagementLambdaVersionIsNQiREURa2gIM98qlhmR0AUa2EdxG5ZCm3E5y4I"
       },
       "discountManagement": {
         "handler": "functions/discounts/discount_management_handler.handler",
@@ -5235,7 +6116,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "DiscountManagementLambdaVersion2Y40DyjsrWMNfBMSd6nhKPSeytsxz5QVbmbNopEQ74"
+        "versionLogicalId": "DiscountManagementLambdaVersionUn7citEcDxDhMEzLEcalXX2poHgCuh7jxCPbtWx2XY"
       },
       "health": {
         "handler": "functions/health_check.handler",
@@ -5350,6 +6231,102 @@
               },
               "integration": "AWS_PROXY"
             }
+          },
+          {
+            "http": {
+              "path": "upload/business-license",
+              "method": "post",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY"
+            }
+          },
+          {
+            "http": {
+              "path": "upload/owner-identity",
+              "method": "post",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY"
+            }
+          },
+          {
+            "http": {
+              "path": "upload/health-certificate",
+              "method": "post",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY"
+            }
+          },
+          {
+            "http": {
+              "path": "upload/owner-photo",
+              "method": "post",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY"
+            }
           }
         ],
         "package": {
@@ -5359,7 +6336,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "ImageUploadLambdaVersiongvzsGjsaFWgBXOzO15yGDxjTtJ5YrTL2aj5fDWE6zJg"
+        "versionLogicalId": "ImageUploadLambdaVersionPAMy8ryfSBaqMcxYKmlyWqqhe4GPe7UgaEZlLwc0"
       },
       "posSettings": {
         "handler": "functions/pos/pos_settings_handler.handler",
@@ -5469,7 +6446,7 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "PosSettingsLambdaVersiondM2jAYKGxZejpsegSJ0n2JSUFYRozYXtbLTZp6ip0YQ"
+        "versionLogicalId": "PosSettingsLambdaVersiondMFJqXarMTln39uXc5Oyo1DtziqnwjJsxekqr7oCTw"
       },
       "locationSettings": {
         "handler": "functions/location_settings_handler.handler",
@@ -5579,7 +6556,93 @@
         "timeout": 29,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "LocationSettingsLambdaVersionROWhw0Xcab8MJqDHoPuF2l3kGE8OTZTxqI2qCLZ3NQ"
+        "versionLogicalId": "LocationSettingsLambdaVersionOwSnlwoIGeaEkRQ23NN3xZYrupO4O0geH8ub1Xmqijc"
+      },
+      "adminManagement": {
+        "handler": "functions/admin/admin_management_handler.handler",
+        "name": "order-receiver-dev-admin-management-v1-sls",
+        "events": [
+          {
+            "http": {
+              "path": "admin/businesses",
+              "method": "get",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "GET"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY"
+            }
+          },
+          {
+            "http": {
+              "path": "admin/businesses/{businessId}/approve",
+              "method": "post",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY"
+            }
+          },
+          {
+            "http": {
+              "path": "admin/businesses/{businessId}/reject",
+              "method": "post",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY"
+            }
+          }
+        ],
+        "package": {
+          "artifact": ".serverless/adminManagement.zip"
+        },
+        "memory": 512,
+        "timeout": 29,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "AdminManagementLambdaVersionGgo7XfvVReHLwUCPpzewgE8WSHW4QMQdoJ5Kg5b0"
       }
     },
     "resources": {
@@ -5616,17 +6679,13 @@
       "provider": {
         "$ref": "$[\"service\"][\"provider\"]"
       },
-      "params": {
-        "CognitoUserPoolId": "us-east-1_bDqnKdrqo",
-        "CognitoClientId": "6n752vrmqmbss6nmlg6be2nn9a"
-      },
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
       },
       "package": {
         "individually": true,
         "artifactsS3KeyDirname": "serverless/order-receiver-api/dev/code-artifacts",
-        "artifactDirectoryName": "serverless/order-receiver-api/dev/1752980418508-2025-07-20T03:00:18.508Z"
+        "artifactDirectoryName": "serverless/order-receiver-api/dev/1753870399306-2025-07-30T10:13:19.306Z"
       },
       "custom": {
         "$ref": "$[\"service\"][\"custom\"]"
@@ -5659,7 +6718,7 @@
   },
   "package": {
     "individually": true,
-    "artifactDirectoryName": "serverless/order-receiver-api/dev/1752980418508-2025-07-20T03:00:18.508Z",
+    "artifactDirectoryName": "serverless/order-receiver-api/dev/1753870399306-2025-07-30T10:13:19.306Z",
     "artifact": ""
   }
 }

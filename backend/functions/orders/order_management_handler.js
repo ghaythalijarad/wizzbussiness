@@ -88,7 +88,18 @@ exports.handler = async (event) => {
     const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
     const dynamodb = new AWS.DynamoDB.DocumentClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
 
-    const { httpMethod, path, pathParameters, body, headers } = event;
+    const { httpMethod, path, pathParameters, headers } = event;
+    
+    // Handle Base64 encoded request body from API Gateway
+    let requestBody = event.body;
+    if (event.isBase64Encoded && requestBody) {
+        try {
+            requestBody = Buffer.from(requestBody, 'base64').toString('utf-8');
+            console.log('📝 Decoded Base64 request body');
+        } catch (decodeError) {
+            console.error('❌ Failed to decode Base64 body:', decodeError);
+        }
+    }
 
     try {
         // Handle public endpoints that don't require authentication
@@ -113,18 +124,18 @@ exports.handler = async (event) => {
 
         // Route the request based on HTTP method and path
         if (httpMethod === 'POST' && path === '/orders') {
-            return await handleCreateOrder(dynamodb, userInfo, JSON.parse(body || '{}'));
+            return await handleCreateOrder(dynamodb, userInfo, JSON.parse(requestBody || '{}'));
         } else if (httpMethod === 'GET' && path === '/products') {
             return await handleGetProducts(dynamodb, userInfo);
         } else if (httpMethod === 'GET' && path === '/products/search') {
             const query = event.queryStringParameters?.q || '';
             return await handleSearchProducts(dynamodb, userInfo, query);
         } else if (httpMethod === 'POST' && path === '/products') {
-            return await handleCreateProduct(dynamodb, userInfo, JSON.parse(body || '{}'));
+            return await handleCreateProduct(dynamodb, userInfo, JSON.parse(requestBody || '{}'));
         } else if (httpMethod === 'GET' && pathParameters?.productId) {
             return await handleGetProduct(dynamodb, userInfo, pathParameters.productId);
         } else if (httpMethod === 'PUT' && pathParameters?.productId) {
-            return await handleUpdateProduct(dynamodb, userInfo, pathParameters.productId, JSON.parse(body || '{}'));
+            return await handleUpdateProduct(dynamodb, userInfo, pathParameters.productId, JSON.parse(requestBody || '{}'));
         } else if (httpMethod === 'DELETE' && pathParameters?.productId) {
             return await handleDeleteProduct(dynamodb, userInfo, pathParameters.productId);
         } else if (httpMethod === 'GET' && path === '/categories') {
@@ -320,7 +331,15 @@ async function handleGetProducts(dynamodb, userInfo) {
         const result = await dynamodb.query(params).promise();
         console.log('Product query result:', JSON.stringify(result, null, 2)); // Enhanced logging
 
-        return createResponse(200, { success: true, products: result.Items });
+        // Transform products to ensure consistent field naming for frontend
+        const transformedProducts = result.Items.map(product => ({
+            ...product,
+            // Ensure imageUrl field exists for frontend compatibility
+            imageUrl: product.image_url || product.imageUrl,
+            isAvailable: product.is_available !== undefined ? product.is_available : product.isAvailable
+        }));
+
+        return createResponse(200, { success: true, products: transformedProducts });
     } catch (error) {
         console.error('Error in handleGetProducts:', error);
         // Return a more specific error message if business info is the issue

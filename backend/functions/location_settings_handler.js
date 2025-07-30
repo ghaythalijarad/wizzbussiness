@@ -33,6 +33,16 @@ exports.handler = async (event) => {
   }
 
   try {
+    // Handle Base64 encoded request body from API Gateway
+    let requestBody = event.body;
+    if (event.isBase64Encoded && requestBody) {
+      try {
+        requestBody = Buffer.from(requestBody, 'base64').toString('utf-8');
+        console.log('📝 Decoded Base64 request body');
+      } catch (decodeError) {
+        console.error('❌ Failed to decode Base64 body:', decodeError);
+      }
+    }
     // Extract user information from JWT token
     const authHeader = event.headers.Authorization || event.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -96,11 +106,11 @@ exports.handler = async (event) => {
     if (method === 'GET' && path.includes('/location-settings')) {
       return await handleGetLocationSettings(businessId);
     } else if (method === 'PUT' && path.includes('/location-settings')) {
-      return await handleUpdateLocationSettings(businessId, event.body);
+      return await handleUpdateLocationSettings(businessId, requestBody);
     } else if (method === 'GET' && path.includes('/working-hours')) {
       return await handleGetWorkingHours(businessId);
     } else if (method === 'PUT' && path.includes('/working-hours')) {
-      return await handleUpdateWorkingHours(businessId, event.body);
+      return await handleUpdateWorkingHours(businessId, requestBody);
     } else {
       return {
         statusCode: 404,
@@ -141,14 +151,14 @@ async function verifyBusinessAccess(userId, businessId) {
 
     // Check if user is the owner or has access
     const business = result.Item;
-    const hasAccess = business.owner_id === userId || 
-                     business.cognito_user_id === userId ||
-                     business.admin_users?.includes(userId) ||
-                     business.staff_users?.includes(userId);
+    const hasAccess = business.ownerId === userId ||
+                      business.cognitoUserId === userId ||
+                      business.adminUsers?.includes(userId) ||
+                      business.staffUsers?.includes(userId);
 
     console.log(`🔐 Business access check for ${userId}: ${hasAccess}`);
-    console.log(`🏢 Business owner_id: ${business.owner_id}`);
-    console.log(`🏢 Business cognito_user_id: ${business.cognito_user_id}`);
+    console.log(`🏢 Business ownerId: ${business.ownerId}`);
+    console.log(`🏢 Business cognitoUserId: ${business.cognitoUserId}`);
     return hasAccess;
   } catch (error) {
     console.error('❌ Error verifying business access:', error);
@@ -305,16 +315,30 @@ async function handleUpdateLocationSettings(businessId, requestBody) {
  * Get working hours for a business
  */
 async function handleGetWorkingHours(businessId) {
+  console.log(`🕒 Getting working hours for business: ${businessId}`);
+  
   try {
     const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    
+    console.log(`📅 Querying working hours for weekdays: ${weekdays.join(', ')}`);
+    
     const results = await Promise.all(
-      weekdays.map(day =>
-        dynamodb.get({
-          TableName: BUSINESS_WORKING_HOURS_TABLE,
-          Key: { businessId: businessId, weekday: day }
-        }).promise()
-      )
+      weekdays.map(async (day) => {
+        try {
+          const result = await dynamodb.get({
+            TableName: BUSINESS_WORKING_HOURS_TABLE,
+            Key: { business_id: businessId, weekday: day }
+          }).promise();
+          
+          console.log(`📋 ${day}: ${result.Item ? 'Found data' : 'No data'}`);
+          return result;
+        } catch (error) {
+          console.error(`❌ Error querying ${day}:`, error);
+          return { Item: null }; // Return empty result on error
+        }
+      })
     );
+    
     const workingHours = {};
     weekdays.forEach((day, idx) => {
       workingHours[day] = results[idx].Item ? {
@@ -322,16 +346,35 @@ async function handleGetWorkingHours(businessId) {
         closing: results[idx].Item.closing
       } : { opening: null, closing: null };
     });
+    
+    console.log(`✅ Successfully retrieved working hours for business ${businessId}`);
+    console.log(`📊 Working hours data:`, JSON.stringify(workingHours, null, 2));
+    
     return {
       statusCode: 200,
       headers: corsHeaders,
       body: JSON.stringify({ success: true, workingHours })
     };
   } catch (error) {
+    console.error(`❌ Error getting working hours for business ${businessId}:`, error);
+    
+    // Return default empty working hours instead of error
+    const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const defaultWorkingHours = {};
+    weekdays.forEach(day => {
+      defaultWorkingHours[day] = { opening: null, closing: null };
+    });
+    
+    console.log(`🔄 Returning default empty working hours for business ${businessId}`);
+    
     return {
-      statusCode: 500,
+      statusCode: 200,
       headers: corsHeaders,
-      body: JSON.stringify({ success: false, message: 'Failed to retrieve working hours', error: error.message })
+      body: JSON.stringify({ 
+        success: true, 
+        workingHours: defaultWorkingHours,
+        message: 'No working hours found, returning defaults'
+      })
     };
   }
 }
@@ -340,37 +383,57 @@ async function handleGetWorkingHours(businessId) {
  * Update working hours for a business
  */
 async function handleUpdateWorkingHours(businessId, requestBody) {
+  console.log(`🕒 Updating working hours for business: ${businessId}`);
+  
   try {
     if (!requestBody) {
+      console.error(`❌ No request body provided for business ${businessId}`);
       return {
         statusCode: 400,
         headers: corsHeaders,
         body: JSON.stringify({ success: false, message: 'Request body is required' })
       };
     }
+    
     const workingHours = JSON.parse(requestBody);
+    console.log(`📊 Working hours data to save:`, JSON.stringify(workingHours, null, 2));
+    
     const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-    await Promise.all(
-      weekdays.map(day => {
-        const hours = workingHours[day] || {};
-        return dynamodb.put({
+    
+    const updatePromises = weekdays.map(async (day) => {
+      const hours = workingHours[day] || {};
+      
+      try {
+        const result = await dynamodb.put({
           TableName: BUSINESS_WORKING_HOURS_TABLE,
           Item: {
-            businessId: businessId,
+            business_id: businessId,
             weekday: day,
             opening: hours.opening || null,
             closing: hours.closing || null,
             updated_at: new Date().toISOString()
           }
         }).promise();
-      })
-    );
+        
+        console.log(`✅ Updated ${day} for business ${businessId}`);
+        return result;
+      } catch (error) {
+        console.error(`❌ Error updating ${day} for business ${businessId}:`, error);
+        throw error;
+      }
+    });
+    
+    await Promise.all(updatePromises);
+    
+    console.log(`✅ Successfully updated all working hours for business ${businessId}`);
+    
     return {
       statusCode: 200,
       headers: corsHeaders,
       body: JSON.stringify({ success: true, message: 'Working hours updated successfully' })
     };
   } catch (error) {
+    console.error(`❌ Error updating working hours for business ${businessId}:`, error);
     return {
       statusCode: 500,
       headers: corsHeaders,
@@ -384,16 +447,32 @@ async function handleUpdateWorkingHours(businessId, requestBody) {
  */
 async function updateBusinessLocation(businessId, latitude, longitude, address) {
   try {
-    let updateExpression = 'SET latitude = :lat, longitude = :lng, updated_at = :updated_at';
+    // First, get the current business data to preserve existing address if needed
+    const getCurrentParams = {
+      TableName: BUSINESSES_TABLE,
+      Key: { businessId: businessId },
+      ProjectionExpression: 'address'
+    };
+    
+    const currentBusiness = await dynamodb.get(getCurrentParams).promise();
+    
+    let updateExpression = 'SET latitude = :lat, longitude = :lng, updatedAt = :updatedAt';
     const expressionAttributeValues = {
       ':lat': latitude,
       ':lng': longitude,
-      ':updated_at': new Date().toISOString()
+      ':updatedAt': new Date().toISOString()
     };
 
-    if (address) {
+    // Only update address if it's provided and not the stub implementation
+    if (address && address !== 'Address not available (stub implementation)' && address !== 'Address not available') {
       updateExpression += ', address = :addr';
       expressionAttributeValues[':addr'] = address;
+      console.log('✅ Updating address with new value:', address);
+    } else if (currentBusiness.Item && currentBusiness.Item.address) {
+      // Preserve existing address if new address is stub or null
+      updateExpression += ', address = :addr';
+      expressionAttributeValues[':addr'] = currentBusiness.Item.address;
+      console.log('✅ Preserving existing address:', currentBusiness.Item.address);
     }
 
     const params = {

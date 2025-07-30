@@ -33,6 +33,16 @@ exports.handler = async (event) => {
   }
 
   try {
+    // Handle Base64 encoded request body from API Gateway
+    let requestBody = event.body;
+    if (event.isBase64Encoded && requestBody) {
+      try {
+        requestBody = Buffer.from(requestBody, 'base64').toString('utf-8');
+        console.log('📝 Decoded Base64 request body');
+      } catch (decodeError) {
+        console.error('❌ Failed to decode Base64 body:', decodeError);
+      }
+    }
     // Extract user information from JWT token
     const authHeader = event.headers.Authorization || event.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -96,9 +106,9 @@ exports.handler = async (event) => {
     if (method === 'GET' && path.includes('/pos-settings')) {
       return await handleGetPosSettings(businessId);
     } else if (method === 'PUT' && path.includes('/pos-settings')) {
-      return await handleUpdatePosSettings(businessId, event.body);
+      return await handleUpdatePosSettings(businessId, requestBody);
     } else if (method === 'POST' && path.includes('/pos-settings/test-connection')) {
-      return await handleTestConnection(businessId, event.body);
+      return await handleTestConnection(businessId, requestBody);
     } else if (method === 'GET' && path.includes('/pos-settings/sync-logs')) {
       return await handleGetSyncLogs(businessId);
     } else {

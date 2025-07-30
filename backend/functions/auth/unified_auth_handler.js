@@ -12,7 +12,22 @@ const CLIENT_ID = process.env.COGNITO_CLIENT_ID;
 
 exports.handler = async (event) => {
     console.log(`Processing ${event.httpMethod} ${event.path}`);
-    const body = event.body ? JSON.parse(event.body) : {};
+    let body;
+    try {
+        let requestBody = event.body;
+        if (event.isBase64Encoded) {
+            requestBody = Buffer.from(requestBody, 'base64').toString('utf-8');
+        }
+        // Handle both stringified and non-stringified bodies
+        body = typeof requestBody === 'string' ? JSON.parse(requestBody) : requestBody;
+    } catch (e) {
+        console.error("Failed to parse request body:", e);
+        // If parsing fails, it might be because the body is not JSON.
+        // For now, we can assign the raw body
+        body = event.body;
+    }
+    body = body || {};
+
 
     try {
         switch (`${event.httpMethod} ${event.path}`) {
@@ -56,13 +71,33 @@ async function handleRegisterWithBusiness(body) {
         firstName = '',
         lastName = '',
         ownerName,
-        address = '',
-        city = '',
-        district = '',
-        country = 'Iraq',
-        street = '',
+        address,
+        city: directCity = '',
+        district: directDistrict = '',
+        country: directCountry = 'Iraq',
+        street: directStreet = '',
         businessPhotoUrl
     } = body;
+
+    // Extract address components from nested address object or use direct fields as fallback
+    let addressObj, city, district, country, street;
+    if (address && typeof address === 'object') {
+        // Frontend sends structured address object
+        addressObj = address;
+        city = address.city || directCity;
+        district = address.district || directDistrict;
+        country = address.country || directCountry || 'Iraq';
+        street = address.street || directStreet;
+        console.log('✅ Address parsed from structured object:', { city, district, country, street });
+    } else {
+        // Fallback to direct fields for backward compatibility
+        city = directCity;
+        district = directDistrict;
+        country = directCountry;
+        street = directStreet;
+        addressObj = address || '';
+        console.log('⚠️ Address using direct fields (fallback):', { city, district, country, street });
+    }
 
     const email = rawEmail ? rawEmail.toLowerCase().trim() : '';
     const finalBusinessName = businessName || business_name;
@@ -112,14 +147,19 @@ async function handleRegisterWithBusiness(body) {
             businessName: finalBusinessName,
             businessType: finalBusinessType,
             phoneNumber: finalPhoneNumber || '',
-            address: address,
+            address: addressObj, // Store the structured address object
             city: city,
             district: district,
             country: country,
             street: street,
             businessPhotoUrl: businessPhotoUrl || null,
+            // Document URLs
+            businessLicenseUrl: body.businessLicenseUrl || null,
+            ownerIdentityUrl: body.ownerIdentityUrl || null,
+            healthCertificateUrl: body.healthCertificateUrl || null,
+            ownerPhotoUrl: body.ownerPhotoUrl || null,
             isActive: true,
-            status: 'pending_verification',
+            status: 'pending',
             createdAt: timestamp,
             updatedAt: timestamp
         };
@@ -189,7 +229,7 @@ async function handleConfirmSignup(body) {
         }).promise();
         console.log(`Updated email_verified attribute for user: ${email}`);
 
-        // Query user by email using the email-index
+        // Query user to get userId
         const queryParams = {
             TableName: USERS_TABLE,
             IndexName: 'email-index',

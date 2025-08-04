@@ -1,24 +1,21 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/order.dart';
+import '../services/order_service.dart';
 import '../services/order_timer_service.dart';
+import '../services/realtime_order_service.dart'; // Import real-time service
 import '../services/app_auth_service.dart';
 import '../screens/login_page.dart';
 import '../widgets/order_card.dart';
 import '../utils/responsive_helper.dart';
 
 class OrdersPage extends StatefulWidget {
-  final List<Order> orders;
-  final Function(String, OrderStatus) onOrderUpdated;
   final String? businessId;
-  final Function()? onOrdersRefresh;
 
   const OrdersPage({
     Key? key,
-    required this.orders,
-    required this.onOrderUpdated,
     this.businessId,
-    this.onOrdersRefresh,
   }) : super(key: key);
 
   @override
@@ -26,8 +23,16 @@ class OrdersPage extends StatefulWidget {
 }
 
 class _OrdersPageState extends State<OrdersPage> {
+  final OrderService _orderService = OrderService();
+  final RealtimeOrderService _realtimeService = RealtimeOrderService();
+  List<Order> _orders = [];
   String _selectedFilter = 'pending';
   bool _isInitializing = true;
+  bool _isLoading = true;
+  StreamSubscription? _newOrderSubscription;
+  StreamSubscription? _orderUpdateSubscription;
+  StreamSubscription? _connectionSubscription;
+  bool _isConnected = false;
 
   @override
   void initState() {
@@ -35,37 +40,195 @@ class _OrdersPageState extends State<OrdersPage> {
     _validateAuthenticationAndInitialize();
   }
 
+  void _initializeRealtimeService() {
+    // Subscribe to new orders
+    _newOrderSubscription = _realtimeService.newOrderStream.listen((newOrder) {
+      debugPrint('🔔 New order received via real-time service: ${newOrder.id}');
+      if (mounted) {
+        setState(() {
+          _orders.insert(0, newOrder);
+        });
+      }
+    });
+
+    // Subscribe to order updates
+    _orderUpdateSubscription =
+        _realtimeService.orderUpdateStream.listen((update) {
+      debugPrint('📝 Order update received: ${update['orderId']}');
+      if (mounted) {
+        _handleRealtimeOrderUpdate(update);
+      }
+    });
+
+    // Subscribe to connection status
+    _connectionSubscription =
+        _realtimeService.connectionStream.listen((connected) {
+      if (mounted) {
+        setState(() {
+          _isConnected = connected;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _cleanupRealtimeService();
+    super.dispose();
+  }
+
+  void _cleanupRealtimeService() {
+    // Cancel subscriptions safely
+    _newOrderSubscription?.cancel();
+    _orderUpdateSubscription?.cancel();
+    _connectionSubscription?.cancel();
+    
+    // Reset subscription references
+    _newOrderSubscription = null;
+    _orderUpdateSubscription = null;
+    _connectionSubscription = null;
+    
+    // Only dispose the service if it was actually initialized
+    if (!_isInitializing) {
+      _realtimeService.dispose();
+    }
+  }
+
+  void _handleRealtimeOrderUpdate(Map<String, dynamic> update) {
+    final orderId = update['orderId'] as String?;
+    final status = update['status'] as String?;
+
+    if (orderId != null && status != null) {
+      final orderIndex = _orders.indexWhere((order) => order.id == orderId);
+      if (orderIndex != -1) {
+        final orderStatus = _getStatusFromString(status);
+        if (orderStatus != null) {
+          setState(() {
+            _orders[orderIndex].status = orderStatus;
+          });
+        }
+      }
+    }
+  }
+
   Future<void> _validateAuthenticationAndInitialize() async {
     try {
-      // Check if business ID is provided
+      print('🔍 OrdersPage: businessId = "${widget.businessId}"');
+      print('🔍 OrdersPage: businessId is null = ${widget.businessId == null}');
+      print('🔍 OrdersPage: businessId is empty = ${widget.businessId?.isEmpty}');
+
       if (widget.businessId == null || widget.businessId!.isEmpty) {
+        print('❌ OrdersPage: businessId is null or empty, showing auth dialog');
         _showAuthenticationRequiredDialog();
         return;
       }
 
-      // Check if user is signed in
+      print('🔍 OrdersPage: Checking authentication status...');
       final isSignedIn = await AppAuthService.isSignedIn();
+      print('🔍 OrdersPage: isSignedIn = $isSignedIn');
+      
       if (!isSignedIn) {
+        print('❌ OrdersPage: User not signed in, showing auth dialog');
         _showAuthenticationRequiredDialog();
         return;
       }
 
-      // Verify current user and access token
+      print('🔍 OrdersPage: Getting current user and access token...');
       final currentUser = await AppAuthService.getCurrentUser();
       final accessToken = await AppAuthService.getAccessToken();
 
+      print('🔍 OrdersPage: currentUser = $currentUser');
+      print('🔍 OrdersPage: accessToken exists = ${accessToken != null && accessToken.isNotEmpty}');
+
       if (currentUser == null || accessToken == null) {
+        print('❌ OrdersPage: No current user or access token, showing auth dialog');
         _showAuthenticationRequiredDialog();
         return;
       }
 
-      // If all checks pass, proceed with initialization
+      print('✅ OrdersPage: Authentication validated, loading orders...');
+      await _loadOrders();
+
+      print('🔍 OrdersPage: Initializing real-time service...');
+      // Initialize real-time service with business credentials
+      await _realtimeService.initialize(widget.businessId!);
+      
+      // Now that authentication is validated and service is initialized, set up listeners
+      _initializeRealtimeService();
+
       setState(() {
         _isInitializing = false;
       });
+      
+      print('✅ OrdersPage: Initialization completed successfully');
     } catch (e) {
-      print('Authentication validation failed: $e');
+      print('❌ OrdersPage: Authentication validation failed: $e');
+      
+      // Ensure we don't leave the app in a loading state
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
+      
       _showAuthenticationRequiredDialog();
+    }
+  }
+
+  Future<void> _loadOrders() async {
+    try {
+      final orders = await _orderService.getMerchantOrders(widget.businessId);
+      if (mounted) {
+        setState(() {
+          _orders = orders;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleOrderUpdate(String orderId, OrderStatus newStatus) async {
+    try {
+      if (newStatus == OrderStatus.confirmed) {
+        await _orderService.acceptMerchantOrder(orderId);
+      } else {
+        // Convert OrderStatus enum to string for backend
+        String statusString = _convertOrderStatusToString(newStatus);
+        await _orderService.updateMerchantOrderStatus(orderId, statusString);
+      }
+      await _loadOrders();
+    } catch (e) {
+      print('Failed to update order: $e');
+      // Optionally, show an error message to the user
+    }
+  }
+
+  String _convertOrderStatusToString(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.pending:
+        return 'pending';
+      case OrderStatus.confirmed:
+        return 'confirmed';
+      case OrderStatus.preparing:
+        return 'preparing';
+      case OrderStatus.ready:
+        return 'ready';
+      case OrderStatus.onTheWay:
+        return 'ontheway';
+      case OrderStatus.delivered:
+        return 'delivered';
+      case OrderStatus.cancelled:
+        return 'cancelled';
+      case OrderStatus.returned:
+        return 'returned';
+      case OrderStatus.expired:
+        return 'expired';
     }
   }
 
@@ -134,16 +297,61 @@ class _OrdersPageState extends State<OrdersPage> {
         return OrderStatus.pending;
       case 'confirmed':
         return OrderStatus.confirmed;
+      case 'preparing':
+        return OrderStatus.preparing;
       case 'ready':
         return OrderStatus.ready;
-      case 'pickedUp':
-        return OrderStatus.pickedUp;
+      case 'on_the_way':
+        return OrderStatus.onTheWay;
+      case 'delivered':
+        return OrderStatus.delivered;
       case 'cancelled':
         return OrderStatus.cancelled;
       case 'returned':
         return OrderStatus.returned;
       default:
         return null;
+    }
+  }
+
+  /// Manual refresh of orders and real-time connection
+  Future<void> _refreshOrders() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Refresh orders from API
+      await _loadOrders();
+
+      // Try to refresh real-time connection
+      await _realtimeService.refreshConnection();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Orders refreshed successfully'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to refresh orders: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -160,11 +368,10 @@ class _OrdersPageState extends State<OrdersPage> {
     }
 
     final loc = AppLocalizations.of(context)!;
-    List<Order> filteredOrders = widget.orders;
+    List<Order> filteredOrders = _orders;
     final filterStatus = _getStatusFromString(_selectedFilter);
     if (filterStatus != null) {
-      filteredOrders =
-          widget.orders.where((o) => o.status == filterStatus).toList();
+      filteredOrders = _orders.where((o) => o.status == filterStatus).toList();
     }
     if (_selectedFilter == 'pending') {
       filteredOrders.sort((a, b) {
@@ -179,6 +386,35 @@ class _OrdersPageState extends State<OrdersPage> {
     return Scaffold(
       body: Column(
         children: [
+          // Connection status indicator
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+            decoration: BoxDecoration(
+              color: _isConnected ? Colors.green.shade600 : Colors.orange,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _isConnected ? Icons.wifi : Icons.wifi_off,
+                  color: Colors.white,
+                  size: 14,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  _isConnected
+                      ? 'Real-time sync active'
+                      : 'Using backup sync - WebSocket disconnected',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
           // Filter bar
           Container(
             width: double.infinity,
@@ -206,9 +442,13 @@ class _OrdersPageState extends State<OrdersPage> {
                     const SizedBox(width: 6),
                     _buildFilterChip(loc.confirmed, 'confirmed'),
                     const SizedBox(width: 6),
+                    _buildFilterChip(loc.preparing, 'preparing'),
+                    const SizedBox(width: 6),
                     _buildFilterChip(loc.orderReady, 'ready'),
                     const SizedBox(width: 6),
-                    _buildFilterChip(loc.pickedUp, 'pickedUp'),
+                    _buildFilterChip(loc.onTheWay, 'on_the_way'),
+                    const SizedBox(width: 6),
+                    _buildFilterChip(loc.delivered, 'delivered'),
                     const SizedBox(width: 6),
                     _buildFilterChip(loc.cancelled, 'cancelled'),
                     const SizedBox(width: 6),
@@ -220,16 +460,21 @@ class _OrdersPageState extends State<OrdersPage> {
           ),
           // Orders list
           Expanded(
-            child: filteredOrders.isEmpty
-                ? Center(
-                    child: Text(
-                      loc.noOrdersFoundFor(_selectedFilter),
-                    ),
-                  )
-                : ResponsiveHelper.isTablet(context) ||
-                        ResponsiveHelper.isDesktop(context)
-                    ? _buildGridLayout(filteredOrders)
-                    : _buildListLayout(filteredOrders),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : filteredOrders.isEmpty
+                    ? Center(
+                        child: Text(
+                          loc.noOrdersFoundFor(_selectedFilter),
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _refreshOrders,
+                        child: ResponsiveHelper.isTablet(context) ||
+                                ResponsiveHelper.isDesktop(context)
+                            ? _buildGridLayout(filteredOrders)
+                            : _buildListLayout(filteredOrders),
+                      ),
           ),
         ],
       ),
@@ -239,6 +484,10 @@ class _OrdersPageState extends State<OrdersPage> {
 
   Widget _buildFilterChip(String label, String value) {
     final isSelected = _selectedFilter == value;
+    // Define the custom blue color #00C1E8 for fill and the pink color #C6007E for borders
+    const customBlueColor = Color(0xFF00C1E8);
+    const customPinkColor = Color(0xFFC6007E);
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
@@ -246,10 +495,10 @@ class _OrdersPageState extends State<OrdersPage> {
         elevation: isSelected ? 2 : 0.5,
         borderRadius: BorderRadius.circular(16),
         color: isSelected
-            ? const Color(0xFF00C1E8)
+            ? customBlueColor
             : const Color(0xFF001133).withOpacity(0.05),
         shadowColor: isSelected
-            ? const Color(0xFF00C1E8).withOpacity(0.3)
+            ? customBlueColor.withOpacity(0.3)
             : const Color(0xFF001133).withOpacity(0.1),
         child: InkWell(
           onTap: () => setState(() => _selectedFilter = value),
@@ -260,15 +509,15 @@ class _OrdersPageState extends State<OrdersPage> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected
-                    ? const Color(0xFF00C1E8)
-                    : const Color(0xFF001133).withOpacity(0.3),
-                width: 1,
+                    ? customPinkColor
+                    : customPinkColor.withOpacity(0.4),
+                width: 1.5,
               ),
             ),
             child: Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFF001133),
+                color: isSelected ? Colors.white : customBlueColor,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 fontSize: 13,
                 letterSpacing: 0.2,
@@ -289,7 +538,7 @@ class _OrdersPageState extends State<OrdersPage> {
         final order = orders[index];
         return OrderCard(
           order: order,
-          onOrderUpdated: widget.onOrderUpdated,
+          onOrderUpdated: _handleOrderUpdate,
         );
       },
     );
@@ -311,7 +560,7 @@ class _OrdersPageState extends State<OrdersPage> {
         final order = orders[index];
         return OrderCard(
           order: order,
-          onOrderUpdated: widget.onOrderUpdated,
+          onOrderUpdated: _handleOrderUpdate,
         );
       },
     );

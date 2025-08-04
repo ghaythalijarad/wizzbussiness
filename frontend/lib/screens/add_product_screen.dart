@@ -189,13 +189,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return null;
   }
 
+  // Image compression settings optimized for quality vs file size:
+  // - maxWidth/maxHeight: 1920px (up from 1024px) for better detail
+  // - imageQuality: 95% (up from 80%) for less compression
+  // - Typical result: 500KB-2MB files with much better quality
   Future<void> _pickImageFromCamera() async {
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.camera,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 80,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 95,
       );
 
       if (image != null) {
@@ -220,9 +224,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 80,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 95,
       );
 
       if (image != null) {

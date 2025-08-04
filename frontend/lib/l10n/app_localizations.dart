@@ -203,7 +203,7 @@ abstract class AppLocalizations {
   /// No description provided for @noBusinessFoundForUser.
   ///
   /// In en, this message translates to:
-  /// **'No business found for this user'**
+  /// **'No business found for user'**
   String get noBusinessFoundForUser;
 
   /// No description provided for @loginFailed.
@@ -607,6 +607,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change Password'**
   String get changePassword;
+
+  /// No description provided for @personalInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInformation;
+
+  /// No description provided for @businessInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Information'**
+  String get businessInformation;
+
+  /// No description provided for @accountStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Status'**
+  String get accountStatus;
 
   /// No description provided for @posSettingsUpdated.
   ///
@@ -1460,6 +1478,18 @@ abstract class AppLocalizations {
   /// **'Ready'**
   String get orderStatusReady;
 
+  /// No description provided for @orderStatusOnTheWay.
+  ///
+  /// In en, this message translates to:
+  /// **'On the Way'**
+  String get orderStatusOnTheWay;
+
+  /// No description provided for @orderStatusDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get orderStatusDelivered;
+
   /// No description provided for @orderStatusPickedUp.
   ///
   /// In en, this message translates to:
@@ -1676,11 +1706,29 @@ abstract class AppLocalizations {
   /// **'Confirmed'**
   String get confirmed;
 
+  /// No description provided for @preparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing'**
+  String get preparing;
+
   /// No description provided for @orderReady.
   ///
   /// In en, this message translates to:
   /// **'Ready'**
   String get orderReady;
+
+  /// No description provided for @onTheWay.
+  ///
+  /// In en, this message translates to:
+  /// **'On the Way'**
+  String get onTheWay;
+
+  /// No description provided for @delivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get delivered;
 
   /// No description provided for @pickedUp.
   ///
@@ -1772,6 +1820,12 @@ abstract class AppLocalizations {
   /// **'Cloud Kitchen'**
   String get cloudKitchen;
 
+  /// No description provided for @cafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Cafe'**
+  String get cafe;
+
   /// No description provided for @registrationFailed.
   ///
   /// In en, this message translates to:
@@ -1789,12 +1843,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your registration has been submitted for review'**
   String get registrationSubmittedMessage;
-
-  /// No description provided for @businessInformation.
-  ///
-  /// In en, this message translates to:
-  /// **'Business Information'**
-  String get businessInformation;
 
   /// No description provided for @nameLabel.
   ///
@@ -1928,6 +1976,42 @@ abstract class AppLocalizations {
   /// **'Business Registration'**
   String get businessRegistration;
 
+  /// No description provided for @registerYourBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Register Your Business'**
+  String get registerYourBusiness;
+
+  /// No description provided for @welcomeToHadhir.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Hadhir'**
+  String get welcomeToHadhir;
+
+  /// No description provided for @fillInTheFormBelowToGetStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in the form below to get started'**
+  String get fillInTheFormBelowToGetStarted;
+
+  /// No description provided for @createYourBusinessAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your Business Account'**
+  String get createYourBusinessAccount;
+
+  /// No description provided for @tapToUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to upload'**
+  String get tapToUpload;
+
+  /// No description provided for @uploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded'**
+  String get uploaded;
+
   /// No description provided for @businessAndOwnerInformation.
   ///
   /// In en, this message translates to:
@@ -2005,6 +2089,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Business name is required'**
   String get businessNameRequired;
+
+  /// No description provided for @pleaseEnterYourBusinessName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your business name'**
+  String get pleaseEnterYourBusinessName;
 
   /// No description provided for @businessAddress.
   ///
@@ -2221,6 +2311,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Registration Date'**
   String get registrationDate;
+
+  /// No description provided for @failedToSaveLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save location'**
+  String get failedToSaveLocation;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @businessLocationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your business location to help customers find you and improve delivery accuracy.'**
+  String get businessLocationDescription;
+
+  /// No description provided for @locationInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Information'**
+  String get locationInformation;
+
+  /// No description provided for @customerVisibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Visibility'**
+  String get customerVisibility;
+
+  /// No description provided for @customerVisibilityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your location will be shown to customers when they place orders'**
+  String get customerVisibilityDescription;
+
+  /// No description provided for @deliveryOptimization.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Optimization'**
+  String get deliveryOptimization;
+
+  /// No description provided for @deliveryOptimizationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Accurate location helps optimize delivery routes and timing'**
+  String get deliveryOptimizationDescription;
+
+  /// No description provided for @privacyAndSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & Security'**
+  String get privacyAndSecurity;
+
+  /// No description provided for @privacyAndSecurityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your location data is encrypted and securely stored'**
+  String get privacyAndSecurityDescription;
+
+  /// No description provided for @pleaseSignInToAccessLocationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in to access location settings'**
+  String get pleaseSignInToAccessLocationSettings;
 
   /// No description provided for @smartBusinessControls.
   ///
@@ -2840,12 +2996,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error loading user data'**
   String get errorLoadingUserData;
-
-  /// No description provided for @retry.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry'**
-  String get retry;
 
   /// No description provided for @userInformation.
   ///
@@ -4155,12 +4305,6 @@ abstract class AppLocalizations {
   /// **'Create your account to get started'**
   String get signUpSubtitle;
 
-  /// No description provided for @personalInformation.
-  ///
-  /// In en, this message translates to:
-  /// **'Personal Information'**
-  String get personalInformation;
-
   /// No description provided for @accountSecurity.
   ///
   /// In en, this message translates to:
@@ -4244,6 +4388,486 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Verification code sent to {email}'**
   String verificationCodeSentTo(String email);
+
+  /// No description provided for @errorPickingFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Error picking file'**
+  String get errorPickingFile;
+
+  /// No description provided for @errorPickingImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error picking image'**
+  String get errorPickingImage;
+
+  /// No description provided for @chooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from Gallery'**
+  String get chooseFromGallery;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get takePhoto;
+
+  /// No description provided for @accountInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Information'**
+  String get accountInformation;
+
+  /// No description provided for @enterYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email'**
+  String get enterYourEmail;
+
+  /// No description provided for @pleaseEnterAValidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email'**
+  String get pleaseEnterAValidEmail;
+
+  /// No description provided for @enterYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password'**
+  String get enterYourPassword;
+
+  /// No description provided for @passwordMustBeAtLeast8Chars.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get passwordMustBeAtLeast8Chars;
+
+  /// No description provided for @reEnterYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-enter your password'**
+  String get reEnterYourPassword;
+
+  /// No description provided for @enterYourBusinessName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your business name'**
+  String get enterYourBusinessName;
+
+  /// No description provided for @ownerFirstName.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner First Name'**
+  String get ownerFirstName;
+
+  /// No description provided for @enterOwnerFirstName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter owner first name'**
+  String get enterOwnerFirstName;
+
+  /// No description provided for @pleaseEnterOwnerFirstName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter owner first name'**
+  String get pleaseEnterOwnerFirstName;
+
+  /// No description provided for @ownerLastName.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner Last Name'**
+  String get ownerLastName;
+
+  /// No description provided for @enterOwnerLastName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter owner last name'**
+  String get enterOwnerLastName;
+
+  /// No description provided for @pleaseEnterOwnerLastName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter owner last name'**
+  String get pleaseEnterOwnerLastName;
+
+  /// No description provided for @enterYourBusinessPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your business phone'**
+  String get enterYourBusinessPhone;
+
+  /// No description provided for @pleaseEnterYourPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your phone number'**
+  String get pleaseEnterYourPhoneNumber;
+
+  /// No description provided for @businessPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Photo'**
+  String get businessPhoto;
+
+  /// No description provided for @addAPhotoToShowcaseYourBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo to showcase your business'**
+  String get addAPhotoToShowcaseYourBusiness;
+
+  /// No description provided for @enterYourCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your city'**
+  String get enterYourCity;
+
+  /// No description provided for @pleaseEnterYourCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your city'**
+  String get pleaseEnterYourCity;
+
+  /// No description provided for @district.
+  ///
+  /// In en, this message translates to:
+  /// **'District'**
+  String get district;
+
+  /// No description provided for @enterYourDistrict.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your district'**
+  String get enterYourDistrict;
+
+  /// No description provided for @pleaseEnterYourDistrict.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your district'**
+  String get pleaseEnterYourDistrict;
+
+  /// No description provided for @enterYourStreetAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your street address'**
+  String get enterYourStreetAddress;
+
+  /// No description provided for @pleaseEnterYourStreetAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your street address'**
+  String get pleaseEnterYourStreetAddress;
+
+  /// No description provided for @documentsOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents (Optional)'**
+  String get documentsOptional;
+
+  /// No description provided for @documentsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required Documents'**
+  String get documentsRequired;
+
+  /// No description provided for @youCanUploadTheseDocumentsNowOrLater.
+  ///
+  /// In en, this message translates to:
+  /// **'You can upload these documents now or later'**
+  String get youCanUploadTheseDocumentsNowOrLater;
+
+  /// No description provided for @pleaseUploadAllRequiredDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Please upload all required documents to complete registration'**
+  String get pleaseUploadAllRequiredDocuments;
+
+  /// No description provided for @businessLicenseRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Business license is required'**
+  String get businessLicenseRequired;
+
+  /// No description provided for @ownerIdentityRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner identity document is required'**
+  String get ownerIdentityRequired;
+
+  /// No description provided for @healthCertificateRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Health certificate is required'**
+  String get healthCertificateRequired;
+
+  /// No description provided for @ownerPhotoRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner photo is required'**
+  String get ownerPhotoRequired;
+
+  /// No description provided for @selectDocumentSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Document Source'**
+  String get selectDocumentSource;
+
+  /// No description provided for @chooseFromFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from Files'**
+  String get chooseFromFiles;
+
+  /// No description provided for @takePicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Picture'**
+  String get takePicture;
+
+  /// No description provided for @emailVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Verification'**
+  String get emailVerification;
+
+  /// No description provided for @enterTheCodeSentToYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the code sent to your email'**
+  String get enterTheCodeSentToYourEmail;
+
+  /// No description provided for @changeEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Email'**
+  String get changeEmail;
+
+  /// No description provided for @enter6DigitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 6-digit code'**
+  String get enter6DigitCode;
+
+  /// No description provided for @pleaseEnterTheVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the verification code'**
+  String get pleaseEnterTheVerificationCode;
+
+  /// No description provided for @resendVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Verification Code'**
+  String get resendVerificationCode;
+
+  /// No description provided for @completeRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Registration'**
+  String get completeRegistration;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get createAccount;
+
+  /// No description provided for @businessLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'Business License'**
+  String get businessLicense;
+
+  /// No description provided for @ownerIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner Identity'**
+  String get ownerIdentity;
+
+  /// No description provided for @healthCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Certificate'**
+  String get healthCertificate;
+
+  /// No description provided for @ownerPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner Photo'**
+  String get ownerPhoto;
+
+  /// No description provided for @upload.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload'**
+  String get upload;
+
+  /// No description provided for @tapToSelectFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to select file'**
+  String get tapToSelectFile;
+
+  /// No description provided for @requiredPleaseAddAPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Required - Please add a photo'**
+  String get requiredPleaseAddAPhoto;
+
+  /// No description provided for @change.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get change;
+
+  /// No description provided for @addPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Photo'**
+  String get addPhoto;
+
+  /// No description provided for @pleaseFillInAllRequiredFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill in all required fields'**
+  String get pleaseFillInAllRequiredFields;
+
+  /// No description provided for @businessPhotoIsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Business photo is required'**
+  String get businessPhotoIsRequired;
+
+  /// No description provided for @loginInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Login Instead'**
+  String get loginInstead;
+
+  /// No description provided for @failedToUploadBusinessPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload business photo'**
+  String get failedToUploadBusinessPhoto;
+
+  /// No description provided for @errorUploadingBusinessPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Error uploading business photo'**
+  String get errorUploadingBusinessPhoto;
+
+  /// No description provided for @failedToUploadBusinessLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload business license'**
+  String get failedToUploadBusinessLicense;
+
+  /// No description provided for @failedToUploadOwnerIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload owner identity'**
+  String get failedToUploadOwnerIdentity;
+
+  /// No description provided for @failedToUploadHealthCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload health certificate'**
+  String get failedToUploadHealthCertificate;
+
+  /// No description provided for @failedToUploadOwnerPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload owner photo'**
+  String get failedToUploadOwnerPhoto;
+
+  /// No description provided for @errorUploadingDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Error uploading documents'**
+  String get errorUploadingDocuments;
+
+  /// No description provided for @registrationInitiated.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration initiated'**
+  String get registrationInitiated;
+
+  /// No description provided for @registrationCompletedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration completed successfully'**
+  String get registrationCompletedSuccessfully;
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No description provided for @applicationStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Status'**
+  String get applicationStatus;
+
+  /// No description provided for @applicationPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Pending'**
+  String get applicationPending;
+
+  /// No description provided for @applicationPendingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your application is currently under review. We will notify you once it has been processed.'**
+  String get applicationPendingDescription;
+
+  /// No description provided for @applicationApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Approved'**
+  String get applicationApproved;
+
+  /// No description provided for @applicationApprovedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations! Your application has been approved. You can now start receiving orders.'**
+  String get applicationApprovedDescription;
+
+  /// No description provided for @applicationRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Rejected'**
+  String get applicationRejected;
+
+  /// No description provided for @applicationRejectedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfortunately, your application has been rejected. Please contact support for more information.'**
+  String get applicationRejectedDescription;
+
+  /// No description provided for @underReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Under Review'**
+  String get underReview;
+
+  /// No description provided for @underReviewDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your application is being carefully reviewed by our team. This process may take 1-2 business days.'**
+  String get underReviewDescription;
+
+  /// No description provided for @statusUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Status Unknown'**
+  String get statusUnknown;
+
+  /// No description provided for @statusUnknownDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'We are unable to determine the status of your application at this time. Please try again later or contact support.'**
+  String get statusUnknownDescription;
 }
 
 class _AppLocalizationsDelegate

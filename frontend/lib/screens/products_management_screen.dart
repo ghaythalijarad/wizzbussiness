@@ -94,7 +94,36 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
 
       if (productsResult['success']) {
         final productsList = productsResult['products'] as List;
+        print(
+            '🛒 ProductsManagementScreen: Loaded ${productsList.length} products');
+
+        // Debug: Log image URLs for each product
+        print('🔍 RAW PRODUCT DATA FROM API:');
+        for (var i = 0; i < productsList.length && i < 10; i++) {
+          final productJson = productsList[i];
+          print('📦 Product ${i + 1}: ${productJson['name']}');
+          print('   📷 imageUrl (camelCase): ${productJson['imageUrl']}');
+          print('   📷 image_url (snake_case): ${productJson['image_url']}');
+          print('   📱 Keys in JSON: ${productJson.keys.toList()}');
+          print('   📱 Full JSON: ${productJson.toString()}');
+          print('');
+        }
+
         _products = productsList.map((json) => Product.fromJson(json)).toList();
+
+        // Debug: Log parsed Product objects
+        print('🏗️ PARSED PRODUCT OBJECTS:');
+        for (var i = 0; i < _products.length && i < 10; i++) {
+          final product = _products[i];
+          print('✅ Parsed Product ${i + 1}: ${product.name}');
+          print('   🖼️ Final imageUrl: "${product.imageUrl}"');
+          print('   📏 Image URL length: ${product.imageUrl?.length ?? 0}');
+          print('   🔗 Image URL null?: ${product.imageUrl == null}');
+          print('   📭 Image URL empty?: ${product.imageUrl?.isEmpty ?? true}');
+          print('   🟢 Available: ${product.isAvailable}');
+          print('');
+        }
+
         _updateFilteredProducts();
       } else {
         _error = productsResult['message'];
@@ -585,6 +614,8 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
   Widget _buildProductCard(Product product) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -592,6 +623,91 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
           children: [
             Row(
               children: [
+                // Product Image
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[300]!, width: 1),
+                    color: Colors.grey[100],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: product.imageUrl != null &&
+                            product.imageUrl!.isNotEmpty
+                        ? Builder(
+                            builder: (context) {
+                              print('🖼️ BUILDING IMAGE for ${product.name}');
+                              print('🔗 Image URL: "${product.imageUrl}"');
+                              print(
+                                  '📏 URL Length: ${product.imageUrl!.length}');
+                              print(
+                                  '🌐 URL Starts with http: ${product.imageUrl!.startsWith('http')}');
+
+                              return Image.network(
+                                product.imageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  print(
+                                      '❌ IMAGE LOAD ERROR for ${product.name}');
+                                  print('❌ Error: $error');
+                                  print('❌ URL: ${product.imageUrl}');
+                                  print('❌ Stack trace: $stackTrace');
+                                  return _buildDefaultProductIcon();
+                                },
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) {
+                                    print(
+                                        '✅ IMAGE LOADED SUCCESSFULLY for ${product.name}');
+                                    return child;
+                                  }
+                                  print(
+                                      '⏳ Loading image for ${product.name}: ${loadingProgress.cumulativeBytesLoaded}/${loadingProgress.expectedTotalBytes ?? "unknown"}');
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      value:
+                                          loadingProgress.expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                      .cumulativeBytesLoaded /
+                                                  loadingProgress
+                                                      .expectedTotalBytes!
+                                              : null,
+                                      strokeWidth: 2,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          )
+                        : Column(
+                            children: [
+                              _buildDefaultProductIcon(),
+                              if (product.imageUrl == null ||
+                                  product.imageUrl!.isEmpty)
+                                const SizedBox(height: 4),
+                              if (product.imageUrl == null ||
+                                  product.imageUrl!.isEmpty)
+                                const Text(
+                                  'No image',
+                                  style: TextStyle(
+                                      fontSize: 8, color: Colors.grey),
+                                ),
+                              if (product.imageUrl != null &&
+                                  product.imageUrl!.isNotEmpty)
+                                const Text(
+                                  'Image failed',
+                                  style:
+                                      TextStyle(fontSize: 8, color: Colors.red),
+                                ),
+                            ],
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -602,6 +718,8 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -611,15 +729,16 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
                           fontSize: 12,
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '\$${product.price.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
                     ],
-                  ),
-                ),
-                Text(
-                  '\$${product.price.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
                   ),
                 ),
               ],
@@ -696,6 +815,20 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Helper method to build default product icon when no image is available
+  Widget _buildDefaultProductIcon() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.grey[200],
+      child: Icon(
+        Icons.restaurant_menu,
+        size: 32,
+        color: Colors.grey[400],
       ),
     );
   }

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/app_auth_provider.dart';
 import '../services/api_service.dart';
 import '../services/app_auth_service.dart';
 import '../widgets/location_settings_widget.dart';
 import '../models/business.dart';
+import '../screens/login_page.dart';
 
 class OtherSettingsPage extends StatefulWidget {
   final Business? business;
-
   const OtherSettingsPage({Key? key, this.business}) : super(key: key);
 
   @override
@@ -30,68 +32,61 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
   }
 
   Future<void> _validateAuthenticationAndInitialize() async {
-    try {
-      // Check if user is signed in
-      final isSignedIn = await AppAuthService.isSignedIn();
-      if (!isSignedIn) {
+    print('🔐 Starting validation for OtherSettingsPage...');
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      final appAuthProvider =
+          Provider.of<AppAuthProvider>(context, listen: false);
+
+      try {
+        print('🤔 Checking authentication status...');
+        final isValid = await appAuthProvider.validateAuthentication();
+        print('✅ Authentication status valid: $isValid');
+
+        if (isValid) {
+          if (mounted) {
+            print(
+                '🚀 Authentication successful, proceeding to load settings...');
+            setState(() {
+              _isInitializing = false;
+            });
+            await _loadBusinessLocationSettings();
+          }
+        } else {
+          print('🚨 Authentication failed, showing dialog.');
+          _showAuthenticationRequiredDialog();
+        }
+      } catch (e) {
+        print('❌ Authentication validation failed with error: $e');
         _showAuthenticationRequiredDialog();
-        return;
       }
-
-      // Verify current user and access token
-      final currentUser = await AppAuthService.getCurrentUser();
-      final accessToken = await AppAuthService.getAccessToken();
-
-      if (currentUser == null || accessToken == null) {
-        _showAuthenticationRequiredDialog();
-        return;
-      }
-
-      // If all checks pass, proceed with initialization
-      setState(() {
-        _isInitializing = false;
-      });
-
-      // Load business location settings
-      _loadBusinessLocationSettings();
-    } catch (e) {
-      print('Authentication validation failed: $e');
-      _showAuthenticationRequiredDialog();
-    }
+    });
   }
 
   void _showAuthenticationRequiredDialog() {
+    if (!mounted) return;
     final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        icon: const Icon(
-          Icons.security,
-          color: Color(0xFF00C1E8),
-          size: 48,
-        ),
-        title: Text(
-          loc.userNotLoggedIn,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF001133),
-          ),
-          textAlign: TextAlign.center,
-        ),
-        content: const Text(
-          'Please sign in to access location settings',
-          style: TextStyle(
-            color: Color(0xFF001133),
-          ),
-          textAlign: TextAlign.center,
-        ),
+        title: Text('Authentication Required'),
+        content: Text('Please sign in to access location settings.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+              Navigator.of(context, rootNavigator: true).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => LoginPage(
+                    onLanguageChanged: (Locale) {}, // Dummy function
+                  ),
+                ),
+              );
+            },
             style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFF00C1E8),
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -108,44 +103,37 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
 
   Future<void> _loadBusinessLocationSettings() async {
     print('🗺️ Loading business location settings...');
+    final loc = AppLocalizations.of(context)!;
     setState(() {
       _isLoadingSettings = true;
       _errorMessage = null;
     });
-
     try {
       if (widget.business != null) {
-        print('📊 Business object available: ${widget.business!.name}');
-        print('📍 Current latitude: ${widget.business!.latitude}');
-        print('📍 Current longitude: ${widget.business!.longitude}');
-        print('🏠 Current address: ${widget.business!.address}');
-
-        // Load from existing business data
+        // Load settings from passed Business object
         setState(() {
           _latitude = widget.business!.latitude;
           _longitude = widget.business!.longitude;
           _address = widget.business!.address;
           _isLoadingSettings = false;
         });
-
-        print('✅ Location settings loaded from business object');
+        print('✅ Location settings loaded from Business object');
       } else {
-        print('❌ No business object provided, loading from API...');
-        // Load from API
+        // Fall back to retrieving via getUserBusinesses
         final apiService = ApiService();
         final businesses = await apiService.getUserBusinesses();
-
         if (businesses.isNotEmpty) {
           final businessData = businesses.first;
           setState(() {
-            _latitude = (businessData['latitude'] as num?)?.toDouble();
-            _longitude = (businessData['longitude'] as num?)?.toDouble();
+            _latitude = businessData['latitude'] as double?;
+            _longitude = businessData['longitude'] as double?;
             _address = businessData['address'] as String?;
             _isLoadingSettings = false;
           });
+          print('✅ Location settings loaded via getUserBusinesses fallback');
         } else {
           setState(() {
-            _errorMessage = 'No business found for user';
+            _errorMessage = loc.noBusinessFoundForUser;
             _isLoadingSettings = false;
           });
         }
@@ -153,7 +141,7 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
     } catch (e) {
       print('❌ Error loading location settings: $e');
       setState(() {
-        _errorMessage = 'Failed to load business settings: $e';
+        _errorMessage = '${loc.failedToSaveLocation}: $e';
         _isLoadingSettings = false;
       });
     }
@@ -161,11 +149,10 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
 
   Future<void> _saveBusinessLocation(
       double? latitude, double? longitude, String? address) async {
+    final loc = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
-
     try {
       final apiService = ApiService();
-
       // Get business ID
       String businessId;
       if (widget.business != null) {
@@ -173,13 +160,12 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
       } else {
         final businesses = await apiService.getUserBusinesses();
         if (businesses.isEmpty) {
-          throw Exception('No business found for user');
+          throw Exception(loc.noBusinessFoundForUser);
         }
         businessId = businesses.first['businessId'] ??
             businesses.first['id'] ??
             businesses.first['business_id'];
       }
-
       // Prepare location settings
       final locationSettings = {
         'latitude': latitude,
@@ -187,20 +173,16 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
         'address': address,
         'updated_at': DateTime.now().toIso8601String(),
       };
-
       // Save to business settings table via existing POS settings endpoint
       // (we'll reuse the infrastructure for business settings)
       await apiService.updateBusinessLocationSettings(
           businessId, locationSettings);
-
       setState(() {
         _latitude = latitude;
         _longitude = longitude;
         _address = address;
         _isLoading = false;
       });
-
-      final loc = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(loc.locationSaved),
@@ -209,10 +191,9 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
       );
     } catch (e) {
       setState(() => _isLoading = false);
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to save location: $e'),
+          content: Text('${loc.failedToSaveLocation}: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -222,51 +203,102 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-
     if (_isInitializing) {
       return Scaffold(
         appBar: AppBar(
           title: Text(loc.businessLocation),
-          backgroundColor: const Color(0xFF00C1E8),
+          backgroundColor: Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                shape: const RoundedRectangleBorder(),
+                elevation: 0,
+                padding: const EdgeInsets.all(12),
+              ),
+            ),
+          ),
         ),
-        body: const Center(
-          child: CircularProgressIndicator(),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).primaryColor,
+          ),
         ),
       );
     }
-
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.businessLocation),
-        backgroundColor: const Color(0xFF00C1E8),
+        backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
+        elevation: 2,
+        shadowColor: Theme.of(context).primaryColor.withOpacity(0.3),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              shape: const RoundedRectangleBorder(),
+              elevation: 0,
+              padding: const EdgeInsets.all(12),
+            ),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await AppAuthService.signOut();
+              Navigator.of(context, rootNavigator: true).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => LoginPage(
+                    onLanguageChanged: (Locale) {}, // Dummy function
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: _isLoadingSettings
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).primaryColor,
+              ),
+            )
           : _errorMessage != null
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.error_outline,
                         size: 64,
-                        color: Colors.red.shade400,
+                        color: Colors.red,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         _errorMessage!,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.red.shade600,
-                        ),
+                        style: const TextStyle(fontSize: 16),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
                         onPressed: _loadBusinessLocationSettings,
-                        child: const Text('Retry'),
+                        icon: const Icon(Icons.refresh),
+                        label: Text(loc.retry),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                        ),
                       ),
                     ],
                   ),
@@ -276,9 +308,10 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Header section
+                      // Description Section
                       Card(
                         elevation: 2,
+                        margin: const EdgeInsets.only(bottom: 20),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
@@ -294,41 +327,31 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                                   const SizedBox(width: 8),
                                   Text(
                                     loc.businessLocation,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).primaryColor,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 12),
                               Text(
-                                'Set your business location to help customers find you and improve delivery accuracy.',
+                                loc.businessLocationDescription,
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.grey.shade600,
+                                  color: Colors.grey.shade700,
+                                  height: 1.4,
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
-
-                      // Location settings widget
-                      LocationSettingsWidget(
-                        initialLatitude: _latitude,
-                        initialLongitude: _longitude,
-                        initialAddress: _address,
-                        onLocationChanged: _saveBusinessLocation,
-                        isLoading: _isLoading,
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Additional information card
+                      // Location Information Section
                       Card(
-                        elevation: 1,
+                        elevation: 2,
+                        margin: const EdgeInsets.only(bottom: 20),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
@@ -338,16 +361,16 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                                 children: [
                                   Icon(
                                     Icons.info_outline,
-                                    color: Colors.blue.shade600,
+                                    color: Theme.of(context).primaryColor,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Location Information',
+                                    loc.locationInformation,
                                     style: TextStyle(
                                       fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.blue.shade700,
+                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(context).primaryColor,
                                     ),
                                   ),
                                 ],
@@ -355,24 +378,32 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                               const SizedBox(height: 12),
                               _buildInfoItem(
                                 Icons.visibility,
-                                'Customer Visibility',
-                                'Your location will be shown to customers when they place orders',
+                                loc.customerVisibility,
+                                loc.customerVisibilityDescription,
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 12),
                               _buildInfoItem(
                                 Icons.delivery_dining,
-                                'Delivery Optimization',
-                                'Accurate location helps optimize delivery routes and timing',
+                                loc.deliveryOptimization,
+                                loc.deliveryOptimizationDescription,
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 12),
                               _buildInfoItem(
                                 Icons.security,
-                                'Privacy & Security',
-                                'Your location data is encrypted and securely stored',
+                                loc.privacyAndSecurity,
+                                loc.privacyAndSecurityDescription,
                               ),
                             ],
                           ),
                         ),
+                      ),
+                      // Location Settings Widget
+                      LocationSettingsWidget(
+                        initialLatitude: _latitude,
+                        initialLongitude: _longitude,
+                        initialAddress: _address,
+                        onLocationChanged: _saveBusinessLocation,
+                        isLoading: _isLoading,
                       ),
                     ],
                   ),
@@ -397,10 +428,11 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              const SizedBox(height: 4),
               Text(
                 description,
                 style: TextStyle(

@@ -1,4 +1,6 @@
-const AWS = require('aws-sdk');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, QueryCommand, ScanCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
+const { CognitoIdentityServiceProvider } = require('@aws-sdk/client-cognito-identity-provider');
 const { v4: uuidv4 } = require('uuid');
 const { createResponse } = require('../auth/utils');
 
@@ -85,8 +87,9 @@ exports.handler = async (event) => {
     console.log('Order Management Handler - Event:', JSON.stringify(event, null, 2));
 
     // Instantiate AWS clients for this invocation
-    const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
-    const dynamodb = new AWS.DynamoDB.DocumentClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
+    const cognito = new CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
+    const dynamoDbClient = new DynamoDBClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
+    const dynamodb = DynamoDBDocumentClient.from(dynamoDbClient);
 
     const { httpMethod, path, pathParameters, headers } = event;
     
@@ -152,7 +155,7 @@ exports.handler = async (event) => {
 // Helper function to get user info from access token
 async function getUserInfoFromToken(cognito, accessToken) {
     try {
-        const userResponse = await cognito.getUser({ AccessToken: accessToken }).promise();
+        const userResponse = await cognito.getUser({ AccessToken: accessToken });
         const email = userResponse.UserAttributes.find(attr => attr.Name === 'email')?.Value;
         const userId = userResponse.UserAttributes.find(attr => attr.Name === 'sub')?.Value;
         
@@ -178,7 +181,7 @@ async function getBusinessInfoForUser(dynamodb, email) {
             KeyConditionExpression: 'email = :email',
             ExpressionAttributeValues: { ':email': email }
         };
-        const result = await dynamodb.query(queryParams).promise();
+        const result = await dynamodb.send(new QueryCommand(queryParams));
         
         if (result.Items && result.Items.length > 0) {
             console.log(`Successfully found business info for email ${email} via GSI.`); // Enhanced logging
@@ -198,7 +201,7 @@ async function getBusinessInfoForUser(dynamodb, email) {
                 FilterExpression: 'email = :email',
                 ExpressionAttributeValues: { ':email': email }
             };
-            const scanResult = await dynamodb.scan(scanParams).promise();
+            const scanResult = await dynamodb.send(new ScanCommand(scanParams));
             const businessInfo = scanResult.Items?.[0] || null;
 
             if (!businessInfo) {
@@ -237,11 +240,11 @@ async function initializeCategoriesForBusinessType(dynamodb, businessType) {
         };
 
         try {
-            await dynamodb.put({
+            await dynamodb.send(new PutCommand({
                 TableName: CATEGORIES_TABLE,
                 Item: categoryItem,
                 ConditionExpression: 'attribute_not_exists(categoryId)'
-            }).promise();
+            }));
             categoryItems.push(categoryItem);
         } catch (error) {
             if (error.code !== 'ConditionalCheckFailedException') {
@@ -270,7 +273,7 @@ async function handleGetCategoriesByBusinessType(dynamodb, businessType) {
         };
 
         // Scan the table since BusinessTypeIndex may not exist
-        const result = await dynamodb.scan(params).promise();
+        const result = await dynamodb.send(new ScanCommand(params));
 
         // If no categories exist, initialize them
         if (result.Items.length === 0) {
@@ -328,7 +331,7 @@ async function handleGetProducts(dynamodb, userInfo) {
         };
 
         console.log('Querying products with params:', JSON.stringify(params, null, 2)); // Enhanced logging
-        const result = await dynamodb.query(params).promise();
+        const result = await dynamodb.send(new QueryCommand(params));
         console.log('Product query result:', JSON.stringify(result, null, 2)); // Enhanced logging
 
         // Transform products to ensure consistent field naming for frontend
@@ -358,7 +361,7 @@ async function handleGetProduct(dynamodb, userInfo, productId) {
             Key: { productId: productId }
         };
 
-        const result = await dynamodb.get(params).promise();
+        const result = await dynamodb.send(new GetCommand(params));
 
         if (!result.Item) {
             return createResponse(404, { success: false, message: 'Product not found' });
@@ -415,7 +418,7 @@ async function handleCreateProduct(dynamodb, userInfo, productData) {
             TableName: CATEGORIES_TABLE,
             Key: { categoryId }
         };
-        const categoryResult = await dynamodb.get(categoryParams).promise();
+        const categoryResult = await dynamodb.send(new GetCommand(categoryParams));
         
         if (!categoryResult.Item) {
             return createResponse(400, { success: false, message: 'Category not found' });
@@ -450,10 +453,10 @@ async function handleCreateProduct(dynamodb, userInfo, productData) {
             created_by: userInfo.userId
         };
 
-        await dynamodb.put({
+        await dynamodb.send(new PutCommand({
             TableName: PRODUCTS_TABLE,
             Item: product
-        }).promise();
+        }));
 
         return createResponse(201, {
             success: true,
@@ -553,7 +556,7 @@ async function handleUpdateProduct(dynamodb, userInfo, productId, productData) {
             updateParams.ExpressionAttributeNames = { '#name': 'name' };
         }
 
-        const result = await dynamodb.update(updateParams).promise();
+        const result = await dynamodb.send(new UpdateCommand(updateParams));
 
         return createResponse(200, {
             success: true,
@@ -583,7 +586,7 @@ async function handleSearchProducts(dynamodb, userInfo, query) {
                 ':business_id': businessInfo.business_id
             }
         };
-        const result = await dynamodb.scan(params).promise();
+        const result = await dynamodb.send(new ScanCommand(params));
 
         // Filter items in code
         const filteredProducts = result.Items.filter(product => {
@@ -616,10 +619,10 @@ async function handleDeleteProduct(dynamodb, userInfo, productId) {
             return existingProduct;
         }
 
-        await dynamodb.delete({
+        await dynamodb.send(new DeleteCommand({
             TableName: PRODUCTS_TABLE,
             Key: { productId: productId }
-        }).promise();
+        }));
 
         return createResponse(200, {
             success: true,
@@ -663,10 +666,10 @@ async function handleCreateOrder(dynamodb, userInfo, orderData) {
             updatedAt: timestamp,
         };
 
-        await dynamodb.put({
+        await dynamodb.send(new PutCommand({
             TableName: ORDERS_TABLE,
             Item: order
-        }).promise();
+        }));
 
         return createResponse(201, {
             success: true,

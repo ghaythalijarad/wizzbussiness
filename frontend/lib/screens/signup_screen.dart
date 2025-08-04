@@ -6,7 +6,7 @@ import '../widgets/custom_button.dart';
 import 'signin_screen.dart';
 import 'email_verification_screen.dart';
 import '../l10n/app_localizations.dart';
-import '../utils/arabic_number_formatter.dart';
+import '../utils/latin_number_formatter.dart';
 
 class SignUpScreen extends StatefulWidget {
   final Function(Locale)? onLanguageChanged;
@@ -121,20 +121,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Icon(
-            Icons.store,
-            color: Colors.white,
-            size: 40,
-          ),
-        ),
-        const SizedBox(height: 16),
         Text(
           l10n.joinOrderReceiver,
           style: const TextStyle(
@@ -259,12 +245,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
           keyboardType: TextInputType.phone,
           textAlign: TextAlign.left,
           textDirection: TextDirection.ltr,
-          inputFormatters: [ArabicNumberInputFormatter()],
+          inputFormatters: [LatinNumberInputFormatter()],
           validator: (value) {
             if (value?.isEmpty ?? true) {
               return l10n.phoneNumberRequired;
             }
-            return ArabicPhoneValidator.validate(value);
+            return LatinPhoneValidator.validate(value);
           },
         ),
       ],

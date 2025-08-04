@@ -25,6 +25,10 @@ class Store implements Business {
   String? description;
   @override
   String? website;
+  @override
+  String? businessPhotoUrl;
+  @override
+  final String status;
 
   @override
   final List<Offer> offers;
@@ -48,6 +52,8 @@ class Store implements Business {
     this.longitude,
     this.description,
     this.website,
+    this.businessPhotoUrl,
+    required this.status,
     required this.offers,
     required this.businessHours,
     required this.settings,
@@ -66,6 +72,7 @@ class Store implements Business {
     String? email,
     String? description,
     String? website,
+    String? businessPhotoUrl,
   }) {
     if (name != null) this.name = name;
     if (ownerName != null) this.ownerName = ownerName;
@@ -76,6 +83,7 @@ class Store implements Business {
     if (email != null) this.email = email;
     if (description != null) this.description = description;
     if (website != null) this.website = website;
+    if (businessPhotoUrl != null) this.businessPhotoUrl = businessPhotoUrl;
   }
 
   @override
@@ -171,8 +179,12 @@ class Store implements Business {
 
     if (discount.type == DiscountType.percentage) {
       return discountableAmount * (discount.value / 100);
+    } else if (discount.type == DiscountType.freeDelivery) {
+      return 0.0; // Free delivery is handled separately in delivery fee calculation
     } else {
-      return discount.value.clamp(0.0, discountableAmount);
+      // For conditional and buyXGetY types
+      // These require more complex logic that should be handled by the backend
+      return 0.0;
     }
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/order.dart';
 import '../l10n/app_localizations.dart';
-import '../services/order_timer_service.dart';
 import '../utils/responsive_helper.dart';
 
 class OrderCard extends StatelessWidget {
@@ -18,13 +17,17 @@ class OrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final isPending = order.status == OrderStatus.pending;
-    final remainingSeconds =
-        isPending ? OrderTimerService.getRemainingSeconds(order.id) : 0;
-    final isExpired = isPending && remainingSeconds <= 0;
+    final showActionButtons = order.status == OrderStatus.pending ||
+        order.status == OrderStatus.confirmed ||
+        order.status == OrderStatus.preparing ||
+        order.status == OrderStatus.ready ||
+        order.status == OrderStatus.onTheWay;
 
     // Responsive spacing and layout
     final horizontalPadding = ResponsiveHelper.getResponsivePadding(context);
+
+    // Define the custom pink color #C6007E
+    const customPinkColor = Color(0xFFC6007E);
 
     return Card(
       margin: EdgeInsets.symmetric(
@@ -34,12 +37,14 @@ class OrderCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
         side: BorderSide(
-          color: isPending ? Colors.orange.shade300 : Colors.grey.shade300,
-          width: 1.0,
+          color: order.status == OrderStatus.pending
+              ? customPinkColor
+              : customPinkColor.withOpacity(0.4),
+          width: order.status == OrderStatus.pending ? 2.0 : 1.5,
         ),
       ),
       elevation: 2.0,
-      shadowColor: Colors.black.withValues(alpha: 0.1),
+      shadowColor: customPinkColor.withOpacity(0.1),
       child: Container(
         constraints: BoxConstraints(
           maxWidth: ResponsiveHelper.getCardWidth(context),
@@ -61,7 +66,7 @@ class OrderCard extends StatelessWidget {
                 const SizedBox(height: 12),
               const Divider(height: 24),
               _buildFooter(context, loc),
-              if (isPending) _buildActionButtons(context, loc, isExpired),
+              if (showActionButtons) _buildActionButtons(context, loc),
             ],
           ),
         ),
@@ -186,80 +191,127 @@ class OrderCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(
-      BuildContext context, AppLocalizations loc, bool isExpired) {
-    final remainingSeconds = OrderTimerService.getRemainingSeconds(order.id);
-    final minutes = (remainingSeconds / 60).floor();
-    final seconds = remainingSeconds % 60;
-    final timerText =
-        '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-
+  Widget _buildActionButtons(BuildContext context, AppLocalizations loc) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: Column(
         children: [
-          if (!isExpired)
-            Center(
-              child: Text(
-                timerText,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
+          if (order.status == OrderStatus.pending) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () =>
+                        onOrderUpdated(order.id, OrderStatus.cancelled),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: BorderSide(color: Colors.red.shade200),
                     ),
-              ),
+                    child: Text(loc.reject),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        onOrderUpdated(order.id, OrderStatus.confirmed),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                    ),
+                    child: Text(loc.accept),
+                  ),
+                ),
+              ],
             ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: isExpired
-                      ? null
-                      : () => onOrderUpdated(order.id, OrderStatus.cancelled),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red,
-                    side: BorderSide(color: Colors.red.shade200),
+          ] else if (order.status == OrderStatus.confirmed) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        onOrderUpdated(order.id, OrderStatus.preparing),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                    ),
+                    child: Text(loc.preparing),
                   ),
-                  child: Text(loc.reject),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: isExpired
-                      ? null
-                      : () => onOrderUpdated(order.id, OrderStatus.confirmed),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+              ],
+            ),
+          ] else if (order.status == OrderStatus.preparing) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        onOrderUpdated(order.id, OrderStatus.ready),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFC6007E),
+                    ),
+                    child: Text(loc.orderReady),
                   ),
-                  child: Text(loc.accept),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ] else if (order.status == OrderStatus.ready) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        onOrderUpdated(order.id, OrderStatus.onTheWay),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                    ),
+                    child: Text(loc.onTheWay),
+                  ),
+                ),
+              ],
+            ),
+          ] else if (order.status == OrderStatus.onTheWay) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        onOrderUpdated(order.id, OrderStatus.delivered),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                    ),
+                    child: Text(loc.delivered),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
   }
 
   Color _getStatusColor(OrderStatus status) {
+    // Define custom colors with better hue consistency
+    const customPinkColor = Color(0xFFC6007E);
+
     switch (status) {
       case OrderStatus.pending:
-        return Colors.orange;
+        return const Color(0xFFFF8C00); // Dark orange for better contrast
       case OrderStatus.confirmed:
-        return Colors.green;
+        return const Color(0xFF00A86B); // Sea green for confirmed
       case OrderStatus.ready:
-        return const Color(0xFF007fff);
-      case OrderStatus.pickedUp:
-        return Colors.purple;
+        return customPinkColor; // Use the main pink theme for ready orders
+      case OrderStatus.onTheWay:
+        return const Color(0xFF2196F3); // Blue for on the way
+      case OrderStatus.delivered:
+        return const Color(0xFF6A5ACD); // Slate blue for delivered
       case OrderStatus.cancelled:
-        return Colors.red;
+        return const Color(0xFFDC143C); // Crimson red for cancelled
       case OrderStatus.expired:
-        return Colors.grey;
+        return const Color(0xFF708090); // Slate gray for expired
       case OrderStatus.returned:
-        return Colors.brown;
+        return const Color(0xFF8B4513); // Saddle brown for returned
       default:
-        return Colors.black;
+        return const Color(0xFF2F4F4F); // Dark slate gray as default
     }
   }
 
@@ -269,10 +321,14 @@ class OrderCard extends StatelessWidget {
         return loc.pending;
       case OrderStatus.confirmed:
         return loc.confirmed;
+      case OrderStatus.preparing:
+        return loc.preparing;
       case OrderStatus.ready:
         return loc.orderReady;
-      case OrderStatus.pickedUp:
-        return loc.pickedUp;
+      case OrderStatus.onTheWay:
+        return loc.onTheWay;
+      case OrderStatus.delivered:
+        return loc.delivered;
       case OrderStatus.cancelled:
         return loc.cancelled;
       case OrderStatus.expired:

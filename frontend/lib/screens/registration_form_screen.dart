@@ -5,38 +5,36 @@ import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/app_auth_service.dart';
 import '../services/image_upload_service.dart';
-import '../utils/arabic_number_formatter.dart';
+import '../services/document_upload_service.dart';
+import '../utils/latin_number_formatter.dart';
 import '../models/business.dart';
 import '../screens/dashboards/business_dashboard.dart';
 import 'login_page.dart';
+import 'package:hadhir_business/l10n/app_localizations.dart';
 
 class RegistrationFormScreen extends StatefulWidget {
   final Function(Locale)? onLanguageChanged;
 
-  const RegistrationFormScreen({Key? key, this.onLanguageChanged}) : super(key: key);
+  const RegistrationFormScreen({Key? key, this.onLanguageChanged})
+      : super(key: key);
 
   @override
   _RegistrationFormScreenState createState() => _RegistrationFormScreenState();
 }
 
 class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
+  // Form state and text controllers
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _showVerificationField = false;
-
-  // User Account Controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _verificationController = TextEditingController();
-
-  // Business Information Controllers
   final _businessNameController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
-
-  // Business Address Controllers
   final _businessCityController = TextEditingController();
   final _businessDistrictController = TextEditingController();
   final _businessCountryController = TextEditingController();
@@ -80,29 +78,29 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     super.dispose();
   }
 
-  Future<void> _pickDocument(Function(File?) onPicked) async {
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-      );
-
-      if (result != null) {
-        File file = File(result.files.single.path!);
-        onPicked(file);
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error picking file: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+  String _getBusinessTypeText(String businessType) {
+    final loc = AppLocalizations.of(context)!;
+    switch (businessType) {
+      case 'restaurant':
+        return loc.restaurant;
+      case 'cloudkitchen':
+        return loc.cloudKitchen;
+      case 'kitchen':
+        return loc.kitchen;
+      case 'store':
+        return loc.store;
+      case 'pharmacy':
+        return loc.pharmacy;
+      case 'cafe':
+        return loc.cafe;
+      default:
+        return businessType;
     }
   }
 
-  Future<void> _pickBusinessPhoto() async {
+  Future<void> _pickDocument(Function(File?) onPicked) async {
     try {
+      final loc = AppLocalizations.of(context)!;
       showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
@@ -110,15 +108,103 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
             child: Wrap(
               children: [
                 ListTile(
+                  leading: const Icon(Icons.folder_open),
+                  title: Text(loc.chooseFromFiles),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    try {
+                      FilePickerResult? result =
+                          await FilePicker.platform.pickFiles(
+                        type: FileType.custom,
+                        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                      );
+
+                      if (result != null) {
+                        File file = File(result.files.single.path!);
+                        onPicked(file);
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                '${loc.errorPickingFile}: ${e.toString()}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: Text(loc.takePicture),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    try {
+                      final XFile? image = await _imagePicker.pickImage(
+                        source: ImageSource.camera,
+                        imageQuality: 95,
+                        maxWidth: 1920,
+                        maxHeight: 1920,
+                      );
+                      if (image != null) {
+                        onPicked(File(image.path));
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                '${loc.errorPickingImage}: ${e.toString()}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '${AppLocalizations.of(context)!.errorPickingFile}: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // Business photo picker with optimized compression settings:
+  // - maxWidth/maxHeight: 1920px for better detail
+  // - imageQuality: 95% for less compression
+  // - Typical result: 500KB-2MB files with much better quality
+  Future<void> _pickBusinessPhoto() async {
+    try {
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          final loc = AppLocalizations.of(context)!;
+          return SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
                   leading: const Icon(Icons.photo_library),
-                  title: const Text('Choose from Gallery'),
+                  title: Text(loc.chooseFromGallery),
                   onTap: () async {
                     Navigator.pop(context);
                     final XFile? image = await _imagePicker.pickImage(
                       source: ImageSource.gallery,
-                      imageQuality: 80,
-                      maxWidth: 1024,
-                      maxHeight: 1024,
+                      imageQuality: 95,
+                      maxWidth: 1920,
+                      maxHeight: 1920,
                     );
                     if (image != null) {
                       setState(() {
@@ -129,14 +215,14 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.photo_camera),
-                  title: const Text('Take Photo'),
+                  title: Text(loc.takePhoto),
                   onTap: () async {
                     Navigator.pop(context);
                     final XFile? image = await _imagePicker.pickImage(
                       source: ImageSource.camera,
-                      imageQuality: 80,
-                      maxWidth: 1024,
-                      maxHeight: 1024,
+                      imageQuality: 95,
+                      maxWidth: 1920,
+                      maxHeight: 1920,
                     );
                     if (image != null) {
                       setState(() {
@@ -151,20 +237,24 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         },
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error picking image: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('${AppLocalizations.of(context)!.errorPickingImage}: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register Your Business'),
+        title: Text(loc.registerYourBusiness),
         centerTitle: true,
       ),
       body: Form(
@@ -174,42 +264,25 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header
-              const Icon(
-                Icons.business_center,
-                size: 64,
-                color: Colors.blue,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Create Your Business Account',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-
               // Account Information Section
-              _buildSectionHeader('Account Information'),
+              _buildSectionHeader(loc.accountInformation),
               const SizedBox(height: 16),
 
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email Address',
-                  hintText: 'Enter your email',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
+                decoration: InputDecoration(
+                  labelText: loc.emailAddress,
+                  hintText: loc.enterYourEmail,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.email),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
+                    return loc.pleaseEnterYourEmail;
                   }
                   if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                    return 'Please enter a valid email';
+                    return loc.pleaseEnterAValidEmail;
                   }
                   return null;
                 },
@@ -218,19 +291,19 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
               TextFormField(
                 controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  hintText: 'Enter your password',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
+                decoration: InputDecoration(
+                  labelText: loc.password,
+                  hintText: loc.enterYourPassword,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock),
                 ),
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
+                    return loc.pleaseEnterYourPassword;
                   }
                   if (value.length < 8) {
-                    return 'Password must be at least 8 characters';
+                    return loc.passwordMustBeAtLeast8Chars;
                   }
                   return null;
                 },
@@ -239,16 +312,16 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
               TextFormField(
                 controller: _confirmPasswordController,
-                decoration: const InputDecoration(
-                  labelText: 'Confirm Password',
-                  hintText: 'Re-enter your password',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock_outline),
+                decoration: InputDecoration(
+                  labelText: loc.confirmPassword,
+                  hintText: loc.reEnterYourPassword,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock_outline),
                 ),
                 obscureText: true,
                 validator: (value) {
                   if (value != _passwordController.text) {
-                    return 'Passwords do not match';
+                    return loc.passwordsDoNotMatch;
                   }
                   return null;
                 },
@@ -256,20 +329,20 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
               const SizedBox(height: 32),
 
               // Business Information Section
-              _buildSectionHeader('Business Information'),
+              _buildSectionHeader(loc.businessInformation),
               const SizedBox(height: 16),
 
               TextFormField(
                 controller: _businessNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Business Name',
-                  hintText: 'Enter your business name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.store),
+                decoration: InputDecoration(
+                  labelText: loc.businessName,
+                  hintText: loc.enterYourBusinessName,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.store),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your business name';
+                    return loc.pleaseEnterYourBusinessName;
                   }
                   return null;
                 },
@@ -279,15 +352,15 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
               // Owner First and Last Name
               TextFormField(
                 controller: _firstNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Owner First Name',
-                  hintText: 'Enter owner first name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
+                decoration: InputDecoration(
+                  labelText: loc.ownerFirstName,
+                  hintText: loc.enterOwnerFirstName,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.person),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter owner first name';
+                    return loc.pleaseEnterOwnerFirstName;
                   }
                   return null;
                 },
@@ -295,15 +368,15 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _lastNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Owner Last Name',
-                  hintText: 'Enter owner last name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person_outline),
+                decoration: InputDecoration(
+                  labelText: loc.ownerLastName,
+                  hintText: loc.enterOwnerLastName,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.person_outline),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter owner last name';
+                    return loc.pleaseEnterOwnerLastName;
                   }
                   return null;
                 },
@@ -320,12 +393,12 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                   'pharmacy',
                   'cafe'
                 ]
-                    .map((type) =>
-                        DropdownMenuItem(value: type, child: Text(type)))
+                    .map((type) => DropdownMenuItem(
+                        value: type, child: Text(_getBusinessTypeText(type))))
                     .toList(),
-                decoration: const InputDecoration(
-                  labelText: 'Business Type',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: loc.businessType,
+                  border: const OutlineInputBorder(),
                 ),
                 onChanged: (value) =>
                     setState(() => _selectedBusinessType = value!),
@@ -334,31 +407,31 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
               TextFormField(
                 controller: _phoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  hintText: 'Enter your business phone',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.phone),
+                decoration: InputDecoration(
+                  labelText: loc.phoneNumber,
+                  hintText: loc.enterYourBusinessPhone,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.phone),
                 ),
                 keyboardType: TextInputType.phone,
                 textAlign: TextAlign.left,
                 textDirection: TextDirection.ltr,
-                inputFormatters: [ArabicNumberInputFormatter()],
+                inputFormatters: [LatinNumberInputFormatter()],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
+                    return loc.pleaseEnterYourPhoneNumber;
                   }
-                  return ArabicPhoneValidator.validate(value);
+                  return LatinPhoneValidator.validate(value);
                 },
               ),
               const SizedBox(height: 32),
 
               // Business Photo Section
-              _buildSectionHeader('Business Photo *'),
+              _buildSectionHeader('${loc.businessPhoto} *'),
               const SizedBox(height: 8),
-              const Text(
-                'Add a photo to showcase your business (required)',
-                style: TextStyle(
+              Text(
+                loc.addAPhotoToShowcaseYourBusiness,
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
                 ),
@@ -369,20 +442,20 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
               const SizedBox(height: 32),
 
               // Business Address Section
-              _buildSectionHeader('Business Address'),
+              _buildSectionHeader(loc.businessAddress),
               const SizedBox(height: 16),
 
               TextFormField(
                 controller: _businessCityController,
-                decoration: const InputDecoration(
-                  labelText: 'City',
-                  hintText: 'Enter your city',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.location_city),
+                decoration: InputDecoration(
+                  labelText: loc.city,
+                  hintText: loc.enterYourCity,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.location_city),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your city';
+                    return loc.pleaseEnterYourCity;
                   }
                   return null;
                 },
@@ -391,15 +464,15 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
               TextFormField(
                 controller: _businessDistrictController,
-                decoration: const InputDecoration(
-                  labelText: 'District',
-                  hintText: 'Enter your district/area',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.map),
+                decoration: InputDecoration(
+                  labelText: loc.district,
+                  hintText: loc.enterYourDistrict,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.map),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your district';
+                    return loc.pleaseEnterYourDistrict;
                   }
                   return null;
                 },
@@ -408,29 +481,29 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
               TextFormField(
                 controller: _businessStreetController,
-                decoration: const InputDecoration(
-                  labelText: 'Street Address',
-                  hintText: 'Enter your street address',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.home),
+                decoration: InputDecoration(
+                  labelText: loc.streetAddress,
+                  hintText: loc.enterYourStreetAddress,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.home),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your street address';
+                    return loc.pleaseEnterYourStreetAddress;
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 32),
 
-              // Documents Section (Optional)
-              _buildSectionHeader('Documents (Optional)'),
+              // Documents Section (Required)
+              _buildSectionHeader('${loc.documentsRequired} *'),
               const SizedBox(height: 8),
-              const Text(
-                'You can upload these documents now or later',
-                style: TextStyle(
+              Text(
+                loc.pleaseUploadAllRequiredDocuments,
+                style: const TextStyle(
                   fontSize: 14,
-                  color: Colors.grey,
+                  color: Colors.red,
                 ),
               ),
               const SizedBox(height: 12),
@@ -440,27 +513,43 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
               // Email Verification Section (Conditional)
               if (_showVerificationField) ...[
-                _buildSectionHeader('Email Verification'),
+                _buildSectionHeader(loc.emailVerification),
                 const SizedBox(height: 16),
-                const Text(
-                  'Please enter the verification code sent to your email:',
-                  style: TextStyle(fontSize: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        loc.enterTheCodeSentToYourEmail,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _showVerificationField = false;
+                          _verificationController.clear();
+                        });
+                      },
+                      child: Text(loc.changeEmail),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _verificationController,
-                  decoration: const InputDecoration(
-                    labelText: 'Verification Code',
-                    hintText: 'Enter 6-digit code',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.vpn_key),
+                  decoration: InputDecoration(
+                    labelText: loc.verificationCode,
+                    hintText: loc.enter6DigitCode,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.vpn_key),
                   ),
                   keyboardType: TextInputType.number,
                   maxLength: 6,
                   validator: (value) {
                     if (_showVerificationField &&
                         (value == null || value.isEmpty)) {
-                      return 'Please enter the verification code';
+                      return loc.pleaseEnterTheVerificationCode;
                     }
                     return null;
                   },
@@ -468,7 +557,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: _resendVerificationCode,
-                  child: const Text('Resend Verification Code'),
+                  child: Text(loc.resendVerificationCode),
                 ),
                 const SizedBox(height: 32),
               ],
@@ -487,8 +576,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
                           _showVerificationField
-                              ? 'Complete Registration'
-                              : 'Create Account',
+                              ? loc.completeRegistration
+                              : loc.createAccount,
                           style: const TextStyle(fontSize: 16),
                         ),
                 ),
@@ -513,6 +602,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
   }
 
   Widget _buildCompactDocumentsGrid() {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
@@ -526,7 +616,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
             children: [
               Expanded(
                 child: _buildCompactDocumentCard(
-                  title: 'Business License',
+                  title: loc.businessLicense,
                   icon: Icons.description,
                   file: _licenseFile,
                   onPressed: () => _pickDocument(
@@ -536,7 +626,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildCompactDocumentCard(
-                  title: 'Owner Identity',
+                  title: loc.ownerIdentity,
                   icon: Icons.person,
                   file: _identityFile,
                   onPressed: () => _pickDocument(
@@ -550,7 +640,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
             children: [
               Expanded(
                 child: _buildCompactDocumentCard(
-                  title: 'Health Certificate',
+                  title: loc.healthCertificate,
                   icon: Icons.local_hospital,
                   file: _healthCertificateFile,
                   onPressed: () => _pickDocument(
@@ -560,7 +650,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildCompactDocumentCard(
-                  title: 'Owner Photo',
+                  title: loc.ownerPhoto,
                   icon: Icons.camera_alt,
                   file: _ownerPhotoFile,
                   onPressed: () => _pickDocument(
@@ -581,6 +671,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     required VoidCallback onPressed,
   }) {
     final bool hasFile = file != null;
+    final loc = AppLocalizations.of(context)!;
 
     return Container(
       decoration: BoxDecoration(
@@ -636,7 +727,9 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        hasFile ? 'UPLOADED' : 'UPLOAD',
+                        hasFile
+                            ? loc.uploaded.toUpperCase()
+                            : loc.upload.toUpperCase(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -647,22 +740,38 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const Text(
+                      '*',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  hasFile ? file.path.split('/').last : 'Tap to select file',
+                  hasFile
+                      ? file.path.split('/').last
+                      : '${loc.tapToSelectFile} (Required)',
                   style: TextStyle(
                     fontSize: 11,
                     color:
-                        hasFile ? Colors.green.shade700 : Colors.grey.shade600,
+                        hasFile ? Colors.green.shade700 : Colors.red.shade600,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -676,6 +785,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
   }
 
   Widget _buildBusinessPhotoCard() {
+    final loc = AppLocalizations.of(context)!;
     return Card(
       elevation: 2,
       child: Padding(
@@ -683,6 +793,24 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Circular preview of selected business photo (or default icon)
+            Center(
+              child: CircleAvatar(
+                radius: 40,
+                backgroundImage: _businessPhotoFile != null
+                    ? FileImage(_businessPhotoFile!)
+                    : null,
+                backgroundColor: Colors.grey.shade200,
+                child: _businessPhotoFile == null
+                    ? Icon(
+                        Icons.business,
+                        size: 40,
+                        color: Colors.grey.shade600,
+                      )
+                    : null,
+              ),
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -691,9 +819,9 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                     children: [
                       Row(
                         children: [
-                          const Text(
-                            'Business Photo',
-                            style: TextStyle(
+                          Text(
+                            loc.businessPhoto,
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
@@ -713,7 +841,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                       Text(
                         _businessPhotoFile != null
                             ? _businessPhotoFile!.path.split('/').last
-                            : 'Required - Please add a photo',
+                            : loc.requiredPleaseAddAPhoto,
                         style: TextStyle(
                           fontSize: 14,
                           color: _businessPhotoFile != null
@@ -729,8 +857,8 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                   icon: Icon(_businessPhotoFile != null
                       ? Icons.change_circle
                       : Icons.camera_alt),
-                  label:
-                      Text(_businessPhotoFile != null ? 'Change' : 'Add Photo'),
+                  label: Text(
+                      _businessPhotoFile != null ? loc.change : loc.addPhoto),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _businessPhotoFile != null
                         ? Colors.orange
@@ -764,10 +892,11 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
   }
 
   Future<void> _submitForm() async {
+    final loc = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all required fields'),
+        SnackBar(
+          content: Text(loc.pleaseFillInAllRequiredFields),
           backgroundColor: Colors.red,
         ),
       );
@@ -777,9 +906,49 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
     // Check if business photo is provided (mandatory)
     if (_businessPhotoFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'Business photo is required. Please add a photo of your business.'),
+        SnackBar(
+          content: Text(loc.businessPhotoIsRequired),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Check if all required documents are provided (mandatory)
+    if (_licenseFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc.businessLicenseRequired),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_identityFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc.ownerIdentityRequired),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_healthCertificateFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc.healthCertificateRequired),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_ownerPhotoFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc.ownerPhotoRequired),
           backgroundColor: Colors.red,
         ),
       );
@@ -797,19 +966,21 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
         if (emailCheckResult.exists) {
           setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(emailCheckResult.message),
-              backgroundColor: Colors.red,
-              action: SnackBarAction(
-                label: 'Login Instead',
-                textColor: Colors.white,
-                onPressed: () {
-                  Navigator.of(context).pushReplacementNamed('/login');
-                },
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(emailCheckResult.message),
+                backgroundColor: Colors.red,
+                action: SnackBarAction(
+                  label: loc.loginInstead,
+                  textColor: Colors.white,
+                  onPressed: () {
+                    Navigator.of(context).pushReplacementNamed('/login');
+                  },
+                ),
               ),
-            ),
-          );
+            );
+          }
           return;
         }
 
@@ -820,30 +991,133 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
               await ImageUploadService.uploadBusinessPhoto(_businessPhotoFile!);
           if (uploadResult['success'] == true) {
             businessPhotoUrl = uploadResult['imageUrl'];
-            print('✅ Business photo uploaded successfully: $businessPhotoUrl');
+            debugPrint(
+                '✅ Business photo uploaded successfully: $businessPhotoUrl');
           } else {
             setState(() => _isLoading = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                    'Failed to upload business photo: ${uploadResult['message']}'),
-                backgroundColor: Colors.red,
-              ),
-            );
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                      '${loc.failedToUploadBusinessPhoto}: ${uploadResult['message']}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
             return;
           }
         } catch (e) {
           setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error uploading business photo: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${loc.errorUploadingBusinessPhoto}: $e'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
           return;
         }
 
-        // Step 3: Register with business data
+        // Step 3: Upload mandatory documents
+        String? licenseUrl, identityUrl, healthCertificateUrl, ownerPhotoUrl;
+
+        try {
+          // Upload business license
+          final licenseResult =
+              await DocumentUploadService.uploadBusinessLicense(_licenseFile!);
+          if (licenseResult['success'] == true) {
+            licenseUrl = licenseResult['imageUrl'];
+            debugPrint('✅ Business license uploaded successfully: $licenseUrl');
+          } else {
+            setState(() => _isLoading = false);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                      '${loc.failedToUploadBusinessLicense}: ${licenseResult['message']}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+            return;
+          }
+
+          // Upload owner identity
+          final identityResult =
+              await DocumentUploadService.uploadOwnerIdentity(_identityFile!);
+          if (identityResult['success'] == true) {
+            identityUrl = identityResult['imageUrl'];
+            debugPrint('✅ Owner identity uploaded successfully: $identityUrl');
+          } else {
+            setState(() => _isLoading = false);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                      '${loc.failedToUploadOwnerIdentity}: ${identityResult['message']}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+            return;
+          }
+
+          // Upload health certificate
+          final healthResult =
+              await DocumentUploadService.uploadHealthCertificate(
+                  _healthCertificateFile!);
+          if (healthResult['success'] == true) {
+            healthCertificateUrl = healthResult['imageUrl'];
+            debugPrint(
+                '✅ Health certificate uploaded successfully: $healthCertificateUrl');
+          } else {
+            setState(() => _isLoading = false);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                      '${loc.failedToUploadHealthCertificate}: ${healthResult['message']}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+            return;
+          }
+
+          // Upload owner photo
+          final ownerPhotoResult =
+              await DocumentUploadService.uploadOwnerPhoto(_ownerPhotoFile!);
+          if (ownerPhotoResult['success'] == true) {
+            ownerPhotoUrl = ownerPhotoResult['imageUrl'];
+            debugPrint('✅ Owner photo uploaded successfully: $ownerPhotoUrl');
+          } else {
+            setState(() => _isLoading = false);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                      '${loc.failedToUploadOwnerPhoto}: ${ownerPhotoResult['message']}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+            return;
+          }
+        } catch (e) {
+          setState(() => _isLoading = false);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${loc.errorUploadingDocuments}: $e'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
+        // Step 4: Register with business data including document URLs
         final businessData = {
           'businessName': _businessNameController.text.trim(),
           'firstName': _firstNameController.text.trim(),
@@ -858,6 +1132,10 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
           },
           'businessPhotoUrl':
               businessPhotoUrl, // Always included since it's mandatory
+          'businessLicenseUrl': licenseUrl,
+          'ownerIdentityUrl': identityUrl,
+          'healthCertificateUrl': healthCertificateUrl,
+          'ownerPhotoUrl': ownerPhotoUrl,
         };
 
         final registerResult = await AppAuthService.registerWithBusiness(
@@ -870,27 +1148,34 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
 
         if (registerResult.success) {
           setState(() => _showVerificationField = true);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                  'Registration initiated! Please check your email for verification code.'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(loc.registrationInitiated),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
           // Scroll to verification field
           Future.delayed(const Duration(milliseconds: 300), () {
-            Scrollable.ensureVisible(
-              context,
-              duration: const Duration(milliseconds: 500),
-            );
+            final currentContext = _formKey.currentContext;
+            if (currentContext != null) {
+              Scrollable.ensureVisible(
+                currentContext,
+                duration: const Duration(milliseconds: 500),
+                alignment: 0.5,
+              );
+            }
           });
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(registerResult.message),
-              backgroundColor: Colors.red,
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(registerResult.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       } else {
         // Step 3: Confirm registration with verification code
@@ -902,98 +1187,143 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
         setState(() => _isLoading = false);
 
         if (confirmResult.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(confirmResult.message ??
-                  'Registration completed successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(confirmResult.message ??
+                    loc.registrationCompletedSuccessfully),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+
           // Check if we have user and business data for auto-navigation
           if (confirmResult.user != null && confirmResult.business != null) {
             // User verified successfully with business data - navigate to dashboard
-            final businessData = Map<String, dynamic>.from(confirmResult.business as Map);
-            
+            final businessData =
+                Map<String, dynamic>.from(confirmResult.business as Map);
+
             // Ensure email is included in business data
-            businessData['email'] = businessData['email'] ?? confirmResult.user!['email'] ?? _emailController.text.trim();
+            businessData['email'] = businessData['email'] ??
+                confirmResult.user!['email'] ??
+                _emailController.text.trim();
 
             try {
               final business = Business.fromJson(businessData);
-              
+
               // Navigate to business dashboard
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BusinessDashboard(
-                    business: business,
-                    onLanguageChanged: widget.onLanguageChanged ?? (Locale locale) {},
-                    userData: confirmResult.user,
-                    businessesData: [businessData],
+              if (mounted) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BusinessDashboard(
+                      business: business,
+                      onLanguageChanged:
+                          widget.onLanguageChanged ?? (Locale locale) {},
+                      userData: confirmResult.user,
+                      businessesData: [businessData],
+                    ),
                   ),
-                ),
-              );
+                );
+              }
             } catch (businessError) {
-              print('Error creating business object: $businessError');
+              debugPrint('Error creating business object: $businessError');
               // Fall back to login screen if business data is invalid
+              if (mounted) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LoginPage(
+                      onLanguageChanged:
+                          widget.onLanguageChanged ?? (Locale locale) {},
+                    ),
+                  ),
+                );
+              }
+            }
+          } else {
+            // Original flow - navigate to login
+            if (mounted) {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => LoginPage(
-                    onLanguageChanged: widget.onLanguageChanged ?? (Locale locale) {},
+                    onLanguageChanged:
+                        widget.onLanguageChanged ?? (Locale locale) {},
                   ),
                 ),
               );
             }
-          } else {
-            // Original flow - navigate to login
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => LoginPage(
-                  onLanguageChanged: widget.onLanguageChanged ?? (Locale locale) {},
-                ),
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(confirmResult.message ?? loc.verificationFailed),
+                backgroundColor: Colors.red,
               ),
             );
           }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(confirmResult.message ?? 'Verification failed'),
-              backgroundColor: Colors.red,
-            ),
-          );
         }
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${loc.error}: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _resendVerificationCode() async {
+    setState(() => _isLoading = true);
+    final loc = AppLocalizations.of(context)!;
     try {
       await AppAuthService.resendRegistrationCode(
         email: _emailController.text.trim(),
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Verification code sent!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text(loc.verificationCodeSentTo(_emailController.text.trim())),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error resending code: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${loc.error}: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+}
+
+class ArabicPhoneValidator {
+  static String? validate(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a phone number';
+    }
+    // Updated regex to match Iraqi phone numbers (e.g., 07xxxxxxxxx or +9647xxxxxxxxx)
+    // And also general numbers for other regions.
+    final phoneRegExp =
+        RegExp(r'^(?:\+964|0)?7[3-9]\d{8}$|^[0-9\s\-\(\)]{7,}$');
+    if (!phoneRegExp.hasMatch(value.replaceAll(RegExp(r'[\s\-\(\)]'), ''))) {
+      return 'Please enter a valid phone number';
+    }
+    return null;
   }
 }

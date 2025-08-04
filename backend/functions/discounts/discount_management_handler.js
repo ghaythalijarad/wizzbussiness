@@ -1,4 +1,6 @@
-const AWS = require('aws-sdk');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, QueryCommand, ScanCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
+const { CognitoIdentityServiceProvider } = require('@aws-sdk/client-cognito-identity-provider');
 const { v4: uuidv4 } = require('uuid');
 const { createResponse } = require('../auth/utils');
 
@@ -10,8 +12,9 @@ exports.handler = async (event) => {
     console.log('Discount Management Handler - Event:', JSON.stringify(event, null, 2));
 
     // Instantiate AWS clients for this invocation
-    const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.AWS_REGION || 'us-east-1' });
-    const dynamodb = new AWS.DynamoDB.DocumentClient({ region: process.env.AWS_REGION || 'us-east-1' });
+    const cognito = new CognitoIdentityServiceProvider({ region: process.env.AWS_REGION || 'us-east-1' });
+    const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+    const dynamodb = DynamoDBDocumentClient.from(dynamoDbClient);
 
     const { httpMethod, path, pathParameters, headers } = event;
     
@@ -78,7 +81,7 @@ exports.handler = async (event) => {
 // Helper function to get user info from access token
 async function getUserInfoFromToken(cognito, accessToken) {
     try {
-        const userResponse = await cognito.getUser({ AccessToken: accessToken }).promise();
+        const userResponse = await cognito.getUser({ AccessToken: accessToken });
         const email = userResponse.UserAttributes.find(attr => attr.Name === 'email')?.Value;
         const userId = userResponse.UserAttributes.find(attr => attr.Name === 'sub')?.Value;
         
@@ -105,7 +108,7 @@ async function getBusinessInfoForUser(dynamodb, email) {
             }
         };
 
-        const result = await dynamodb.query(params).promise();
+        const result = await dynamodb.send(new QueryCommand(params));
         return result.Items?.[0] || null;
     } catch (error) {
         console.error('Error getting business info:', error);
@@ -125,7 +128,7 @@ async function handleGetDiscounts(dynamodb, businessId) {
             }
         };
 
-        const result = await dynamodb.query(params).promise();
+        const result = await dynamodb.send(new QueryCommand(params));
         
         return createResponse(200, {
             success: true,
@@ -154,7 +157,7 @@ async function handleCreateDiscount(dynamodb, businessId, discountData) {
         }
 
         // Validate discount type
-        const validTypes = ['percentage', 'fixedAmount', 'conditional', 'freeDelivery', 'buyXGetY', 'others'];
+        const validTypes = ['percentage', 'conditional', 'freeDelivery', 'buyXGetY'];
         if (!validTypes.includes(discountData.type)) {
             return createResponse(400, { 
                 success: false, 
@@ -213,7 +216,7 @@ async function handleCreateDiscount(dynamodb, businessId, discountData) {
             Item: discount
         };
 
-        await dynamodb.put(params).promise();
+        await dynamodb.send(new PutCommand(params));
         
         return createResponse(201, {
             success: true,
@@ -236,7 +239,7 @@ async function handleGetDiscount(dynamodb, businessId, discountId) {
             }
         };
 
-        const result = await dynamodb.get(params).promise();
+        const result = await dynamodb.send(new GetCommand(params));
         
         if (!result.Item) {
             return createResponse(404, { success: false, message: 'Discount not found' });
@@ -338,7 +341,7 @@ async function handleUpdateDiscount(dynamodb, businessId, discountId, updateData
             ReturnValues: 'ALL_NEW'
         };
 
-        const result = await dynamodb.update(params).promise();
+        const result = await dynamodb.send(new UpdateCommand(params));
         
         return createResponse(200, {
             success: true,
@@ -362,7 +365,7 @@ async function handleDeleteDiscount(dynamodb, businessId, discountId) {
             }
         };
 
-        const getResult = await dynamodb.get(getParams).promise();
+        const getResult = await dynamodb.send(new GetCommand(getParams));
         
         if (!getResult.Item) {
             return createResponse(404, { success: false, message: 'Discount not found' });
@@ -382,7 +385,7 @@ async function handleDeleteDiscount(dynamodb, businessId, discountId) {
             ReturnValues: 'ALL_OLD'
         };
 
-        const result = await dynamodb.delete(params).promise();
+        const result = await dynamodb.send(new DeleteCommand(params));
         
         if (!result.Attributes) {
             return createResponse(404, { success: false, message: 'Discount not found' });
@@ -409,7 +412,7 @@ async function handleToggleDiscountStatus(dynamodb, businessId, discountId) {
             }
         };
 
-        const result = await dynamodb.get(getParams).promise();
+        const result = await dynamodb.send(new GetCommand(getParams));
         if (!result.Item) {
             return createResponse(404, { success: false, message: 'Discount not found' });
         }
@@ -439,7 +442,7 @@ async function handleToggleDiscountStatus(dynamodb, businessId, discountId) {
             ReturnValues: 'ALL_NEW'
         };
 
-        const updateResult = await dynamodb.update(updateParams).promise();
+        const updateResult = await dynamodb.send(new UpdateCommand(updateParams));
         
         return createResponse(200, {
             success: true,
@@ -472,7 +475,7 @@ async function handleValidateDiscount(dynamodb, businessId, orderData) {
             }
         };
 
-        const result = await dynamodb.get(getParams).promise();
+        const result = await dynamodb.send(new GetCommand(getParams));
         if (!result.Item) {
             return createResponse(404, { success: false, message: 'Discount not found' });
         }
@@ -571,7 +574,7 @@ async function handleApplyDiscount(dynamodb, businessId, orderData) {
             }
         };
 
-        await dynamodb.update(updateParams).promise();
+        await dynamodb.send(new UpdateCommand(updateParams));
 
         return createResponse(200, {
             success: true,
@@ -598,7 +601,7 @@ async function handleGetDiscountStats(dynamodb, businessId) {
             }
         };
 
-        const result = await dynamodb.query(params).promise();
+        const result = await dynamodb.send(new QueryCommand(params));
         const discounts = result.Items || [];
 
         const stats = {
@@ -610,7 +613,7 @@ async function handleGetDiscountStats(dynamodb, businessId) {
         };
 
         // Group by type
-        const types = ['percentage', 'fixedAmount', 'conditional', 'freeDelivery', 'buyXGetY', 'others'];
+        const types = ['percentage', 'conditional', 'freeDelivery', 'buyXGetY'];
         types.forEach(type => {
             stats.discountsByType[type] = discounts.filter(d => d.type === type).length;
         });
@@ -655,8 +658,6 @@ function calculateDiscountAmount(discount, orderTotal, items) {
     switch (discount.type) {
         case 'percentage':
             return discountableAmount * (discount.value / 100);
-        case 'fixedAmount':
-            return Math.min(discount.value, discountableAmount);
         case 'buyXGetY':
         case 'conditional':
             // For Buy X Get Y, implement specific logic based on items
@@ -664,7 +665,7 @@ function calculateDiscountAmount(discount, orderTotal, items) {
         case 'freeDelivery':
             return 0; // This would be handled separately for delivery charges
         default:
-            return Math.min(discount.value, discountableAmount);
+            return 0; // Default to 0 for unknown types
     }
 }
 

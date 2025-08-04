@@ -26,6 +26,10 @@ class Pharmacy implements Business {
   String? website;
   @override
   String? ownerName;
+  @override
+  String? businessPhotoUrl;
+  @override
+  final String status;
 
   @override
   final List<Offer> offers;
@@ -49,6 +53,8 @@ class Pharmacy implements Business {
     this.description,
     this.website,
     this.ownerName,
+    this.businessPhotoUrl,
+    required this.status,
     required this.offers,
     required this.businessHours,
     required this.settings,
@@ -67,6 +73,7 @@ class Pharmacy implements Business {
     String? description,
     String? website,
     String? ownerName,
+    String? businessPhotoUrl,
   }) {
     if (name != null) this.name = name;
     if (phone != null) this.phone = phone;
@@ -77,6 +84,7 @@ class Pharmacy implements Business {
     if (description != null) this.description = description;
     if (website != null) this.website = website;
     if (ownerName != null) this.ownerName = ownerName;
+    if (businessPhotoUrl != null) this.businessPhotoUrl = businessPhotoUrl;
   }
 
   @override
@@ -146,7 +154,9 @@ class Pharmacy implements Business {
       }
       total += d.type == DiscountType.percentage
           ? amt * (d.value / 100)
-          : d.value.clamp(0, amt);
+          : d.type == DiscountType.freeDelivery
+              ? 0.0 // Free delivery handled separately
+              : 0.0; // Other types require backend calculation
     }
     return total;
   }

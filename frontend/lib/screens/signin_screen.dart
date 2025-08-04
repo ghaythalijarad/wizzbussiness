@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../services/app_auth_service.dart';
+import '../providers/app_auth_provider.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../l10n/app_localizations.dart';
@@ -120,12 +122,14 @@ class _SignInScreenState extends State<SignInScreen> {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => SignUpScreen(
-                onLanguageChanged: (Locale locale) {
-                  // Handle language change if needed
-                  debugPrint('Language changed to: ${locale.languageCode}');
-                },
-              )),
+              MaterialPageRoute(
+                  builder: (context) => SignUpScreen(
+                        onLanguageChanged: (Locale locale) {
+                          // Handle language change if needed
+                          debugPrint(
+                              'Language changed to: ${locale.languageCode}');
+                        },
+                      )),
             );
           },
           child: Text(
@@ -165,6 +169,12 @@ class _SignInScreenState extends State<SignInScreen> {
 
       if (result.success) {
         debugPrint('✅ Login successful!');
+
+        // Update AppAuthProvider state after successful authentication
+        final authProvider =
+            Provider.of<AppAuthProvider>(context, listen: false);
+        await authProvider.initialize();
+        debugPrint('✅ AppAuthProvider state updated after login');
 
         // Extract business data from the response
         final businessData =

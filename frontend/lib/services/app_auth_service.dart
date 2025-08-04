@@ -144,19 +144,6 @@ class AppAuthService {
           });
         }
 
-        // Configure Amplify with the tokens to establish session
-        try {
-          // Use CognitoAuthService to establish the Amplify session
-          final cognitoResult = await CognitoAuthService.signIn(
-            username: email,
-            password: password,
-          );
-          print('🔄 Amplify session established: ${cognitoResult['success']}');
-        } catch (e) {
-          print('⚠️ Warning: Could not establish Amplify session: $e');
-          // Continue anyway as we have the backend data
-        }
-
         // Return the user and business data from our backend
         return SignInResult(
           success: true,
@@ -198,17 +185,77 @@ class AppAuthService {
   // Authentication state and data retrieval using legacy AuthService
   static Future<Map<String, dynamic>?> getCurrentUser() async {
     await initialize();
-    try {
-      final result = await CognitoAuthService.getCurrentUser();
-      // Return user attributes map if available
-      if (result != null) {
-        return result;
+
+    print('🔍 AppAuthService.getCurrentUser() - Starting validation');
+
+    // First try to get user from Cognito if configured
+    if (AppConfig.isCognitoConfigured) {
+      print('🔍 Trying Cognito getCurrentUser...');
+      try {
+        final result = await CognitoAuthService.getCurrentUser();
+        if (result != null) {
+          print('✅ Got user from Cognito: ${result['email']}');
+          return result;
+        }
+        print('⚠️ Cognito getCurrentUser returned null');
+      } catch (e) {
+        print('⚠️ Cognito getCurrentUser error: $e');
       }
-      return null;
-    } catch (e) {
-      print('❌ AppAuthService.getCurrentUser error: $e');
-      return null;
     }
+
+    // Fallback to checking stored user data from backend authentication
+    print('🔍 Trying stored token validation...');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+
+      print(
+          '🔍 Access token exists: ${accessToken != null && accessToken.isNotEmpty}');
+
+      if (accessToken != null && accessToken.isNotEmpty) {
+        print('🔍 Access token length: ${accessToken.length}');
+        print('🔍 Access token preview: ${accessToken.substring(0, 50)}...');
+
+        // If we have an access token, try to get user info
+        final apiService = ApiService();
+        print('🔍 Calling getUserBusinesses...');
+        final businessList = await apiService.getUserBusinesses();
+
+        print('🔍 Got ${businessList.length} businesses');
+
+        if (businessList.isNotEmpty) {
+          final business = businessList.first;
+          print('🔍 Business data: ${business.keys.toList()}');
+
+          final userResult = {
+            'success': true,
+            'email': business['email'],
+            'userId': business['ownerId'] ?? business['cognitoUserId'],
+            'sub': business['cognitoUserId'],
+            'email_verified': true,
+          };
+
+          print('✅ Returning user data: $userResult');
+          return userResult;
+        } else {
+          print('❌ No businesses found for user');
+        }
+      } else {
+        print('❌ No access token found');
+      }
+    } catch (e) {
+      print('⚠️ Error getting user from backend: $e');
+
+      // If we get a 401 error, the token is likely expired - clear it
+      if (e.toString().contains('401') ||
+          e.toString().contains('Invalid or expired access token')) {
+        print('🧹 Clearing expired tokens');
+        await _clearStoredTokens();
+      }
+    }
+
+    print('❌ getCurrentUser returning null');
+    return null;
   }
 
   static Future<void> _storeAuthTokens(Map<String, dynamic> authResult) async {
@@ -298,12 +345,16 @@ class AppAuthService {
 
       if (result['success'] == true) {
         // Check if the backend returned user and business data (new auto-login flow)
-        if (result['verified'] == true && result['user'] != null && result['businesses'] != null) {
+        if (result['verified'] == true &&
+            result['user'] != null &&
+            result['businesses'] != null) {
           return ConfirmResult(
             success: true,
             message: result['message'] ?? 'Registration confirmed successfully',
             user: result['user'],
-            business: result['businesses']?.isNotEmpty == true ? result['businesses'][0] : null,
+            business: result['businesses']?.isNotEmpty == true
+                ? result['businesses'][0]
+                : null,
           );
         } else {
           // Old flow - store authentication tokens if provided
@@ -358,12 +409,47 @@ class AppAuthService {
   /// Check if user is signed in, using Cognito if configured, otherwise falling back to shared preferences or legacy token
   static Future<bool> isSignedIn() async {
     await initialize();
-    try {
-      final session = await Amplify.Auth.fetchAuthSession();
-      return (session as CognitoAuthSession).isSignedIn;
-    } catch (_) {
-      return false;
+
+    // First check Cognito session if configured
+    if (AppConfig.isCognitoConfigured) {
+      try {
+        final session = await Amplify.Auth.fetchAuthSession();
+        if ((session as CognitoAuthSession).isSignedIn) {
+          return true;
+        }
+      } catch (e) {
+        print('⚠️ Cognito session check failed: $e');
+      }
     }
+
+    // Fallback to checking stored tokens from backend authentication
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+
+      if (accessToken != null && accessToken.isNotEmpty) {
+        print('✅ Found stored access token, validating...');
+
+        // Validate token by trying to get user info
+        try {
+          final apiService = ApiService();
+          final userBusinesses = await apiService.getUserBusinesses();
+          if (userBusinesses.isNotEmpty) {
+            print('✅ Token is valid, user is signed in');
+            return true;
+          }
+        } catch (e) {
+          print('❌ Stored token is invalid/expired, clearing session');
+          await _clearStoredTokens();
+          return false;
+        }
+      }
+    } catch (e) {
+      print('⚠️ Error checking stored tokens: $e');
+    }
+
+    print('❌ No valid authentication found');
+    return false;
   }
 
   /// Get current access token from Cognito or shared preferences (fallbacks: access_token, auth_token)

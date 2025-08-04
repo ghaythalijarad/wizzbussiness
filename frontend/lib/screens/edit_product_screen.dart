@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../models/product.dart';
 import '../services/product_service.dart';
+import '../services/image_upload_service.dart';
 import '../widgets/wizz_business_button.dart';
 import '../widgets/wizz_business_text_form_field.dart';
 
@@ -25,10 +28,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   final _imageUrlController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
 
   String? _selectedCategoryId;
   bool _isAvailable = true;
   bool _isLoading = false;
+  bool _isUploadingImage = false;
+  File? _selectedImage;
+  String? _uploadedImageUrl;
 
   @override
   void initState() {
@@ -72,15 +79,20 @@ class _EditProductScreenState extends State<EditProductScreen> {
     });
 
     try {
+      // Use uploaded image URL if available, otherwise use manual URL
+      String? finalImageUrl =
+          _uploadedImageUrl ?? _imageUrlController.text.trim();
+      if (finalImageUrl.isEmpty) {
+        finalImageUrl = null;
+      }
+
       final result = await ProductService.updateProduct(
         productId: widget.product.id,
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         price: double.parse(_priceController.text.trim()),
         categoryId: _selectedCategoryId!,
-        imageUrl: _imageUrlController.text.trim().isEmpty
-            ? null
-            : _imageUrlController.text.trim(),
+        imageUrl: finalImageUrl,
         isAvailable: _isAvailable,
       );
 
@@ -179,12 +191,168 @@ class _EditProductScreenState extends State<EditProductScreen> {
     return null;
   }
 
+  // Image compression settings optimized for quality vs file size:
+  // - maxWidth/maxHeight: 1920px (up from 1024px) for better detail
+  // - imageQuality: 95% (up from 80%) for less compression
+  // - Typical result: 500KB-2MB files with much better quality
+  Future<void> _pickImageFromCamera() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 95,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+        await _uploadImage();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error taking photo: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 95,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+        await _uploadImage();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadImage() async {
+    if (_selectedImage == null) return;
+
+    setState(() {
+      _isUploadingImage = true;
+    });
+
+    try {
+      final result =
+          await ImageUploadService.uploadProductImage(_selectedImage!);
+
+      if (result['success']) {
+        setState(() {
+          _uploadedImageUrl = result['imageUrl'];
+          _imageUrlController.text =
+              result['imageUrl']; // Update the text field
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Image uploaded successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to upload image: ${result['message']}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error uploading image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingImage = false;
+        });
+      }
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select Image Source'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImageFromCamera();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Gallery'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImageFromGallery();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _removeImage() {
+    setState(() {
+      _selectedImage = null;
+      _uploadedImageUrl = null;
+      _imageUrlController.clear();
+    });
+  }
+
   bool _hasChanges() {
+    String currentImageUrl =
+        _uploadedImageUrl ?? _imageUrlController.text.trim();
+    String originalImageUrl = widget.product.imageUrl ?? '';
+
     return _nameController.text.trim() != widget.product.name ||
         _descriptionController.text.trim() != widget.product.description ||
         double.parse(_priceController.text.trim()) != widget.product.price ||
         _selectedCategoryId != widget.product.categoryId ||
-        _imageUrlController.text.trim() != (widget.product.imageUrl ?? '') ||
+        currentImageUrl != originalImageUrl ||
         _isAvailable != widget.product.isAvailable;
   }
 
@@ -326,13 +494,153 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Image URL (Optional)
-                WizzBusinessTextFormField(
-                  controller: _imageUrlController,
-                  labelText: 'Image URL (Optional)',
-                  prefixIcon: const Icon(Icons.image),
-                  validator: _validateImageUrl,
-                  keyboardType: TextInputType.url,
+                // Image Section
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey[300]!),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.image, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Product Image (Optional)',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Current/Selected Image Preview
+                      if (_selectedImage != null ||
+                          _uploadedImageUrl != null ||
+                          _imageUrlController.text.trim().isNotEmpty) ...[
+                        Container(
+                          height: 200,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: _selectedImage != null
+                                ? Image.file(
+                                    _selectedImage!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : (_uploadedImageUrl != null ||
+                                        _imageUrlController.text
+                                            .trim()
+                                            .isNotEmpty)
+                                    ? Image.network(
+                                        _uploadedImageUrl ??
+                                            _imageUrlController.text.trim(),
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Container(
+                                            color: Colors.grey[200],
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.broken_image,
+                                                size: 50,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      )
+                                    : const SizedBox(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Remove Image Button
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _removeImage,
+                                icon: const Icon(Icons.delete_outline),
+                                label: const Text('Remove Image'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.red,
+                                  side: const BorderSide(color: Colors.red),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      // Upload Options
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: _isUploadingImage
+                                  ? null
+                                  : _showImageSourceDialog,
+                              icon: _isUploadingImage
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.add_a_photo),
+                              label: Text(_isUploadingImage
+                                  ? 'Uploading...'
+                                  : (_selectedImage != null ||
+                                          _uploadedImageUrl != null ||
+                                          _imageUrlController.text
+                                              .trim()
+                                              .isNotEmpty)
+                                      ? 'Change Image'
+                                      : 'Add Image'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+                      const Divider(),
+                      const SizedBox(height: 8),
+
+                      // Manual URL Input (Alternative)
+                      const Text(
+                        'Or enter image URL manually:',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      WizzBusinessTextFormField(
+                        controller: _imageUrlController,
+                        labelText: 'Image URL',
+                        prefixIcon: const Icon(Icons.link),
+                        validator: _validateImageUrl,
+                        keyboardType: TextInputType.url,
+                        enabled: _uploadedImageUrl ==
+                            null, // Disable if image was uploaded
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
 

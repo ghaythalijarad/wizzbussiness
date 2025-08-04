@@ -140,15 +140,14 @@ class _ModernSidebarState extends State<ModernSidebar>
                           decoration: BoxDecoration(
                             color: colorScheme.surface,
                             borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(32),
-                              bottomRight: Radius.circular(32),
+                              topRight: Radius.circular(8),
+                              bottomRight: Radius.circular(8),
                             ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 30,
-                                offset: const Offset(5, 0),
-                                spreadRadius: 5,
+                                blurRadius: 8,
+                                offset: const Offset(2, 0),
                               ),
                             ],
                           ),
@@ -179,9 +178,6 @@ class _ModernSidebarState extends State<ModernSidebar>
     return SafeArea(
       child: Column(
         children: [
-          // Modern header with gradient
-          _buildModernHeader(context, localizations, colorScheme),
-
           // Status card with glassmorphism effect
           _buildStatusCard(context, localizations, colorScheme),
 
@@ -197,175 +193,41 @@ class _ModernSidebarState extends State<ModernSidebar>
     );
   }
 
-  Widget _buildModernHeader(BuildContext context,
-      AppLocalizations localizations, ColorScheme colorScheme) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colorScheme.primaryContainer,
-            colorScheme.primary.withOpacity(0.8),
-          ],
-        ),
-        borderRadius: const BorderRadius.only(
-          topRight: Radius.circular(32),
-        ),
-      ),
-      child: Row(
-        children: [
-          // App icon with modern design
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.3),
-                width: 1,
-              ),
-            ),
-            child: Icon(
-              Icons.dashboard_customize_rounded,
-              color: colorScheme.onPrimaryContainer,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-
-          // Title and subtitle
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  localizations.businessManagement,
-                  style: TextStyle(
-                    color: colorScheme.onPrimaryContainer,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  localizations.dashboard,
-                  style: TextStyle(
-                    color: colorScheme.onPrimaryContainer.withOpacity(0.8),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Modern close button
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _closeWithAnimation,
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(
-                  Icons.close_rounded,
-                  color: colorScheme.onPrimaryContainer,
-                  size: 20,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildStatusCard(BuildContext context, AppLocalizations localizations,
       ColorScheme colorScheme) {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: colorScheme.surfaceVariant,
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              // Status indicator with animation
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: widget.isOnline
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  widget.isOnline ? Icons.wifi_rounded : Icons.wifi_off_rounded,
-                  color: widget.isOnline ? Colors.green : Colors.orange,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
+          // Simple status indicator
+          Icon(
+            widget.isOnline ? Icons.wifi : Icons.wifi_off,
+            color: widget.isOnline ? Colors.green : Colors.orange,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
 
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.isOnline
-                          ? localizations.online
-                          : localizations.offline,
-                      style: TextStyle(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.isOnline
-                          ? localizations.readyToReceiveOrders
-                          : localizations.ordersArePaused,
-                      style: TextStyle(
-                        color: colorScheme.onSurface.withOpacity(0.7),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
+          Expanded(
+            child: Text(
+              widget.isOnline ? localizations.online : localizations.offline,
+              style: TextStyle(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
               ),
+            ),
+          ),
 
-              // Modern toggle switch
-              Switch.adaptive(
-                value: widget.isOnline,
-                onChanged: widget.onToggleStatus,
-                activeColor: Colors.green,
-                inactiveThumbColor: Colors.orange,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ],
+          // Compact toggle switch
+          Switch.adaptive(
+            value: widget.isOnline,
+            onChanged: widget.onToggleStatus,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ],
       ),
@@ -375,96 +237,66 @@ class _ModernSidebarState extends State<ModernSidebar>
   Widget _buildNavigationMenu(BuildContext context,
       AppLocalizations localizations, ColorScheme colorScheme) {
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
-        const SizedBox(height: 8),
-
         // Main navigation items
-        _buildModernMenuItem(
+        _buildMenuItem(
           context: context,
-          icon: Icons.shopping_bag_rounded,
+          icon: Icons.shopping_bag,
           title: localizations.orders,
-          subtitle: 'Manage your orders',
           onTap: () => _navigateAndClose(0),
           colorScheme: colorScheme,
         ),
 
-        _buildModernMenuItem(
+        _buildMenuItem(
           context: context,
-          icon: Icons.inventory_2_rounded,
+          icon: Icons.inventory_2,
           title: localizations.items,
-          subtitle: localizations.menuItemsAndCategories,
           onTap: () => _navigateAndClose(1),
           colorScheme: colorScheme,
         ),
 
-        _buildModernMenuItem(
+        _buildMenuItem(
           context: context,
-          icon: Icons.analytics_rounded,
+          icon: Icons.analytics,
           title: localizations.analytics,
-          subtitle: localizations.businessInsights,
           onTap: () => _navigateAndClose(2),
           colorScheme: colorScheme,
         ),
 
-        _buildModernMenuItem(
+        _buildMenuItem(
           context: context,
-          icon: Icons.local_offer_rounded,
+          icon: Icons.local_offer,
           title: localizations.discounts,
-          subtitle: localizations.offersAndPromotions,
           onTap: () => _navigateAndClose(3),
           colorScheme: colorScheme,
         ),
 
-        _buildModernMenuItem(
+        _buildMenuItem(
           context: context,
-          icon: Icons.settings_rounded,
+          icon: Icons.settings,
           title: localizations.settings,
-          subtitle: localizations.appConfiguration,
           onTap: () => _navigateAndClose(4),
           colorScheme: colorScheme,
         ),
 
-        const SizedBox(height: 16),
-
-        // Divider with label
-        Row(
-          children: [
-            Expanded(
-                child: Divider(color: colorScheme.outline.withOpacity(0.2))),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                localizations.quickActions,
-                style: TextStyle(
-                  color: colorScheme.onSurface.withOpacity(0.6),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Expanded(
-                child: Divider(color: colorScheme.outline.withOpacity(0.2))),
-          ],
-        ),
-
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
+        Divider(height: 1, color: colorScheme.outline.withOpacity(0.2)),
+        const SizedBox(height: 8),
 
         // Quick action items
-        _buildModernMenuItem(
+        _buildMenuItem(
           context: context,
-          icon: Icons.language_rounded,
+          icon: Icons.language,
           title: localizations.language,
-          subtitle: localizations.changeAppLanguage,
           onTap: () => _showLanguageDialog(context),
           colorScheme: colorScheme,
         ),
 
-        _buildModernMenuItem(
+        _buildMenuItem(
           context: context,
-          icon: Icons.undo_rounded,
+          icon: Icons.undo,
           title: localizations.returnOrder,
-          subtitle: localizations.cancelRecentOrder,
           onTap: () {
             widget.onReturnOrder();
             _closeWithAnimation();
@@ -476,120 +308,45 @@ class _ModernSidebarState extends State<ModernSidebar>
     );
   }
 
-  Widget _buildModernMenuItem({
+  Widget _buildMenuItem({
     required BuildContext context,
     required IconData icon,
     required String title,
-    required String subtitle,
     required VoidCallback onTap,
     required ColorScheme colorScheme,
     bool isDestructive = false,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: colorScheme.outline.withOpacity(0.1),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                // Icon with background
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: isDestructive
-                        ? Colors.red.withOpacity(0.1)
-                        : colorScheme.primaryContainer.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isDestructive ? Colors.red : colorScheme.primary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 16),
-
-                // Text content
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          color: isDestructive
-                              ? Colors.red
-                              : colorScheme.onSurface,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          color: colorScheme.onSurface.withOpacity(0.6),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Arrow indicator
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: colorScheme.onSurface.withOpacity(0.4),
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+      leading: Icon(
+        icon,
+        color: isDestructive ? Colors.red : colorScheme.onSurface,
+        size: 20,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isDestructive ? Colors.red : colorScheme.onSurface,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
         ),
       ),
+      onTap: onTap,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
   }
 
   Widget _buildModernFooter(BuildContext context,
       AppLocalizations localizations, ColorScheme colorScheme) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        borderRadius: const BorderRadius.only(
-          bottomRight: Radius.circular(32),
+      padding: const EdgeInsets.all(16),
+      child: Text(
+        localizations.tapOutsideOrPressEscToClose,
+        style: TextStyle(
+          color: colorScheme.onSurface.withOpacity(0.6),
+          fontSize: 12,
         ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline_rounded,
-            color: colorScheme.onSurface.withOpacity(0.6),
-            size: 16,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              localizations.tapOutsideOrPressEscToClose,
-              style: TextStyle(
-                color: colorScheme.onSurface.withOpacity(0.6),
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
-        ],
+        textAlign: TextAlign.center,
       ),
     );
   }

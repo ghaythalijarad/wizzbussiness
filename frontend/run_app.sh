@@ -5,7 +5,7 @@ STAGE=${1:-dev}
 case "${STAGE}" in
   dev|development)
     ENVIRONMENT=development
-    API_URL="https://nwg58s2ml0.execute-api.us-east-1.amazonaws.com/dev"
+    API_URL="https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev"
     ;;
   staging)
     ENVIRONMENT=staging
@@ -22,9 +22,9 @@ case "${STAGE}" in
 esac
 
 # Environment variables for the Flutter app
-API_URL_LOCAL="https://q8oyxcwv4g.execute-api.eu-north-1.amazonaws.com/dev"
-API_URL_ANDROID="https://q8oyxcwv4g.execute-api.eu-north-1.amazonaws.com/dev"
-API_URL_IOS="https://q8oyxcwv4g.execute-api.eu-north-1.amazonaws.com/dev"
+API_URL_LOCAL="https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev"
+API_URL_ANDROID="https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev"
+API_URL_IOS="https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev"
 COGNITO_USER_POOL_ID="us-east-1_bDqnKdrqo"
 COGNITO_CLIENT_ID="6n752vrmqmbss6nmlg6be2nn9a"
 

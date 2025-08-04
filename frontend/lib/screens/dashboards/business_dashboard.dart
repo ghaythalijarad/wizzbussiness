@@ -1,64 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/business.dart';
 import '../../l10n/app_localizations.dart';
-import '../orders_preview_page.dart';
+import '../orders_page.dart';
 import '../profile_settings_page.dart';
 import '../discount_management_page.dart';
 import '../products_management_screen.dart';
-import '../../models/order.dart';
 import '../../widgets/top_app_bar.dart';
-import '../../services/app_state.dart';
 import '../../utils/responsive_helper.dart';
+import '../../providers/session_provider.dart';
+import '../../providers/business_provider.dart';
+import '../../providers/dashboard_provider.dart';
+import '../../services/floating_order_notification_service.dart';
 
-class BusinessDashboard extends StatefulWidget {
-  final Business business;
-  final void Function(Locale) onLanguageChanged;
-  final Map<String, dynamic>? userData;
-  final List<Map<String, dynamic>>? businessesData;
-
+class BusinessDashboard extends ConsumerWidget {
+  final Business? initialBusiness;
   const BusinessDashboard({
     Key? key,
-    required this.business,
-    required this.onLanguageChanged,
-    this.userData,
-    this.businessesData,
+    this.initialBusiness,
   }) : super(key: key);
 
-  @override
-  _BusinessDashboardState createState() => _BusinessDashboardState();
-}
-
-class _BusinessDashboardState extends State<BusinessDashboard> {
-  int _selectedIndex = 0;
-  List<Order> _orders = [];
-  final AppState _appState = AppState();
-  bool _isInitializing = true;
-
-  @override
-  void initState() {
-    super.initState();
-    // Skip re-validation here; trust login flow
-    setState(() {
-      _isInitializing = false;
-    });
-    _appState.addListener(_onAppStateChanged);
-  }
-
-  @override
-  void dispose() {
-    _appState.removeListener(_onAppStateChanged);
-    super.dispose();
-  }
-
-  void _onAppStateChanged() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  void _onToggleStatus(bool isOnline) {
-    // Update global app state instead of local state
-    _appState.setOnline(isOnline);
+  void _onToggleStatus(BuildContext context, WidgetRef ref, bool isOnline) {
+    ref.read(businessOnlineStatusProvider.notifier).state = isOnline;
 
     final loc = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -70,7 +33,7 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
     );
   }
 
-  void _onReturnOrder() {
+  void _onReturnOrder(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -80,77 +43,111 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
     );
   }
 
-  void _onNavigate(int pageIndex) {
-    setState(() {
-      _selectedIndex = pageIndex;
-    });
+  void _onNavigate(WidgetRef ref, int pageIndex) {
+    ref.read(dashboardPageIndexProvider.notifier).state = pageIndex;
   }
 
-  Widget _buildDashboardBody() {
-    switch (_selectedIndex) {
+  Widget _buildDashboardBody(WidgetRef ref, Business business) {
+    final pageIndex = ref.watch(dashboardPageIndexProvider);
+    final session = ref.watch(sessionProvider);
+
+    if (!session.isAuthenticated || session.businessId == null) {
+      return const Center(child: Text('Session expired. Please log in again.'));
+    }
+
+    switch (pageIndex) {
       case 0:
-        // Use preview page with mock data for demonstration
-        return OrdersPreviewPage();
+        return OrdersPage(
+          businessId: session.businessId!,
+        );
       case 1:
-        return ProductsManagementScreen(business: widget.business);
+        return ProductsManagementScreen(business: business);
       case 2:
         return DiscountManagementPage(
-          business: widget.business,
-          orders: _orders,
+          business: business,
+          orders: const [], // Pass empty list as it's required for now
         );
       case 3:
         return ProfileSettingsPage(
-          business: widget.business,
-          orders: _orders,
-          onLanguageChanged: widget.onLanguageChanged,
-          userData: widget.userData,
-          businessesData: widget.businessesData,
+          business: business,
+          orders: const [], // Pass empty list as it's required for now
         );
       default:
-        return Center(child: Text(AppLocalizations.of(context)!.errorOccurred));
+        return Center(child: Text(AppLocalizations.of(ref.context)!.errorOccurred));
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (_isInitializing) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(
-            color: Color(0xFF00C1E8),
-          ),
-        ),
-      );
-    }
-
+  Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final isDesktop = ResponsiveHelper.isDesktop(context);
-    final isTablet = ResponsiveHelper.isTablet(context);
+    final businessAsyncValue = initialBusiness != null
+        ? AsyncValue.data(initialBusiness!)
+        : ref.watch(businessProvider);
 
-    if (isDesktop) {
-      return _buildDesktopLayout(context, loc);
-    } else if (isTablet) {
-      return _buildTabletLayout(context, loc);
-    } else {
-      return _buildMobileLayout(context, loc);
-    }
+    // Initialize floating notification service with root context
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FloatingOrderNotificationService().initialize(context);
+    });
+
+    return businessAsyncValue.when(
+      data: (business) {
+        if (business == null) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Text('No business found for this account.'),
+                  SizedBox(height: 16),
+                  // TODO: Add a sign out button here
+                ],
+              ),
+            ),
+          );
+        }
+
+        final isDesktop = ResponsiveHelper.isDesktop(context);
+        final isTablet = ResponsiveHelper.isTablet(context);
+
+        if (isDesktop) {
+          return _buildDesktopLayout(context, ref, loc, business);
+        } else if (isTablet) {
+          return _buildTabletLayout(context, ref, loc, business);
+        } else {
+          return _buildMobileLayout(context, ref, loc, business);
+        }
+      },
+      loading: () => const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (error, stack) => Scaffold(
+        body: Center(
+          child: Text('Error loading business: $error'),
+        ),
+      ),
+    );
   }
 
-  Widget _buildMobileLayout(BuildContext context, AppLocalizations loc) {
+  Widget _buildMobileLayout(
+      BuildContext context, WidgetRef ref, AppLocalizations loc, Business business) {
+    final isOnline = ref.watch(businessOnlineStatusProvider);
+    final pageIndex = ref.watch(dashboardPageIndexProvider);
+
     return Scaffold(
       appBar: TopAppBar(
         title: '',
-        isOnline: _appState.isOnline,
-        onToggleStatus: _onToggleStatus,
-        onReturnOrder: _onReturnOrder,
-        onNavigate: _onNavigate,
-        onLanguageChanged: widget.onLanguageChanged,
+        isOnline: isOnline,
+        onToggleStatus: (status) => _onToggleStatus(context, ref, status),
+        onReturnOrder: () => _onReturnOrder(context),
+        onNavigate: (index) => _onNavigate(ref, index),
       ),
-      body: _buildDashboardBody(),
+      body: _buildDashboardBody(ref, business),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
+        currentIndex: pageIndex,
+        onTap: (index) => _onNavigate(ref, index),
         items: [
           BottomNavigationBarItem(
             icon: const Icon(Icons.list_alt),
@@ -175,19 +172,20 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
     );
   }
 
-  Widget _buildTabletLayout(BuildContext context, AppLocalizations loc) {
+  Widget _buildTabletLayout(
+      BuildContext context, WidgetRef ref, AppLocalizations loc, Business business) {
+    final isOnline = ref.watch(businessOnlineStatusProvider);
+
     return Scaffold(
       appBar: TopAppBar(
         title: '',
-        isOnline: _appState.isOnline,
-        onToggleStatus: _onToggleStatus,
-        onReturnOrder: _onReturnOrder,
-        onNavigate: _onNavigate,
-        onLanguageChanged: widget.onLanguageChanged,
+        isOnline: isOnline,
+        onToggleStatus: (status) => _onToggleStatus(context, ref, status),
+        onReturnOrder: () => _onReturnOrder(context),
+        onNavigate: (index) => _onNavigate(ref, index),
       ),
       body: Row(
         children: [
-          // Side navigation for tablet
           Container(
             width: 280,
             decoration: BoxDecoration(
@@ -199,30 +197,30 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
                 ),
               ),
             ),
-            child: _buildSideNavigation(context, loc),
+            child: _buildSideNavigation(context, ref, loc, business),
           ),
-          // Main content area
           Expanded(
-            child: _buildDashboardBody(),
+            child: _buildDashboardBody(ref, business),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDesktopLayout(BuildContext context, AppLocalizations loc) {
+  Widget _buildDesktopLayout(
+      BuildContext context, WidgetRef ref, AppLocalizations loc, Business business) {
+    final isOnline = ref.watch(businessOnlineStatusProvider);
+
     return Scaffold(
       appBar: TopAppBar(
         title: '',
-        isOnline: _appState.isOnline,
-        onToggleStatus: _onToggleStatus,
-        onReturnOrder: _onReturnOrder,
-        onNavigate: _onNavigate,
-        onLanguageChanged: widget.onLanguageChanged,
+        isOnline: isOnline,
+        onToggleStatus: (status) => _onToggleStatus(context, ref, status),
+        onReturnOrder: () => _onReturnOrder(context),
+        onNavigate: (index) => _onNavigate(ref, index),
       ),
       body: Row(
         children: [
-          // Side navigation for desktop
           Container(
             width: 320,
             decoration: BoxDecoration(
@@ -241,13 +239,12 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
                 ),
               ],
             ),
-            child: _buildSideNavigation(context, loc),
+            child: _buildSideNavigation(context, ref, loc, business),
           ),
-          // Main content area
           Expanded(
             child: Container(
               padding: ResponsiveHelper.getResponsiveMargin(context),
-              child: _buildDashboardBody(),
+              child: _buildDashboardBody(ref, business),
             ),
           ),
         ],
@@ -255,7 +252,8 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
     );
   }
 
-  Widget _buildSideNavigation(BuildContext context, AppLocalizations loc) {
+  Widget _buildSideNavigation(
+      BuildContext context, WidgetRef ref, AppLocalizations loc, Business business) {
     final isDesktop = ResponsiveHelper.isDesktop(context);
 
     return Container(
@@ -263,7 +261,6 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Business info header
           Container(
             padding: const EdgeInsets.all(16),
             margin: const EdgeInsets.only(bottom: 24),
@@ -299,43 +296,22 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.business.name,
+                            business.name,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: isDesktop ? 18 : 16,
                               fontWeight: FontWeight.bold,
+                              fontSize: isDesktop ? 18 : 16,
                             ),
-                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
+                          Text(
+                            business.address ?? 'No address provided',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: isDesktop ? 14 : 12,
                             ),
-                            decoration: BoxDecoration(
-                              color: _appState.isOnline
-                                  ? Colors.green.withOpacity(0.2)
-                                  : Colors.orange.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: _appState.isOnline
-                                    ? Colors.green
-                                    : Colors.orange,
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              _appState.isOnline ? loc.online : loc.offline,
-                              style: TextStyle(
-                                color: _appState.isOnline
-                                    ? Colors.green.shade100
-                                    : Colors.orange.shade100,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -345,115 +321,72 @@ class _BusinessDashboardState extends State<BusinessDashboard> {
               ],
             ),
           ),
-
-          // Navigation items
-          Expanded(
-            child: ListView(
-              children: [
-                _buildNavItem(
-                  context,
-                  icon: Icons.list_alt,
-                  title: loc.orders,
-                  isSelected: _selectedIndex == 0,
-                  onTap: () => setState(() => _selectedIndex = 0),
-                ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.shopping_bag,
-                  title: 'Products',
-                  isSelected: _selectedIndex == 1,
-                  onTap: () => setState(() => _selectedIndex = 1),
-                ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.local_offer,
-                  title: loc.discounts,
-                  isSelected: _selectedIndex == 2,
-                  onTap: () => setState(() => _selectedIndex = 2),
-                ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.settings,
-                  title: loc.settings,
-                  isSelected: _selectedIndex == 3,
-                  onTap: () => setState(() => _selectedIndex = 3),
-                ),
-              ],
-            ),
+          _buildNavigationItem(
+            context,
+            ref,
+            loc,
+            icon: Icons.list_alt,
+            label: loc.orders,
+            index: 0,
+          ),
+          _buildNavigationItem(
+            context,
+            ref,
+            loc,
+            icon: Icons.shopping_bag,
+            label: 'Products',
+            index: 1,
+          ),
+          _buildNavigationItem(
+            context,
+            ref,
+            loc,
+            icon: Icons.local_offer,
+            label: loc.discounts,
+            index: 2,
+          ),
+          _buildNavigationItem(
+            context,
+            ref,
+            loc,
+            icon: Icons.settings,
+            label: loc.settings,
+            index: 3,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    final isDesktop = ResponsiveHelper.isDesktop(context);
-
+  Widget _buildNavigationItem(BuildContext context, WidgetRef ref, AppLocalizations loc,
+      {required IconData icon, required String label, required int index}) {
+    final pageIndex = ref.watch(dashboardPageIndexProvider);
+    final isSelected = pageIndex == index;
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: isDesktop ? 16 : 12,
-              vertical: isDesktop ? 16 : 12,
-            ),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? Theme.of(context).primaryColor.withOpacity(0.1)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-              border: isSelected
-                  ? Border.all(
-                      color: Theme.of(context).primaryColor.withOpacity(0.3),
-                      width: 1,
-                    )
-                  : null,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  color: isSelected
-                      ? Theme.of(context).primaryColor
-                      : Colors.grey.shade600,
-                  size: isDesktop ? 24 : 20,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: isSelected
-                          ? Theme.of(context).primaryColor
-                          : Colors.grey.shade700,
-                      fontSize: isDesktop ? 16 : 14,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w500,
-                    ),
-                  ),
-                ),
-                if (isSelected)
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-              ],
-            ),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? Theme.of(context).primaryColor.withOpacity(0.1)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: isSelected
+              ? Theme.of(context).primaryColor
+              : Colors.grey.shade600,
+        ),
+        title: Text(
+          label,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
           ),
+        ),
+        onTap: () => _onNavigate(ref, index),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
         ),
       ),
     );

@@ -17,6 +17,7 @@ class Business {
   String? description;
   String? website;
   String? businessPhotoUrl; // Added business photo URL field
+  final String status; // Add status field
   final List<Offer> offers;
   final Map<String, String> businessHours;
   final Map<String, dynamic> settings;
@@ -34,6 +35,7 @@ class Business {
     this.description,
     this.website,
     this.businessPhotoUrl, // Added business photo URL parameter
+    required this.status, // Add to constructor
     required this.offers,
     required this.businessHours,
     required this.settings,
@@ -83,6 +85,7 @@ class Business {
       website: json['website'],
       businessPhotoUrl: json['businessPhotoUrl'] ??
           json['business_photo_url'], // Added business photo URL parsing
+      status: json['status'] ?? 'pending', // Parse status, default to pending
       offers: (json['offers'] as List<dynamic>?)
               ?.map((offerJson) => Offer.fromJson(offerJson))
               .toList() ??

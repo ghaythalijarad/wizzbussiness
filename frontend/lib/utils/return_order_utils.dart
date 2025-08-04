@@ -77,15 +77,15 @@ class ReturnOrderUtils {
       return;
     }
 
-    // Check if order can be returned (should be picked up or ready)
+    // Check if order can be returned (should be delivered or ready)
     final order = orders[orderIndex];
-    if (order.status != OrderStatus.pickedUp &&
+    if (order.status != OrderStatus.delivered &&
         order.status != OrderStatus.ready) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              'Order #${order.id} cannot be returned. Only picked up or ready orders can be returned.'),
+              'Order #${order.id} cannot be returned. Only delivered or ready orders can be returned.'),
           backgroundColor: Colors.orange,
           duration: const Duration(seconds: 3),
         ),

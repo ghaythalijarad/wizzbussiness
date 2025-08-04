@@ -1,6 +1,8 @@
 'use strict';
 
-const AWS = require('aws-sdk');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, QueryCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
+const { CognitoIdentityServiceProvider } = require('@aws-sdk/client-cognito-identity-provider');
 const { v4: uuidv4 } = require('uuid');
 const { createResponse } = require('./utils');
 
@@ -56,8 +58,9 @@ exports.handler = async (event) => {
 
 async function handleRegisterWithBusiness(body) {
     // Instantiate AWS clients for this invocation (supports Jest mocks)
-    const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
-    const dynamodb = new AWS.DynamoDB.DocumentClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
+    const cognito = new CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
+    const dynamoDbClient = new DynamoDBClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
+    const dynamodb = DynamoDBDocumentClient.from(dynamoDbClient);
 
     const {
         email: rawEmail,
@@ -116,7 +119,7 @@ async function handleRegisterWithBusiness(body) {
             Password: password,
             UserAttributes: [{ Name: 'email', Value: email }]
         };
-        const cognitoResponse = await cognito.signUp(signUpParams).promise();
+        const cognitoResponse = await cognito.signUp(signUpParams);
         const userSub = cognitoResponse.UserSub;
         console.log(`Created Cognito user: ${userSub}`);
 
@@ -164,8 +167,8 @@ async function handleRegisterWithBusiness(body) {
             updatedAt: timestamp
         };
 
-        await dynamodb.put({ TableName: USERS_TABLE, Item: userItem }).promise();
-        await dynamodb.put({ TableName: BUSINESSES_TABLE, Item: businessItem }).promise();
+        await dynamodb.send(new PutCommand({ TableName: USERS_TABLE, Item: userItem }));
+        await dynamodb.send(new PutCommand({ TableName: BUSINESSES_TABLE, Item: businessItem }));
         console.log(`Created user and business records: ${userId}, ${businessId}`);
 
         return createResponse(200, {
@@ -193,7 +196,7 @@ async function handleRegisterWithBusiness(body) {
         // Basic cleanup if DynamoDB fails after user creation
         if (error.code && error.code.includes('DynamoDB')) {
              try {
-                await cognito.adminDeleteUser({ UserPoolId: USER_POOL_ID, Username: email }).promise();
+                await cognito.adminDeleteUser({ UserPoolId: USER_POOL_ID, Username: email });
              } catch (cleanupError) {
                 console.error('Failed to cleanup Cognito user:', cleanupError);
              }

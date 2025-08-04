@@ -30,9 +30,10 @@ class DiscountManagementPage extends StatefulWidget {
 }
 
 class _DiscountManagementPageState extends State<DiscountManagementPage> {
+  // Hot reload trigger comment
+  List<Discount> _discounts = [];
   String _selectedFilter = 'all';
   final ApiService _apiService = ApiService();
-  List<Discount> _discounts = [];
   List<Product> _products = [];
   List<ProductCategory> _categories = [];
   bool _isInitializing = true;
@@ -655,15 +656,11 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     final isEditing = discount != null;
     final formKey = GlobalKey<FormState>();
     final titleController = TextEditingController(text: discount?.title ?? '');
-    final descriptionController =
-        TextEditingController(text: discount?.description ?? '');
     final valueController =
         TextEditingController(text: discount?.value.toString() ?? '');
     final minOrderController = TextEditingController(
         text: discount?.minimumOrderAmount.toString() ?? '');
 
-    // Handle free delivery checkbox state
-    var includesFreeDelivery = discount?.type == DiscountType.freeDelivery;
     // If editing a free delivery discount, default the main type to percentage
     var discountType = discount?.type == DiscountType.freeDelivery
         ? DiscountType.percentage
@@ -728,7 +725,27 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                           controller: titleController,
                           decoration: InputDecoration(
                             labelText: AppLocalizations.of(context)!.title,
-                            border: const OutlineInputBorder(),
+                            labelStyle: TextStyle(
+                              color: const Color(0xFF00c1e8),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Colors.grey.shade300,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF00c1e8),
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -737,15 +754,6 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                             }
                             return null;
                           },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: descriptionController,
-                          decoration: InputDecoration(
-                            labelText:
-                                AppLocalizations.of(context)!.description,
-                            border: const OutlineInputBorder(),
-                          ),
                         ),
                         const SizedBox(height: 16),
                         Row(
@@ -757,25 +765,34 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                 decoration: InputDecoration(
                                   labelText: AppLocalizations.of(context)!
                                       .discountType,
-                                  border: const OutlineInputBorder(),
+                                  labelStyle: TextStyle(
+                                    color: const Color(0xFF00c1e8),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF00c1e8),
+                                      width: 2,
+                                    ),
+                                  ),
                                   isDense: true,
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 8),
+                                      horizontal: 16, vertical: 16),
                                 ),
                                 isExpanded: true,
-                                items: DiscountType.values
-                                    .where((type) =>
-                                        type != DiscountType.freeDelivery)
-                                    .map((type) {
+                                items: DiscountType.values.map((type) {
                                   String label;
                                   switch (type) {
                                     case DiscountType.percentage:
                                       label = AppLocalizations.of(context)!
                                           .percentage;
-                                      break;
-                                    case DiscountType.fixedAmount:
-                                      label = AppLocalizations.of(context)!
-                                          .fixedAmount;
                                       break;
                                     case DiscountType.conditional:
                                       label = AppLocalizations.of(context)!
@@ -785,13 +802,9 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                       label = AppLocalizations.of(context)!
                                           .buyXGetY;
                                       break;
-                                    case DiscountType.others:
-                                      label =
-                                          AppLocalizations.of(context)!.others;
-                                      break;
                                     case DiscountType.freeDelivery:
-                                      // This case won't be reached since we filter it out
-                                      label = '';
+                                      label = AppLocalizations.of(context)!
+                                          .freeDelivery;
                                       break;
                                   }
                                   return DropdownMenuItem(
@@ -807,10 +820,14 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                   if (value != null) {
                                     setState(() {
                                       discountType = value;
-                                      // Initialize value controller when switching to percentage
+                                      // Initialize value controller based on discount type
                                       if (value == DiscountType.percentage &&
                                           valueController.text.isEmpty) {
                                         valueController.text = '10.0';
+                                      } else if (value !=
+                                          DiscountType.percentage) {
+                                        // Set to 0.0 for all non-percentage types
+                                        valueController.text = '0.0';
                                       }
                                     });
                                   }
@@ -849,7 +866,30 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                       decoration: InputDecoration(
                                         labelText:
                                             AppLocalizations.of(context)!.value,
-                                        border: const OutlineInputBorder(),
+                                        labelStyle: TextStyle(
+                                          color: const Color(0xFF00c1e8),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: const BorderSide(
+                                            color: Color(0xFF00c1e8),
+                                            width: 2,
+                                          ),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 16,
+                                        ),
                                       ),
                                       items: [
                                         10,
@@ -886,23 +926,51 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                     )
                                   : TextFormField(
                                       controller: valueController,
+                                      enabled:
+                                          false, // Frozen for all non-percentage types
                                       decoration: InputDecoration(
                                         labelText:
                                             AppLocalizations.of(context)!.value,
-                                        border: const OutlineInputBorder(),
+                                        labelStyle: TextStyle(
+                                          color: Colors.grey.shade500,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                        ),
+                                        disabledBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                        ),
+                                        hintText: discountType ==
+                                                DiscountType.freeDelivery
+                                            ? 'Free Delivery (0.0)'
+                                            : discountType ==
+                                                    DiscountType.buyXGetY
+                                                ? 'Buy X Get Y (0.0)'
+                                                : 'Conditional (0.0)',
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey.shade600,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey.shade50,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 16,
+                                        ),
                                       ),
-                                      keyboardType: TextInputType.number,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return AppLocalizations.of(context)!
-                                              .pleaseEnterValue;
-                                        }
-                                        if (double.tryParse(value) == null) {
-                                          return AppLocalizations.of(context)!
-                                              .pleaseEnterValidNumber;
-                                        }
-                                        return null;
-                                      },
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                      ),
                                     ),
                             ),
                           ],
@@ -915,11 +983,11 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFc1e8).withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(8),
+                              color: const Color(0xFF00c1e8).withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                   color:
-                                      const Color(0xFFc1e8).withOpacity(0.2)),
+                                      const Color(0xFF00c1e8).withOpacity(0.2)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -927,7 +995,8 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                 Row(
                                   children: [
                                     Icon(Icons.shopping_cart,
-                                        color: const Color(0xFFc1e8), size: 20),
+                                        color: const Color(0xFF00c1e8),
+                                        size: 20),
                                     const SizedBox(width: 8),
                                     Text(
                                       discountType == DiscountType.conditional
@@ -937,7 +1006,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                               .buyXGetYConfiguration,
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
-                                        color: const Color(0xFFc1e8),
+                                        color: const Color(0xFF00c1e8),
                                       ),
                                     ),
                                   ],
@@ -1131,18 +1200,19 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color:
-                                  (discountType == DiscountType.conditional ||
-                                          discountType == DiscountType.buyXGetY)
-                                      ? const Color(0xFFc1e8).withOpacity(0.05)
-                                      : const Color(0xFFc1e8).withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(8),
+                              color: (discountType ==
+                                          DiscountType.conditional ||
+                                      discountType == DiscountType.buyXGetY)
+                                  ? const Color(0xFF00c1e8).withOpacity(0.08)
+                                  : const Color(0xFF00c1e8).withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                   color: (discountType ==
                                               DiscountType.conditional ||
                                           discountType == DiscountType.buyXGetY)
-                                      ? Colors.grey.withOpacity(0.3)
-                                      : const Color(0xFFc1e8).withOpacity(0.2)),
+                                      ? const Color(0xFF00c1e8).withOpacity(0.2)
+                                      : const Color(0xFF00c1e8)
+                                          .withOpacity(0.2)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1150,14 +1220,15 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                 Row(
                                   children: [
                                     Icon(Icons.category,
-                                        color: const Color(0xFFc1e8), size: 20),
+                                        color: const Color(0xFF00c1e8),
+                                        size: 20),
                                     const SizedBox(width: 8),
                                     Text(
                                       AppLocalizations.of(context)!
                                           .discountApplicability,
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
-                                        color: const Color(0xFFc1e8),
+                                        color: const Color(0xFF00c1e8),
                                       ),
                                     ),
                                   ],
@@ -1496,47 +1567,6 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        // Free Delivery Checkbox
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade50,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.green.shade200),
-                          ),
-                          child: CheckboxListTile(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            title: Row(
-                              children: [
-                                Icon(Icons.local_shipping,
-                                    color: Colors.green.shade600, size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  AppLocalizations.of(context)!.freeDelivery,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.green.shade700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            subtitle: Text(
-                              AppLocalizations.of(context)!
-                                  .addFreeDeliveryToDiscount,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.green.shade600,
-                              ),
-                            ),
-                            value: includesFreeDelivery,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                includesFreeDelivery = value ?? false;
-                              });
-                            },
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -1621,7 +1651,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                     id: discount?.id ??
                         DateTime.now().millisecondsSinceEpoch.toString(),
                     title: titleController.text,
-                    description: descriptionController.text,
+                    description: '', // Description field removed from creation
                     type: discountType,
                     value: double.parse(valueController.text),
                     applicability: applicability,
@@ -1638,60 +1668,17 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                     conditionalParameters: conditionalParams,
                   );
 
-                  // Create free delivery discount if requested
-                  Discount? freeDeliveryDiscount;
-                  if (includesFreeDelivery && !isEditing) {
-                    freeDeliveryDiscount = Discount(
-                      id: (DateTime.now().millisecondsSinceEpoch + 1)
-                          .toString(),
-                      title: AppLocalizations.of(context)!
-                          .freeDeliveryTitle(titleController.text),
-                      description: AppLocalizations.of(context)!
-                          .freeDeliveryIncludedWith(titleController.text),
-                      type: DiscountType.freeDelivery,
-                      value: 0.0,
-                      applicability: applicability,
-                      applicableItemIds: selectedItemIds,
-                      applicableCategoryIds: selectedCategoryIds,
-                      minimumOrderAmount:
-                          double.tryParse(minOrderController.text) ?? 0.0,
-                      validFrom: startDate,
-                      validTo: endDate,
-                      createdAt: DateTime.now(),
-                      updatedAt: DateTime.now(),
-                      status: DiscountStatus.active,
-                    );
-                  }
-
                   Navigator.of(context).pop();
 
                   // Call API methods to create or update the discount
                   try {
                     if (isEditing) {
                       await _updateDiscount(newDiscount);
-                      // Update free delivery discount if needed
-                      if (freeDeliveryDiscount != null) {
-                        // Try to find existing free delivery discount for this main discount
-                        final existingFreeDelivery = _discounts
-                            .where((d) =>
-                                d.type == DiscountType.freeDelivery &&
-                                d.title.contains(newDiscount.title))
-                            .firstOrNull;
-                        if (existingFreeDelivery == null) {
-                          await _createDiscount(freeDeliveryDiscount);
-                        } else {
-                          await _updateDiscount(freeDeliveryDiscount);
-                        }
-                      }
                     } else {
                       // Check for conflicting discounts before adding
                       if (!_hasConflictingDiscounts(
                           selectedItemIds, selectedCategoryIds, null)) {
                         await _createDiscount(newDiscount);
-                        // Add free delivery discount if created
-                        if (freeDeliveryDiscount != null) {
-                          await _createDiscount(freeDeliveryDiscount);
-                        }
                       } else {
                         // Show error message
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -1712,10 +1699,25 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00c1e8),
                 foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                elevation: 2,
+                shadowColor: const Color(0xFF00c1e8).withOpacity(0.3),
               ),
-              child: Text(isEditing
-                  ? AppLocalizations.of(context)!.saveChanges
-                  : AppLocalizations.of(context)!.create),
+              child: Text(
+                isEditing
+                    ? AppLocalizations.of(context)!.saveChanges
+                    : AppLocalizations.of(context)!.create,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
             ),
           ],
         );
@@ -2173,11 +2175,7 @@ class DiscountCard extends StatelessWidget {
                           ? '${discount.value}% ${AppLocalizations.of(context)!.off}'
                           : discount.type == DiscountType.freeDelivery
                               ? AppLocalizations.of(context)!.freeDelivery
-                              : discount.type == DiscountType.fixedAmount
-                                  ? '\$${discount.value.toStringAsFixed(2)} ${AppLocalizations.of(context)!.discount}'
-                                  : discount.type == DiscountType.others
-                                      ? AppLocalizations.of(context)!.others
-                                      : '${AppLocalizations.of(context)!.conditional} ${AppLocalizations.of(context)!.discount}',
+                              : '${AppLocalizations.of(context)!.conditional} ${AppLocalizations.of(context)!.discount}',
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                     if (discount.minimumOrderAmount > 0) ...[

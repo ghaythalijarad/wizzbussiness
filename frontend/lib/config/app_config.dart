@@ -27,6 +27,21 @@ class AppConfig {
     defaultValue: 'development',
   );
 
+  static const String _authMode = String.fromEnvironment(
+    'AUTH_MODE',
+    defaultValue: 'cognito',
+  );
+
+  static const String _googleMapsApiKey = String.fromEnvironment(
+    'GOOGLE_MAPS_API_KEY',
+    defaultValue: 'YOUR_GOOGLE_MAPS_API_KEY',
+  );
+
+  static const String mapboxAccessToken = String.fromEnvironment(
+    'MAPBOX_ACCESS_TOKEN',
+    defaultValue: '',
+  );
+
   // AWS Cognito configuration (Stage 1 Fix: hardcoded defaults for reliable authentication)
   static const String _cognitoUserPoolId = String.fromEnvironment(
     'COGNITO_USER_POOL_ID',
@@ -49,48 +64,23 @@ class AppConfig {
   );
 
   // New getter for AWS region for API Gateway
-  static String get awsRegion {
-    // Use us-east-1 consistently
-    return 'us-east-1';
-  }
+  static String get awsRegion => _cognitoRegion;
 
-  // Google Maps API Key for Places API
-  static const String _googleMapsApiKey = String.fromEnvironment(
-    'GOOGLE_MAPS_API_KEY',
-    defaultValue:
-        'YOUR_GOOGLE_MAPS_API_KEY_HERE', // TODO: Replace with your actual key
-  );
-
-  // Mapbox Access Token
-  static const String mapboxAccessToken = String.fromEnvironment(
-    'MAPBOX_ACCESS_TOKEN',
-    defaultValue:
-        'pk.eyJ1Ijoid2l6emdvIiwiYSI6ImNtYm50cGY0ajFpYW0ybXF0ZnY1ZG1uczMifQ.UPBxYXZeez7n4gAhmjVgSQ',
-  );
-
-  // Authentication mode: 'cognito' only (Stage 1 Fix)
-  static const String _authMode = String.fromEnvironment(
-    'AUTH_MODE',
-    defaultValue: 'cognito',
-  );
-
-  /// Get the appropriate base URL based on environment and platform
+  // Base URL for API requests
   static String get baseUrl {
-    // If AWS API URL is provided (production/staging), use it
     if (_awsApiUrl.isNotEmpty) {
       return _awsApiUrl;
     }
-
-    // Otherwise, use local development URLs
-    try {
-      return Platform.isAndroid ? _defaultAndroidUrl : _defaultLocalUrl;
-    } catch (e) {
-      // Web platform doesn't support Platform.isAndroid, use default
-      return _defaultLocalUrl;
-    }
+    return Platform.isAndroid ? _defaultAndroidUrl : _defaultLocalUrl;
   }
 
-  /// Get current environment
+  // WebSocket URL - Updated with correct endpoint from backend deployment
+  static String get webSocketUrl {
+    // Use the deployed WebSocket API Gateway endpoint
+    return 'wss://ujyixy3uh5.execute-api.us-east-1.amazonaws.com/dev';
+  }
+
+  // Environment type
   static String get environment => _environment;
 
   /// Check if running in production
@@ -117,17 +107,6 @@ class AppConfig {
   /// Check if Cognito is properly configured
   static bool get isCognitoConfigured =>
       _cognitoUserPoolId.isNotEmpty && _cognitoUserPoolClientId.isNotEmpty;
-
-  /// Get WebSocket URL (convert http to ws)
-  static String get webSocketUrl {
-    final url = baseUrl;
-    if (url.startsWith('https://')) {
-      return url.replaceFirst('https://', 'wss://');
-    } else if (url.startsWith('http://')) {
-      return url.replaceFirst('http://', 'ws://');
-    }
-    return url;
-  }
 
   /// API timeouts
   static const Duration apiTimeout = Duration(seconds: 30);

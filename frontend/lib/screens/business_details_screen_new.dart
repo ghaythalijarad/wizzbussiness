@@ -2,7 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
-import '../utils/arabic_number_formatter.dart';
+import 'package:image_picker/image_picker.dart';
+import '../utils/latin_number_formatter.dart';
 
 class BusinessDetailsScreen extends StatefulWidget {
   final TextEditingController businessNameController;
@@ -47,17 +48,62 @@ class BusinessDetailsScreen extends StatefulWidget {
 }
 
 class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
+  final ImagePicker _imagePicker = ImagePicker();
+
   Future<void> _pickDocument(Function(File?) onPicked) async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-      );
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.folder_open),
+                  title: const Text('Choose from Files'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    try {
+                      FilePickerResult? result =
+                          await FilePicker.platform.pickFiles(
+                        type: FileType.custom,
+                        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                      );
 
-      if (result != null) {
-        File file = File(result.files.single.path!);
-        onPicked(file);
-      }
+                      if (result != null) {
+                        File file = File(result.files.single.path!);
+                        onPicked(file);
+                      }
+                    } catch (e) {
+                      // Handle error
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: const Text('Take Picture'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    try {
+                      final XFile? image = await _imagePicker.pickImage(
+                        source: ImageSource.camera,
+                        imageQuality: 95,
+                        maxWidth: 1920,
+                        maxHeight: 1920,
+                      );
+                      if (image != null) {
+                        onPicked(File(image.path));
+                      }
+                    } catch (e) {
+                      // Handle error
+                    }
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      );
     } catch (e) {
       // Handle error
     }
@@ -140,12 +186,12 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                 keyboardType: TextInputType.phone,
                 textAlign: TextAlign.left,
                 textDirection: TextDirection.ltr,
-                inputFormatters: [ArabicNumberInputFormatter()],
+                inputFormatters: [LatinNumberInputFormatter()],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your phone number';
                   }
-                  return ArabicPhoneValidator.validate(value);
+                  return LatinPhoneValidator.validate(value);
                 },
               ),
               const SizedBox(height: 24),
@@ -206,7 +252,7 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
               ),
               const SizedBox(height: 32),
               const Text(
-                'Documents (Optional)',
+                'Required Documents',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -214,10 +260,10 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'You can upload these documents now or later',
+                'Please upload all required documents to complete registration',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey,
+                  color: Colors.red,
                 ),
               ),
               const SizedBox(height: 16),
@@ -271,13 +317,37 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(title,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                const Text(
+                  '*',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             if (file != null) Text(file.path.split('/').last),
+            if (file == null)
+              const Text(
+                'Required - Please select a file',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                ),
+              ),
             ElevatedButton.icon(
               onPressed: onPressed,
               icon: Icon(file != null ? Icons.change_circle : Icons.upload),
-              label: Text(file != null ? 'Change File' : 'Select File'),
+              label:
+                  Text(file != null ? 'Change File' : 'Select Required File'),
             ),
           ],
         ),

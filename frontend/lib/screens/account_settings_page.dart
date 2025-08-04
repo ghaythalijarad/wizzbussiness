@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_auth_service.dart';
 import '../services/api_service.dart';
+import '../services/image_upload_service.dart';
 import '../screens/login_page.dart';
 
 class AccountSettingsPage extends StatefulWidget {
@@ -21,11 +24,14 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   late TextEditingController _businessNameController;
   late TextEditingController _ownerNameController;
   late TextEditingController _addressController;
+  File? _image;
+  final ImagePicker _picker = ImagePicker();
 
   Map<String, dynamic>? _userData;
   bool _isLoadingUserData = true;
   String? _errorMessage;
   bool _isInitializing = true;
+  bool _isUploadingImage = false;
 
   @override
   void initState() {
@@ -72,6 +78,163 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     } catch (e) {
       print('Authentication validation failed: $e');
       _showAuthenticationRequiredDialog();
+    }
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Choose from Gallery'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _pickImageFromGallery();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_camera),
+                  title: const Text('Take Photo'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _pickImageFromCamera();
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error picking image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 95,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+        await _uploadBusinessPhoto();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    try {
+      final pickedFile = await _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 95,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+        await _uploadBusinessPhoto();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error taking photo: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadBusinessPhoto() async {
+    if (_image == null) return;
+
+    setState(() {
+      _isUploadingImage = true;
+    });
+
+    try {
+      final result = await ImageUploadService.uploadBusinessPhoto(_image!);
+
+      if (result['success']) {
+        final newImageUrl = result['imageUrl'];
+
+        // Update the business object with the new photo URL
+        setState(() {
+          widget.business.businessPhotoUrl = newImageUrl;
+          _isUploadingImage = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Business photo updated successfully!'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _isUploadingImage = false;
+          _image = null; // Clear the selected image on failure
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to upload photo: ${result['message']}'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isUploadingImage = false;
+        _image = null; // Clear the selected image on error
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error uploading photo: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -171,6 +334,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         }
 
         setState(() {
+          // Use raw address value directly if it's a string, else use map for components
+          final dynamic addrVal = businessData?['address'] ?? widget.business.address ?? '';
           _userData = {
             'business_name':
                 businessData?['business_name'] ?? widget.business.name,
@@ -188,15 +353,10 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                 '',
             'business_type': businessData?['business_type'] ??
                 widget.business.businessType.toString().split('.').last,
-            'address': {
-              'home_address': '',
-              'street':
-                  businessData?['address'] ?? widget.business.address ?? '',
-              'neighborhood': '',
-              'district': businessData?['district'] ?? '',
-              'city': businessData?['city'] ?? '',
-              'country': businessData?['country'] ?? '',
-            },
+            'business_photo_url': businessData?['business_photo_url'] ??
+                businessData?['businessPhotoUrl'] ??
+                widget.business.businessPhotoUrl,
+            'address': addrVal,
             'created_at': businessData?['created_at'],
           };
           _isLoadingUserData = false;
@@ -223,12 +383,43 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     }
   }
 
-  String _formatAddress(Map<String, dynamic>? address) {
-    if (address == null) {
-      return '';
+  String _formatAddress(dynamic address) {
+    if (address == null) return '';
+    // Plain string address
+    if (address is String) return address;
+    // DynamoDB atomic string
+    if (address is Map<String, dynamic> && address.containsKey('S')) {
+      return address['S']?.toString() ?? '';
     }
-    // Construct a formatted address string from the address map
-    return '${address['home_address'] ?? ''}, ${address['street'] ?? ''}, ${address['neighborhood'] ?? ''}, ${address['district'] ?? ''}, ${address['city'] ?? ''}, ${address['country'] ?? ''}';
+    // DynamoDB attribute map wrapper
+    if (address is Map<String, dynamic> && address.containsKey('M')) {
+      return _formatAddress(address['M']);
+    }
+    // Now address should be a map of components
+    final Map<String, dynamic> addrMap = Map<String, dynamic>.from(address as Map);
+    String extract(dynamic v) {
+      if (v == null) return '';
+      if (v is String) return v;
+      if (v is Map<String, dynamic> && v.containsKey('S')) {
+        return v['S']?.toString() ?? '';
+      }
+      if (v is Map<String, dynamic> && v.containsKey('M')) {
+        final m = Map<String, dynamic>.from(v['M'] as Map);
+        if (m.containsKey('S')) return m['S']?.toString() ?? '';
+        // Fallback: join nested values
+        return m.values.map((e) => extract(e)).where((s) => s.isNotEmpty).join(' ');
+      }
+      return v.toString();
+    }
+    final components = <String>[
+      extract(addrMap['home_address']),
+      extract(addrMap['street']),
+      extract(addrMap['neighborhood']),
+      extract(addrMap['district']),
+      extract(addrMap['city']),
+      extract(addrMap['country']),
+    ].where((c) => c.isNotEmpty).toList();
+    return components.join(', ');
   }
 
   @override
@@ -237,11 +428,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     _ownerNameController.dispose();
     _addressController.dispose();
     super.dispose();
-  }
-
-  void _saveChanges() {
-    // TODO: Implement save logic
-    Navigator.pop(context);
   }
 
   @override
@@ -273,98 +459,24 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.accountSettings),
+        backgroundColor: const Color(0xFF00C1E8),
+        foregroundColor: Colors.white,
+      ),
       backgroundColor: Colors.grey[50],
       body: CustomScrollView(
         slivers: [
-          // Modern App Bar with gradient
-          SliverAppBar(
-            expandedHeight: 200,
-            floating: false,
-            pinned: true,
-            elevation: 0,
-            backgroundColor: const Color(0xFF3399FF),
-            foregroundColor: Colors.white,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                l10n.accountSettings,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF00D4FF),
-                      Color(0xFF3399FF),
-                    ],
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    // Decorative circles
-                    Positioned(
-                      top: -50,
-                      right: -50,
-                      child: Container(
-                        width: 150,
-                        height: 150,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: -30,
-                      left: -30,
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                    // User icon
-                    const Positioned(
-                      bottom: 30,
-                      left: 20,
-                      child: Icon(
-                        Icons.account_circle_rounded,
-                        size: 40,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh_rounded),
-                onPressed: _loadUserData,
-                tooltip: 'Refresh',
-              ),
-              IconButton(
-                icon: const Icon(Icons.edit_rounded),
-                onPressed: _saveChanges,
-                tooltip: 'Edit Profile',
-              ),
-            ],
-          ),
-
-          // Content
+          // Content cards without SliverAppBar
           SliverToBoxAdapter(
-            child: _isLoadingUserData
-                ? _buildLoadingState()
-                : _errorMessage != null
-                    ? _buildErrorState(l10n, theme)
-                    : _buildAccountContent(l10n, theme),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: _isLoadingUserData
+                  ? _buildLoadingState()
+                  : _errorMessage != null
+                      ? _buildErrorState(l10n, theme)
+                      : _buildAccountContent(l10n, theme),
+            ),
           ),
         ],
       ),
@@ -496,21 +608,21 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
           const SizedBox(height: 24),
 
           // Personal Information Section
-          _buildSectionHeader('Personal Information', Icons.person_rounded),
+          _buildSectionHeader(l10n.personalInformation, Icons.person_rounded),
           const SizedBox(height: 16),
           _buildPersonalInfoCard(l10n, theme),
 
           const SizedBox(height: 32),
 
           // Business Information Section
-          _buildSectionHeader('Business Information', Icons.business_rounded),
+          _buildSectionHeader(l10n.businessInformation, Icons.business_rounded),
           const SizedBox(height: 16),
           _buildBusinessInfoCard(l10n, theme),
 
           const SizedBox(height: 32),
 
           // Account Status Section
-          _buildSectionHeader('Account Status', Icons.verified_user_rounded),
+          _buildSectionHeader(l10n.accountStatus, Icons.verified_user_rounded),
           const SizedBox(height: 16),
           _buildAccountStatusCard(l10n, theme),
 
@@ -552,19 +664,41 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     final businessName = _userData?['business_name'] ?? 'Business';
     final ownerName = _userData?['owner_name'] ?? 'Owner';
     final email = _userData?['email'] ?? '';
+    final businessPhotoUrl = widget.business.businessPhotoUrl;
+
+    ImageProvider? backgroundImage;
+    if (_image != null) {
+      // Show the newly selected image immediately
+      backgroundImage = FileImage(_image!);
+    } else if (businessPhotoUrl != null && businessPhotoUrl.isNotEmpty) {
+      // Show the existing business photo
+      backgroundImage = NetworkImage(businessPhotoUrl);
+    }
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF3399FF),
-            Color(0xFF00C1E8),
-          ],
-        ),
+        image: backgroundImage != null
+            ? DecorationImage(
+                image: backgroundImage,
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Colors.black.withOpacity(0.4),
+                  BlendMode.darken,
+                ),
+              )
+            : null,
+        gradient: backgroundImage == null
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF3399FF),
+                  Color(0xFF00C1E8),
+                ],
+              )
+            : null,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -578,70 +712,78 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.account_circle_rounded,
-                  size: 32,
-                  color: Colors.white,
-                ),
+              _buildCircularBusinessPhoto(
+                _userData?['business_photo_url'] ??
+                widget.business.businessPhotoUrl
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      ownerName,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      businessName,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                    ),
-                  ],
-                ),
+              IconButton(
+                icon: _isUploadingImage
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.edit, color: Colors.white, size: 28),
+                tooltip: _isUploadingImage
+                    ? 'Uploading...'
+                    : 'Change Business Photo',
+                onPressed: _isUploadingImage ? null : _pickImage,
+                splashRadius: 24,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.email_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  email,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
+          const SizedBox(height: 16),
+          Text(
+            businessName,
+            style: theme.textTheme.titleLarge!.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              shadows: [
+                const Shadow(
+                  blurRadius: 4.0,
+                  color: Colors.black54,
+                  offset: Offset(2.0, 2.0),
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            ownerName,
+            style: theme.textTheme.titleMedium!.copyWith(
+              color: Colors.white.withOpacity(0.9),
+              shadows: [
+                const Shadow(
+                  blurRadius: 2.0,
+                  color: Colors.black45,
+                  offset: Offset(1.0, 1.0),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Icon(Icons.email_rounded, color: Colors.white70, size: 16),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  email,
+                  style: theme.textTheme.bodyMedium!.copyWith(
+                    color: Colors.white70,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -649,85 +791,66 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   }
 
   Widget _buildPersonalInfoCard(AppLocalizations l10n, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildModernInfoTile(
-            l10n.ownerName,
-            _userData?['owner_name'] ?? 'Not provided',
-            Icons.person_rounded,
-            const Color(0xFF3399FF),
-          ),
-          const Divider(height: 32),
-          _buildModernInfoTile(
-            l10n.emailAddress,
-            _userData?['email'] ?? 'Not provided',
-            Icons.email_rounded,
-            const Color(0xFF00C1E8),
-            isLtr: true,
-          ),
-          const Divider(height: 32),
-          _buildModernInfoTile(
-            l10n.phoneNumber,
-            _userData?['phone_number'] ?? 'Not provided',
-            Icons.phone_rounded,
-            const Color(0xFF00D4FF),
-            isLtr: true,
-          ),
-        ],
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.05),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            _buildInfoRow(
+              l10n.ownerName,
+              _userData?['owner_name'] ?? '',
+              Icons.person_outline_rounded,
+            ),
+            const Divider(height: 24),
+            _buildInfoRow(
+              l10n.email,
+              _userData?['email'] ?? '',
+              Icons.email_outlined,
+            ),
+            const Divider(height: 24),
+            _buildInfoRow(
+              l10n.phoneNumber,
+              _userData?['phone_number'] ?? 'Not provided',
+              Icons.phone_outlined,
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildBusinessInfoCard(AppLocalizations l10n, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildModernInfoTile(
-            l10n.businessName,
-            _userData?['business_name'] ?? 'Not provided',
-            Icons.business_rounded,
-            const Color(0xFF3399FF),
-          ),
-          const Divider(height: 32),
-          _buildModernInfoTile(
-            l10n.businessType,
-            _userData?['business_type'] ?? 'Not specified',
-            Icons.category_rounded,
-            const Color(0xFF00C1E8),
-          ),
-          const Divider(height: 32),
-          _buildModernInfoTile(
-            l10n.businessAddressLabel,
-            _formatAddress(_userData?['address']) ?? 'Not provided',
-            Icons.location_on_rounded,
-            const Color(0xFF00D4FF),
-          ),
-        ],
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.05),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            _buildInfoRow(
+              l10n.businessName,
+              _userData?['business_name'] ?? '',
+              Icons.store_outlined,
+            ),
+            const Divider(height: 24),
+            _buildInfoRow(
+              l10n.businessType,
+              _userData?['business_type'] ?? 'Not specified',
+              Icons.category_outlined,
+            ),
+            const Divider(height: 24),
+            _buildInfoRow(
+              'Address',
+              _formatAddress(_userData?['address']),
+              Icons.location_on_outlined,
+              isMultiline: true,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -881,5 +1004,102 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     } catch (e) {
       return dateString;
     }
+  }
+
+  Widget _buildInfoRow(String label, String value, IconData icon,
+      {bool isMultiline = false}) {
+    return Row(
+      crossAxisAlignment:
+          isMultiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+      children: [
+        Icon(
+          icon,
+          color: const Color(0xFF3399FF),
+          size: 22,
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value.isNotEmpty ? value : 'Not provided',
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Build circular business photo widget for header
+  Widget _buildCircularBusinessPhoto(String? businessPhotoUrl) {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 2,
+        ),
+      ),
+      child: ClipOval(
+        child: businessPhotoUrl != null && businessPhotoUrl.isNotEmpty
+            ? Image.network(
+                businessPhotoUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback to default icon if image fails to load
+                  return _buildCircularDefaultIcon();
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              )
+            : _buildCircularDefaultIcon(),
+      ),
+    );
+  }
+
+  // Build circular default business icon for header
+  Widget _buildCircularDefaultIcon() {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.business,
+        size: 30,
+        color: Colors.white,
+      ),
+    );
   }
 }

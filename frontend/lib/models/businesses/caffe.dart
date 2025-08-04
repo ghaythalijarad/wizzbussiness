@@ -25,6 +25,10 @@ class Caffe implements Business {
   String? description;
   @override
   String? website;
+  @override
+  String? businessPhotoUrl;
+  @override
+  final String status;
 
   @override
   final List<Offer> offers;
@@ -48,6 +52,8 @@ class Caffe implements Business {
     this.longitude,
     this.description,
     this.website,
+    this.businessPhotoUrl,
+    required this.status,
     required this.offers,
     required this.businessHours,
     required this.settings,
@@ -66,6 +72,7 @@ class Caffe implements Business {
     String? email,
     String? description,
     String? website,
+    String? businessPhotoUrl,
   }) {
     if (name != null) this.name = name;
     if (ownerName != null) this.ownerName = ownerName;
@@ -76,6 +83,7 @@ class Caffe implements Business {
     if (email != null) this.email = email;
     if (description != null) this.description = description;
     if (website != null) this.website = website;
+    if (businessPhotoUrl != null) this.businessPhotoUrl = businessPhotoUrl;
   }
 
   @override
@@ -129,7 +137,9 @@ class Caffe implements Business {
       }
       total += d.type == DiscountType.percentage
           ? amt * (d.value / 100)
-          : d.value.clamp(0, amt);
+          : d.type == DiscountType.freeDelivery
+              ? 0.0 // Free delivery handled separately
+              : 0.0; // Other types require backend calculation
     }
     return total;
   }

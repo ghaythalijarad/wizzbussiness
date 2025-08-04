@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:uuid/uuid.dart';
 import '../config/app_config.dart';
 import 'app_auth_service.dart';
@@ -18,7 +19,12 @@ class ImageUploadService {
 
       // Read image file as bytes
       final imageBytes = await imageFile.readAsBytes();
-      final fileName = 'business_${uuid.v4()}.jpg';
+
+      // Determine file extension from original file
+      final originalPath = imageFile.path.toLowerCase();
+      final fileExtension = originalPath.endsWith('.png') ? 'png' : 'jpg';
+      final mimeType = fileExtension == 'png' ? 'image/png' : 'image/jpeg';
+      final fileName = 'business_${uuid.v4()}.$fileExtension';
 
       // Create multipart request to business photo endpoint
       final request = http.MultipartRequest(
@@ -27,12 +33,13 @@ class ImageUploadService {
             '$baseUrl/upload/business-photo'), // Use dedicated business photo endpoint
       );
 
-      // Add file to request
+      // Add file to request with proper MIME type
       request.files.add(
         http.MultipartFile.fromBytes(
           'image',
           imageBytes,
           filename: fileName,
+          contentType: MediaType.parse(mimeType),
         ),
       );
 
@@ -86,7 +93,12 @@ class ImageUploadService {
 
       // Read image file as bytes
       final imageBytes = await imageFile.readAsBytes();
-      final fileName = '${uuid.v4()}.jpg';
+
+      // Determine file extension from original file
+      final originalPath = imageFile.path.toLowerCase();
+      final fileExtension = originalPath.endsWith('.png') ? 'png' : 'jpg';
+      final mimeType = fileExtension == 'png' ? 'image/png' : 'image/jpeg';
+      final fileName = '${uuid.v4()}.$fileExtension';
 
       // Create multipart request
       final request = http.MultipartRequest(
@@ -99,12 +111,13 @@ class ImageUploadService {
         'Authorization': 'Bearer $token',
       });
 
-      // Add file to request
+      // Add file to request with proper MIME type
       request.files.add(
         http.MultipartFile.fromBytes(
           'image',
           imageBytes,
           filename: fileName,
+          contentType: MediaType.parse(mimeType),
         ),
       );
 
@@ -148,7 +161,11 @@ class ImageUploadService {
         };
       }
 
-      final uniqueFileName = '${uuid.v4()}_$fileName';
+      // Determine file extension from file name
+      final fileNameLower = fileName.toLowerCase();
+      final fileExtension = fileNameLower.endsWith('.png') ? 'png' : 'jpg';
+      final mimeType = fileExtension == 'png' ? 'image/png' : 'image/jpeg';
+      final uniqueFileName = '${uuid.v4()}.$fileExtension';
 
       // Create multipart request
       final request = http.MultipartRequest(
@@ -161,12 +178,13 @@ class ImageUploadService {
         'Authorization': 'Bearer $token',
       });
 
-      // Add file to request
+      // Add file to request with proper MIME type
       request.files.add(
         http.MultipartFile.fromBytes(
           'image',
           imageBytes,
           filename: uniqueFileName,
+          contentType: MediaType.parse(mimeType),
         ),
       );
 

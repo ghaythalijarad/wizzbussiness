@@ -1,0 +1,25 @@
+{
+  "name": "push-notifications-service",
+  "version": "1.0.0",
+  "description": "AWS Lambda functions for push notifications",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "deploy-with-setup": "./deploy.sh",
+    "remove": "serverless remove",
+    "logs": "serverless logs -f",
+    "setup-firebase": "node generate-firebase-setup.js",
+    "setup-sns": "node setup-sns-platforms.js",
+    "test": "node test-backend.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1490.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "serverless": "^3.35.0",
+    "serverless-offline": "^13.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

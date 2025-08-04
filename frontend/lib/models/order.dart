@@ -1,13 +1,15 @@
 // Models for orders in Hadhir Business app
 
 import 'order_item.dart';
+import 'delivery_address.dart';
 
 enum OrderStatus {
   pending,
   confirmed,
   preparing,
   ready,
-  pickedUp,
+  onTheWay,
+  delivered,
   cancelled,
   returned,
   expired
@@ -18,7 +20,7 @@ class Order {
   final String customerId;
   final String customerName;
   final String customerPhone;
-  final String deliveryAddress;
+  final DeliveryAddress deliveryAddress;
   final List<OrderItem> items;
   final double totalAmount;
   final DateTime createdAt;
@@ -41,6 +43,100 @@ class Order {
     this.estimatedPreparationTimeMinutes,
     this.estimatedCompletionTime,
   });
+
+  /// Create an Order from JSON response from backend
+  factory Order.fromJson(Map<String, dynamic> json) {
+    // Parse status from string
+    OrderStatus parseStatus(String? statusStr) {
+      switch (statusStr?.toLowerCase()) {
+        case 'pending':
+          return OrderStatus.pending;
+        case 'confirmed':
+        case 'accepted':
+          return OrderStatus.confirmed;
+        case 'preparing':
+          return OrderStatus.preparing;
+        case 'ready':
+          return OrderStatus.ready;
+        case 'on_the_way':
+        case 'ontheway':
+        case 'on-the-way':
+          return OrderStatus.onTheWay;
+        case 'delivered':
+        case 'pickedup':
+        case 'picked_up':
+          return OrderStatus.delivered;
+        case 'cancelled':
+          return OrderStatus.cancelled;
+        case 'returned':
+          return OrderStatus.returned;
+        case 'expired':
+          return OrderStatus.expired;
+        default:
+          return OrderStatus.pending;
+      }
+    }
+
+    // Parse items from JSON
+    List<OrderItem> parseItems(dynamic itemsData) {
+      if (itemsData == null) return [];
+      if (itemsData is List) {
+        return itemsData.map((item) {
+          if (item is Map<String, dynamic>) {
+            return OrderItem(
+              dishId: item['dishId'] ?? item['dish_id'] ?? '',
+              dishName:
+                  item['dishName'] ?? item['dish_name'] ?? item['name'] ?? '',
+              price: (item['price'] ?? 0).toDouble(),
+              quantity: item['quantity'] ?? 1,
+              notes: item['notes'],
+            );
+          }
+          return OrderItem(
+            dishId: '',
+            dishName: 'Unknown Item',
+            price: 0.0,
+            quantity: 1,
+          );
+        }).toList();
+      }
+      return [];
+    }
+
+    final deliveryAddressData =
+        json['deliveryAddress'] ?? json['delivery_address'];
+    final DeliveryAddress deliveryAddress;
+    if (deliveryAddressData is Map<String, dynamic>) {
+      deliveryAddress = DeliveryAddress.fromJson(deliveryAddressData);
+    } else if (deliveryAddressData is String) {
+      deliveryAddress = DeliveryAddress(street: deliveryAddressData, city: '');
+    } else {
+      deliveryAddress = DeliveryAddress(street: 'N/A', city: 'N/A');
+    }
+
+    final order = Order(
+      id: json['orderId'] ?? json['id'] ?? '',
+      customerId: json['customerId'] ?? json['customer_id'] ?? '',
+      customerName: json['customerName'] ?? json['customer_name'] ?? '',
+      customerPhone: json['customerPhone'] ?? json['customer_phone'] ?? '',
+      deliveryAddress: deliveryAddress,
+      items: parseItems(json['items']),
+      totalAmount:
+          (json['totalAmount'] ?? json['total_amount'] ?? 0).toDouble(),
+      createdAt:
+          DateTime.tryParse(json['createdAt'] ?? json['created_at'] ?? '') ??
+              DateTime.now(),
+      status: parseStatus(json['status']),
+      notes: json['notes'],
+      estimatedPreparationTimeMinutes: json['estimatedPreparationTime'] ??
+          json['estimated_preparation_time'],
+      estimatedCompletionTime: json['estimatedCompletionTime'] != null
+          ? DateTime.tryParse(json['estimatedCompletionTime'])
+          : null,
+    );
+
+    return order;
+  }
 
   double get subtotal =>
       items.fold(0, (sum, item) => sum + (item.price * item.quantity));
@@ -99,7 +195,7 @@ class Order {
   }
 
   Duration? getRemainingTime() {
-    if (status == OrderStatus.pickedUp || status == OrderStatus.cancelled) {
+    if (status == OrderStatus.delivered || status == OrderStatus.cancelled) {
       return null;
     }
     final remaining = getEstimatedCompletionTime().difference(DateTime.now());
@@ -107,7 +203,7 @@ class Order {
   }
 
   bool get isOverdue {
-    if (status == OrderStatus.pickedUp || status == OrderStatus.cancelled) {
+    if (status == OrderStatus.delivered || status == OrderStatus.cancelled) {
       return false;
     }
     return DateTime.now().isAfter(getEstimatedCompletionTime());
@@ -118,7 +214,7 @@ class Order {
     String? customerId,
     String? customerName,
     String? customerPhone,
-    String? deliveryAddress,
+    DeliveryAddress? deliveryAddress,
     List<OrderItem>? items,
     double? totalAmount,
     DateTime? createdAt,

@@ -1,8 +1,10 @@
-const AWS = require('aws-sdk');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, QueryCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
 const jwt = require('jsonwebtoken');
 
 // Initialize DynamoDB
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamodb = DynamoDBDocumentClient.from(dynamoDbClient);
 
 // Table names from environment variables
 const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev';
@@ -142,7 +144,7 @@ async function verifyBusinessAccess(userId, businessId) {
       Key: { id: businessId }
     };
 
-    const result = await dynamodb.get(params).promise();
+    const result = await dynamodb.send(new GetCommand(params));
     
     if (!result.Item) {
       console.log(`❌ Business ${businessId} not found`);
@@ -176,7 +178,7 @@ async function handleGetPosSettings(businessId) {
       }
     };
 
-    const result = await dynamodb.get(params).promise();
+    const result = await dynamodb.send(new GetCommand(params));
     
     // Return default settings if none exist
     const defaultSettings = {
@@ -293,7 +295,7 @@ async function handleUpdatePosSettings(businessId, requestBody) {
       ReturnValues: 'ALL_NEW'
     };
 
-    const result = await dynamodb.update(params).promise();
+    const result = await dynamodb.send(new UpdateCommand(params));
 
     // Log the update for audit purposes
     await logPosSettingsChange(businessId, 'settings_updated', settings);
@@ -426,7 +428,7 @@ async function handleGetSyncLogs(businessId) {
       Limit: 50
     };
 
-    const result = await dynamodb.query(params).promise();
+    const result = await dynamodb.send(new QueryCommand(params));
 
     return {
       statusCode: 200,
@@ -658,7 +660,7 @@ async function logPosSettingsChange(businessId, action, details) {
       Item: logEntry
     };
 
-    await dynamodb.put(params).promise();
+    await dynamodb.send(new PutCommand(params));
     console.log('📝 POS log entry created:', action);
   } catch (error) {
     console.error('❌ Error logging POS change:', error);

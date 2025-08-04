@@ -908,7 +908,9 @@ class _AnalyticsPageState extends State<AnalyticsPage>
         return const Color(0xFF9C27B0);
       case OrderStatus.ready:
         return const Color(0xFF4CAF50);
-      case OrderStatus.pickedUp:
+      case OrderStatus.onTheWay:
+        return const Color(0xFF2196F3);
+      case OrderStatus.delivered:
         return const Color(0xFF00BCD4);
       case OrderStatus.cancelled:
         return const Color(0xFFF44336);
@@ -940,8 +942,10 @@ class _AnalyticsPageState extends State<AnalyticsPage>
         return loc.orderStatusPreparing;
       case OrderStatus.ready:
         return loc.orderStatusReady;
-      case OrderStatus.pickedUp:
-        return loc.orderStatusPickedUp;
+      case OrderStatus.onTheWay:
+        return loc.orderStatusOnTheWay;
+      case OrderStatus.delivered:
+        return loc.orderStatusDelivered;
       case OrderStatus.cancelled:
         return loc.orderStatusCancelled;
       case OrderStatus.returned:

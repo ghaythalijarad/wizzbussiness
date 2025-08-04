@@ -60,6 +60,13 @@ class _WorkingHoursSettingsScreenState
   @override
   void initState() {
     super.initState();
+    // 🔍 DEBUG: Log business information to trace ID mismatch
+    print('🏢 WorkingHoursSettingsScreen initState DEBUG:');
+    print('   Business ID: ${widget.business?.id}');
+    print('   Business Name: ${widget.business?.name}');
+    print('   Business Email: ${widget.business?.email}');
+    print('   Business Object: ${widget.business.toString()}');
+
     _loadWorkingHours();
   }
 

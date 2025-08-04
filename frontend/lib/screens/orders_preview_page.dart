@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/order.dart';
 import '../models/order_item.dart';
+import '../models/delivery_address.dart';
 import '../widgets/order_card.dart';
 import '../utils/responsive_helper.dart';
 
@@ -33,7 +34,10 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
         customerId: 'CUST-001',
         customerName: 'أحمد محمد',
         customerPhone: '+964 770 123 4567',
-        deliveryAddress: 'شارع الجامعة، بغداد، العراق',
+        deliveryAddress: DeliveryAddress(
+          street: 'شارع الجامعة',
+          city: 'بغداد، العراق',
+        ),
         items: [
           OrderItem(
             dishId: 'DISH-001',
@@ -60,7 +64,10 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
         customerId: 'CUST-002',
         customerName: 'فاطمة علي',
         customerPhone: '+964 771 987 6543',
-        deliveryAddress: 'الكرادة الداخلية، بغداد، العراق',
+        deliveryAddress: DeliveryAddress(
+          street: 'الكرادة الداخلية',
+          city: 'بغداد، العراق',
+        ),
         items: [
           OrderItem(
             dishId: 'DISH-003',
@@ -87,7 +94,10 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
         customerId: 'CUST-003',
         customerName: 'محمد حسن',
         customerPhone: '+964 772 456 7890',
-        deliveryAddress: 'المنصور، بغداد، العراق',
+        deliveryAddress: DeliveryAddress(
+          street: 'المنصور',
+          city: 'بغداد، العراق',
+        ),
         items: [
           OrderItem(
             dishId: 'DISH-005',
@@ -114,7 +124,10 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
         customerId: 'CUST-004',
         customerName: 'سارة أحمد',
         customerPhone: '+964 773 321 0987',
-        deliveryAddress: 'الجادرية، بغداد، العراق',
+        deliveryAddress: DeliveryAddress(
+          street: 'الجادرية',
+          city: 'بغداد، العراق',
+        ),
         items: [
           OrderItem(
             dishId: 'DISH-007',
@@ -141,7 +154,10 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
         customerId: 'CUST-005',
         customerName: 'يوسف علي',
         customerPhone: '+964 774 654 3210',
-        deliveryAddress: 'الزعفرانية، بغداد، العراق',
+        deliveryAddress: DeliveryAddress(
+          street: 'الزعفرانية',
+          city: 'بغداد، العراق',
+        ),
         items: [
           OrderItem(
             dishId: 'DISH-009',
@@ -158,7 +174,7 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
         ],
         totalAmount: 21.0,
         createdAt: now.subtract(Duration(hours: 2)),
-        status: OrderStatus.pickedUp,
+        status: OrderStatus.delivered,
         estimatedPreparationTimeMinutes: 20,
       ),
 
@@ -168,7 +184,10 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
         customerId: 'CUST-006',
         customerName: 'ليلى محمود',
         customerPhone: '+964 775 123 9876',
-        deliveryAddress: 'الدورة، بغداد، العراق',
+        deliveryAddress: DeliveryAddress(
+          street: 'الدورة',
+          city: 'بغداد، العراق',
+        ),
         items: [
           OrderItem(
             dishId: 'DISH-011',
@@ -215,7 +234,9 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
         return 'قيد التحضير';
       case OrderStatus.ready:
         return 'جاهزة';
-      case OrderStatus.pickedUp:
+      case OrderStatus.onTheWay:
+        return 'في الطريق';
+      case OrderStatus.delivered:
         return 'مكتملة';
       case OrderStatus.cancelled:
         return 'ملغية';
@@ -236,8 +257,11 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
         return OrderStatus.preparing;
       case 'ready':
         return OrderStatus.ready;
+      case 'on_the_way':
+        return OrderStatus.onTheWay;
+      case 'delivered':
       case 'pickedUp':
-        return OrderStatus.pickedUp;
+        return OrderStatus.delivered;
       case 'cancelled':
         return OrderStatus.cancelled;
       case 'returned':
@@ -334,23 +358,6 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          setState(() {
-            _generateMockOrders();
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('تم إنشاء طلبات جديدة تجريبية'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        },
-        backgroundColor: Color(0xFF00C1E8),
-        foregroundColor: Colors.white,
-        icon: Icon(Icons.add),
-        label: Text('إضافة طلبات تجريبية'),
-      ),
     );
   }
 
@@ -381,6 +388,10 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
             order.status == _getStatusFromString(value))
         .length;
 
+    // Define the custom blue color #00C1E8 for fill and the pink color #C6007E for borders
+    const customBlueColor = Color(0xFF00C1E8);
+    const customPinkColor = Color(0xFFC6007E);
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
@@ -388,10 +399,10 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
         elevation: isSelected ? 2 : 0.5,
         borderRadius: BorderRadius.circular(16),
         color: isSelected
-            ? const Color(0xFF00C1E8)
+            ? customBlueColor
             : const Color(0xFF001133).withOpacity(0.05),
         shadowColor: isSelected
-            ? const Color(0xFF00C1E8).withOpacity(0.3)
+            ? customBlueColor.withOpacity(0.3)
             : const Color(0xFF001133).withOpacity(0.1),
         child: InkWell(
           onTap: () => setState(() => _selectedFilter = value),
@@ -402,9 +413,9 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected
-                    ? const Color(0xFF00C1E8)
-                    : const Color(0xFF001133).withOpacity(0.3),
-                width: 1,
+                    ? customPinkColor
+                    : customPinkColor.withOpacity(0.4),
+                width: 1.5,
               ),
             ),
             child: Row(
@@ -413,7 +424,7 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
                 Text(
                   label,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : const Color(0xFF001133),
+                    color: isSelected ? Colors.white : customBlueColor,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     fontSize: 13,
                     letterSpacing: 0.2,
@@ -426,7 +437,7 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? Colors.white.withOpacity(0.3)
-                          : Color(0xFF00C1E8),
+                          : customBlueColor,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(

@@ -1,8 +1,10 @@
-const AWS = require('aws-sdk');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, QueryCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
 const jwt = require('jsonwebtoken');
 
 // Initialize DynamoDB
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamodb = DynamoDBDocumentClient.from(dynamoDbClient);
 
 // Table names from environment variables
 const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev';
@@ -142,7 +144,7 @@ async function verifyBusinessAccess(userId, businessId) {
       Key: { businessId: businessId }
     };
 
-    const result = await dynamodb.get(params).promise();
+    const result = await dynamodb.send(new GetCommand(params));
     
     if (!result.Item) {
       console.log(`❌ Business ${businessId} not found`);
@@ -179,7 +181,7 @@ async function handleGetLocationSettings(businessId) {
       }
     };
 
-    const result = await dynamodb.get(params).promise();
+    const result = await dynamodb.send(new GetCommand(params));
     
     // Return default settings if none exist
     const defaultSettings = {
@@ -280,7 +282,7 @@ async function handleUpdateLocationSettings(businessId, requestBody) {
       ReturnValues: 'ALL_NEW'
     };
 
-    const result = await dynamodb.update(params).promise();
+    const result = await dynamodb.send(new UpdateCommand(params));
 
     // Also update the main business table with the location data for consistency
     if (settings.latitude !== null && settings.longitude !== null) {
@@ -325,10 +327,10 @@ async function handleGetWorkingHours(businessId) {
     const results = await Promise.all(
       weekdays.map(async (day) => {
         try {
-          const result = await dynamodb.get({
+          const result = await dynamodb.send(new GetCommand({
             TableName: BUSINESS_WORKING_HOURS_TABLE,
             Key: { business_id: businessId, weekday: day }
-          }).promise();
+          }));
           
           console.log(`📋 ${day}: ${result.Item ? 'Found data' : 'No data'}`);
           return result;
@@ -403,17 +405,32 @@ async function handleUpdateWorkingHours(businessId, requestBody) {
     const updatePromises = weekdays.map(async (day) => {
       const hours = workingHours[day] || {};
       
+      // Debug logging for each day
+      console.log(`🔍 Processing ${day}:`, {
+        received_hours: hours,
+        opening_value: hours.opening,
+        opening_type: typeof hours.opening,
+        closing_value: hours.closing,
+        closing_type: typeof hours.closing
+      });
+      
+      // Fix the null handling - only convert undefined to null, preserve empty strings and other falsy values
+      const openingTime = hours.opening !== undefined ? hours.opening : null;
+      const closingTime = hours.closing !== undefined ? hours.closing : null;
+      
+      console.log(`📝 Saving ${day}: opening="${openingTime}", closing="${closingTime}"`);
+      
       try {
-        const result = await dynamodb.put({
+        const result = await dynamodb.send(new PutCommand({
           TableName: BUSINESS_WORKING_HOURS_TABLE,
           Item: {
             business_id: businessId,
             weekday: day,
-            opening: hours.opening || null,
-            closing: hours.closing || null,
+            opening: openingTime,
+            closing: closingTime,
             updated_at: new Date().toISOString()
           }
-        }).promise();
+        }));
         
         console.log(`✅ Updated ${day} for business ${businessId}`);
         return result;
@@ -454,7 +471,7 @@ async function updateBusinessLocation(businessId, latitude, longitude, address) 
       ProjectionExpression: 'address'
     };
     
-    const currentBusiness = await dynamodb.get(getCurrentParams).promise();
+    const currentBusiness = await dynamodb.send(new GetCommand(getCurrentParams));
     
     let updateExpression = 'SET latitude = :lat, longitude = :lng, updatedAt = :updatedAt';
     const expressionAttributeValues = {
@@ -482,7 +499,7 @@ async function updateBusinessLocation(businessId, latitude, longitude, address) 
       ExpressionAttributeValues: expressionAttributeValues
     };
 
-    await dynamodb.update(params).promise();
+    await dynamodb.send(new UpdateCommand(params));
     console.log('✅ Business location updated in main table');
   } catch (error) {
     console.error('⚠️ Error updating business location in main table:', error);

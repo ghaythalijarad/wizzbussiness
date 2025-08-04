@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../utils/responsive_helper.dart';
-import '../widgets/ios_sidebar.dart';
+import '../widgets/modern_sidebar.dart';
 
 class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -27,7 +27,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
       barrierDismissible: true,
       barrierLabel: '',
       pageBuilder: (context, animation1, animation2) {
-        return IOSSidebar(
+        return ModernSidebar(
           isOnline: isOnline,
           onToggleStatus: onToggleStatus,
           onReturnOrder: onReturnOrder,
@@ -153,24 +153,20 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
           ],
         ),
       ),
-      // Innovative Sidebar Button
+      // Flat Sidebar Button
       IconButton(
         onPressed: () => _showSimpleSidebar(context),
-        icon: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF3399FF), Color(0xFF030e8e)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(
-            Icons.dashboard_customize,
-            color: Colors.white,
-            size: 20,
-          ),
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          foregroundColor: const Color(0xFF00C1E8),
+          shape: const RoundedRectangleBorder(),
+          elevation: 0,
+          padding: EdgeInsets.zero,
+        ),
+        icon: const Icon(
+          Icons.menu,
+          color: Color(0xFF00C1E8),
+          size: 24,
         ),
         tooltip: loc.quickActions,
       ),
@@ -181,44 +177,29 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
     final loc = AppLocalizations.of(context)!;
     return [
       const SizedBox(width: 8),
-      // Innovative Sidebar Button
+      // Flat Sidebar Button
       Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: () => _showSimpleSidebar(context),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(4),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF3399FF), Color(0xFF030e8e)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF3399FF).withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(
-                    Icons.dashboard_customize,
-                    color: Colors.white,
+                    Icons.menu,
+                    color: Color(0xFF00C1E8),
                     size: 18,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     loc.quickActions,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF00C1E8),
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),

@@ -1,11 +1,9 @@
 /// Types of discounts available
 enum DiscountType {
   percentage,
-  fixedAmount,
   conditional,
   freeDelivery,
   buyXGetY,
-  others,
 }
 
 /// Applicability rules for discounts
@@ -170,7 +168,7 @@ class Discount {
     if (type == null) return DiscountType.percentage;
     return DiscountType.values.firstWhere(
       (e) => e.name == type.toString(),
-      orElse: () => DiscountType.others,
+      orElse: () => DiscountType.percentage,
     );
   }
 

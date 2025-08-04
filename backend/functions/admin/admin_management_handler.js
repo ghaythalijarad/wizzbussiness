@@ -1,9 +1,11 @@
 'use strict';
 
-const AWS = require('aws-sdk');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, ScanCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
 const { createResponse } = require('../auth/utils');
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamodb = DynamoDBDocumentClient.from(dynamoDbClient);
 const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE;
 
 module.exports.handler = async (event) => {
@@ -39,7 +41,7 @@ async function getPendingBusinesses() {
     };
 
     try {
-        const result = await dynamodb.scan(params).promise();
+        const result = await dynamodb.send(new ScanCommand(params));
         return createResponse(200, result.Items);
     } catch (error) {
         console.error('Error fetching pending businesses:', error);
@@ -62,7 +64,7 @@ async function approveMerchant(businessId) {
     };
 
     try {
-        await dynamodb.update(params).promise();
+        await dynamodb.send(new UpdateCommand(params));
         return createResponse(200, { success: true, message: `Business ${businessId} approved.` });
     } catch (error) {
         console.error('Error approving merchant:', error);
@@ -85,7 +87,7 @@ async function rejectMerchant(businessId) {
     };
 
     try {
-        await dynamodb.update(params).promise();
+        await dynamodb.send(new UpdateCommand(params));
         return createResponse(200, { success: true, message: `Business ${businessId} rejected.` });
     } catch (error) {
         console.error('Error rejecting merchant:', error);

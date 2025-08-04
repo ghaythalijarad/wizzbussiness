@@ -25,6 +25,14 @@ provider:
     BUSINESS_WORKING_HOURS_TABLE: order-receiver-business-working-hours-dev
     POS_LOGS_TABLE: order-receiver-pos-logs-dev
     BUSINESS_PHOTOS_BUCKET: order-receiver-business-photos-dev
+    ORDERS_TABLE: ${self:custom.ordersTable}
+    MERCHANT_ENDPOINTS_TABLE: ${self:custom.merchantEndpointsTable}
+    WEBSOCKET_ENDPOINT: wss://ujyixy3uh5.execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}
+    ORDER_EVENTS_TOPIC_ARN: !Ref OrderEventsTopic
+    # SNS_FCM_ARN: !Ref FCMPlatformApplication  # Commented out temporarily
+    # SNS_APNS_ARN: !Ref APNSPlatformApplication  # Commented out temporarily
+    SNS_FCM_ARN: "arn:aws:sns:${self:provider.region}:${aws:accountId}:placeholder-fcm"
+    SNS_APNS_ARN: "arn:aws:sns:${self:provider.region}:${aws:accountId}:placeholder-apns"
     COGNITO_USER_POOL_ID: us-east-1_bDqnKdrqo
     COGNITO_CLIENT_ID: 6n752vrmqmbss6nmlg6be2nn9a
     COGNITO_REGION: us-east-1
@@ -59,9 +67,21 @@ provider:
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-pos-logs-dev"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-pos-logs-dev/index/*"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.ordersTable}"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.ordersTable}/index/*"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.merchantEndpointsTable}"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.merchantEndpointsTable}/index/*"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.productsTable}"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.categoriesTable}"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.productsTable}/index/BusinessIdIndex"
+        - Effect: "Allow"
+          Action:
+            - "sns:Publish"
+            - "events:PutEvents"
+          Resource: "*"
+        - Effect: "Allow"
+          Action:
+            - "execute-api:ManageConnections"
+          Resource: "arn:aws:execute-api:*:*:*"
         - Effect: "Allow"
           Action:
             - "cognito-idp:AdminGetUser"
@@ -157,6 +177,36 @@ functions:
       - http:
           path: /categories/business-type/{businessType}
           method: get
+          cors: true
+  merchantOrderManagement:
+    handler: functions/orders/merchant_order_handler.handler
+    name: order-receiver-${self:provider.stage}-merchant-orders-v1-sls
+    events:
+      # Merchant Order Management endpoints (restructured to avoid path conflicts)
+      - http:
+          path: /merchant/orders/{businessId}
+          method: get
+          cors: true
+      - http:
+          path: /merchant/order/{orderId}/confirm
+          method: put
+          cors: true
+      - http:
+          path: /merchant/order/{orderId}/reject
+          method: put
+          cors: true
+      - http:
+          path: /merchant/order/{orderId}/status
+          method: put
+          cors: true
+      - http:
+          path: /merchants/{merchantId}/device-token
+          method: post
+          cors: true
+      # Webhook for receiving orders from Central Platform
+      - http:
+          path: /webhooks/orders
+          method: post
           cors: true
   discountManagement:
     handler: functions/discounts/discount_management_handler.handler
@@ -300,6 +350,17 @@ functions:
           method: post
           cors: true
 
+  websocketHandler:
+    handler: functions/websocket/websocket_handler.handler
+    name: order-receiver-${self:provider.stage}-websocket-v1-sls
+    events:
+      - websocket:
+          route: $connect
+      - websocket:
+          route: $disconnect
+      - websocket:
+          route: $default
+
 package:
   individually: true
 
@@ -308,11 +369,11 @@ custom:
     webpackConfig: ./webpack.config.js
     includeModules: true
   ordersTable: order-receiver-orders-${sls:stage}
+  merchantEndpointsTable: order-receiver-merchant-endpoints-${sls:stage}
   productsTable: order-receiver-products-${sls:stage}
   categoriesTable: order-receiver-categories-${sls:stage}
 
-build:
-  esbuild: false
+
 
 resources:
   Resources:
@@ -325,10 +386,170 @@ resources:
         AttributeDefinitions:
           - AttributeName: orderId
             AttributeType: S
+          - AttributeName: businessId
+            AttributeType: S
+          - AttributeName: storeId
+            AttributeType: S
         KeySchema:
           - AttributeName: orderId
             KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: BusinessIdIndex
+            KeySchema:
+              - AttributeName: businessId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: StoreIdIndex
+            KeySchema:
+              - AttributeName: storeId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
+    MerchantEndpointsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.merchantEndpointsTable}
+        AttributeDefinitions:
+          - AttributeName: merchantId
+            AttributeType: S
+          - AttributeName: endpointType
+            AttributeType: S
+          - AttributeName: connectionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: merchantId
+            KeyType: HASH
+          - AttributeName: endpointType
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: ConnectionIdIndex
+            KeySchema:
+              - AttributeName: connectionId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+    
+    # WebSocket API Gateway
+    WebSocketApi:
+      Type: AWS::ApiGatewayV2::Api
+      Properties:
+        Name: ${self:service}-websocket-${self:provider.stage}
+        ProtocolType: WEBSOCKET
+        RouteSelectionExpression: $request.body.action
+    
+    ConnectRoute:
+      Type: AWS::ApiGatewayV2::Route
+      Properties:
+        ApiId: !Ref WebSocketApi
+        RouteKey: $connect
+        AuthorizationType: NONE
+        OperationName: ConnectRoute
+        Target: !Join ['/', ['integrations', !Ref ConnectInteg]]
+    
+    ConnectInteg:
+      Type: AWS::ApiGatewayV2::Integration
+      Properties:
+        ApiId: !Ref WebSocketApi
+        Description: Connect Integration
+        IntegrationType: AWS_PROXY
+        IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketHandlerLambdaFunction.Arn}/invocations'
+    
+    DisconnectRoute:
+      Type: AWS::ApiGatewayV2::Route
+      Properties:
+        ApiId: !Ref WebSocketApi
+        RouteKey: $disconnect
+        AuthorizationType: NONE
+        OperationName: DisconnectRoute
+        Target: !Join ['/', ['integrations', !Ref DisconnectInteg]]
+    
+    DisconnectInteg:
+      Type: AWS::ApiGatewayV2::Integration
+      Properties:
+        ApiId: !Ref WebSocketApi
+        Description: Disconnect Integration
+        IntegrationType: AWS_PROXY
+        IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketHandlerLambdaFunction.Arn}/invocations'
+    
+    DefaultRoute:
+      Type: AWS::ApiGatewayV2::Route
+      Properties:
+        ApiId: !Ref WebSocketApi
+        RouteKey: $default
+        AuthorizationType: NONE
+        OperationName: DefaultRoute
+        Target: !Join ['/', ['integrations', !Ref DefaultInteg]]
+    
+    DefaultInteg:
+      Type: AWS::ApiGatewayV2::Integration
+      Properties:
+        ApiId: !Ref WebSocketApi
+        Description: Default Integration
+        IntegrationType: AWS_PROXY
+        IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketHandlerLambdaFunction.Arn}/invocations'
+    
+    Deployment:
+      Type: AWS::ApiGatewayV2::Deployment
+      DependsOn:
+        - ConnectRoute
+        - DisconnectRoute
+        - DefaultRoute
+      Properties:
+        ApiId: !Ref WebSocketApi
+    
+    Stage:
+      Type: AWS::ApiGatewayV2::Stage
+      Properties:
+        StageName: ${self:provider.stage}
+        Description: ${self:provider.stage} Stage
+        DeploymentId: !Ref Deployment
+        ApiId: !Ref WebSocketApi
+    
+    WebSocketLambdaPermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !Ref WebsocketHandlerLambdaFunction
+        Principal: apigateway.amazonaws.com
+        SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*'
+    # SNS Topics and Platform Applications for Push Notifications
+    OrderEventsTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:service}-order-events-${self:provider.stage}
+        DisplayName: Order Events Topic
+    
+    # FCM Platform Application (Android) - Commented out temporarily due to placeholder values
+    # FCMPlatformApplication:
+    #   Type: AWS::SNS::PlatformApplication
+    #   Properties:
+    #     Name: ${self:service}-fcm-${self:provider.stage}
+    #     Platform: GCM
+    #     Attributes:
+    #       # You'll need to add your FCM server key here
+    #       # PlatformCredential: "YOUR_FCM_SERVER_KEY"
+    #       PlatformCredential: "PLACEHOLDER_FCM_SERVER_KEY"
+    
+    # APNS Platform Application (iOS) - Commented out temporarily due to placeholder values
+    # APNSPlatformApplication:
+    #   Type: AWS::SNS::PlatformApplication
+    #   Properties:
+    #     Name: ${self:service}-apns-${self:provider.stage}
+    #     Platform: APNS_SANDBOX  # Use APNS for production
+    #     Attributes:
+    #       # You'll need to add your APNS certificate or key here
+    #       # For certificate-based auth:
+    #       # PlatformCredential: "YOUR_APNS_CERTIFICATE"
+    #       # PlatformPrincipal: "YOUR_APNS_PRIVATE_KEY"
+    #       # For token-based auth:
+    #       # PlatformCredential: "YOUR_APNS_AUTH_KEY"
+    #       # PlatformPrincipal: "YOUR_TEAM_ID.YOUR_KEY_ID"
+    #       PlatformCredential: "PLACEHOLDER_APNS_CREDENTIAL"
+    #       PlatformPrincipal: "PLACEHOLDER_APNS_PRINCIPAL"
+    
     # ProductsTable:
     #   Type: AWS::DynamoDB::Table
     #   Properties:
@@ -358,3 +579,27 @@ outputs:
     Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${aws:region}.amazonaws.com/${self:provider.stage}/"
     Export:
       Name: !Sub "${AWS::StackName}-ApiEndpoint"
+  
+  WebSocketEndpoint:
+    Description: "WebSocket API endpoint URL"
+    Value: !Sub "wss://${WebSocketApi}.execute-api.${aws:region}.amazonaws.com/${self:provider.stage}"
+    Export:
+      Name: !Sub "${AWS::StackName}-WebSocketEndpoint"
+  
+  OrderEventsTopicArn:
+    Description: "SNS Topic ARN for Order Events"
+    Value: !Ref OrderEventsTopic
+    Export:
+      Name: !Sub "${AWS::StackName}-OrderEventsTopic"
+  
+  FCMPlatformApplicationArn:
+    Description: "FCM Platform Application ARN"
+    Value: !Ref FCMPlatformApplication
+    Export:
+      Name: !Sub "${AWS::StackName}-FCMPlatformApp"
+  
+  APNSPlatformApplicationArn:
+    Description: "APNS Platform Application ARN" 
+    Value: !Ref APNSPlatformApplication
+    Export:
+      Name: !Sub "${AWS::StackName}-APNSPlatformApp"

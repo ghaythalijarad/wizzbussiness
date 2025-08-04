@@ -67,13 +67,22 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
               longitude: location.longitude,
             );
 
+            // Don't use stub address values
+            final finalAddress = (address == null ||
+                    address == 'Address not available (stub implementation)' ||
+                    address == 'Address not available')
+                ? null
+                : address;
+
             setState(() {
-              _address = address;
+              _address = finalAddress ??
+                  widget
+                      .initialAddress; // Keep existing address if geocoding fails
               _isLoading = false;
             });
 
-            // Notify parent widget
-            widget.onLocationChanged(_latitude, _longitude, _address);
+            // Notify parent widget - pass null for address if it's a stub so backend preserves existing
+            widget.onLocationChanged(_latitude, _longitude, finalAddress);
 
             if (mounted) {
               scaffoldMessenger.showSnackBar(

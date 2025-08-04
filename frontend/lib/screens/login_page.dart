@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../widgets/language_switcher.dart';
 import '../widgets/wizz_business_text_form_field.dart';
@@ -8,8 +9,10 @@ import '../screens/forgot_password_screen.dart';
 import '../screens/registration_form_screen.dart';
 import '../screens/dashboards/business_dashboard.dart';
 import '../services/app_auth_service.dart';
+import '../providers/app_auth_provider.dart';
 import '../models/business.dart';
 import '../utils/responsive_helper.dart';
+import 'merchant_status_screen.dart';
 
 class LoginPage extends StatefulWidget {
   final Function(Locale) onLanguageChanged;
@@ -67,6 +70,12 @@ class _LoginPageState extends State<LoginPage> {
           final userData = response.user;
           debugPrint('👤 User data found: ${userData != null}');
 
+          // Update AppAuthProvider state after successful authentication
+          final authProvider =
+              Provider.of<AppAuthProvider>(context, listen: false);
+          await authProvider.initialize();
+          debugPrint('✅ AppAuthProvider state updated after login');
+
           if (userData != null && response.businesses.isNotEmpty) {
             debugPrint('👤 User data: $userData');
             debugPrint(
@@ -88,16 +97,29 @@ class _LoginPageState extends State<LoginPage> {
               debugPrint('🚀 Attempting navigation...');
 
               final navigator = Navigator.of(context, rootNavigator: true);
-              navigator.pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => BusinessDashboard(
-                    business: business,
-                    onLanguageChanged: widget.onLanguageChanged,
-                    userData: userData,
-                    businessesData: response.businesses,
+
+              if (business.status == 'approved') {
+                navigator.pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => BusinessDashboard(
+                      business: business,
+                      onLanguageChanged: widget.onLanguageChanged,
+                      userData: userData,
+                      businessesData: response.businesses,
+                    ),
                   ),
-                ),
-              );
+                );
+              } else {
+                // For any non-approved status (pending, pending_verification, rejected, etc.)
+                navigator.pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => MerchantStatusScreen(
+                      business: business,
+                    ),
+                  ),
+                );
+              }
+
               debugPrint('✅ Navigation completed');
             } catch (businessError) {
               debugPrint('💥 Error creating business object: $businessError');
@@ -328,8 +350,9 @@ class _LoginPageState extends State<LoginPage> {
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         RegistrationFormScreen(
-                                          onLanguageChanged: widget.onLanguageChanged,
-                                        ),
+                                      onLanguageChanged:
+                                          widget.onLanguageChanged,
+                                    ),
                                   ),
                                 );
                               },

@@ -5,6 +5,6 @@
   "private": true,
   "scripts": {},
   "dependencies": {
-    "aws-sdk": "^2.1692.0"
+    "aws-sdk": ""
   }
 }

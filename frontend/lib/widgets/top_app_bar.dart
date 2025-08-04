@@ -9,7 +9,6 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Function(bool) onToggleStatus;
   final VoidCallback onReturnOrder;
   final Function(int) onNavigate;
-  final Function(Locale)? onLanguageChanged;
 
   const TopAppBar({
     super.key,
@@ -18,7 +17,6 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.onToggleStatus,
     required this.onReturnOrder,
     required this.onNavigate,
-    this.onLanguageChanged,
   });
 
   void _showSimpleSidebar(BuildContext context) {
@@ -32,7 +30,6 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
           onToggleStatus: onToggleStatus,
           onReturnOrder: onReturnOrder,
           onNavigate: onNavigate,
-          onLanguageChanged: onLanguageChanged,
           onClose: () => Navigator.of(context).pop(),
         );
       },
@@ -57,15 +54,6 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     if (isDesktop) {
       return AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(loc.notificationsTapped)),
-            );
-          },
-          tooltip: loc.notifications,
-        ),
         title: Row(
           children: [
             Icon(
@@ -90,15 +78,6 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
       );
     } else {
       return AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.notifications),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(loc.notificationsTapped)),
-            );
-          },
-          tooltip: loc.notifications,
-        ),
         title: Text(
           title,
           style: TextStyle(

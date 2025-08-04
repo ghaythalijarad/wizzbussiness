@@ -9,9 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../utils/latin_number_formatter.dart';
 
 class SignUpScreen extends StatefulWidget {
-  final Function(Locale)? onLanguageChanged;
-
-  const SignUpScreen({Key? key, this.onLanguageChanged}) : super(key: key);
+  const SignUpScreen({Key? key}) : super(key: key);
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -617,7 +615,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
             builder: (context) => EmailVerificationScreen(
               email: _emailController.text,
               businessData: businessData,
-              onLanguageChanged: widget.onLanguageChanged,
             ),
           ),
         );

@@ -3,12 +3,13 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/order.dart';
+import '../models/delivery_address.dart';
 import '../config/app_config.dart';
 import 'order_service.dart';
 import 'app_auth_service.dart';
 
 /// Real-time order service for merchant notifications
-class RealtimeOrderService extends ChangeNotifier {
+class RealtimeOrderService {
   static final RealtimeOrderService _instance =
       RealtimeOrderService._internal();
   factory RealtimeOrderService() => _instance;
@@ -44,12 +45,12 @@ class RealtimeOrderService extends ChangeNotifier {
     _ensureControllersInitialized();
     return _newOrderController!.stream;
   }
-  
+
   Stream<Map<String, dynamic>> get orderUpdateStream {
     _ensureControllersInitialized();
     return _orderUpdateController!.stream;
   }
-  
+
   Stream<bool> get connectionStream {
     _ensureControllersInitialized();
     return _connectionController!.stream;
@@ -61,39 +62,48 @@ class RealtimeOrderService extends ChangeNotifier {
 
   /// Ensure stream controllers are initialized
   void _ensureControllersInitialized() {
-    if (_isDisposed) return;
-    
-    _newOrderController ??= StreamController<Order>.broadcast();
-    _orderUpdateController ??= StreamController<Map<String, dynamic>>.broadcast();
-    _connectionController ??= StreamController<bool>.broadcast();
+    if (_newOrderController == null || _newOrderController!.isClosed) {
+      _newOrderController = StreamController<Order>.broadcast();
+    }
+    if (_orderUpdateController == null || _orderUpdateController!.isClosed) {
+      _orderUpdateController =
+          StreamController<Map<String, dynamic>>.broadcast();
+    }
+    if (_connectionController == null || _connectionController!.isClosed) {
+      _connectionController = StreamController<bool>.broadcast();
+    }
   }
 
   // Safe methods to add to stream controllers
   void _safeAddToNewOrderController(Order order) {
-    if (!_isDisposed && _newOrderController != null && !_newOrderController!.isClosed) {
+    if (!_isDisposed &&
+        _newOrderController != null &&
+        !_newOrderController!.isClosed) {
       _newOrderController!.add(order);
     }
   }
-  
+
   void _safeAddToOrderUpdateController(Map<String, dynamic> update) {
-    if (!_isDisposed && _orderUpdateController != null && !_orderUpdateController!.isClosed) {
+    if (!_isDisposed &&
+        _orderUpdateController != null &&
+        !_orderUpdateController!.isClosed) {
       _orderUpdateController!.add(update);
     }
   }
-  
+
   void _safeAddToConnectionController(bool connected) {
-    if (!_isDisposed && _connectionController != null && !_connectionController!.isClosed) {
+    if (!_isDisposed &&
+        _connectionController != null &&
+        !_connectionController!.isClosed) {
       _connectionController!.add(connected);
     }
   }
 
   /// Initialize the service with business context
   Future<void> initialize(String businessId) async {
-    if (_isDisposed) {
-      debugPrint('❌ Cannot initialize disposed RealtimeOrderService');
-      return;
-    }
-    
+    _isDisposed = false; // Mark as active
+    _ensureControllersInitialized();
+
     _businessId = businessId;
     _authToken = await AppAuthService.getAccessToken();
 
@@ -103,7 +113,8 @@ class RealtimeOrderService extends ChangeNotifier {
       return;
     }
 
-    debugPrint('✅ Initializing RealtimeOrderService with businessId: $_businessId');
+    debugPrint(
+        '✅ Initializing RealtimeOrderService with businessId: $_businessId');
     await _connectWebSocket();
     _startPollingFallback(); // Always have polling as backup
   }
@@ -114,19 +125,20 @@ class RealtimeOrderService extends ChangeNotifier {
       debugPrint('❌ Cannot connect WebSocket: businessId is null or empty');
       return;
     }
-    
+
     if (_authToken == null || _authToken!.isEmpty) {
       debugPrint('❌ Cannot connect WebSocket: auth token is null or empty');
       return;
     }
-    
+
     if (_isDisposed) {
       debugPrint('❌ Cannot connect WebSocket: service is disposed');
       return;
     }
 
     try {
-      final wsUrl = '${AppConfig.webSocketUrl}?merchantId=$_businessId';
+      final wsUrl =
+          '${AppConfig.webSocketUrl}?merchantId=$_businessId&token=$_authToken';
       debugPrint('🔌 Connecting to WebSocket: $wsUrl');
 
       _channel = WebSocketChannel.connect(
@@ -198,20 +210,86 @@ class RealtimeOrderService extends ChangeNotifier {
   /// Handle new order notification
   void _handleNewOrderNotification(Map<String, dynamic> message) {
     try {
-      final orderData = message['data'] as Map<String, dynamic>?;
-      final notification = message['notification'] as Map<String, dynamic>?;
+      debugPrint('🔍 Processing new order notification: $message');
+      
+      // Try different possible data structures
+      Map<String, dynamic>? orderData;
+      
+      // First, try the 'data' field (current backend format)
+      if (message['data'] is Map<String, dynamic>) {
+        orderData = message['data'] as Map<String, dynamic>;
+        debugPrint('📦 Found order data in "data" field');
+      }
+      // Try the 'notification' field
+      else if (message['notification'] is Map<String, dynamic>) {
+        final notification = message['notification'] as Map<String, dynamic>;
+        if (notification['data'] is Map<String, dynamic>) {
+          orderData = notification['data'] as Map<String, dynamic>;
+          debugPrint('📦 Found order data in "notification.data" field');
+        }
+      }
+      // Try the message itself as order data
+      else if (message.containsKey('orderId') || message.containsKey('id')) {
+        orderData = message;
+        debugPrint('📦 Using message root as order data');
+      }
 
       if (orderData != null) {
-        final order = Order.fromJson(orderData);
-        _safeAddToNewOrderController(order);
-        debugPrint('🆕 New order notification: ${order.id}');
-      } else if (notification != null && notification['data'] != null) {
-        final order = Order.fromJson(notification['data']);
-        _safeAddToNewOrderController(order);
-        debugPrint('🆕 New order from notification: ${order.id}');
+        // Ensure we have the required fields for Order.fromJson
+        if (!orderData.containsKey('orderId') && orderData.containsKey('id')) {
+          orderData['orderId'] = orderData['id'];
+        }
+        
+        try {
+          final order = Order.fromJson(orderData);
+          _safeAddToNewOrderController(order);
+          debugPrint('✅ Successfully parsed new order: ${order.id}');
+        } catch (parseError) {
+          debugPrint('❌ Error parsing order data: $parseError');
+          debugPrint('📄 Order data: $orderData');
+          
+          // Create a minimal order object as fallback
+          final fallbackOrder = _createFallbackOrder(orderData);
+          if (fallbackOrder != null) {
+            _safeAddToNewOrderController(fallbackOrder);
+            debugPrint('🔄 Created fallback order: ${fallbackOrder.id}');
+          }
+        }
+      } else {
+        debugPrint('❌ No valid order data found in message: $message');
       }
     } catch (error) {
       debugPrint('❌ Error handling new order notification: $error');
+      debugPrint('📄 Original message: $message');
+    }
+  }
+
+  /// Create a fallback order when parsing fails
+  Order? _createFallbackOrder(Map<String, dynamic> data) {
+    try {
+      final orderId = data['orderId'] ?? data['id'] ?? 'unknown-${DateTime.now().millisecondsSinceEpoch}';
+      
+      return Order(
+        id: orderId.toString(),
+        customerId: data['customerId']?.toString() ?? 'unknown',
+        customerName: data['customerName']?.toString() ?? 'Unknown Customer',
+        customerPhone: data['customerPhone']?.toString() ?? 'N/A',
+        deliveryAddress: DeliveryAddress(
+          street: data['deliveryAddress']?['street']?.toString() ?? 'Unknown Address',
+          city: data['deliveryAddress']?['city']?.toString() ?? 'Unknown City',
+          state: data['deliveryAddress']?['state']?.toString(),
+          zipCode: data['deliveryAddress']?['zipCode']?.toString(),
+          instructions: data['deliveryAddress']?['instructions']?.toString(),
+        ),
+        items: [], // Will be populated later when full order is fetched
+        totalAmount: (data['totalAmount'] ?? data['total'] ?? 0).toDouble(),
+        createdAt: DateTime.now(),
+        status: OrderStatus.pending,
+        notes: data['notes']?.toString(),
+      );
+    } catch (error) {
+      debugPrint('❌ Error creating fallback order: $error');
+      return null;
     }
   }
 
@@ -257,7 +335,9 @@ class RealtimeOrderService extends ChangeNotifier {
     _isConnected = false;
     _safeAddToConnectionController(false);
     _stopPing();
-    _scheduleReconnect();
+    if (!_isDisposed) {
+      _scheduleReconnect();
+    }
   }
 
   /// Send message through WebSocket
@@ -293,9 +373,9 @@ class RealtimeOrderService extends ChangeNotifier {
 
   /// Schedule reconnection attempt
   void _scheduleReconnect() {
-    if (_reconnectAttempts >= maxReconnectAttempts) {
+    if (_isDisposed || _reconnectAttempts >= maxReconnectAttempts) {
       debugPrint(
-          '❌ Max reconnection attempts reached. Using polling fallback.');
+          '❌ Max reconnection attempts reached or service disposed. Using polling fallback.');
       return;
     }
 
@@ -311,7 +391,7 @@ class RealtimeOrderService extends ChangeNotifier {
   void _startPollingFallback() {
     _pollingTimer?.cancel();
     _pollingTimer = Timer.periodic(pollingFallbackInterval, (_) async {
-      if (!_isConnected && _businessId != null) {
+      if (!_isConnected && _businessId != null && !_isDisposed) {
         await _pollForNewOrders();
       }
     });
@@ -366,21 +446,17 @@ class RealtimeOrderService extends ChangeNotifier {
   }
 
   /// Dispose resources
-  @override
   void dispose() {
+    if (_isDisposed) return;
     _isDisposed = true;
     disconnect();
     _pollingTimer?.cancel();
-    
+
     // Safely close stream controllers
     _newOrderController?.close();
     _orderUpdateController?.close();
     _connectionController?.close();
-    
-    _newOrderController = null;
-    _orderUpdateController = null;
-    _connectionController = null;
-    
-    super.dispose();
+
+    debugPrint('🛑 RealtimeOrderService disposed and cleaned up.');
   }
 }

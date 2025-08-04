@@ -1360,6 +1360,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get simulateNewOrder => 'Simulate New Order';
 
   @override
+  String get newOrder => 'New Order';
+
+  @override
+  String get viewDetails => 'View Details';
+
+  @override
   String get notificationsTitle => 'Notifications';
 
   @override

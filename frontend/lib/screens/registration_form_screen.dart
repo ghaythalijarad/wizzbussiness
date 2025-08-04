@@ -13,10 +13,7 @@ import 'login_page.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 
 class RegistrationFormScreen extends StatefulWidget {
-  final Function(Locale)? onLanguageChanged;
-
-  const RegistrationFormScreen({Key? key, this.onLanguageChanged})
-      : super(key: key);
+  const RegistrationFormScreen({Key? key}) : super(key: key);
 
   @override
   _RegistrationFormScreenState createState() => _RegistrationFormScreenState();
@@ -1209,20 +1206,14 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                 _emailController.text.trim();
 
             try {
-              final business = Business.fromJson(businessData);
+              Business.fromJson(businessData); // Validate the data
 
               // Navigate to business dashboard
               if (mounted) {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => BusinessDashboard(
-                      business: business,
-                      onLanguageChanged:
-                          widget.onLanguageChanged ?? (Locale locale) {},
-                      userData: confirmResult.user,
-                      businessesData: [businessData],
-                    ),
+                    builder: (context) => const BusinessDashboard(),
                   ),
                 );
               }
@@ -1233,10 +1224,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => LoginPage(
-                      onLanguageChanged:
-                          widget.onLanguageChanged ?? (Locale locale) {},
-                    ),
+                    builder: (context) => const LoginPage(),
                   ),
                 );
               }
@@ -1247,10 +1235,7 @@ class _RegistrationFormScreenState extends State<RegistrationFormScreen> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => LoginPage(
-                    onLanguageChanged:
-                        widget.onLanguageChanged ?? (Locale locale) {},
-                  ),
+                  builder: (context) => const LoginPage(),
                 ),
               );
             }

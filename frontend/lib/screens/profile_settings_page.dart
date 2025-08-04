@@ -1,128 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import './account_settings_page.dart';
 import './pos_settings_page.dart';
 import './change_password_screen.dart';
 import './other_settings_page.dart';
+import './discount_management_page.dart';
 import '../l10n/app_localizations.dart';
 import '../models/business.dart';
 import '../models/order.dart';
-import '../services/app_state.dart';
 import '../services/app_auth_service.dart';
-import '../services/api_service.dart';
 import '../screens/login_page.dart';
 import './working_hours_settings_screen.dart';
+import '../providers/session_provider.dart';
+import '../providers/business_provider.dart';
 
-class ProfileSettingsPage extends StatefulWidget {
+class ProfileSettingsPage extends ConsumerStatefulWidget {
   final Business business;
-  final Function(Locale)? onLanguageChanged;
   final List<Order> orders;
   final Function(int)? onNavigateToPage;
   final Function(String, OrderStatus)? onOrderUpdated;
-  final Map<String, dynamic>? userData;
-  final List<Map<String, dynamic>>? businessesData;
 
   const ProfileSettingsPage({
     Key? key,
     required this.business,
-    this.onLanguageChanged,
     required this.orders,
     this.onNavigateToPage,
     this.onOrderUpdated,
-    this.userData,
-    this.businessesData,
   }) : super(key: key);
 
   @override
   _ProfileSettingsPageState createState() => _ProfileSettingsPageState();
 }
 
-class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
-  final AppState _appState = AppState();
+class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
   Map<String, dynamic>? _userData;
-  Map<String, dynamic>? _businessData;
-  bool _isLoadingUserData = true;
-  bool _isLoadingBusinessData = true;
-  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _appState.addListener(_onAppStateChanged);
     _loadUserData();
   }
 
-  @override
-  void dispose() {
-    _appState.removeListener(_onAppStateChanged);
-    super.dispose();
-  }
-
-  void _onAppStateChanged() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
   Future<void> _loadUserData() async {
-    setState(() {
-      _isLoadingUserData = true;
-      _isLoadingBusinessData = true;
-      _errorMessage = null;
-    });
-
     try {
-      // Use passed user data if available, otherwise load from Cognito
-      if (widget.userData != null) {
-        setState(() {
-          _userData = widget.userData;
-          _isLoadingUserData = false;
-        });
-      } else {
-        // Fallback to loading from Cognito
-        final userResponse = await AppAuthService.getCurrentUser();
-        if (userResponse != null && userResponse['success'] == true) {
+      // Load user data from AppAuthService
+      final userResponse = await AppAuthService.getCurrentUser();
+      if (userResponse != null && userResponse['success'] == true) {
+        if (mounted) {
           setState(() {
-            _userData = userResponse['user'];
-            _isLoadingUserData = false;
-          });
-        } else {
-          setState(() {
-            _errorMessage =
-                userResponse?['message'] ?? 'Failed to load user data';
-            _isLoadingUserData = false;
-          });
-        }
-      }
-
-      // Use passed business data if available, otherwise load from API
-      if (widget.businessesData != null && widget.businessesData!.isNotEmpty) {
-        setState(() {
-          _businessData = widget.businessesData!.first;
-          _isLoadingBusinessData = false;
-        });
-      } else {
-        // Fallback to loading from API
-        final apiService = ApiService();
-        final businesses = await apiService.getUserBusinesses();
-
-        if (businesses.isNotEmpty) {
-          setState(() {
-            _businessData = businesses[0]; // Get the first business
-            _isLoadingBusinessData = false;
-          });
-        } else {
-          setState(() {
-            _businessData = null;
-            _isLoadingBusinessData = false;
+            _userData = userResponse;
           });
         }
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Error loading data: $e';
-        _isLoadingUserData = false;
-        _isLoadingBusinessData = false;
-      });
+      if (mounted) {
+        setState(() {
+          _userData = null;
+        });
+      }
     }
   }
 
@@ -150,77 +85,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
   Widget _buildUserProfileHeader() {
     final loc = AppLocalizations.of(context)!;
-    if (_isLoadingUserData || _isLoadingBusinessData) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF00D4FF),
-              Color(0xFF0099CC),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
-      );
-    }
-
-    if (_errorMessage != null) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFF5722),
-              Color(0xFFE64A19),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white, size: 48),
-            const SizedBox(height: 16),
-            Text(
-              loc.errorLoadingProfile,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _errorMessage!,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.white70,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadUserData,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFFFF5722),
-              ),
-              child: Text(loc.retry),
-            ),
-          ],
-        ),
-      );
-    }
-
+    final business = widget.business;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -239,19 +104,14 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         children: [
           Row(
             children: [
-              _buildCircularBusinessPhoto(
-                  _businessData?['business_photo_url'] ??
-                      _userData?['business_photo_url'] ??
-                      widget.business.businessPhotoUrl),
+              _buildCircularBusinessPhoto(business.businessPhotoUrl),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _businessData?['business_name'] ??
-                          _userData?['business_name'] ??
-                          loc.businessName,
+                      business.name,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -269,9 +129,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                        _getBusinessTypeDisplayName(
-                            _businessData?['business_type'] ??
-                                _userData?['business_type']),
+                        _getBusinessTypeDisplayName(business.businessType.name),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -285,21 +143,21 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildRatingSection(),
+          _buildRatingSection(business),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildStatusChip(
                 loc.active,
-                _userData?['is_active'] ?? false,
-                _userData?['is_active'] == true ? Colors.green : Colors.orange,
+                business.status == 'approved',
+                business.status == 'approved' ? Colors.green : Colors.orange,
               ),
               const SizedBox(width: 8),
               _buildStatusChip(
                 loc.verified,
-                _userData?['is_verified'] ?? false,
-                _userData?['is_verified'] == true
+                business.status == 'approved',
+                business.status == 'approved'
                     ? const Color(0xFF007fff)
                     : Colors.grey,
               ),
@@ -401,11 +259,11 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     );
   }
 
-  Widget _buildRatingSection() {
+  Widget _buildRatingSection(Business business) {
     final loc = AppLocalizations.of(context)!;
-    // Mock rating data - in real app, this would come from userData or API
-    final double businessRating = _userData?['rating']?.toDouble() ?? 4.2;
-    final int totalReviews = _userData?['total_reviews'] ?? 156;
+    // Use business rating if available, otherwise default
+    final double businessRating = 4.2; // business.rating or mock data
+    final int totalReviews = 156; // mock data - replace with actual reviews
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -620,12 +478,13 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
     if (confirmed == true) {
       await AppAuthService.signOut();
-      _appState.logout();
+      // Clear all providers
+      ref.invalidate(sessionProvider);
+      ref.invalidate(businessProvider);
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-            builder: (context) => LoginPage(
-                onLanguageChanged: widget.onLanguageChanged ?? (locale) {})),
+            builder: (context) => const LoginPage()),
         (route) => false,
       );
     }
@@ -726,6 +585,24 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                     MaterialPageRoute(
                       builder: (context) =>
                           WorkingHoursSettingsScreen(business: widget.business),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildModernSettingsCard(
+                icon: Icons.local_offer_rounded,
+                title: 'Discount Management',
+                subtitle: 'Create and manage your discounts',
+                color: const Color(0xFFFF9800),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DiscountManagementPage(
+                        business: widget.business,
+                        orders: widget.orders,
+                      ),
                     ),
                   );
                 },

@@ -79,9 +79,7 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
               Navigator.of(context).pop(); // Close the dialog
               Navigator.of(context, rootNavigator: true).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => LoginPage(
-                    onLanguageChanged: (Locale) {}, // Dummy function
-                  ),
+                  builder: (context) => const LoginPage(),
                 ),
               );
             },
@@ -257,9 +255,7 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
               await AppAuthService.signOut();
               Navigator.of(context, rootNavigator: true).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => LoginPage(
-                    onLanguageChanged: (Locale) {}, // Dummy function
-                  ),
+                  builder: (context) => const LoginPage(),
                 ),
               );
             },

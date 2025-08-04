@@ -1,16 +1,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
 import '../models/order.dart';
 import '../services/order_service.dart';
 import '../services/order_timer_service.dart';
 import '../services/realtime_order_service.dart'; // Import real-time service
-import '../services/app_auth_service.dart';
 import '../screens/login_page.dart';
 import '../widgets/order_card.dart';
 import '../utils/responsive_helper.dart';
+import '../providers/session_provider.dart';
 
-class OrdersPage extends StatefulWidget {
+class OrdersPage extends ConsumerStatefulWidget {
   final String? businessId;
 
   const OrdersPage({
@@ -22,7 +23,7 @@ class OrdersPage extends StatefulWidget {
   _OrdersPageState createState() => _OrdersPageState();
 }
 
-class _OrdersPageState extends State<OrdersPage> {
+class _OrdersPageState extends ConsumerState<OrdersPage> {
   final OrderService _orderService = OrderService();
   final RealtimeOrderService _realtimeService = RealtimeOrderService();
   List<Order> _orders = [];
@@ -45,8 +46,62 @@ class _OrdersPageState extends State<OrdersPage> {
     _newOrderSubscription = _realtimeService.newOrderStream.listen((newOrder) {
       debugPrint('🔔 New order received via real-time service: ${newOrder.id}');
       if (mounted) {
+        // FIRST: Add the order to local list for IMMEDIATE UI update
         setState(() {
-          _orders.insert(0, newOrder);
+          // Check if order already exists to avoid duplicates
+          final existingIndex = _orders.indexWhere((order) => order.id == newOrder.id);
+          if (existingIndex == -1) {
+            // Insert at the beginning so it appears at the top
+            _orders.insert(0, newOrder);
+            debugPrint('✅ Added new order to local list: ${newOrder.id}');
+          } else {
+            debugPrint('⚠️ Order ${newOrder.id} already exists in local list');
+          }
+          
+          // Ensure we're showing pending orders to see the new order
+          if (_selectedFilter != 'pending') {
+            _selectedFilter = 'pending';
+            debugPrint('🔄 Switched filter to pending to show new order');
+          }
+        });
+        
+        // SECOND: Show prominent notification for new order
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.new_releases, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '🆕 New order from ${newOrder.customerName}\nTotal: \$${newOrder.totalAmount.toStringAsFixed(2)}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: 'VIEW',
+              textColor: Colors.white,
+              onPressed: () {
+                setState(() {
+                  _selectedFilter = 'pending';
+                });
+              },
+            ),
+          ),
+        );
+        
+        // THIRD: Refresh from server to sync with backend (delayed to not interfere with immediate UI)
+        Future.delayed(const Duration(milliseconds: 500), () async {
+          final session = ref.read(sessionProvider);
+          if (mounted && session.isAuthenticated && session.businessId != null) {
+            debugPrint('🔄 Refreshing orders from server after new order notification');
+            await _loadOrders(session.businessId!, preserveNewOrders: true);
+          }
         });
       }
     });
@@ -88,9 +143,10 @@ class _OrdersPageState extends State<OrdersPage> {
     _orderUpdateSubscription = null;
     _connectionSubscription = null;
     
-    // Only dispose the service if it was actually initialized
-    if (!_isInitializing) {
-      _realtimeService.dispose();
+    // Disconnect but don't dispose the singleton service
+    // The service handles its own lifecycle as a singleton
+    if (!_isInitializing && _realtimeService.isConnected) {
+      _realtimeService.disconnect();
     }
   }
 
@@ -112,59 +168,40 @@ class _OrdersPageState extends State<OrdersPage> {
   }
 
   Future<void> _validateAuthenticationAndInitialize() async {
+    final session = ref.read(sessionProvider);
+    if (!session.isAuthenticated || session.businessId == null) {
+      _showAuthenticationRequiredDialog();
+      return;
+    }
+
+    final businessId = session.businessId!;
+
     try {
-      print('🔍 OrdersPage: businessId = "${widget.businessId}"');
-      print('🔍 OrdersPage: businessId is null = ${widget.businessId == null}');
-      print('🔍 OrdersPage: businessId is empty = ${widget.businessId?.isEmpty}');
-
-      if (widget.businessId == null || widget.businessId!.isEmpty) {
-        print('❌ OrdersPage: businessId is null or empty, showing auth dialog');
-        _showAuthenticationRequiredDialog();
-        return;
-      }
-
-      print('🔍 OrdersPage: Checking authentication status...');
-      final isSignedIn = await AppAuthService.isSignedIn();
-      print('🔍 OrdersPage: isSignedIn = $isSignedIn');
-      
-      if (!isSignedIn) {
-        print('❌ OrdersPage: User not signed in, showing auth dialog');
-        _showAuthenticationRequiredDialog();
-        return;
-      }
-
-      print('🔍 OrdersPage: Getting current user and access token...');
-      final currentUser = await AppAuthService.getCurrentUser();
-      final accessToken = await AppAuthService.getAccessToken();
-
-      print('🔍 OrdersPage: currentUser = $currentUser');
-      print('🔍 OrdersPage: accessToken exists = ${accessToken != null && accessToken.isNotEmpty}');
-
-      if (currentUser == null || accessToken == null) {
-        print('❌ OrdersPage: No current user or access token, showing auth dialog');
-        _showAuthenticationRequiredDialog();
-        return;
-      }
-
-      print('✅ OrdersPage: Authentication validated, loading orders...');
-      await _loadOrders();
-
-      print('🔍 OrdersPage: Initializing real-time service...');
-      // Initialize real-time service with business credentials
-      await _realtimeService.initialize(widget.businessId!);
-      
-      // Now that authentication is validated and service is initialized, set up listeners
-      _initializeRealtimeService();
+      print('🔍 OrdersPage: businessId = "$businessId"');
 
       setState(() {
-        _isInitializing = false;
+        _isInitializing = true;
       });
+
+      await _loadOrders(businessId, preserveNewOrders: false);
+
+      print('🔍 OrdersPage: Initializing real-time service...');
+      await _realtimeService.initialize(businessId);
+      
+      _initializeRealtimeService();
+
+      // Sync connection state and finish initialization
+      if (mounted) {
+        setState(() {
+          _isConnected = _realtimeService.isConnected;
+          _isInitializing = false;
+        });
+      }
       
       print('✅ OrdersPage: Initialization completed successfully');
     } catch (e) {
-      print('❌ OrdersPage: Authentication validation failed: $e');
+      print('❌ OrdersPage: Initialization failed: $e');
       
-      // Ensure we don't leave the app in a loading state
       if (mounted) {
         setState(() {
           _isInitializing = false;
@@ -175,16 +212,30 @@ class _OrdersPageState extends State<OrdersPage> {
     }
   }
 
-  Future<void> _loadOrders() async {
+  Future<void> _loadOrders(String businessId, {bool preserveNewOrders = false}) async {
     try {
-      final orders = await _orderService.getMerchantOrders(widget.businessId);
+      final orders = await _orderService.getMerchantOrders(businessId);
       if (mounted) {
         setState(() {
-          _orders = orders;
+          if (preserveNewOrders) {
+            // Merge server orders with any locally added new orders
+            final serverOrderIds = orders.map((o) => o.id).toSet();
+            final localNewOrders = _orders.where((order) => 
+              !serverOrderIds.contains(order.id) && 
+              order.status == OrderStatus.pending
+            ).toList();
+            
+            // Combine local new orders (at top) with server orders
+            _orders = [...localNewOrders, ...orders];
+            debugPrint('📋 Merged ${localNewOrders.length} local new orders with ${orders.length} server orders');
+          } else {
+            _orders = orders;
+          }
           _isLoading = false;
         });
       }
     } catch (e) {
+      debugPrint('❌ Error loading orders: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -202,7 +253,10 @@ class _OrdersPageState extends State<OrdersPage> {
         String statusString = _convertOrderStatusToString(newStatus);
         await _orderService.updateMerchantOrderStatus(orderId, statusString);
       }
-      await _loadOrders();
+      final session = ref.read(sessionProvider);
+      if (session.isAuthenticated && session.businessId != null) {
+        await _loadOrders(session.businessId!, preserveNewOrders: false);
+      }
     } catch (e) {
       print('Failed to update order: $e');
       // Optionally, show an error message to the user
@@ -281,11 +335,7 @@ class _OrdersPageState extends State<OrdersPage> {
   void _navigateToLogin() {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
-        builder: (context) => LoginPage(
-          onLanguageChanged: (locale) {
-            // Handle language change if needed
-          },
-        ),
+        builder: (context) => const LoginPage(),
       ),
       (route) => false,
     );
@@ -321,8 +371,10 @@ class _OrdersPageState extends State<OrdersPage> {
     });
 
     try {
-      // Refresh orders from API
-      await _loadOrders();
+      final session = ref.read(sessionProvider);
+      if (session.isAuthenticated && session.businessId != null) {
+        await _loadOrders(session.businessId!, preserveNewOrders: false);
+      }
 
       // Try to refresh real-time connection
       await _realtimeService.refreshConnection();

@@ -1,10 +1,22 @@
 {
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.859.0",
+    "@aws-sdk/lib-dynamodb": "^3.859.0",
     "aws-sdk": "^2.1692.0",
-    "axios": "^1.10.0",
+    "axios": "^1.11.0",
     "form-data": "^4.0.4",
     "jsonwebtoken": "^9.0.2",
     "node-fetch": "^2.7.0",
     "ws": "^8.18.3"
-  }
+  },
+  "name": "order-receiver-app-2",
+  "version": "1.0.0",
+  "description": "A comprehensive Flutter-based business management application for restaurants and food businesses, featuring order management, POS integration, product management, and real-time business analytics.",
+  "main": "admin_merchant_approval.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

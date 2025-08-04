@@ -10,7 +10,7 @@ const axios = require('axios');
 
 // Configuration
 const WEBHOOK_URL = 'https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev/webhooks/orders';
-const WEBSOCKET_URL = 'wss://ujyixy3uh5.execute-api.us-east-1.amazonaws.com/dev';
+const WEBSOCKET_URL = 'wss://8yn5wr533l.execute-api.us-east-1.amazonaws.com/dev';
 
 // Test merchants from database
 const TEST_MERCHANTS = [
@@ -44,7 +44,7 @@ class WebSocketTester {
                 const message = JSON.parse(data.toString());
                 const count = this.messageCounters.get(merchantId) + 1;
                 this.messageCounters.set(merchantId, count);
-                
+
                 console.log(`📨 Message received for ${merchantId} (#${count}):`, {
                     type: message.type,
                     orderId: message.order?.id,
@@ -82,7 +82,7 @@ class WebSocketTester {
             case 'CONNECTION_ESTABLISHED':
                 console.log(`🎉 Connection established for ${merchantId}`);
                 break;
-            
+
             case 'NEW_ORDER':
                 console.log(`🆕 New order notification for ${merchantId}:`, {
                     orderId: message.order?.id,
@@ -91,14 +91,14 @@ class WebSocketTester {
                     items: message.order?.items?.length
                 });
                 break;
-            
+
             case 'ORDER_UPDATE':
                 console.log(`🔄 Order update for ${merchantId}:`, {
                     orderId: message.order?.id,
                     status: message.order?.status
                 });
                 break;
-            
+
             default:
                 console.log(`📋 Message type: ${message.type}`);
         }
@@ -109,7 +109,7 @@ class WebSocketTester {
      */
     async sendTestOrder(merchantId) {
         const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
+
         const orderPayload = {
             orderId: orderId,
             businessId: merchantId,
@@ -187,7 +187,7 @@ class WebSocketTester {
             }
 
             const initialCount = this.messageCounters.get(merchantId) || 0;
-            
+
             const checkForMessage = () => {
                 const currentCount = this.messageCounters.get(merchantId) || 0;
                 if (currentCount > initialCount) {
@@ -225,11 +225,11 @@ class WebSocketTester {
     printResults() {
         console.log('\n📊 Test Results:');
         console.log('================');
-        
+
         this.messageCounters.forEach((count, merchantId) => {
             console.log(`${merchantId}: ${count} messages received`);
         });
-        
+
         const totalMessages = Array.from(this.messageCounters.values()).reduce((sum, count) => sum + count, 0);
         console.log(`\nTotal messages received: ${totalMessages}`);
     }
@@ -247,7 +247,7 @@ async function runEndToEndTest() {
     try {
         // Step 1: Connect WebSockets for all test merchants
         console.log('📡 Step 1: Establishing WebSocket connections...\n');
-        
+
         for (const merchantId of TEST_MERCHANTS) {
             try {
                 await tester.connectMerchant(merchantId);
@@ -267,10 +267,10 @@ async function runEndToEndTest() {
                 try {
                     // Send webhook
                     const orderId = await tester.sendTestOrder(merchantId);
-                    
+
                     if (orderId) {
                         console.log(`⏳ Waiting for WebSocket notification for ${merchantId}...`);
-                        
+
                         // Wait for WebSocket notification
                         try {
                             const messageCount = await tester.waitForMessage(merchantId, 30000);
@@ -279,10 +279,10 @@ async function runEndToEndTest() {
                             console.error(`❌ No notification received for ${merchantId}: ${error.message}\n`);
                         }
                     }
-                    
+
                     // Wait between orders
                     await new Promise(resolve => setTimeout(resolve, 2000));
-                    
+
                 } catch (error) {
                     console.error(`❌ Error testing merchant ${merchantId}:`, error.message);
                 }
@@ -311,15 +311,15 @@ async function testComponents() {
     // Test 1: WebSocket Connection
     console.log('🔌 Test 1: WebSocket Connection');
     const tester = new WebSocketTester();
-    
+
     try {
         const testMerchant = TEST_MERCHANTS[0];
         await tester.connectMerchant(testMerchant);
         console.log('✅ WebSocket connection test passed\n');
-        
+
         // Wait a bit to see connection established message
         await new Promise(resolve => setTimeout(resolve, 3000));
-        
+
         tester.closeAllConnections();
     } catch (error) {
         console.error('❌ WebSocket connection test failed:', error.message, '\n');
@@ -330,7 +330,7 @@ async function testComponents() {
     try {
         const testMerchant = TEST_MERCHANTS[0];
         const orderId = await tester.sendTestOrder(testMerchant);
-        
+
         if (orderId) {
             console.log('✅ Webhook delivery test passed\n');
         } else {

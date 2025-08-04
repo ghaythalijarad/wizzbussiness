@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/product.dart';
 import '../models/business.dart';
 import '../services/product_service.dart';
 import '../widgets/wizz_business_button.dart';
 import 'add_product_screen.dart';
 import 'edit_product_screen.dart';
+import '../providers/product_provider.dart';
 
-class ProductsManagementScreen extends StatefulWidget {
+final searchQueryProvider = StateProvider<String>((ref) => '');
+
+class ProductsManagementScreen extends ConsumerStatefulWidget {
   final Business business;
 
   const ProductsManagementScreen({
@@ -16,45 +20,19 @@ class ProductsManagementScreen extends StatefulWidget {
   });
 
   @override
-  State<ProductsManagementScreen> createState() =>
+  ConsumerState<ProductsManagementScreen> createState() =>
       _ProductsManagementScreenState();
 }
 
-class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
-  List<Product> _products = [];
-  List<Product> _filteredProducts = [];
-  List<ProductCategory> _categories = [];
-  bool _isLoading = true;
-  String? _error;
-
-  // Search functionality
+class _ProductsManagementScreenState
+    extends ConsumerState<ProductsManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
-  bool _isSearching = false;
   Timer? _debounceTimer;
-  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    _loadData();
     _searchController.addListener(_onSearchChanged);
-  }
-
-  @override
-  void didUpdateWidget(ProductsManagementScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    // Check if the business context has changed (different business ID)
-    if (oldWidget.business.id != widget.business.id) {
-      print(
-          '🔄 Business context changed from ${oldWidget.business.id} to ${widget.business.id}');
-      print('   Previous business: ${oldWidget.business.name}');
-      print('   New business: ${widget.business.name}');
-
-      // Clear cached data and reload for the new business
-      _clearCachedData();
-      _loadData();
-    }
   }
 
   @override
@@ -64,132 +42,21 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
     super.dispose();
   }
 
-  /// Clears all cached data when switching business contexts
-  void _clearCachedData() {
-    setState(() {
-      _products = [];
-      _filteredProducts = [];
-      _categories = [];
-      _error = null;
-      _searchQuery = '';
-      _searchController.clear();
-    });
-    print('🧹 Cleared cached products, categories, and search data');
-  }
-
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      // Load products and categories in parallel
-      final results = await Future.wait([
-        ProductService.getProducts(),
-        _loadCategories(),
-      ]);
-
-      final productsResult = results[0] as Map<String, dynamic>;
-
-      if (productsResult['success']) {
-        final productsList = productsResult['products'] as List;
-        print(
-            '🛒 ProductsManagementScreen: Loaded ${productsList.length} products');
-
-        // Debug: Log image URLs for each product
-        print('🔍 RAW PRODUCT DATA FROM API:');
-        for (var i = 0; i < productsList.length && i < 10; i++) {
-          final productJson = productsList[i];
-          print('📦 Product ${i + 1}: ${productJson['name']}');
-          print('   📷 imageUrl (camelCase): ${productJson['imageUrl']}');
-          print('   📷 image_url (snake_case): ${productJson['image_url']}');
-          print('   📱 Keys in JSON: ${productJson.keys.toList()}');
-          print('   📱 Full JSON: ${productJson.toString()}');
-          print('');
-        }
-
-        _products = productsList.map((json) => Product.fromJson(json)).toList();
-
-        // Debug: Log parsed Product objects
-        print('🏗️ PARSED PRODUCT OBJECTS:');
-        for (var i = 0; i < _products.length && i < 10; i++) {
-          final product = _products[i];
-          print('✅ Parsed Product ${i + 1}: ${product.name}');
-          print('   🖼️ Final imageUrl: "${product.imageUrl}"');
-          print('   📏 Image URL length: ${product.imageUrl?.length ?? 0}');
-          print('   🔗 Image URL null?: ${product.imageUrl == null}');
-          print('   📭 Image URL empty?: ${product.imageUrl?.isEmpty ?? true}');
-          print('   🟢 Available: ${product.isAvailable}');
-          print('');
-        }
-
-        _updateFilteredProducts();
-      } else {
-        _error = productsResult['message'];
+  void _onSearchChanged() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        ref.read(searchQueryProvider.notifier).state =
+            _searchController.text.trim();
       }
-    } catch (e) {
-      _error = 'Failed to load data: $e';
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _loadCategories() async {
-    // Get business type from the business object
-    final businessTypeString =
-        _getBusinessTypeString(widget.business.businessType);
-
-    print('🏪 ProductsManagementScreen: Loading categories...');
-    print('   Business ID: ${widget.business.id}');
-    print('   Business Name: ${widget.business.name}');
-    print('   Business Type Enum: ${widget.business.businessType}');
-    print('   Business Type String: $businessTypeString');
-
-    try {
-      final result = await ProductService.getCategoriesForBusinessType(
-        businessTypeString,
-      );
-
-      print('📋 Categories API Result: $result');
-
-      // The updated ProductService now always returns success=true with categories
-      // (either from API or predetermined fallback)
-      if (result['success'] && result['categories'] != null) {
-        final categoriesList = result['categories'] as List;
-        print('📦 Raw categories list length: ${categoriesList.length}');
-        print('📦 Raw categories data: $categoriesList');
-
-        _categories = categoriesList
-            .map((json) => ProductCategory.fromJson(json))
-            .toList();
-        print('✅ Successfully loaded ${_categories.length} categories:');
-        for (var category in _categories) {
-          print('   - ${category.name} (ID: ${category.id})');
-        }
-      } else {
-        print(
-            '❌ No categories available, this should not happen with the updated service');
-        print('   Result success: ${result['success']}');
-        print('   Result categories: ${result['categories']}');
-        _categories = [];
-      }
-    } catch (e) {
-      print('💥 Error loading categories: $e');
-      print('📍 Stack trace: ${StackTrace.current}');
-      _categories = [];
-    }
+    });
   }
 
   String _getBusinessTypeString(dynamic businessType) {
-    // Convert BusinessType enum to the correct API string
     final typeStr = businessType.toString().split('.').last.toLowerCase();
-
     switch (typeStr) {
       case 'kitchen':
-        return 'restaurant'; // API expects 'restaurant' for kitchen businesses
+        return 'restaurant';
       case 'cloudkitchen':
         return 'cloudkitchen';
       case 'store':
@@ -197,145 +64,27 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
       case 'pharmacy':
         return 'pharmacy';
       case 'caffe':
-        return 'cafe'; // ✅ FIXED: API expects 'cafe' not 'caffe'
+        return 'cafe';
       case 'bakery':
         return 'bakery';
-      case 'herbalspices':
-        return 'store'; // Fallback to store for unsupported types
-      case 'cosmetics':
-        return 'store'; // Fallback to store for unsupported types
-      case 'betshop':
-        return 'store'; // Fallback to store for unsupported types
       default:
-        return 'restaurant'; // Default fallback
+        return 'restaurant';
     }
-  }
-
-  void _updateFilteredProducts() {
-    List<Product> filtered = _products;
-
-    // Apply search filter
-    if (_searchQuery.isNotEmpty) {
-      final query = _searchQuery.toLowerCase();
-      filtered = filtered.where((product) {
-        final nameMatch = product.name.toLowerCase().contains(query);
-        final descriptionMatch =
-            product.description.toLowerCase().contains(query);
-
-        // Check for ingredients match if product has additionalData
-        bool ingredientsMatch = false;
-        if (product.additionalData != null &&
-            product.additionalData!['ingredients'] != null) {
-          final ingredients = product.additionalData!['ingredients'];
-          if (ingredients is List) {
-            ingredientsMatch = ingredients.any((ingredient) =>
-                ingredient.toString().toLowerCase().contains(query));
-          } else if (ingredients is String) {
-            ingredientsMatch = ingredients.toLowerCase().contains(query);
-          }
-        }
-
-        return nameMatch || descriptionMatch || ingredientsMatch;
-      }).toList();
-    }
-
-    setState(() {
-      _filteredProducts = filtered;
-    });
-  }
-
-  void _onSearchChanged() {
-    // Cancel previous timer if it exists
-    _debounceTimer?.cancel();
-
-    // Set a new timer for debounced search
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-      _performSearch();
-    });
-  }
-
-  Future<void> _performSearch() async {
-    final query = _searchController.text.trim();
-
-    setState(() {
-      _isSearching = true;
-      _searchQuery = query;
-    });
-
-    try {
-      if (query.isEmpty) {
-        // If no search query, use local filtering
-        _updateFilteredProducts();
-      } else {
-        // Perform backend search for more comprehensive results
-        final searchResult = await ProductService.searchProducts(query);
-
-        if (searchResult['success']) {
-          final searchProducts = searchResult['products'] as List;
-          final products =
-              searchProducts.map((json) => Product.fromJson(json)).toList();
-
-          setState(() {
-            _filteredProducts = products;
-          });
-        } else {
-          // Fallback to local search if backend search fails
-          _updateFilteredProducts();
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Search unavailable, showing local results'),
-                backgroundColor: Colors.orange,
-              ),
-            );
-          }
-        }
-      }
-    } catch (e) {
-      // Fallback to local search on error
-      _updateFilteredProducts();
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSearching = false;
-        });
-      }
-    }
-  }
-
-  String _getCategoryName(String categoryId) {
-    final category = _categories.firstWhere(
-      (cat) => cat.id == categoryId,
-      orElse: () => ProductCategory(
-        id: categoryId,
-        name: 'Unknown Category',
-        businessType: '',
-        sortOrder: 0,
-      ),
-    );
-    return category.name;
   }
 
   Future<void> _deleteProduct(String productId) async {
     final result = await ProductService.deleteProduct(productId);
 
-    if (result['success']) {
-      setState(() {
-        _products.removeWhere((product) => product.id == productId);
-      });
-      _updateFilteredProducts();
-
-      if (mounted) {
+    if (mounted) {
+      if (result['success']) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Product deleted successfully'),
             backgroundColor: Colors.green,
           ),
         );
-      }
-    } else {
-      if (mounted) {
+        ref.invalidate(productsProvider);
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to delete product: ${result['message']}'),
@@ -350,24 +99,29 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
     final result = await ProductService.updateProduct(
       productId: product.id,
       isAvailable: !product.isAvailable,
+      // Pass other fields to avoid nulling them
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      categoryId: product.categoryId,
+      imageUrl: product.imageUrl,
     );
 
-    if (result['success']) {
-      setState(() {
-        final index = _products.indexWhere((p) => p.id == product.id);
-        if (index != -1) {
-          _products[index] = product.copyWith(
-            isAvailable: !product.isAvailable,
-            updatedAt: DateTime.now(),
-          );
-        }
-      });
-      _updateFilteredProducts();
-    } else {
-      if (mounted) {
+    if (mounted) {
+      if (result['success']) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update product: ${result['message']}'),
+            content: Text(
+                'Product availability updated to ${!product.isAvailable}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        ref.invalidate(productsProvider);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Failed to update availability: ${result['message']}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -375,243 +129,181 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
     }
   }
 
-  void _showDeleteConfirmation(Product product) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete Product'),
-          content: Text('Are you sure you want to delete "${product.name}"?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _deleteProduct(product.id);
-              },
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
+  void _navigateToAddProductScreen() async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => const AddProductScreen(),
+      ),
     );
+
+    if (result == true) {
+      ref.invalidate(productsProvider);
+    }
+  }
+
+  void _navigateToEditProductScreen(Product product) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => EditProductScreen(
+          product: product,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      ref.invalidate(productsProvider);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final searchQuery = ref.watch(searchQueryProvider);
+    final productsAsyncValue = ref.watch(productSearchProvider(searchQuery));
+    final businessType = _getBusinessTypeString(widget.business.businessType);
+    final categoriesAsyncValue = ref.watch(categoriesProvider(businessType));
+
     return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Error: $_error',
-                        style: const TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      WizzBusinessButton(
-                        onPressed: _loadData,
-                        text: 'Retry',
-                      ),
-                    ],
-                  ),
-                )
-              : Column(
-                  children: [
-                    // Search Field
-                    Container(
-                      margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                      height: 40,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            const Color(0xFF3399FF).withOpacity(0.08),
-                            const Color(0xFF00C1E8).withOpacity(0.12),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: const Color(0xFF3399FF).withOpacity(0.2),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF3399FF).withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Search products...',
-                          hintStyle: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 13,
-                          ),
-                          prefixIcon: _isSearching
-                              ? Container(
-                                  width: 16,
-                                  height: 16,
-                                  padding: const EdgeInsets.all(12),
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      const Color(0xFF3399FF),
-                                    ),
-                                  ),
-                                )
-                              : Icon(
-                                  Icons.search_rounded,
-                                  color: const Color(0xFF3399FF),
-                                  size: 20,
-                                ),
-                          suffixIcon: _searchController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: Icon(
-                                    Icons.clear_rounded,
-                                    color: Colors.grey[500],
-                                    size: 18,
-                                  ),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    setState(() {
-                                      _searchQuery = '';
-                                    });
-                                    _updateFilteredProducts();
-                                  },
-                                  padding: const EdgeInsets.all(8),
-                                  constraints: const BoxConstraints(),
-                                )
-                              : null,
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                        ),
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ),
-
-                    // Search Results Summary
-                    if (_searchQuery.isNotEmpty)
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline_rounded,
-                              color: Colors.grey[600],
-                              size: 12,
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                '${_filteredProducts.length} results for "${_searchQuery}"',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                    // Products List
-                    Expanded(
-                      child: _filteredProducts.isEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    _searchQuery.isNotEmpty
-                                        ? Icons.search_off
-                                        : Icons.inventory_2_outlined,
-                                    size: 64,
-                                    color: Colors.grey[400],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    _searchQuery.isNotEmpty
-                                        ? 'No products found for "${_searchQuery}"'
-                                        : 'No products found',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[600],
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _searchQuery.isNotEmpty
-                                        ? 'Try adjusting your search terms'
-                                        : 'Add your first product to get started',
-                                    style: TextStyle(color: Colors.grey),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: _filteredProducts.length,
-                              itemBuilder: (context, index) {
-                                final product = _filteredProducts[index];
-                                return _buildProductCard(product);
-                              },
-                            ),
-                    ),
-                  ],
+      body: Column(
+        children: [
+          _buildSearchField(),
+          Expanded(
+            child: productsAsyncValue.when(
+              data: (products) => categoriesAsyncValue.when(
+                data: (categories) => _buildProductList(products, categories),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) =>
+                    _buildErrorWidget('Failed to load categories: $err'),
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) =>
+                  _buildErrorWidget('Failed to load products: $err'),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: categoriesAsyncValue.when(
+        data: (categories) => FloatingActionButton(
+          onPressed: () async {
+            if (categories.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                      'Cannot add products: No categories available.'),
+                  backgroundColor: Colors.orange,
                 ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // Only allow adding products if we have categories
-          if (_categories.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                    'Cannot add products: No categories available. Please check your business type configuration.'),
-                backgroundColor: Colors.orange,
+              );
+              return;
+            }
+            final result = await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => AddProductScreen(),
               ),
             );
-            return;
-          }
-
-          final result = await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => AddProductScreen(categories: _categories),
-            ),
-          );
-
-          if (result == true) {
-            _loadData(); // Refresh the list
-          }
-        },
-        backgroundColor: Theme.of(context).primaryColor,
-        child: const Icon(Icons.add, color: Colors.white),
+            if (result == true) {
+              ref.invalidate(productsProvider);
+            }
+          },
+          backgroundColor: Theme.of(context).primaryColor,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
+        loading: () => const FloatingActionButton(
+          onPressed: null,
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+        error: (_, __) => const SizedBox.shrink(),
       ),
     );
   }
 
-  Widget _buildProductCard(Product product) {
+  Widget _buildErrorWidget(String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            error,
+            style: const TextStyle(color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          WizzBusinessButton(
+            onPressed: () {
+              ref.invalidate(productsProvider);
+              final businessType =
+                  _getBusinessTypeString(widget.business.businessType);
+              ref.invalidate(categoriesProvider(businessType));
+            },
+            text: 'Retry',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchField() {
+    final searchQuery = ref.watch(searchQueryProvider);
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      height: 40,
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: 'Search products...',
+          prefixIcon: const Icon(Icons.search_rounded, size: 20),
+          suffixIcon: searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear_rounded, size: 18),
+                  onPressed: () {
+                    _searchController.clear();
+                    ref.read(searchQueryProvider.notifier).state = '';
+                  },
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Colors.grey[200],
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+        ),
+        style: const TextStyle(fontSize: 14),
+      ),
+    );
+  }
+
+  Widget _buildProductList(
+      List<Product> products, List<ProductCategory> categories) {
+    final searchQuery = ref.watch(searchQueryProvider);
+
+    if (products.isEmpty) {
+      return Center(
+        child: Text(searchQuery.isNotEmpty
+            ? 'No products found for "$searchQuery"'
+            : 'No products found. Add one to get started!'),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: products.length,
+      itemBuilder: (context, index) {
+        final product = products[index];
+        return _buildProductCard(product, categories);
+      },
+    );
+  }
+
+  String _getCategoryName(
+      String categoryId, List<ProductCategory> categories) {
+    try {
+      return categories.firstWhere((cat) => cat.id == categoryId).name;
+    } catch (e) {
+      return 'Unknown Category';
+    }
+  }
+
+  Widget _buildProductCard(Product product, List<ProductCategory> categories) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
@@ -629,82 +321,32 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
                   height: 80,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[300]!, width: 1),
                     color: Colors.grey[100],
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: product.imageUrl != null &&
                             product.imageUrl!.isNotEmpty
-                        ? Builder(
-                            builder: (context) {
-                              print('🖼️ BUILDING IMAGE for ${product.name}');
-                              print('🔗 Image URL: "${product.imageUrl}"');
-                              print(
-                                  '📏 URL Length: ${product.imageUrl!.length}');
-                              print(
-                                  '🌐 URL Starts with http: ${product.imageUrl!.startsWith('http')}');
-
-                              return Image.network(
-                                product.imageUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  print(
-                                      '❌ IMAGE LOAD ERROR for ${product.name}');
-                                  print('❌ Error: $error');
-                                  print('❌ URL: ${product.imageUrl}');
-                                  print('❌ Stack trace: $stackTrace');
-                                  return _buildDefaultProductIcon();
-                                },
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) {
-                                    print(
-                                        '✅ IMAGE LOADED SUCCESSFULLY for ${product.name}');
-                                    return child;
-                                  }
-                                  print(
-                                      '⏳ Loading image for ${product.name}: ${loadingProgress.cumulativeBytesLoaded}/${loadingProgress.expectedTotalBytes ?? "unknown"}');
-                                  return Center(
-                                    child: CircularProgressIndicator(
-                                      value:
-                                          loadingProgress.expectedTotalBytes !=
-                                                  null
-                                              ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                              : null,
-                                      strokeWidth: 2,
-                                      color: Theme.of(context).primaryColor,
-                                    ),
-                                  );
-                                },
+                        ? Image.network(
+                            product.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                _buildDefaultProductIcon(),
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
                               );
                             },
                           )
-                        : Column(
-                            children: [
-                              _buildDefaultProductIcon(),
-                              if (product.imageUrl == null ||
-                                  product.imageUrl!.isEmpty)
-                                const SizedBox(height: 4),
-                              if (product.imageUrl == null ||
-                                  product.imageUrl!.isEmpty)
-                                const Text(
-                                  'No image',
-                                  style: TextStyle(
-                                      fontSize: 8, color: Colors.grey),
-                                ),
-                              if (product.imageUrl != null &&
-                                  product.imageUrl!.isNotEmpty)
-                                const Text(
-                                  'Image failed',
-                                  style:
-                                      TextStyle(fontSize: 8, color: Colors.red),
-                                ),
-                            ],
-                          ),
+                        : _buildDefaultProductIcon(),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -723,7 +365,7 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _getCategoryName(product.categoryId),
+                        _getCategoryName(product.categoryId, categories),
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 12,
@@ -754,40 +396,20 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
             Row(
               children: [
                 // Availability Toggle
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: product.isAvailable
-                        ? Colors.green[100]
-                        : Colors.red[100],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    product.isAvailable ? 'Available' : 'Unavailable',
-                    style: TextStyle(
-                      color: product.isAvailable
-                          ? Colors.green[800]
-                          : Colors.red[800],
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+                Switch(
+                  value: product.isAvailable,
+                  onChanged: (_) => _toggleProductAvailability(product),
+                  activeColor: Colors.green,
+                ),
+                Text(
+                  product.isAvailable ? 'Available' : 'Unavailable',
+                  style: TextStyle(
+                    color: product.isAvailable ? Colors.green : Colors.red,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const Spacer(),
                 // Action Buttons
-                IconButton(
-                  icon: Icon(
-                    product.isAvailable
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                    color: Colors.blue,
-                  ),
-                  onPressed: () => _toggleProductAvailability(product),
-                  tooltip: product.isAvailable
-                      ? 'Make Unavailable'
-                      : 'Make Available',
-                ),
                 IconButton(
                   icon: const Icon(Icons.edit, color: Colors.orange),
                   onPressed: () async {
@@ -795,13 +417,11 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
                       MaterialPageRoute(
                         builder: (context) => EditProductScreen(
                           product: product,
-                          categories: _categories,
                         ),
                       ),
                     );
-
                     if (result == true) {
-                      _loadData(); // Refresh the list
+                      ref.invalidate(productsProvider);
                     }
                   },
                   tooltip: 'Edit Product',
@@ -819,7 +439,6 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
     );
   }
 
-  // Helper method to build default product icon when no image is available
   Widget _buildDefaultProductIcon() {
     return Container(
       width: double.infinity,
@@ -829,6 +448,29 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
         Icons.restaurant_menu,
         size: 32,
         color: Colors.grey[400],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(Product product) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Product'),
+        content: Text('Are you sure you want to delete "${product.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _deleteProduct(product.id);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

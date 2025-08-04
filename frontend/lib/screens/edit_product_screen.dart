@@ -1,28 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../models/product.dart';
+import '../providers/edit_product_provider.dart';
+import '../providers/product_provider.dart';
 import '../services/product_service.dart';
 import '../services/image_upload_service.dart';
 import '../widgets/wizz_business_button.dart';
 import '../widgets/wizz_business_text_form_field.dart';
+import '../widgets/image_picker_widget.dart';
 
-class EditProductScreen extends StatefulWidget {
+class EditProductScreen extends ConsumerStatefulWidget {
   final Product product;
-  final List<ProductCategory> categories;
 
   const EditProductScreen({
     super.key,
     required this.product,
-    required this.categories,
   });
 
   @override
-  State<EditProductScreen> createState() => _EditProductScreenState();
+  ConsumerState<EditProductScreen> createState() => _EditProductScreenState();
 }
 
-class _EditProductScreenState extends State<EditProductScreen> {
+class _EditProductScreenState extends ConsumerState<EditProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -32,10 +34,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   String? _selectedCategoryId;
   bool _isAvailable = true;
-  bool _isLoading = false;
-  bool _isUploadingImage = false;
   File? _selectedImage;
-  String? _uploadedImageUrl;
+  String? _initialImageUrl;
 
   @override
   void initState() {
@@ -48,6 +48,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _descriptionController.text = widget.product.description;
     _priceController.text = widget.product.price.toStringAsFixed(2);
     _imageUrlController.text = widget.product.imageUrl ?? '';
+    _initialImageUrl = widget.product.imageUrl;
     _selectedCategoryId = widget.product.categoryId;
     _isAvailable = widget.product.isAvailable;
   }
@@ -74,64 +75,20 @@ class _EditProductScreenState extends State<EditProductScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Use uploaded image URL if available, otherwise use manual URL
-      String? finalImageUrl =
-          _uploadedImageUrl ?? _imageUrlController.text.trim();
-      if (finalImageUrl.isEmpty) {
-        finalImageUrl = null;
-      }
-
-      final result = await ProductService.updateProduct(
-        productId: widget.product.id,
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim(),
-        price: double.parse(_priceController.text.trim()),
-        categoryId: _selectedCategoryId!,
-        imageUrl: finalImageUrl,
-        isAvailable: _isAvailable,
-      );
-
-      if (result['success']) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Product updated successfully'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.of(context).pop(true); // Return true to indicate success
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to update product: ${result['message']}'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    String? finalImageUrl = _imageUrlController.text.trim();
+    if (finalImageUrl.isEmpty) {
+      finalImageUrl = null;
     }
+
+    await ref.read(editProductProvider(widget.product.id).notifier).updateProduct(
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          price: double.parse(_priceController.text.trim()),
+          categoryId: _selectedCategoryId!,
+          isAvailable: _isAvailable,
+          imageFile: _selectedImage,
+          imageUrl: _selectedImage == null ? finalImageUrl : null,
+        );
   }
 
   String? _validateName(String? value) {
@@ -207,8 +164,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
       if (image != null) {
         setState(() {
           _selectedImage = File(image.path);
+          _imageUrlController.clear();
         });
-        await _uploadImage();
       }
     } catch (e) {
       if (mounted) {
@@ -234,8 +191,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
       if (image != null) {
         setState(() {
           _selectedImage = File(image.path);
+          _imageUrlController.clear();
         });
-        await _uploadImage();
       }
     } catch (e) {
       if (mounted) {
@@ -245,60 +202,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
             backgroundColor: Colors.red,
           ),
         );
-      }
-    }
-  }
-
-  Future<void> _uploadImage() async {
-    if (_selectedImage == null) return;
-
-    setState(() {
-      _isUploadingImage = true;
-    });
-
-    try {
-      final result =
-          await ImageUploadService.uploadProductImage(_selectedImage!);
-
-      if (result['success']) {
-        setState(() {
-          _uploadedImageUrl = result['imageUrl'];
-          _imageUrlController.text =
-              result['imageUrl']; // Update the text field
-        });
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Image uploaded successfully'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to upload image: ${result['message']}'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error uploading image: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isUploadingImage = false;
-        });
       }
     }
   }
@@ -338,20 +241,22 @@ class _EditProductScreenState extends State<EditProductScreen> {
   void _removeImage() {
     setState(() {
       _selectedImage = null;
-      _uploadedImageUrl = null;
       _imageUrlController.clear();
+      _initialImageUrl = null; // To reflect that the original image is gone
     });
   }
 
   bool _hasChanges() {
-    String currentImageUrl =
-        _uploadedImageUrl ?? _imageUrlController.text.trim();
-    String originalImageUrl = widget.product.imageUrl ?? '';
+    final price = double.tryParse(_priceController.text.trim());
+    final currentImageUrl =
+        _selectedImage != null ? '' : _imageUrlController.text.trim();
+    final originalImageUrl = widget.product.imageUrl ?? '';
 
     return _nameController.text.trim() != widget.product.name ||
         _descriptionController.text.trim() != widget.product.description ||
-        double.parse(_priceController.text.trim()) != widget.product.price ||
+        (price != null && price != widget.product.price) ||
         _selectedCategoryId != widget.product.categoryId ||
+        _selectedImage != null ||
         currentImageUrl != originalImageUrl ||
         _isAvailable != widget.product.isAvailable;
   }
@@ -388,6 +293,30 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<EditProductState>(editProductProvider(widget.product.id),
+        (previous, next) {
+      if (next.status == EditProductStateStatus.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Product updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.of(context).pop(true);
+      } else if (next.status == EditProductStateStatus.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage ?? 'Failed to update product'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+
+    final editState = ref.watch(editProductProvider(widget.product.id));
+    final isLoading = editState.status == EditProductStateStatus.loading;
+    final categoriesAsync = ref.watch(categoriesProvider('restaurant'));
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -447,253 +376,100 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 const SizedBox(height: 16),
 
                 // Category Selection
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey[300]!),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.category, color: Colors.grey),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: widget.categories.isNotEmpty &&
-                                    widget.categories.any(
-                                        (cat) => cat.id == _selectedCategoryId)
-                                ? _selectedCategoryId
-                                : null,
-                            hint: const Text('Select Category *'),
-                            isExpanded: true,
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                _selectedCategoryId = newValue;
-                              });
-                            },
-                            items: widget.categories.isNotEmpty
-                                ? widget.categories.map((category) {
-                                    return DropdownMenuItem<String>(
-                                      value: category.id,
-                                      child: Text(category.name),
-                                    );
-                                  }).toList()
-                                : [
-                                    const DropdownMenuItem<String>(
-                                      value: null,
-                                      child: Text('No categories available'),
-                                    ),
-                                  ],
-                          ),
-                        ),
+                categoriesAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) => Center(child: Text('Error: $err')),
+                  data: (categories) {
+                    final filteredCategories = categories
+                        .where((cat) => cat.id.isNotEmpty && cat.name.isNotEmpty)
+                        .toList();
+
+                    if (filteredCategories.isEmpty) {
+                      return const Text('No categories available.');
+                    }
+
+                    final isValidCategory = filteredCategories
+                        .any((cat) => cat.id == _selectedCategoryId);
+                    if (!isValidCategory && filteredCategories.isNotEmpty) {
+                      _selectedCategoryId = filteredCategories.first.id;
+                    }
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey[300]!),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
-                  ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.category, color: Colors.grey),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _selectedCategoryId,
+                                hint: const Text('Select Category *'),
+                                isExpanded: true,
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    _selectedCategoryId = newValue;
+                                  });
+                                },
+                                items: filteredCategories.map((category) {
+                                  return DropdownMenuItem<String>(
+                                    value: category.id,
+                                    child: Text(category.name),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
 
                 // Image Section
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey[300]!),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.image, color: Colors.grey),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Product Image (Optional)',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Current/Selected Image Preview
-                      if (_selectedImage != null ||
-                          _uploadedImageUrl != null ||
-                          _imageUrlController.text.trim().isNotEmpty) ...[
-                        Container(
-                          height: 200,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey[300]!),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: _selectedImage != null
-                                ? Image.file(
-                                    _selectedImage!,
-                                    fit: BoxFit.cover,
-                                  )
-                                : (_uploadedImageUrl != null ||
-                                        _imageUrlController.text
-                                            .trim()
-                                            .isNotEmpty)
-                                    ? Image.network(
-                                        _uploadedImageUrl ??
-                                            _imageUrlController.text.trim(),
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                          return Container(
-                                            color: Colors.grey[200],
-                                            child: const Center(
-                                              child: Icon(
-                                                Icons.broken_image,
-                                                size: 50,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      )
-                                    : const SizedBox(),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Remove Image Button
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: _removeImage,
-                                icon: const Icon(Icons.delete_outline),
-                                label: const Text('Remove Image'),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.red,
-                                  side: const BorderSide(color: Colors.red),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // Upload Options
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _isUploadingImage
-                                  ? null
-                                  : _showImageSourceDialog,
-                              icon: _isUploadingImage
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2),
-                                    )
-                                  : const Icon(Icons.add_a_photo),
-                              label: Text(_isUploadingImage
-                                  ? 'Uploading...'
-                                  : (_selectedImage != null ||
-                                          _uploadedImageUrl != null ||
-                                          _imageUrlController.text
-                                              .trim()
-                                              .isNotEmpty)
-                                      ? 'Change Image'
-                                      : 'Add Image'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).primaryColor,
-                                foregroundColor: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 16),
-                      const Divider(),
-                      const SizedBox(height: 8),
-
-                      // Manual URL Input (Alternative)
-                      const Text(
-                        'Or enter image URL manually:',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      WizzBusinessTextFormField(
-                        controller: _imageUrlController,
-                        labelText: 'Image URL',
-                        prefixIcon: const Icon(Icons.link),
-                        validator: _validateImageUrl,
-                        keyboardType: TextInputType.url,
-                        enabled: _uploadedImageUrl ==
-                            null, // Disable if image was uploaded
-                      ),
-                    ],
-                  ),
+                ImagePickerWidget(
+                  selectedImage: _selectedImage,
+                  uploadedImageUrl:
+                      _selectedImage == null ? _initialImageUrl : null,
+                  isUploading: isLoading,
+                  onPickImage: _showImageSourceDialog,
+                  onRemoveImage: _removeImage,
                 ),
                 const SizedBox(height: 16),
 
+                // Manual Image URL (as a fallback)
+                if (_selectedImage == null)
+                  WizzBusinessTextFormField(
+                    controller: _imageUrlController,
+                    labelText: 'Or enter Image URL',
+                    prefixIcon: const Icon(Icons.link),
+                    validator: _validateImageUrl,
+                    keyboardType: TextInputType.url,
+                  ),
+                const SizedBox(height: 24),
+
                 // Availability Toggle
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey[300]!),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.visibility, color: Colors.grey),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Product Availability',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              _isAvailable
-                                  ? 'Product will be available for orders'
-                                  : 'Product will be hidden from customers',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Switch(
-                        value: _isAvailable,
-                        onChanged: (bool value) {
-                          setState(() {
-                            _isAvailable = value;
-                          });
-                        },
-                        activeColor: Theme.of(context).primaryColor,
-                      ),
-                    ],
-                  ),
+                SwitchListTile(
+                  title: const Text('Product is Available'),
+                  value: _isAvailable,
+                  onChanged: (value) {
+                    setState(() {
+                      _isAvailable = value;
+                    });
+                  },
+                  secondary: const Icon(Icons.visibility),
                 ),
                 const SizedBox(height: 32),
 
                 // Update Button
-                _isLoading
+                isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : WizzBusinessButton(
                         onPressed: _updateProduct,
@@ -704,7 +480,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 // Cancel Button
                 OutlinedButton(
                   onPressed:
-                      _isLoading ? null : () => Navigator.of(context).pop(),
+                      isLoading ? null : () => Navigator.of(context).pop(),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     side: BorderSide(color: Theme.of(context).primaryColor),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../widgets/language_switcher.dart';
 import '../widgets/wizz_business_text_form_field.dart';
@@ -9,22 +9,20 @@ import '../screens/forgot_password_screen.dart';
 import '../screens/registration_form_screen.dart';
 import '../screens/dashboards/business_dashboard.dart';
 import '../services/app_auth_service.dart';
-import '../providers/app_auth_provider.dart';
+import '../providers/session_provider.dart';
+import '../providers/business_provider.dart';
 import '../models/business.dart';
 import '../utils/responsive_helper.dart';
 import 'merchant_status_screen.dart';
 
-class LoginPage extends StatefulWidget {
-  final Function(Locale) onLanguageChanged;
-
-  const LoginPage({Key? key, required this.onLanguageChanged})
-      : super(key: key);
+class LoginPage extends ConsumerStatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -70,11 +68,8 @@ class _LoginPageState extends State<LoginPage> {
           final userData = response.user;
           debugPrint('👤 User data found: ${userData != null}');
 
-          // Update AppAuthProvider state after successful authentication
-          final authProvider =
-              Provider.of<AppAuthProvider>(context, listen: false);
-          await authProvider.initialize();
-          debugPrint('✅ AppAuthProvider state updated after login');
+          // AppAuthService now handles session state via Riverpod providers
+          debugPrint('✅ Login successful, session state automatically updated');
 
           if (userData != null && response.businesses.isNotEmpty) {
             debugPrint('👤 User data: $userData');
@@ -94,6 +89,10 @@ class _LoginPageState extends State<LoginPage> {
               debugPrint(
                   '✅ Business object created: ${business.name} (ID: ${business.id})');
 
+              // Update session with selected business and refresh provider
+              ref.read(sessionProvider.notifier).setSession(business.id);
+              ref.invalidate(businessProvider);
+
               debugPrint('🚀 Attempting navigation...');
 
               final navigator = Navigator.of(context, rootNavigator: true);
@@ -101,12 +100,7 @@ class _LoginPageState extends State<LoginPage> {
               if (business.status == 'approved') {
                 navigator.pushReplacement(
                   MaterialPageRoute(
-                    builder: (context) => BusinessDashboard(
-                      business: business,
-                      onLanguageChanged: widget.onLanguageChanged,
-                      userData: userData,
-                      businessesData: response.businesses,
-                    ),
+                    builder: (context) => BusinessDashboard(initialBusiness: business),
                   ),
                 );
               } else {
@@ -221,7 +215,6 @@ class _LoginPageState extends State<LoginPage> {
         foregroundColor: isTabletOrDesktop ? Colors.black87 : null,
         actions: [
           LanguageSwitcher(
-            onLanguageChanged: widget.onLanguageChanged,
             showAsIcon: true,
           ),
         ],
@@ -349,10 +342,7 @@ class _LoginPageState extends State<LoginPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        RegistrationFormScreen(
-                                      onLanguageChanged:
-                                          widget.onLanguageChanged,
-                                    ),
+                                        const RegistrationFormScreen(),
                                   ),
                                 );
                               },

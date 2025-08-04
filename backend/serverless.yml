@@ -27,7 +27,8 @@ provider:
     BUSINESS_PHOTOS_BUCKET: order-receiver-business-photos-dev
     ORDERS_TABLE: ${self:custom.ordersTable}
     MERCHANT_ENDPOINTS_TABLE: ${self:custom.merchantEndpointsTable}
-    WEBSOCKET_ENDPOINT: wss://ujyixy3uh5.execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}
+    # Use dynamic WebSocket endpoint reference - will be updated post-deployment
+    WEBSOCKET_ENDPOINT: !Sub "wss://${WebsocketsApi}.execute-api.${aws:region}.amazonaws.com/${self:provider.stage}"
     ORDER_EVENTS_TOPIC_ARN: !Ref OrderEventsTopic
     # SNS_FCM_ARN: !Ref FCMPlatformApplication  # Commented out temporarily
     # SNS_APNS_ARN: !Ref APNSPlatformApplication  # Commented out temporarily
@@ -144,6 +145,10 @@ functions:
           method: post
           cors: true
           authorizer: aws_iam
+  productManagement:
+    handler: functions/products/product_management_handler.handler
+    name: order-receiver-${self:provider.stage}-product-management-v1-sls
+    events:
       # Product endpoints
       - http:
           path: /products
@@ -350,6 +355,19 @@ functions:
           method: post
           cors: true
 
+  orderStreamHandler:
+    handler: functions/streams/order_stream_handler.handler
+    name: order-receiver-${self:provider.stage}-order-stream-v1-sls
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - OrdersTable
+              - StreamArn
+          batchSize: 1
+          startingPosition: LATEST
+
   websocketHandler:
     handler: functions/websocket/websocket_handler.handler
     name: order-receiver-${self:provider.stage}-websocket-v1-sls
@@ -373,11 +391,13 @@ custom:
   productsTable: order-receiver-products-${sls:stage}
   categoriesTable: order-receiver-categories-${sls:stage}
 
-
-
 resources:
   Resources:
     # Note: Using existing DynamoDB tables in us-east-1
+    # The GSI definitions have been removed from here to prevent deployment errors.
+    # Ensure that the 'BusinessIdIndex' on the Products table and
+    # 'BusinessTypeIndex' on the Categories table exist in DynamoDB.
+
     # Tables are not created here as they already exist
     OrdersTable:
       Type: AWS::DynamoDB::Table
@@ -407,6 +427,8 @@ resources:
             Projection:
               ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
     MerchantEndpointsTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -431,91 +453,6 @@ resources:
             Projection:
               ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
-    
-    # WebSocket API Gateway
-    WebSocketApi:
-      Type: AWS::ApiGatewayV2::Api
-      Properties:
-        Name: ${self:service}-websocket-${self:provider.stage}
-        ProtocolType: WEBSOCKET
-        RouteSelectionExpression: $request.body.action
-    
-    ConnectRoute:
-      Type: AWS::ApiGatewayV2::Route
-      Properties:
-        ApiId: !Ref WebSocketApi
-        RouteKey: $connect
-        AuthorizationType: NONE
-        OperationName: ConnectRoute
-        Target: !Join ['/', ['integrations', !Ref ConnectInteg]]
-    
-    ConnectInteg:
-      Type: AWS::ApiGatewayV2::Integration
-      Properties:
-        ApiId: !Ref WebSocketApi
-        Description: Connect Integration
-        IntegrationType: AWS_PROXY
-        IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketHandlerLambdaFunction.Arn}/invocations'
-    
-    DisconnectRoute:
-      Type: AWS::ApiGatewayV2::Route
-      Properties:
-        ApiId: !Ref WebSocketApi
-        RouteKey: $disconnect
-        AuthorizationType: NONE
-        OperationName: DisconnectRoute
-        Target: !Join ['/', ['integrations', !Ref DisconnectInteg]]
-    
-    DisconnectInteg:
-      Type: AWS::ApiGatewayV2::Integration
-      Properties:
-        ApiId: !Ref WebSocketApi
-        Description: Disconnect Integration
-        IntegrationType: AWS_PROXY
-        IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketHandlerLambdaFunction.Arn}/invocations'
-    
-    DefaultRoute:
-      Type: AWS::ApiGatewayV2::Route
-      Properties:
-        ApiId: !Ref WebSocketApi
-        RouteKey: $default
-        AuthorizationType: NONE
-        OperationName: DefaultRoute
-        Target: !Join ['/', ['integrations', !Ref DefaultInteg]]
-    
-    DefaultInteg:
-      Type: AWS::ApiGatewayV2::Integration
-      Properties:
-        ApiId: !Ref WebSocketApi
-        Description: Default Integration
-        IntegrationType: AWS_PROXY
-        IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketHandlerLambdaFunction.Arn}/invocations'
-    
-    Deployment:
-      Type: AWS::ApiGatewayV2::Deployment
-      DependsOn:
-        - ConnectRoute
-        - DisconnectRoute
-        - DefaultRoute
-      Properties:
-        ApiId: !Ref WebSocketApi
-    
-    Stage:
-      Type: AWS::ApiGatewayV2::Stage
-      Properties:
-        StageName: ${self:provider.stage}
-        Description: ${self:provider.stage} Stage
-        DeploymentId: !Ref Deployment
-        ApiId: !Ref WebSocketApi
-    
-    WebSocketLambdaPermission:
-      Type: AWS::Lambda::Permission
-      Properties:
-        Action: lambda:InvokeFunction
-        FunctionName: !Ref WebsocketHandlerLambdaFunction
-        Principal: apigateway.amazonaws.com
-        SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*'
-    # SNS Topics and Platform Applications for Push Notifications
     OrderEventsTopic:
       Type: AWS::SNS::Topic
       Properties:
@@ -550,29 +487,6 @@ resources:
     #       PlatformCredential: "PLACEHOLDER_APNS_CREDENTIAL"
     #       PlatformPrincipal: "PLACEHOLDER_APNS_PRINCIPAL"
     
-    # ProductsTable:
-    #   Type: AWS::DynamoDB::Table
-    #   Properties:
-    #     TableName: ${self:custom.productsTable}
-    #     AttributeDefinitions:
-    #       - AttributeName: productId
-    #         AttributeType: S
-    #     KeySchema:
-    #       - AttributeName: productId
-    #         KeyType: HASH
-    #     BillingMode: PAY_PER_REQUEST
-    # CategoriesTable:
-    #   Type: AWS::DynamoDB::Table
-    #   Properties:
-    #     TableName: ${self:custom.categoriesTable}
-    #     AttributeDefinitions:
-    #       - AttributeName: categoryId
-    #         AttributeType: S
-    #     KeySchema:
-    #       - AttributeName: categoryId
-    #         KeyType: HASH
-    #     BillingMode: PAY_PER_REQUEST
-
 outputs:
   ApiGatewayEndpoint:
     Description: "API Gateway endpoint URL"
@@ -582,7 +496,7 @@ outputs:
   
   WebSocketEndpoint:
     Description: "WebSocket API endpoint URL"
-    Value: !Sub "wss://${WebSocketApi}.execute-api.${aws:region}.amazonaws.com/${self:provider.stage}"
+    Value: !Sub "wss://${WebsocketsApi}.execute-api.${aws:region}.amazonaws.com/${self:provider.stage}"
     Export:
       Name: !Sub "${AWS::StackName}-WebSocketEndpoint"
   

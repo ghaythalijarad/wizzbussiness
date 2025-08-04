@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/app_auth_service.dart';
-import '../providers/app_auth_provider.dart';
+import '../providers/session_provider.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../l10n/app_localizations.dart';
@@ -11,14 +11,14 @@ import '../screens/dashboards/business_dashboard.dart';
 import 'signup_screen.dart';
 // import 'forgot_password_page.dart';
 
-class SignInScreen extends StatefulWidget {
+class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({Key? key}) : super(key: key);
 
   @override
-  _SignInScreenState createState() => _SignInScreenState();
+  ConsumerState<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -123,13 +123,7 @@ class _SignInScreenState extends State<SignInScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                  builder: (context) => SignUpScreen(
-                        onLanguageChanged: (Locale locale) {
-                          // Handle language change if needed
-                          debugPrint(
-                              'Language changed to: ${locale.languageCode}');
-                        },
-                      )),
+                  builder: (context) => const SignUpScreen()),
             );
           },
           child: Text(
@@ -170,11 +164,8 @@ class _SignInScreenState extends State<SignInScreen> {
       if (result.success) {
         debugPrint('✅ Login successful!');
 
-        // Update AppAuthProvider state after successful authentication
-        final authProvider =
-            Provider.of<AppAuthProvider>(context, listen: false);
-        await authProvider.initialize();
-        debugPrint('✅ AppAuthProvider state updated after login');
+        // AppAuthService now handles session state via Riverpod providers
+        debugPrint('✅ Login successful, session state automatically updated');
 
         // Extract business data from the response
         final businessData =
@@ -200,13 +191,7 @@ class _SignInScreenState extends State<SignInScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => BusinessDashboard(
-                  business: business,
-                  onLanguageChanged: (Locale locale) {
-                    // Handle language change if needed
-                    debugPrint('Language changed to: ${locale.languageCode}');
-                  },
-                ),
+                builder: (context) => const BusinessDashboard(),
               ),
             );
             debugPrint('✅ Navigation completed');

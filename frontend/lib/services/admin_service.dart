@@ -17,7 +17,10 @@ class AdminService {
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      return data.map((json) => Business.fromJson(json)).where((business) => business.status == 'pending').toList();
+      return data
+          .map((json) => Business.fromJson(json))
+          .where((business) => business.status == 'pending')
+          .toList();
     } else {
       throw Exception('Failed to load pending businesses');
     }

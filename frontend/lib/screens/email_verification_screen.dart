@@ -12,13 +12,11 @@ import 'dashboards/business_dashboard.dart';
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
   final Map<String, dynamic>? businessData; // Add business data to preserve it
-  final Function(Locale)? onLanguageChanged; // Add language change callback
 
   const EmailVerificationScreen({
     Key? key,
     required this.email,
     this.businessData,
-    this.onLanguageChanged,
   }) : super(key: key);
 
   @override
@@ -246,18 +244,13 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           businessData['email'] = businessData['email'] ?? result.user!['email'] ?? widget.email;
 
           try {
-            final business = Business.fromJson(businessData);
+            Business.fromJson(businessData);
             
             // Navigate to business dashboard
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => BusinessDashboard(
-                  business: business,
-                  onLanguageChanged: widget.onLanguageChanged ?? (Locale locale) {},
-                  userData: result.user,
-                  businessesData: [businessData],
-                ),
+                builder: (context) => const BusinessDashboard(),
               ),
             );
           } catch (businessError) {
@@ -309,94 +302,33 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     }
   }
 
-  Future<void> _showEmailChangeDialog(AppLocalizations l10n) async {
-    final emailController = TextEditingController(text: widget.email);
-    final formKey = GlobalKey<FormState>();
-
-    return showDialog<void>(
+  void _showEmailChangeDialog(AppLocalizations l10n) {
+    showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Change Email Address'),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Enter your correct email address to receive a new verification code.',
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: emailController,
-                  labelText: l10n.emailAddress,
-                  prefixIcon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) {
-                      return 'Email is required';
-                    }
-                    if (!_isValidEmail(value!)) {
-                      return 'Invalid email format';
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
+      builder: (context) => AlertDialog(
+        title: Text('Change Email Address'),
+        content: Text(
+            'Are you sure you want to change your email address? This will take you back to the sign-up screen.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  Navigator.of(context).pop();
-                  _changeEmailAndResend(emailController.text.trim());
-                }
-              },
-              child: Text('Change & Resend Code'),
-            ),
-          ],
-        );
-      },
+          TextButton(
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SignUpScreen(),
+                ),
+                (route) => false,
+              );
+            },
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
     );
-  }
-
-  Future<void> _changeEmailAndResend(String newEmail) async {
-    if (newEmail == widget.email) {
-      _showErrorSnackBar('Please enter a different email address');
-      return;
-    }
-
-    setState(() {
-      _isResending = true;
-    });
-
-    try {
-      // For now, we'll navigate back to signup with the new email
-      // In a full implementation, you'd want to update the backend
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => SignUpScreen(
-            onLanguageChanged: widget.onLanguageChanged,
-          ),
-        ),
-        (Route<dynamic> route) => false,
-      );
-
-      _showSuccessSnackBar(
-          'Please complete registration with your correct email');
-    } catch (e) {
-      _showErrorSnackBar('Failed to change email. Please try again.');
-    } finally {
-      setState(() {
-        _isResending = false;
-      });
-    }
   }
 
   bool _isValidEmail(String email) {

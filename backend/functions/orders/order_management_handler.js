@@ -1,6 +1,6 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, QueryCommand, ScanCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
-const { CognitoIdentityServiceProvider } = require('@aws-sdk/client-cognito-identity-provider');
+const { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, QueryCommand, ScanCommand, DeleteCommand, BatchWriteItemCommand } = require('@aws-sdk/lib-dynamodb');
+const { CognitoIdentityProviderClient, GetUserCommand } = require('@aws-sdk/client-cognito-identity-provider');
 const { v4: uuidv4 } = require('uuid');
 const { createResponse } = require('../auth/utils');
 
@@ -87,7 +87,7 @@ exports.handler = async (event) => {
     console.log('Order Management Handler - Event:', JSON.stringify(event, null, 2));
 
     // Instantiate AWS clients for this invocation
-    const cognito = new CognitoIdentityServiceProvider({ region: process.env.COGNITO_REGION || 'us-east-1' });
+    const cognito = new CognitoIdentityProviderClient({ region: process.env.COGNITO_REGION || 'us-east-1' });
     const dynamoDbClient = new DynamoDBClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
     const dynamodb = DynamoDBDocumentClient.from(dynamoDbClient);
 
@@ -120,10 +120,21 @@ exports.handler = async (event) => {
         const accessToken = authHeader.replace('Bearer ', '');
 
         // Verify the access token and get user info
-        const userInfo = await getUserInfoFromToken(cognito, accessToken);
-        if (!userInfo) {
+        const userInfoResult = await getUserInfoFromToken(cognito, accessToken);
+        if (!userInfoResult) {
             return createResponse(401, { success: false, message: 'Invalid access token' });
         }
+
+        // Extract email and sub from the Cognito response
+        const emailAttribute = userInfoResult.UserAttributes.find(attr => attr.Name === 'email');
+        if (!emailAttribute || !emailAttribute.Value) {
+            return createResponse(403, { success: false, message: 'User email not found in token.' });
+        }
+
+        const userInfo = {
+            email: emailAttribute.Value,
+            sub: userInfoResult.Username // 'sub' is typically the user's unique identifier
+        };
 
         // Route the request based on HTTP method and path
         if (httpMethod === 'POST' && path === '/orders') {
@@ -141,120 +152,24 @@ exports.handler = async (event) => {
             return await handleUpdateProduct(dynamodb, userInfo, pathParameters.productId, JSON.parse(requestBody || '{}'));
         } else if (httpMethod === 'DELETE' && pathParameters?.productId) {
             return await handleDeleteProduct(dynamodb, userInfo, pathParameters.productId);
+        } else if (httpMethod === 'GET' && path === '/orders') {
+            return await handleGetOrders(dynamodb, userInfo);
+        } else if (httpMethod === 'GET' && pathParameters?.orderId) {
+            return await handleGetOrder(dynamodb, userInfo, pathParameters.orderId);
+        } else if (httpMethod === 'PUT' && pathParameters?.orderId) {
+            return await handleUpdateOrder(dynamodb, userInfo, pathParameters.orderId, JSON.parse(requestBody || '{}'));
+        } else if (httpMethod === 'DELETE' && pathParameters?.orderId) {
+            return await handleDeleteOrder(dynamodb, userInfo, pathParameters.orderId);
         } else if (httpMethod === 'GET' && path === '/categories') {
-            return await handleGetCategories(dynamodb, userInfo);
+            return await handleGetAllCategories(dynamodb, userInfo);
         } else {
-            return createResponse(404, { success: false, message: 'Endpoint not found' });
+            return createResponse(404, { success: false, message: 'Not Found' });
         }
     } catch (error) {
-        console.error('Error in order management handler:', error);
-        return createResponse(500, { success: false, message: 'Internal server error' });
+        console.error('❌ Error processing request:', error);
+        return createResponse(500, { success: false, message: 'Internal Server Error' });
     }
 };
-
-// Helper function to get user info from access token
-async function getUserInfoFromToken(cognito, accessToken) {
-    try {
-        const userResponse = await cognito.getUser({ AccessToken: accessToken });
-        const email = userResponse.UserAttributes.find(attr => attr.Name === 'email')?.Value;
-        const userId = userResponse.UserAttributes.find(attr => attr.Name === 'sub')?.Value;
-        
-        return {
-            userId,
-            email,
-            cognitoUserId: userId
-        };
-    } catch (error) {
-        console.error('Error getting user info from token:', error);
-        return null;
-    }
-}
-
-// Helper function to get business info for user
-async function getBusinessInfoForUser(dynamodb, email) {
-    console.log(`Attempting to get business info for email: ${email}`); // Enhanced logging
-    try {
-        // First, try to query using the GSI for efficiency
-        const queryParams = {
-            TableName: process.env.BUSINESSES_TABLE,
-            IndexName: 'email-index',
-            KeyConditionExpression: 'email = :email',
-            ExpressionAttributeValues: { ':email': email }
-        };
-        const result = await dynamodb.send(new QueryCommand(queryParams));
-        
-        if (result.Items && result.Items.length > 0) {
-            console.log(`Successfully found business info for email ${email} via GSI.`); // Enhanced logging
-            return result.Items[0];
-        }
-        
-        // If no items found via query, it means no business for that email.
-        console.warn(`Business information not found for email via GSI: ${email}. This may not be an error if a scan fallback is expected.`); // Enhanced logging
-        throw new Error(`Business information not found for email: ${email}`);
-
-    } catch (error) {
-        // If the query failed because the index doesn't exist, fall back to scan.
-        if (error.code === 'ValidationException' || error.code === 'ResourceNotFoundException') {
-            console.log('Falling back to scan because GSI query failed. Error:', error.message);
-            const scanParams = {
-                TableName: process.env.BUSINESSES_TABLE,
-                FilterExpression: 'email = :email',
-                ExpressionAttributeValues: { ':email': email }
-            };
-            const scanResult = await dynamodb.send(new ScanCommand(scanParams));
-            const businessInfo = scanResult.Items?.[0] || null;
-
-            if (!businessInfo) {
-                console.error(`Business information not found for email (after scan fallback): ${email}`); // Enhanced logging
-                throw new Error(`Business information not found for email (after scan fallback): ${email}`);
-            }
-            console.log(`Successfully found business info for email ${email} via scan fallback.`); // Enhanced logging
-            return businessInfo;
-        }
-        
-        console.error('Error getting business info:', error);
-        throw error; // Re-throw other errors
-    }
-}
-
-// Initialize categories for a business type if they don't exist
-async function initializeCategoriesForBusinessType(dynamodb, businessType) {
-    if (!BUSINESS_TYPE_CATEGORIES[businessType]) {
-        throw new Error(`Unsupported business type: ${businessType}`);
-    }
-
-    const categories = BUSINESS_TYPE_CATEGORIES[businessType];
-    const categoryItems = [];
-
-    for (const category of categories) {
-        const categoryId = uuidv4();
-        const categoryItem = {
-            categoryId: categoryId,
-            businessType: businessType,
-            name: category.name,
-            name_ar: category.name_ar,
-            description: category.description,
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        };
-
-        try {
-            await dynamodb.send(new PutCommand({
-                TableName: CATEGORIES_TABLE,
-                Item: categoryItem,
-                ConditionExpression: 'attribute_not_exists(categoryId)'
-            }));
-            categoryItems.push(categoryItem);
-        } catch (error) {
-            if (error.code !== 'ConditionalCheckFailedException') {
-                console.error('Error creating category:', error);
-            }
-        }
-    }
-
-    return categoryItems;
-}
 
 // Get categories by business type
 async function handleGetCategoriesByBusinessType(dynamodb, businessType) {
@@ -263,17 +178,18 @@ async function handleGetCategoriesByBusinessType(dynamodb, businessType) {
             return createResponse(400, { success: false, message: 'Business type is required' });
         }
 
-        // Retrieve existing categories filtered by businessType
+        // Retrieve existing categories filtered by businessType using the GSI
         const params = {
             TableName: CATEGORIES_TABLE,
-            FilterExpression: 'businessType = :businessType',
+            IndexName: 'BusinessTypeIndex',
+            KeyConditionExpression: 'businessType = :businessType',
             ExpressionAttributeValues: {
                 ':businessType': businessType.toLowerCase()
             }
         };
 
-        // Scan the table since BusinessTypeIndex may not exist
-        const result = await dynamodb.send(new ScanCommand(params));
+        // Query the table using the index
+        const result = await dynamodb.send(new QueryCommand(params));
 
         // If no categories exist, initialize them
         if (result.Items.length === 0) {
@@ -295,32 +211,48 @@ async function handleGetCategoriesByBusinessType(dynamodb, businessType) {
 }
 
 // Get all categories (for the authenticated user's business type)
-async function handleGetCategories(dynamodb, userInfo) {
+async function handleGetAllCategories(dynamodb, userInfo) {
     try {
         const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
-        if (!businessInfo) {
-            return createResponse(404, { success: false, message: 'Business not found for user' });
+        if (!businessInfo || !businessInfo.businessId) {
+            return createResponse(404, { success: false, message: 'Business not found for the user' });
         }
 
-        return await handleGetCategoriesByBusinessType(dynamodb, businessInfo.businessType);
+        // Query categories by business type using the GSI
+        const params = {
+            TableName: CATEGORIES_TABLE,
+            IndexName: 'BusinessTypeIndex',
+            KeyConditionExpression: 'businessType = :businessType',
+            ExpressionAttributeValues: {
+                ':businessType': businessInfo.businessType.toLowerCase()
+            }
+        };
+
+        const result = await dynamodb.send(new QueryCommand(params));
+
+        return createResponse(200, {
+            success: true,
+            categories: result.Items
+        });
     } catch (error) {
-        console.error('Error getting categories:', error);
+        console.error('Error getting all categories:', error);
         return createResponse(500, { success: false, message: 'Failed to get categories' });
     }
 }
 
 // Get all products for the authenticated user's business
 async function handleGetProducts(dynamodb, userInfo) {
-    console.log('handleGetProducts - UserInfo:', JSON.stringify(userInfo, null, 2)); // Enhanced logging
+    console.log('handleGetProducts - UserInfo:', JSON.stringify(userInfo, null, 2));
     try {
         const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
-        console.log('handleGetProducts - BusinessInfo:', JSON.stringify(businessInfo, null, 2)); // Enhanced logging
+        console.log('handleGetProducts - BusinessInfo:', JSON.stringify(businessInfo, null, 2));
 
         if (!businessInfo || !businessInfo.businessId) {
             console.error('Failed to retrieve valid business info or businessId.');
             return createResponse(404, { success: false, message: 'Business not found for the user' });
         }
 
+        // Use Query with the BusinessIdIndex for efficiency
         const params = {
             TableName: PRODUCTS_TABLE,
             IndexName: 'BusinessIdIndex',
@@ -330,14 +262,13 @@ async function handleGetProducts(dynamodb, userInfo) {
             }
         };
 
-        console.log('Querying products with params:', JSON.stringify(params, null, 2)); // Enhanced logging
+        console.log('Querying products with params:', JSON.stringify(params, null, 2));
         const result = await dynamodb.send(new QueryCommand(params));
-        console.log('Product query result:', JSON.stringify(result, null, 2)); // Enhanced logging
+        console.log('Product query result:', JSON.stringify(result, null, 2));
 
         // Transform products to ensure consistent field naming for frontend
         const transformedProducts = result.Items.map(product => ({
             ...product,
-            // Ensure imageUrl field exists for frontend compatibility
             imageUrl: product.image_url || product.imageUrl,
             isAvailable: product.is_available !== undefined ? product.is_available : product.isAvailable
         }));
@@ -345,227 +276,10 @@ async function handleGetProducts(dynamodb, userInfo) {
         return createResponse(200, { success: true, products: transformedProducts });
     } catch (error) {
         console.error('Error in handleGetProducts:', error);
-        // Return a more specific error message if business info is the issue
         if (error.message.includes('Business information not found')) {
             return createResponse(404, { success: false, message: 'Business not found for the user.' });
         }
         return createResponse(500, { success: false, message: 'Failed to get products' });
-    }
-}
-
-// Get a specific product
-async function handleGetProduct(dynamodb, userInfo, productId) {
-    try {
-        const params = {
-            TableName: PRODUCTS_TABLE,
-            Key: { productId: productId }
-        };
-
-        const result = await dynamodb.send(new GetCommand(params));
-
-        if (!result.Item) {
-            return createResponse(404, { success: false, message: 'Product not found' });
-        }
-
-        // Verify the product belongs to the user's business
-        const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
-        if (result.Item.businessId !== businessInfo?.businessId) {
-            return createResponse(403, { success: false, message: 'Access denied to this product' });
-        }
-
-        return createResponse(200, {
-            success: true,
-            product: result.Item
-        });
-    } catch (error) {
-        console.error('Error getting product:', error);
-        return createResponse(500, { success: false, message: 'Failed to get product' });
-    }
-}
-
-// Create a new product
-async function handleCreateProduct(dynamodb, userInfo, productData) {
-    try {
-        const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
-        if (!businessInfo) {
-            return createResponse(404, { success: false, message: 'Business not found for user' });
-        }
-
-        const {
-            name,
-            name_ar,
-            description,
-            description_ar,
-            price,
-            categoryId,
-            imageUrl,
-            isAvailable = true,
-            preparationTime,
-            ingredients,
-            allergens
-        } = productData;
-
-        // Validate required fields
-        if (!name || !price || !categoryId) {
-            return createResponse(400, { 
-                success: false, 
-                message: 'Name, price, and category are required' 
-            });
-        }
-
-        // Verify the category exists and belongs to the correct business type
-        const categoryParams = {
-            TableName: CATEGORIES_TABLE,
-            Key: { categoryId }
-        };
-        const categoryResult = await dynamodb.send(new GetCommand(categoryParams));
-        
-        if (!categoryResult.Item) {
-            return createResponse(400, { success: false, message: 'Category not found' });
-        }
-
-        if (categoryResult.Item.businessType !== businessInfo.businessType) {
-            return createResponse(400, { 
-                success: false, 
-                message: 'Category does not match business type' 
-            });
-        }
-
-        const productId = uuidv4();
-        const timestamp = new Date().toISOString();
-
-        const product = {
-            productId,
-            businessId: businessInfo.businessId,
-            categoryId,
-            name,
-            name_ar: name_ar || '',
-            description: description || '',
-            description_ar: description_ar || '',
-            price: parseFloat(price),
-            image_url: imageUrl || '',
-            is_available: isAvailable,
-            preparation_time: preparationTime || 0,
-            ingredients: ingredients || [],
-            allergens: allergens || [],
-            created_at: timestamp,
-            updated_at: timestamp,
-            created_by: userInfo.userId
-        };
-
-        await dynamodb.send(new PutCommand({
-            TableName: PRODUCTS_TABLE,
-            Item: product
-        }));
-
-        return createResponse(201, {
-            success: true,
-            message: 'Product created successfully',
-            product
-        });
-    } catch (error) {
-        console.error('Error creating product:', error);
-        return createResponse(500, { success: false, message: 'Failed to create product' });
-    }
-}
-
-// Update an existing product
-async function handleUpdateProduct(dynamodb, userInfo, productId, productData) {
-    try {
-        // First, verify the product exists and belongs to the user's business
-        const existingProduct = await handleGetProduct(dynamodb, userInfo, productId);
-        if (existingProduct.statusCode !== 200) {
-            return existingProduct;
-        }
-
-        const {
-            name,
-            name_ar,
-            description,
-            description_ar,
-            price,
-            categoryId,
-            imageUrl,
-            isAvailable,
-            preparationTime,
-            ingredients,
-            allergens
-        } = productData;
-
-        // Build update expression
-        let updateExpression = 'SET updated_at = :timestamp';
-        const expressionAttributeValues = {
-            ':timestamp': new Date().toISOString()
-        };
-
-        if (name !== undefined) {
-            updateExpression += ', #name = :name';
-            expressionAttributeValues[':name'] = name;
-        }
-        if (name_ar !== undefined) {
-            updateExpression += ', name_ar = :name_ar';
-            expressionAttributeValues[':name_ar'] = name_ar;
-        }
-        if (description !== undefined) {
-            updateExpression += ', description = :description';
-            expressionAttributeValues[':description'] = description;
-        }
-        if (description_ar !== undefined) {
-            updateExpression += ', description_ar = :description_ar';
-            expressionAttributeValues[':description_ar'] = description_ar;
-        }
-        if (price !== undefined) {
-            updateExpression += ', price = :price';
-            expressionAttributeValues[':price'] = parseFloat(price);
-        }
-        if (categoryId !== undefined) {
-            updateExpression += ', category_id = :category_id';
-            expressionAttributeValues[':category_id'] = categoryId;
-        }
-        if (imageUrl !== undefined) {
-            updateExpression += ', image_url = :image_url';
-            expressionAttributeValues[':image_url'] = imageUrl;
-        }
-        if (isAvailable !== undefined) {
-            updateExpression += ', is_available = :is_available';
-            expressionAttributeValues[':is_available'] = isAvailable;
-        }
-        if (preparationTime !== undefined) {
-            updateExpression += ', preparation_time = :preparation_time';
-            expressionAttributeValues[':preparation_time'] = preparationTime;
-        }
-        if (ingredients !== undefined) {
-            updateExpression += ', ingredients = :ingredients';
-            expressionAttributeValues[':ingredients'] = ingredients;
-        }
-        if (allergens !== undefined) {
-            updateExpression += ', allergens = :allergens';
-            expressionAttributeValues[':allergens'] = allergens;
-        }
-
-        const updateParams = {
-            TableName: PRODUCTS_TABLE,
-            Key: { productId: productId },
-            UpdateExpression: updateExpression,
-            ExpressionAttributeValues: expressionAttributeValues,
-            ReturnValues: 'ALL_NEW'
-        };
-
-        // Handle reserved keyword 'name'
-        if (name !== undefined) {
-            updateParams.ExpressionAttributeNames = { '#name': 'name' };
-        }
-
-        const result = await dynamodb.send(new UpdateCommand(updateParams));
-
-        return createResponse(200, {
-            success: true,
-            message: 'Product updated successfully',
-            product: result.Attributes
-        });
-    } catch (error) {
-        console.error('Error updating product:', error);
-        return createResponse(500, { success: false, message: 'Failed to update product' });
     }
 }
 
@@ -578,31 +292,54 @@ async function handleSearchProducts(dynamodb, userInfo, query) {
         }
 
         const searchTerm = query.trim().toLowerCase();
-        // Use scan since BusinessIdIndex does not exist
+
+        // First, efficiently query for all products of the business using the GSI
         const params = {
             TableName: PRODUCTS_TABLE,
-            FilterExpression: 'business_id = :business_id',
+            IndexName: 'BusinessIdIndex',
+            KeyConditionExpression: 'businessId = :businessId',
             ExpressionAttributeValues: {
-                ':business_id': businessInfo.business_id
+                ':businessId': businessInfo.businessId
             }
         };
-        const result = await dynamodb.send(new ScanCommand(params));
+        const result = await dynamodb.send(new QueryCommand(params));
 
-        // Filter items in code
+        // If there's no search query, return all products
+        if (!searchTerm) {
+            const allProducts = result.Items.map(product => ({
+                ...product,
+                imageUrl: product.image_url || product.imageUrl,
+                isAvailable: product.is_available !== undefined ? product.is_available : product.isAvailable
+            }));
+            return createResponse(200, {
+                success: true,
+                products: allProducts,
+                count: allProducts.length
+            });
+        }
+
+        // Filter items in code now that we have a smaller dataset
         const filteredProducts = result.Items.filter(product => {
             const nameMatch = product.name?.toLowerCase().includes(searchTerm);
             const descriptionMatch = product.description?.toLowerCase().includes(searchTerm);
             let ingredientsMatch = false;
-            if (product.ingredients) {
+            if (product.ingredients && Array.isArray(product.ingredients)) {
                 ingredientsMatch = product.ingredients.some(i => i.toLowerCase().includes(searchTerm));
             }
             return nameMatch || descriptionMatch || ingredientsMatch;
         });
 
+        // Transform products for frontend compatibility
+        const transformedProducts = filteredProducts.map(product => ({
+            ...product,
+            imageUrl: product.image_url || product.imageUrl,
+            isAvailable: product.is_available !== undefined ? product.is_available : product.isAvailable
+        }));
+
         return createResponse(200, {
             success: true,
-            products: filteredProducts,
-            count: filteredProducts.length
+            products: transformedProducts,
+            count: transformedProducts.length
         });
     } catch (error) {
         console.error('Error searching products:', error);
@@ -610,24 +347,122 @@ async function handleSearchProducts(dynamodb, userInfo, query) {
     }
 }
 
-// Delete a product
-async function handleDeleteProduct(dynamodb, userInfo, productId) {
+// Create a new product
+async function handleCreateProduct(dynamodb, userInfo, productData) {
     try {
-        // First, verify the product exists and belongs to the user's business
-        const existingProduct = await handleGetProduct(dynamodb, userInfo, productId);
-        if (existingProduct.statusCode !== 200) {
-            return existingProduct;
+        const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
+        if (!businessInfo || !businessInfo.businessId) {
+            return createResponse(404, { success: false, message: 'Business not found for the user' });
         }
 
-        await dynamodb.send(new DeleteCommand({
-            TableName: PRODUCTS_TABLE,
-            Key: { productId: productId }
-        }));
+        // Validate and prepare product data
+        const { name, description, price, category, imageUrl, isAvailable } = productData;
+        if (!name || !description || price == null || !category) {
+            return createResponse(400, { success: false, message: 'Name, description, price, and category are required' });
+        }
 
-        return createResponse(200, {
-            success: true,
-            message: 'Product deleted successfully'
-        });
+        // Create a new product item
+        const newProduct = {
+            id: uuidv4(),
+            businessId: businessInfo.businessId,
+            name,
+            description,
+            price,
+            category,
+            imageUrl,
+            isAvailable: isAvailable !== undefined ? isAvailable : true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        // Save the new product to DynamoDB
+        const params = {
+            TableName: PRODUCTS_TABLE,
+            Item: newProduct
+        };
+        await dynamodb.send(new PutCommand(params));
+
+        return createResponse(201, { success: true, product: newProduct });
+    } catch (error) {
+        console.error('Error creating product:', error);
+        return createResponse(500, { success: false, message: 'Failed to create product' });
+    }
+}
+
+// Get a single product by ID
+async function handleGetProduct(dynamodb, userInfo, productId) {
+    try {
+        const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
+        if (!businessInfo || !businessInfo.businessId) {
+            return createResponse(404, { success: false, message: 'Business not found for the user' });
+        }
+
+        // Retrieve the product by ID
+        const params = {
+            TableName: PRODUCTS_TABLE,
+            Key: { id: productId }
+        };
+        const result = await dynamodb.send(new GetCommand(params));
+
+        if (!result.Item) {
+            return createResponse(404, { success: false, message: 'Product not found' });
+        }
+
+        return createResponse(200, { success: true, product: result.Item });
+    } catch (error) {
+        console.error('Error getting product:', error);
+        return createResponse(500, { success: false, message: 'Failed to get product' });
+    }
+}
+
+// Update a product by ID
+async function handleUpdateProduct(dynamodb, userInfo, productId, updateData) {
+    try {
+        const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
+        if (!businessInfo || !businessInfo.businessId) {
+            return createResponse(404, { success: false, message: 'Business not found for the user' });
+        }
+
+        // Prepare update expression and attribute values
+        const updateExpression = 'SET ' +
+            Object.keys(updateData).map((key, index) => `${key} = :val${index}`).join(', ');
+        const expressionAttributeValues = Object.fromEntries(
+            Object.values(updateData).map((value, index) => [`:val${index}`, value])
+        );
+
+        // Update the product in DynamoDB
+        const params = {
+            TableName: PRODUCTS_TABLE,
+            Key: { id: productId },
+            UpdateExpression: updateExpression,
+            ExpressionAttributeValues: expressionAttributeValues,
+            ReturnValues: 'ALL_NEW'
+        };
+        const result = await dynamodb.send(new UpdateCommand(params));
+
+        return createResponse(200, { success: true, product: result.Attributes });
+    } catch (error) {
+        console.error('Error updating product:', error);
+        return createResponse(500, { success: false, message: 'Failed to update product' });
+    }
+}
+
+// Delete a product by ID
+async function handleDeleteProduct(dynamodb, userInfo, productId) {
+    try {
+        const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
+        if (!businessInfo || !businessInfo.businessId) {
+            return createResponse(404, { success: false, message: 'Business not found for the user' });
+        }
+
+        // Delete the product from DynamoDB
+        const params = {
+            TableName: PRODUCTS_TABLE,
+            Key: { id: productId }
+        };
+        await dynamodb.send(new DeleteCommand(params));
+
+        return createResponse(204, { success: true, message: 'Product deleted successfully' });
     } catch (error) {
         console.error('Error deleting product:', error);
         return createResponse(500, { success: false, message: 'Failed to delete product' });
@@ -638,46 +473,201 @@ async function handleDeleteProduct(dynamodb, userInfo, productId) {
 async function handleCreateOrder(dynamodb, userInfo, orderData) {
     try {
         const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
-        if (!businessInfo) {
-            return createResponse(404, { success: false, message: 'Business not found for user' });
+        if (!businessInfo || !businessInfo.businessId) {
+            return createResponse(404, { success: false, message: 'Business not found for the user' });
         }
 
-        const { items, totalAmount, customerName, customerPhone, deliveryAddress, notes } = orderData;
-
-        if (!items || !totalAmount || !customerName) {
-            return createResponse(400, { success: false, message: 'Missing required order fields' });
+        // Validate and prepare order data
+        const { productId, quantity, specialRequests } = orderData;
+        if (!productId || quantity == null) {
+            return createResponse(400, { success: false, message: 'Product ID and quantity are required' });
         }
 
-        const orderId = uuidv4();
-        const timestamp = new Date().toISOString();
-
-        const order = {
-            orderId,
+        // Create a new order item
+        const newOrder = {
+            id: uuidv4(),
             businessId: businessInfo.businessId,
-            customerId: userInfo.userId, // Assuming the user placing the order is the customer
-            customerName,
-            customerPhone,
-            deliveryAddress,
-            items,
-            totalAmount: parseFloat(totalAmount),
+            userId: userInfo.sub,
+            productId,
+            quantity,
+            specialRequests: specialRequests || '',
             status: 'pending',
-            notes: notes || '',
-            createdAt: timestamp,
-            updatedAt: timestamp,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         };
 
-        await dynamodb.send(new PutCommand({
+        // Save the new order to DynamoDB
+        const params = {
             TableName: ORDERS_TABLE,
-            Item: order
-        }));
+            Item: newOrder
+        };
+        await dynamodb.send(new PutCommand(params));
 
-        return createResponse(201, {
-            success: true,
-            message: 'Order created successfully',
-            order
-        });
+        return createResponse(201, { success: true, order: newOrder });
     } catch (error) {
         console.error('Error creating order:', error);
         return createResponse(500, { success: false, message: 'Failed to create order' });
+    }
+}
+
+// Get all orders for the authenticated user
+async function handleGetOrders(dynamodb, userInfo) {
+    try {
+        // Query orders by user ID
+        const params = {
+            TableName: ORDERS_TABLE,
+            IndexName: 'UserIdIndex',
+            KeyConditionExpression: 'userId = :userId',
+            ExpressionAttributeValues: {
+                ':userId': userInfo.sub
+            }
+        };
+        const result = await dynamodb.send(new QueryCommand(params));
+
+        return createResponse(200, { success: true, orders: result.Items });
+    } catch (error) {
+        console.error('Error getting orders:', error);
+        return createResponse(500, { success: false, message: 'Failed to get orders' });
+    }
+}
+
+// Get a single order by ID
+async function handleGetOrder(dynamodb, userInfo, orderId) {
+    try {
+        // Retrieve the order by ID
+        const params = {
+            TableName: ORDERS_TABLE,
+            Key: { id: orderId }
+        };
+        const result = await dynamodb.send(new GetCommand(params));
+
+        if (!result.Item) {
+            return createResponse(404, { success: false, message: 'Order not found' });
+        }
+
+        return createResponse(200, { success: true, order: result.Item });
+    } catch (error) {
+        console.error('Error getting order:', error);
+        return createResponse(500, { success: false, message: 'Failed to get order' });
+    }
+}
+
+// Update an order by ID
+async function handleUpdateOrder(dynamodb, userInfo, orderId, updateData) {
+    try {
+        // Prepare update expression and attribute values
+        const updateExpression = 'SET ' +
+            Object.keys(updateData).map((key, index) => `${key} = :val${index}`).join(', ');
+        const expressionAttributeValues = Object.fromEntries(
+            Object.values(updateData).map((value, index) => [`:val${index}`, value])
+        );
+
+        // Update the order in DynamoDB
+        const params = {
+            TableName: ORDERS_TABLE,
+            Key: { id: orderId },
+            UpdateExpression: updateExpression,
+            ExpressionAttributeValues: expressionAttributeValues,
+            ReturnValues: 'ALL_NEW'
+        };
+        const result = await dynamodb.send(new UpdateCommand(params));
+
+        return createResponse(200, { success: true, order: result.Attributes });
+    } catch (error) {
+        console.error('Error updating order:', error);
+        return createResponse(500, { success: false, message: 'Failed to update order' });
+    }
+}
+
+// Delete an order by ID
+async function handleDeleteOrder(dynamodb, userInfo, orderId) {
+    try {
+        // Delete the order from DynamoDB
+        const params = {
+            TableName: ORDERS_TABLE,
+            Key: { id: orderId }
+        };
+        await dynamodb.send(new DeleteCommand(params));
+
+        return createResponse(204, { success: true, message: 'Order deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting order:', error);
+        return createResponse(500, { success: false, message: 'Failed to delete order' });
+    }
+}
+
+// Helper function to get user info from access token
+async function getUserInfoFromToken(cognito, accessToken) {
+    try {
+        const params = {
+            AccessToken: accessToken
+        };
+        const result = await cognito.send(new GetUserCommand(params));
+        return result;
+    } catch (error) {
+        console.error('Error getting user info from token:', error);
+        return null;
+    }
+}
+
+// Helper function to get business info for a user
+async function getBusinessInfoForUser(dynamodb, email) {
+    const params = {
+        TableName: process.env.BUSINESSES_TABLE,
+        IndexName: 'OwnerEmailIndex',
+        KeyConditionExpression: 'ownerEmail = :email',
+        ExpressionAttributeValues: {
+            ':email': email
+        }
+    };
+
+    try {
+        const result = await dynamodb.send(new QueryCommand(params));
+        if (result.Items && result.Items.length > 0) {
+            console.log('Business info found for user:', email);
+            return result.Items[0];
+        }
+        console.log('No business info found for user:', email);
+        return null;
+    } catch (error) {
+        console.error('Error getting business info for user:', error);
+        throw new Error('Failed to retrieve business information.');
+    }
+}
+
+// Initialize categories for a new business type
+async function initializeCategoriesForBusinessType(dynamodb, businessType) {
+    try {
+        const categories = BUSINESS_TYPE_CATEGORIES[businessType];
+        if (!categories) {
+            throw new Error('Invalid business type');
+        }
+
+        const writeRequests = categories.map(category => ({
+            PutRequest: {
+                Item: {
+                    id: uuidv4(),
+                    businessType: businessType.toLowerCase(),
+                    name: category.name,
+                    name_ar: category.name_ar,
+                    description: category.description,
+                    createdAt: new Date().toISOString()
+                }
+            }
+        }));
+
+        const params = {
+            RequestItems: {
+                [CATEGORIES_TABLE]: writeRequests
+            }
+        };
+
+        await dynamodb.send(new BatchWriteItemCommand(params));
+
+        // Return the newly created category items
+        return writeRequests.map(req => req.PutRequest.Item);
+    } catch (error) {
+        console.error('Error initializing categories:', error);
+        throw new Error('Failed to initialize categories');
     }
 }

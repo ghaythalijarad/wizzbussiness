@@ -25,4 +25,15 @@ class Offer {
       validTo: DateTime.tryParse(json['validTo'] ?? json['valid_to'] ?? '') ?? DateTime.now().add(Duration(days: 30)),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'imageUrl': imageUrl,
+      'validFrom': validFrom.toIso8601String(),
+      'validTo': validTo.toIso8601String(),
+    };
+  }
 }

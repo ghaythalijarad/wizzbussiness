@@ -1,30 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
-import '../services/language_service.dart';
+import '../providers/locale_provider.dart';
 
-class LanguageSwitcher extends StatelessWidget {
-  final Function(Locale)? onLanguageChanged;
+class LanguageSwitcher extends ConsumerWidget {
   final bool showAsIcon;
   final bool showCurrentLanguage;
 
   const LanguageSwitcher({
     super.key,
-    this.onLanguageChanged,
     this.showAsIcon = true,
     this.showCurrentLanguage = false,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (showAsIcon) {
       return IconButton(
-        onPressed: () => _showLanguageDialog(context),
+        onPressed: () => _showLanguageDialog(context, ref),
         icon: const Icon(Icons.language),
         tooltip: AppLocalizations.of(context)?.language ?? 'Language',
       );
     } else {
       return TextButton.icon(
-        onPressed: () => _showLanguageDialog(context),
+        onPressed: () => _showLanguageDialog(context, ref),
         icon: const Icon(Icons.language, color: Color(0xFF00C1E8), size: 20),
         label: Text(
           showCurrentLanguage
@@ -48,7 +47,7 @@ class LanguageSwitcher extends StatelessWidget {
     }
   }
 
-  void _showLanguageDialog(BuildContext context) {
+  void _showLanguageDialog(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
@@ -73,6 +72,7 @@ class LanguageSwitcher extends StatelessWidget {
             children: [
               _buildLanguageTile(
                 context: context,
+                ref: ref,
                 flag: '🇺🇸',
                 name: loc.english,
                 locale: const Locale('en'),
@@ -80,6 +80,7 @@ class LanguageSwitcher extends StatelessWidget {
               const Divider(height: 1),
               _buildLanguageTile(
                 context: context,
+                ref: ref,
                 flag: '🇸🇦',
                 name: loc.arabic,
                 locale: const Locale('ar'),
@@ -102,43 +103,32 @@ class LanguageSwitcher extends StatelessWidget {
 
   Widget _buildLanguageTile({
     required BuildContext context,
+    required WidgetRef ref,
     required String flag,
     required String name,
     required Locale locale,
   }) {
-    final currentLocale = Localizations.localeOf(context);
-    final isSelected = currentLocale.languageCode == locale.languageCode;
-
     return ListTile(
       leading: Text(flag, style: const TextStyle(fontSize: 24)),
       title: Text(name),
-      trailing:
-          isSelected ? const Icon(Icons.check, color: Colors.green) : null,
       onTap: () {
-        if (onLanguageChanged != null) {
-          onLanguageChanged!(locale);
-        }
+        ref.read(localeProvider.notifier).setLocale(locale);
         Navigator.of(context).pop();
       },
     );
   }
 }
 
-class LanguageDropdown extends StatefulWidget {
-  final Function(Locale)? onLanguageChanged;
-
+class LanguageDropdown extends ConsumerStatefulWidget {
   const LanguageDropdown({
     super.key,
-    this.onLanguageChanged,
   });
 
   @override
-  State<LanguageDropdown> createState() => _LanguageDropdownState();
+  ConsumerState<LanguageDropdown> createState() => _LanguageDropdownState();
 }
 
-class _LanguageDropdownState extends State<LanguageDropdown> {
-  String _selectedLanguage = 'ar'; // Default to Arabic
-
+class _LanguageDropdownState extends ConsumerState<LanguageDropdown> {
   @override
   void initState() {
     super.initState();
@@ -146,63 +136,31 @@ class _LanguageDropdownState extends State<LanguageDropdown> {
   }
 
   Future<void> _loadCurrentLanguage() async {
-    final languageCode = await LanguageService.getLanguage();
-    setState(() {
-      _selectedLanguage = languageCode;
-    });
+    // Current language is now managed by the provider
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      child: DropdownButton<String>(
-        value: _selectedLanguage,
-        icon: const Icon(Icons.language),
-        hint: Text(AppLocalizations.of(context)?.language ?? 'Language'),
-        underline: const SizedBox(), // Remove underline
-        items: LanguageService.getAvailableLanguages().map((language) {
-          return DropdownMenuItem<String>(
-            value: language['code'],
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(_getFlagForLanguage(language['code']!),
-                    style: const TextStyle(fontSize: 16)),
-                const SizedBox(width: 8),
-                Text(language['nativeName']!,
-                    style: const TextStyle(fontSize: 14)),
-              ],
-            ),
-          );
-        }).toList(),
-        onChanged: (String? newValue) {
-          if (newValue != null) {
-            setState(() {
-              _selectedLanguage = newValue;
-            });
+    final locale = ref.watch(localeProvider);
 
-            final locale = LanguageService.getLocaleFromLanguageCode(newValue);
-            if (widget.onLanguageChanged != null) {
-              widget.onLanguageChanged!(locale);
-            }
-          }
-        },
-      ),
+    return DropdownButton<String>(
+      value: locale.languageCode,
+      onChanged: (String? newValue) {
+        if (newValue != null) {
+          ref.read(localeProvider.notifier).setLocale(Locale(newValue));
+        }
+      },
+      items: const [
+        DropdownMenuItem(
+          value: 'en',
+          child: Text('English'),
+        ),
+        DropdownMenuItem(
+          value: 'ar',
+          child: Text('العربية'),
+        ),
+      ],
     );
   }
 
-  String _getFlagForLanguage(String languageCode) {
-    switch (languageCode) {
-      case 'ar':
-        return '🇸🇦';
-      case 'en':
-      default:
-        return '🇺🇸';
-    }
-  }
 }

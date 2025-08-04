@@ -2685,6 +2685,18 @@ abstract class AppLocalizations {
   /// **'Simulate New Order'**
   String get simulateNewOrder;
 
+  /// No description provided for @newOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'New Order'**
+  String get newOrder;
+
+  /// No description provided for @viewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View Details'**
+  String get viewDetails;
+
   /// No description provided for @notificationsTitle.
   ///
   /// In en, this message translates to:

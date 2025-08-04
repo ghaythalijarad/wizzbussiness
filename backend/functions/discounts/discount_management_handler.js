@@ -39,13 +39,17 @@ exports.handler = async (event) => {
         const accessToken = authHeader.replace('Bearer ', '');
 
         // Verify the access token and get user info
+        console.log('Getting user info from token...');
         const userInfo = await getUserInfoFromToken(cognito, accessToken);
+        console.log('User info:', JSON.stringify(userInfo, null, 2));
         if (!userInfo) {
             return createResponse(401, { success: false, message: 'Invalid access token' });
         }
 
         // Get business info for user
+        console.log('Getting business info for user...');
         const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
+        console.log('Business info:', JSON.stringify(businessInfo, null, 2));
         if (!businessInfo) {
             return createResponse(404, { success: false, message: 'Business not found for user' });
         }
@@ -98,21 +102,25 @@ async function getUserInfoFromToken(cognito, accessToken) {
 
 // Helper function to get business info for user
 async function getBusinessInfoForUser(dynamodb, email) {
-    try {
-        const params = {
-            TableName: process.env.BUSINESSES_TABLE || 'OrderReceiver-Businesses',
-            IndexName: 'email-index',
-            KeyConditionExpression: 'email = :email',
-            ExpressionAttributeValues: {
-                ':email': email
-            }
-        };
+    // THIS IS INEFFICIENT and should be replaced with a direct query in a real app.
+    const params = {
+        TableName: process.env.BUSINESSES_TABLE,
+        IndexName: 'OwnerEmailIndex',
+        KeyConditionExpression: 'ownerEmail = :email',
+        ExpressionAttributeValues: {
+            ':email': email
+        }
+    };
 
+    try {
         const result = await dynamodb.send(new QueryCommand(params));
-        return result.Items?.[0] || null;
-    } catch (error) {
-        console.error('Error getting business info:', error);
+        if (result.Items && result.Items.length > 0) {
+            return result.Items[0];
+        }
         return null;
+    } catch (error) {
+        console.error('Error getting business info for user:', error);
+        throw new Error('Failed to retrieve business information.');
     }
 }
 

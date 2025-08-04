@@ -74,10 +74,10 @@ class AppConfig {
     return Platform.isAndroid ? _defaultAndroidUrl : _defaultLocalUrl;
   }
 
-  // WebSocket URL - Updated with correct endpoint from backend deployment
+  // WebSocket URL - Updated with new deployed endpoint
   static String get webSocketUrl {
-    // Use the deployed WebSocket API Gateway endpoint
-    return 'wss://ujyixy3uh5.execute-api.us-east-1.amazonaws.com/dev';
+    // Use the newly deployed WebSocket API Gateway endpoint
+    return 'wss://8yn5wr533l.execute-api.us-east-1.amazonaws.com/dev';
   }
 
   // Environment type

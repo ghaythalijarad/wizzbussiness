@@ -1358,6 +1358,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get simulateNewOrder => 'Simulate New Order';
 
   @override
+  String get newOrder => 'طلب جديد';
+
+  @override
+  String get viewDetails => 'عرض التفاصيل';
+
+  @override
   String get notificationsTitle => 'Notifications';
 
   @override

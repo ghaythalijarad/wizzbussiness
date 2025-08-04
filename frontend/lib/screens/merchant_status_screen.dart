@@ -62,8 +62,7 @@ class MerchantStatusScreen extends StatelessWidget {
               await AppAuthService.signOut();
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
-                    builder: (context) =>
-                        LoginPage(onLanguageChanged: (locale) {})),
+                    builder: (context) => const LoginPage()),
                 (Route<dynamic> route) => false,
               );
             },

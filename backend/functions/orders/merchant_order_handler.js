@@ -33,7 +33,7 @@ exports.handler = async (event) => {
             return createResponse(400, { success: false, message: 'Invalid Base64 request body' });
         }
     }
-    
+
     console.log('🔍 Final request body:', requestBody);
 
     try {
@@ -65,11 +65,11 @@ exports.handler = async (event) => {
         if (httpMethod === 'POST' && path.includes('/webhooks/orders')) {
             // Receive orders from Central Platform
             console.log('🔍 Webhook body before parsing:', requestBody);
-            
+
             if (!requestBody || requestBody.trim() === '') {
                 return createResponse(400, { success: false, message: 'Empty request body' });
             }
-            
+
             let orderData;
             try {
                 orderData = JSON.parse(requestBody);
@@ -78,7 +78,7 @@ exports.handler = async (event) => {
                 console.error('Body that failed to parse:', requestBody);
                 return createResponse(400, { success: false, message: 'Invalid JSON in request body' });
             }
-            
+
             return await handleIncomingOrder(orderData);
         }
 
@@ -379,18 +379,17 @@ async function publishOrderStatusUpdate(order, eventType) {
             orderData: order
         };
 
-        // TODO: Replace with EventBridge when implemented
-        console.log('📤 Publishing order status update:', message);
+        console.log('📤 Publishing order status update to SNS:', message);
 
         // For now, just log. Later implement SNS/EventBridge:
-        // await sns.publish({
-        //     TopicArn: process.env.ORDER_EVENTS_TOPIC_ARN,
-        //     Message: JSON.stringify(message),
-        //     MessageAttributes: {
-        //         eventType: { DataType: 'String', StringValue: eventType },
-        //         orderId: { DataType: 'String', StringValue: order.orderId }
-        //     }
-        // }).promise();
+        await sns.send(new PublishCommand({
+            TopicArn: process.env.ORDER_EVENTS_TOPIC_ARN,
+            Message: JSON.stringify(message),
+            MessageAttributes: {
+                eventType: { DataType: 'String', StringValue: eventType },
+                orderId: { DataType: 'String', StringValue: order.orderId }
+            }
+        }));
 
     } catch (error) {
         console.error('Error publishing order status update:', error);
@@ -440,7 +439,7 @@ async function notifyMerchant(businessId, notification) {
         console.log('🔍 Scanning for merchant endpoints:', params);
         const result = await dynamodb.send(new ScanCommand(params));
         const endpoints = result.Items;
-        
+
         console.log('🔍 Found endpoints for merchant:', businessId, 'Count:', endpoints.length);
 
         // Send notifications to all active endpoints

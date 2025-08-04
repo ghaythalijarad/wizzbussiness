@@ -1,12 +1,21 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../config/app_config.dart';
-import 'cognito_auth_service.dart';
-import 'api_service.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 
+import './cognito_auth_service.dart';
+import '../providers/session_provider.dart';
+import '../providers/business_provider.dart';
+import '../config/app_config.dart';
+import './api_service.dart';
+
 class AppAuthService {
   static bool _isInitialized = false;
+  static ProviderContainer? _container;
+
+  static void setProviderContainer(ProviderContainer container) {
+    _container = container;
+  }
 
   static Future<void> initialize() async {
     if (_isInitialized) return;
@@ -115,14 +124,16 @@ class AppAuthService {
         final existingSession = await Amplify.Auth.fetchAuthSession();
         if ((existingSession as CognitoAuthSession).isSignedIn) {
           print('🔄 User already signed in, signing out first...');
-          await Amplify.Auth.signOut();
+          await signOut(); // Use our own signOut to ensure local tokens are cleared
           print('✅ Previous user signed out successfully');
           // Add a small delay to ensure cleanup is complete
           await Future.delayed(Duration(milliseconds: 500));
         }
       } catch (e) {
         print('⚠️ Error checking/clearing previous session: $e');
-        // Continue with sign-in attempt
+        // If there's an error, it might be because the session is broken.
+        // Let's try to clear our stored tokens just in case.
+        await _clearStoredTokens();
       }
 
       // Use our backend API for sign-in which returns both auth tokens and business data
@@ -142,6 +153,13 @@ class AppAuthService {
             'idToken': authData['IdToken'],
             'refreshToken': authData['RefreshToken'],
           });
+        }
+
+        // Update session provider
+        if (apiResponse['businesses'] != null &&
+            apiResponse['businesses'].isNotEmpty) {
+          final businessId = apiResponse['businesses'][0]['businessId'];
+          _container?.read(sessionProvider.notifier).setSession(businessId);
         }
 
         // Return the user and business data from our backend
@@ -175,10 +193,12 @@ class AppAuthService {
 
   static Future<void> signOut() async {
     try {
+      await _clearStoredTokens();
+      _container?.read(sessionProvider.notifier).clearSession();
+      _container?.invalidate(businessProvider);
       await CognitoAuthService.signOut();
-      await _clearStoredTokens();
     } catch (e) {
-      await _clearStoredTokens();
+      print('Error during sign out: $e');
     }
   }
 
@@ -219,39 +239,63 @@ class AppAuthService {
         // If we have an access token, try to get user info
         final apiService = ApiService();
         print('🔍 Calling getUserBusinesses...');
-        final businessList = await apiService.getUserBusinesses();
+        
+        try {
+          final businessList = await apiService.getUserBusinesses();
+          print('🔍 Got ${businessList.length} businesses');
 
-        print('🔍 Got ${businessList.length} businesses');
+          if (businessList.isNotEmpty) {
+            final business = businessList.first;
+            print('🔍 Business data: ${business.keys.toList()}');
 
-        if (businessList.isNotEmpty) {
-          final business = businessList.first;
-          print('🔍 Business data: ${business.keys.toList()}');
+            // Update session provider
+            final businessId = business['businessId'];
+            if (businessId != null) {
+              _container?.read(sessionProvider.notifier).setSession(businessId);
+            }
 
-          final userResult = {
-            'success': true,
-            'email': business['email'],
-            'userId': business['ownerId'] ?? business['cognitoUserId'],
-            'sub': business['cognitoUserId'],
-            'email_verified': true,
-          };
+            final userResult = {
+              'success': true,
+              'email': business['email'],
+              'userId': business['ownerId'] ?? business['cognitoUserId'],
+              'sub': business['cognitoUserId'],
+              'email_verified': true,
+            };
 
-          print('✅ Returning user data: $userResult');
-          return userResult;
-        } else {
-          print('❌ No businesses found for user');
+            print('✅ Returning user data: $userResult');
+            return userResult;
+          } else {
+            print('❌ No businesses found for user');
+          }
+        } catch (apiError) {
+          print('⚠️ API call failed, but token exists: $apiError');
+          
+          // If API call fails but we have a valid token, it might be a temporary issue
+          // Don't clear the session immediately, just return a basic user object
+          if (apiError.toString().contains('401') || 
+              apiError.toString().contains('Invalid or expired access token')) {
+            print('🧹 Token is actually expired, clearing session');
+            await _clearStoredTokens();
+            _container?.read(sessionProvider.notifier).clearSession();
+          } else {
+            print('🔄 Assuming temporary API issue, keeping session active');
+            // Return a minimal user object to keep the session active
+            return {
+              'success': true,
+              'email': 'unknown@temp.com',
+              'userId': 'temp-user-id',
+              'sub': 'temp-sub',
+              'email_verified': true,
+              'temporary': true, // Flag to indicate this is a fallback
+            };
+          }
         }
       } else {
         print('❌ No access token found');
       }
     } catch (e) {
       print('⚠️ Error getting user from backend: $e');
-
-      // If we get a 401 error, the token is likely expired - clear it
-      if (e.toString().contains('401') ||
-          e.toString().contains('Invalid or expired access token')) {
-        print('🧹 Clearing expired tokens');
-        await _clearStoredTokens();
-      }
+      // For general errors, don't clear the session immediately as it might be a temporary issue
     }
 
     print('❌ getCurrentUser returning null');
@@ -294,6 +338,7 @@ class AppAuthService {
       await prefs.remove('access_token');
       await prefs.remove('id_token');
       await prefs.remove('refresh_token');
+      _container?.read(sessionProvider.notifier).clearSession();
     } catch (e) {
       // Handle error silently
     }
@@ -348,6 +393,11 @@ class AppAuthService {
         if (result['verified'] == true &&
             result['user'] != null &&
             result['businesses'] != null) {
+          // Update session provider
+          if (result['businesses']?.isNotEmpty == true) {
+            final businessId = result['businesses'][0]['businessId'];
+            _container?.read(sessionProvider.notifier).setSession(businessId);
+          }
           return ConfirmResult(
             success: true,
             message: result['message'] ?? 'Registration confirmed successfully',
@@ -359,6 +409,18 @@ class AppAuthService {
         } else {
           // Old flow - store authentication tokens if provided
           await _storeAuthTokens(result);
+          // Try to get businessId and update session
+          if (result['user'] != null) {
+            try {
+              final businesses = await ApiService().getUserBusinesses();
+              if (businesses.isNotEmpty) {
+                final businessId = businesses.first['businessId'];
+                _container
+                    ?.read(sessionProvider.notifier)
+                    .setSession(businessId);
+              }
+            } catch (_) {}
+          }
           return ConfirmResult(
             success: true,
             message: result['message'] ?? 'Registration confirmed successfully',
@@ -406,46 +468,37 @@ class AppAuthService {
     }
   }
 
-  /// Check if user is signed in, using Cognito if configured, otherwise falling back to shared preferences or legacy token
+  /// Check if user is signed in, using backend tokens primarily
   static Future<bool> isSignedIn() async {
     await initialize();
 
-    // First check Cognito session if configured
-    if (AppConfig.isCognitoConfigured) {
-      try {
-        final session = await Amplify.Auth.fetchAuthSession();
-        if ((session as CognitoAuthSession).isSignedIn) {
-          return true;
-        }
-      } catch (e) {
-        print('⚠️ Cognito session check failed: $e');
-      }
-    }
-
-    // Fallback to checking stored tokens from backend authentication
+    // Check stored tokens from backend authentication first (our primary auth method)
     try {
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('access_token');
 
       if (accessToken != null && accessToken.isNotEmpty) {
-        print('✅ Found stored access token, validating...');
-
-        // Validate token by trying to get user info
-        try {
-          final apiService = ApiService();
-          final userBusinesses = await apiService.getUserBusinesses();
-          if (userBusinesses.isNotEmpty) {
-            print('✅ Token is valid, user is signed in');
-            return true;
-          }
-        } catch (e) {
-          print('❌ Stored token is invalid/expired, clearing session');
-          await _clearStoredTokens();
-          return false;
-        }
+        print('✅ Found stored access token: ${accessToken.length} chars');
+        
+        // For backend authentication, we trust the stored token if it exists
+        // The token validation happens in getCurrentUser() when needed
+        return true;
       }
     } catch (e) {
       print('⚠️ Error checking stored tokens: $e');
+    }
+
+    // Fallback to Cognito session if configured and no backend token found
+    if (AppConfig.isCognitoConfigured) {
+      try {
+        final session = await Amplify.Auth.fetchAuthSession();
+        if ((session as CognitoAuthSession).isSignedIn) {
+          print('✅ Cognito session is active');
+          return true;
+        }
+      } catch (e) {
+        print('⚠️ Cognito session check failed: $e');
+      }
     }
 
     print('❌ No valid authentication found');

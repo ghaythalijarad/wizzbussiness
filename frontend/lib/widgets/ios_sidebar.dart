@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hadhir_business/l10n/app_localizations.dart';
-import '../services/language_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../l10n/app_localizations.dart';
+import '../providers/locale_provider.dart';
 import '../services/app_state.dart';
 import '../utils/responsive_helper.dart';
 
-class IOSSidebar extends StatefulWidget {
+class IOSSidebar extends ConsumerStatefulWidget {
   final bool isOnline;
   final Function(bool) onToggleStatus;
   final VoidCallback onReturnOrder;
   final Function(int) onNavigate;
   final VoidCallback onClose;
-  final Function(Locale)? onLanguageChanged;
 
   const IOSSidebar({
     super.key,
@@ -20,14 +20,13 @@ class IOSSidebar extends StatefulWidget {
     required this.onReturnOrder,
     required this.onNavigate,
     required this.onClose,
-    this.onLanguageChanged,
   });
 
   @override
-  State<IOSSidebar> createState() => _IOSSidebarState();
+  ConsumerState<IOSSidebar> createState() => _IOSSidebarState();
 }
 
-class _IOSSidebarState extends State<IOSSidebar> {
+class _IOSSidebarState extends ConsumerState<IOSSidebar> {
   final AppState _appState = AppState();
 
   @override
@@ -617,11 +616,8 @@ class _IOSSidebarState extends State<IOSSidebar> {
             )
           : null,
       onTap: () async {
-        if (widget.onLanguageChanged != null) {
-          widget.onLanguageChanged!(locale);
-        }
-
-        await LanguageService.setLanguage(locale.languageCode);
+        final provider = ref.read(localeProvider.notifier);
+        await provider.setLocale(locale);
 
         if (context.mounted) {
           Navigator.of(context).pop();

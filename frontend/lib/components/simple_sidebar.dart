@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/locale_provider.dart';
 import '../services/language_service.dart';
 
-class SimpleSidebar extends StatefulWidget {
+class SimpleSidebar extends ConsumerStatefulWidget {
   final bool isOnline;
   final Function(bool) onToggleStatus;
   final VoidCallback onReturnOrder;
   final Function(int) onNavigate;
   final VoidCallback onClose;
-  final Function(Locale)? onLanguageChanged;
 
   const SimpleSidebar({
     super.key,
@@ -17,14 +18,13 @@ class SimpleSidebar extends StatefulWidget {
     required this.onReturnOrder,
     required this.onNavigate,
     required this.onClose,
-    this.onLanguageChanged,
   });
 
   @override
-  State<SimpleSidebar> createState() => _SimpleSidebarState();
+  ConsumerState<SimpleSidebar> createState() => _SimpleSidebarState();
 }
 
-class _SimpleSidebarState extends State<SimpleSidebar> {
+class _SimpleSidebarState extends ConsumerState<SimpleSidebar> {
   late bool _isOnline;
 
   @override
@@ -375,9 +375,8 @@ class _SimpleSidebarState extends State<SimpleSidebar> {
       trailing:
           isSelected ? const Icon(Icons.check, color: Colors.green) : null,
       onTap: () async {
-        if (widget.onLanguageChanged != null) {
-          widget.onLanguageChanged!(locale);
-        }
+        // Update the locale using the provider
+        ref.read(localeProvider.notifier).setLocale(locale);
 
         // Save the language preference
         await LanguageService.setLanguage(locale.languageCode);

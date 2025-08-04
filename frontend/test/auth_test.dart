@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../lib/services/app_auth_service.dart';
+import '../lib/config/app_config.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('Authentication Tests', () {
     setUp(() {
       // Set up shared preferences for testing

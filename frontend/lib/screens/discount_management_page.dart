@@ -228,6 +228,17 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         });
 
         print('DiscountManagementPage: Loaded ${categories.length} categories');
+        
+        // Show a message if using fallback categories
+        if (result['source'] == 'fallback' && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Using default categories'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
       } else {
         throw Exception(result['message'] ?? 'Failed to load categories');
       }
@@ -424,11 +435,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (context) => LoginPage(
-          onLanguageChanged: (Locale locale) {
-            // Handle language change if needed
-          },
-        ),
+        builder: (context) => const LoginPage(),
       ),
       (route) => false, // Remove all previous routes
     );

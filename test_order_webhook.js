@@ -22,7 +22,7 @@ const testOrder = {
             customizations: ["No onions", "Extra cheese"]
         },
         {
-            productId: "prod_002", 
+            productId: "prod_002",
             name: "French Fries",
             quantity: 1,
             price: 4.99
@@ -50,16 +50,16 @@ console.log('🧪 Testing order webhook with data:', JSON.stringify(testOrder, n
 
 const req = https.request(options, (res) => {
     let data = '';
-    
+
     res.on('data', (chunk) => {
         data += chunk;
     });
-    
+
     res.on('end', () => {
         console.log('\n📡 Response Status:', res.statusCode);
         console.log('📡 Response Headers:', res.headers);
         console.log('📡 Response Body:', data);
-        
+
         try {
             const responseJson = JSON.parse(data);
             if (responseJson.success) {

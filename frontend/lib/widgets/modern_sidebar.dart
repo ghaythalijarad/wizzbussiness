@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
+import '../providers/locale_provider.dart';
 import '../services/language_service.dart';
 
-class ModernSidebar extends StatefulWidget {
+class ModernSidebar extends ConsumerStatefulWidget {
   final bool isOnline;
   final Function(bool) onToggleStatus;
   final VoidCallback onReturnOrder;
   final Function(int) onNavigate;
   final VoidCallback onClose;
-  final Function(Locale)? onLanguageChanged;
 
   const ModernSidebar({
     super.key,
@@ -18,14 +19,13 @@ class ModernSidebar extends StatefulWidget {
     required this.onReturnOrder,
     required this.onNavigate,
     required this.onClose,
-    this.onLanguageChanged,
   });
 
   @override
-  State<ModernSidebar> createState() => _ModernSidebarState();
+  ConsumerState<ModernSidebar> createState() => _ModernSidebarState();
 }
 
-class _ModernSidebarState extends State<ModernSidebar>
+class _ModernSidebarState extends ConsumerState<ModernSidebar>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late AnimationController _rippleController;
@@ -431,9 +431,8 @@ class _ModernSidebarState extends State<ModernSidebar>
             )
           : null,
       onTap: () async {
-        if (widget.onLanguageChanged != null) {
-          widget.onLanguageChanged!(locale);
-        }
+        // Update the locale using the provider
+        ref.read(localeProvider.notifier).setLocale(locale);
 
         // Save the language preference
         await LanguageService.setLanguage(locale.languageCode);

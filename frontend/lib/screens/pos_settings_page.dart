@@ -131,11 +131,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
   void _navigateToLogin() {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
-        builder: (context) => LoginPage(
-          onLanguageChanged: (locale) {
-            // Handle language change if needed
-          },
-        ),
+        builder: (context) => const LoginPage(),
       ),
       (route) => false,
     );

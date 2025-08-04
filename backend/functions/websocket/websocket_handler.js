@@ -1,5 +1,5 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, QueryCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, PutCommand, ScanCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
 const { ApiGatewayManagementApiClient, PostToConnectionCommand } = require('@aws-sdk/client-apigatewaymanagementapi');
 
 const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
@@ -74,17 +74,17 @@ async function handleDisconnect(event) {
             }
         };
 
-        const result = await dynamodb.scan(params).promise();
+        const result = await dynamodb.send(new ScanCommand(params));
 
         if (result.Items.length > 0) {
             const item = result.Items[0];
-            await dynamodb.delete({
+            await dynamodb.send(new DeleteCommand({
                 TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
                 Key: {
                     merchantId: item.merchantId,
                     endpointType: 'websocket'
                 }
-            }).promise();
+            }));
         }
 
         console.log(`🔌 WebSocket disconnected: ${connectionId}`);
@@ -102,10 +102,10 @@ async function handleDisconnect(event) {
  */
 async function sendMessageToConnection(connectionId, message) {
     try {
-        await apiGatewayManagementApi.postToConnection({
+        await apiGatewayManagementApi.send(new PostToConnectionCommand({
             ConnectionId: connectionId,
-            Data: JSON.stringify(message)
-        }).promise();
+            Data: Buffer.from(JSON.stringify(message)),
+        }));
 
         console.log(`🔌 Message sent to connection ${connectionId}`);
 
@@ -136,7 +136,7 @@ async function sendMessageToMerchant(merchantId, message) {
             }
         };
 
-        const result = await dynamodb.scan(params).promise();
+        const result = await dynamodb.send(new ScanCommand(params));
         const connections = result.Items;
 
         // Send message to all connections
@@ -187,18 +187,20 @@ async function removeStaleConnection(connectionId) {
             }
         };
 
-        const result = await dynamodb.scan(params).promise();
+        const result = await dynamodb.send(new ScanCommand(params));
 
         if (result.Items.length > 0) {
             const item = result.Items[0];
-            await dynamodb.delete({
+            await dynamodb.send(new DeleteCommand({
                 TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
                 Key: {
                     merchantId: item.merchantId,
                     endpointType: 'websocket'
                 }
-            }).promise();
+            }));
         }
+
+        console.log(`🔌 Removed stale connection for: ${connectionId}`);
 
     } catch (error) {
         console.error('Error removing stale connection:', error);

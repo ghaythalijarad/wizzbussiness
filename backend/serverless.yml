@@ -399,6 +399,24 @@ functions:
           path: /businesses/nearby/online
           method: get
           cors: true
+
+  demandForecasting:
+    handler: functions/analytics/demand_forecasting_handler.handler
+    name: order-receiver-${self:provider.stage}-demand-forecasting-v1-sls
+    events:
+      # AI/ML Demand Forecasting endpoints
+      - http:
+          path: /analytics/demand-forecast/{businessId}
+          method: get
+          cors: true
+      - http:
+          path: /analytics/peak-hours/{businessId}
+          method: get
+          cors: true
+      - http:
+          path: /analytics/seasonal-trends/{businessId}
+          method: get
+          cors: true
       - http:
           path: /businesses/{businessId}/heartbeat
           method: put

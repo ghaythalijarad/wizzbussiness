@@ -18,7 +18,7 @@ async function getBusinessStatus(businessId) {
     const params = {
         TableName: tableName,
         Key: marshall({
-            id: businessId,
+            businessId: businessId,
         }),
     };
 

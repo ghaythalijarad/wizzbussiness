@@ -17,7 +17,7 @@ const sns = new SNSClient({ region: process.env.AWS_REGION || 'us-east-1' });
 
 /**
  * Check if business is accepting orders by checking the acceptingOrders field
- * This is the primary source of truth for order acceptance (customer app integration)
+ * This is the primary and only source of truth for order acceptance
  */
 async function isBusinessOnline(businessId) {
     try {

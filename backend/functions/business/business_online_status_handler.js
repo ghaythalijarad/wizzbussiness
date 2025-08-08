@@ -1,5 +1,5 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, QueryCommand, PutCommand, UpdateCommand, DeleteCommand, BatchWriteCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, QueryCommand, UpdateCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
 
 const dynamoClient = new DynamoDBClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
 const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
@@ -11,16 +11,16 @@ const corsHeaders = {
 };
 
 /**
- * Get business online status by checking WebSocket connections and acceptingOrders field
+ * Get business online status by checking real WebSocket connections and acceptingOrders field
  */
 const getBusinessOnlineStatus = async (businessId) => {
     try {
-        // 1. Check WebSocket connections for real-time status
+        // 1. Check for real WebSocket connections (not virtual ones)
         const connectionParams = {
             TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
             IndexName: 'GSI1',
             KeyConditionExpression: 'GSI1PK = :businessPK',
-            FilterExpression: 'entityType = :merchantType',
+            FilterExpression: 'entityType = :merchantType AND attribute_not_exists(isVirtualConnection)',
             ExpressionAttributeValues: {
                 ':businessPK': `BUSINESS#${businessId}`,
                 ':merchantType': 'merchant'
@@ -29,15 +29,15 @@ const getBusinessOnlineStatus = async (businessId) => {
 
         const connectionResult = await dynamodb.send(new QueryCommand(connectionParams));
 
-        // Check if any connections are still valid (not expired)
+        // Check if any real connections are still valid (not expired)
         const currentTime = Math.floor(Date.now() / 1000);
-        const activeConnections = connectionResult.Items?.filter(item =>
-            item.ttl && item.ttl > currentTime
+        const activeRealConnections = connectionResult.Items?.filter(item =>
+            item.ttl && item.ttl > currentTime && !item.isVirtualConnection
         ) || [];
 
-        const hasActiveConnections = activeConnections.length > 0;
+        const hasActiveRealConnections = activeRealConnections.length > 0;
 
-        // 2. Check acceptingOrders field in businesses table (primary source of truth for customer apps)
+        // 2. Check acceptingOrders field in businesses table (primary source of truth)
         const businessParams = {
             TableName: process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev',
             Key: {
@@ -51,16 +51,16 @@ const getBusinessOnlineStatus = async (businessId) => {
 
         const acceptingOrders = business?.acceptingOrders ?? false;
 
-        console.log(`Business ${businessId} status: hasActiveConnections=${hasActiveConnections}, acceptingOrders=${acceptingOrders}`);
+        console.log(`Business ${businessId} status: hasActiveRealConnections=${hasActiveRealConnections}, acceptingOrders=${acceptingOrders}`);
 
         return {
-            isOnline: hasActiveConnections,
+            isOnline: hasActiveRealConnections,
             acceptingOrders: acceptingOrders,
-            activeConnections: activeConnections.length,
-            lastConnected: activeConnections.length > 0 ?
-                activeConnections[0].connectedAt : null,
+            activeConnections: activeRealConnections.length,
+            lastConnected: activeRealConnections.length > 0 ?
+                activeRealConnections[0].connectedAt : null,
             lastStatusUpdate: business?.lastStatusUpdate || null,
-            connections: activeConnections.map(conn => ({
+            connections: activeRealConnections.map(conn => ({
                 connectionId: conn.connectionId,
                 connectedAt: conn.connectedAt,
                 userId: conn.userId
@@ -130,24 +130,14 @@ const updateBusinessHeartbeat = async (businessId, userId, connectionId) => {
 
 /**
  * Set business online/offline status
- * This creates or removes a virtual connection to control online status
- * and updates the acceptingOrders field in the businesses table
+ * Updates the acceptingOrders field in the businesses table (primary source of truth)
  */
 const setBusinessOnlineStatus = async (businessId, userId, isOnline) => {
     try {
         console.log('--- Inside setBusinessOnlineStatus ---');
         console.log('Arguments:', { businessId, userId, isOnline });
-        console.log('Environment Variables:', {
-            DYNAMODB_REGION: process.env.DYNAMODB_REGION,
-            BUSINESSES_TABLE: process.env.BUSINESSES_TABLE,
-            WEBSOCKET_CONNECTIONS_TABLE: process.env.WEBSOCKET_CONNECTIONS_TABLE,
-            MERCHANT_ENDPOINTS_TABLE: process.env.MERCHANT_ENDPOINTS_TABLE,
-        });
 
-        const virtualConnectionId = `VIRTUAL#${businessId}#${userId}`;
-        const currentTime = Math.floor(Date.now() / 1000);
-
-        // CRITICAL: Update acceptingOrders field in businesses table first
+        // Update acceptingOrders field in businesses table - this is the primary source of truth
         const businessUpdateParams = {
             TableName: process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev',
             Key: {
@@ -161,133 +151,16 @@ const setBusinessOnlineStatus = async (businessId, userId, isOnline) => {
         };
 
         console.log(`🔄 Updating business ${businessId} acceptingOrders field to ${isOnline}`);
-        console.log('Update params:', JSON.stringify(businessUpdateParams, null, 2));
         await dynamodb.send(new UpdateCommand(businessUpdateParams));
         console.log(`✅ Successfully updated acceptingOrders to ${isOnline} for business ${businessId}`);
 
-        if (isOnline) {
-            // Create a virtual connection to mark business as online
-            const ttl = currentTime + 86400; // 24 hours from now
-
-            const params = {
-                TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
-                Item: {
-                    PK: `CONNECTION#${virtualConnectionId}`,
-                    SK: `CONNECTION#${virtualConnectionId}`,
-                    connectionId: virtualConnectionId,
-                    GSI1PK: `BUSINESS#${businessId}`,
-                    GSI1SK: `USER#${userId}`,
-                    businessId: businessId,
-                    userId: userId,
-                    entityType: 'merchant',
-                    connectedAt: new Date().toISOString(),
-                    ttl: ttl,
-                    isVirtualConnection: true,
-                    statusSetAt: new Date().toISOString()
-                }
-            };
-
-            await dynamodb.send(new PutCommand(params));
-
-            // Also update the merchant endpoints table
-            const merchantParams = {
-                TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
-                Key: {
-                    merchantId: businessId,
-                    endpointType: 'virtual'
-                },
-                UpdateExpression: 'SET isOnline = :isOnline, lastUpdated = :timestamp, userId = :userId',
-                ExpressionAttributeValues: {
-                    ':isOnline': true,
-                    ':timestamp': new Date().toISOString(),
-                    ':userId': userId
-                }
-            };
-
-            await dynamodb.send(new UpdateCommand(merchantParams));
-
-            return {
-                businessId,
-                userId,
-                isOnline: true,
-                acceptingOrders: true,
-                connectionId: virtualConnectionId,
-                statusSetAt: new Date().toISOString(),
-                ttl
-            };
-        } else {
-            // GOING OFFLINE: Remove ALL connections for this business
-            console.log(`Setting business ${businessId} to OFFLINE. Removing all connections.`);
-
-            // 1. Find all connections for the business
-            const queryParams = {
-                TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
-                IndexName: 'GSI1',
-                KeyConditionExpression: 'GSI1PK = :businessPK',
-                ExpressionAttributeValues: {
-                    ':businessPK': `BUSINESS#${businessId}`
-                }
-            };
-            const connectionsResult = await dynamodb.send(new QueryCommand(queryParams));
-            const allConnections = connectionsResult.Items || [];
-
-            console.log(`Found ${allConnections.length} connections to remove.`);
-
-            if (allConnections.length > 0) {
-                // 2. Create delete requests for each connection
-                const deleteRequests = allConnections.map(conn => ({
-                    DeleteRequest: {
-                        Key: {
-                            PK: conn.PK,
-                            SK: conn.SK
-                        }
-                    }
-                }));
-
-                // 3. Batch delete all connections (in chunks of 25)
-                for (let i = 0; i < deleteRequests.length; i += 25) {
-                    const batch = deleteRequests.slice(i, i + 25);
-                    const batchParams = {
-                        RequestItems: {
-                            [process.env.WEBSOCKET_CONNECTIONS_TABLE]: batch
-                        }
-                    };
-                    await dynamodb.send(new BatchWriteCommand(batchParams));
-                }
-                console.log(`Successfully deleted ${allConnections.length} connections.`);
-            }
-
-
-            // Update the merchant endpoints table to reflect offline status
-            const merchantParams = {
-                TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
-                Key: {
-                    merchantId: businessId,
-                    endpointType: 'virtual'
-                },
-                UpdateExpression: 'SET isOnline = :isOnline, lastUpdated = :timestamp',
-                ExpressionAttributeValues: {
-                    ':isOnline': false,
-                    ':timestamp': new Date().toISOString()
-                }
-            };
-
-            try {
-                await dynamodb.send(new UpdateCommand(merchantParams));
-            } catch (error) {
-                // This might fail if the 'virtual' endpoint doesn't exist, which is okay.
-                // The primary source of truth is the websocket connections table.
-                console.log(`Could not update virtual endpoint for ${businessId}, which is acceptable.`);
-            }
-
-            return {
-                businessId,
-                userId,
-                isOnline: false,
-                acceptingOrders: false,
-                statusSetAt: new Date().toISOString()
-            };
-        }
+        return {
+            businessId,
+            userId,
+            isOnline: isOnline,
+            acceptingOrders: isOnline,
+            statusSetAt: new Date().toISOString()
+        };
     } catch (error) {
         console.error('Error setting business online status:', error);
         throw error;

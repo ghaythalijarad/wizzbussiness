@@ -6,7 +6,7 @@ import '../widgets/modern_sidebar.dart';
 class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool isOnline;
-  final Function(bool) onToggleStatus;
+  final Future<void> Function(bool) onToggleStatus;
   final VoidCallback onReturnOrder;
   final Function(int) onNavigate;
 

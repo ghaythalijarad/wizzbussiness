@@ -32,7 +32,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -44,24 +44,84 @@ class _AnalyticsPageState extends State<AnalyticsPage>
   String get businessName => widget.business.name;
 
   AnalyticsData _generateAnalyticsData(AppLocalizations loc) {
+    // Filter for delivered orders for revenue calculations
+    final deliveredOrders = widget.orders
+        .where((order) => order.status == OrderStatus.delivered)
+        .toList();
+
     // Calculate real analytics from orders
     double totalRevenue =
-        widget.orders.fold(0.0, (sum, o) => sum + o.totalAmount);
-    double dailyRevenue = widget.orders
+        deliveredOrders.fold(0.0, (sum, o) => sum + o.totalAmount);
+    double dailyRevenue = deliveredOrders
         .where((o) => o.createdAt
             .isAfter(DateTime.now().subtract(const Duration(days: 1))))
         .fold(0.0, (sum, o) => sum + o.totalAmount);
-    double weeklyRevenue = widget.orders
+    double weeklyRevenue = deliveredOrders
         .where((o) => o.createdAt
             .isAfter(DateTime.now().subtract(const Duration(days: 7))))
         .fold(0.0, (sum, o) => sum + o.totalAmount);
-    double monthlyRevenue = widget.orders
+    double monthlyRevenue = deliveredOrders
         .where((o) => o.createdAt
             .isAfter(DateTime.now().subtract(const Duration(days: 30))))
         .fold(0.0, (sum, o) => sum + o.totalAmount);
 
-    double averageOrderValue =
-        widget.orders.isEmpty ? 0.0 : totalRevenue / widget.orders.length;
+    double averageOrderValue = deliveredOrders.isEmpty
+        ? 0.0
+        : totalRevenue / deliveredOrders.length;
+
+    // Calculate item statistics from actual orders
+    Map<String, int> itemQuantities = {};
+    Map<String, double> itemRevenues = {};
+
+    for (final order in widget.orders) {
+      for (final item in order.items) {
+        final itemName = item.dishName;
+        itemQuantities[itemName] =
+            (itemQuantities[itemName] ?? 0) + item.quantity;
+        itemRevenues[itemName] =
+            (itemRevenues[itemName] ?? 0.0) + (item.price * item.quantity);
+      }
+    }
+
+    // Sort items by quantity sold (descending for top, ascending for least)
+    final sortedItems = itemQuantities.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    // Generate top selling items
+    final topSellingItems = sortedItems
+        .take(5)
+        .map((entry) => TopSellingItem(
+              itemName: entry.key,
+              soldQuantity: entry.value,
+              revenue: itemRevenues[entry.key] ?? 0.0,
+            ))
+        .toList();
+
+    // Generate least ordered items (reverse order, take bottom items)
+    final leastOrderedItems = sortedItems.reversed
+        .take(3)
+        .map((entry) => LeastOrderedItem(
+              itemName: entry.key,
+              soldQuantity: entry.value,
+              revenue: itemRevenues[entry.key] ?? 0.0,
+            ))
+        .toList();
+
+    // Use fallback data if no real order data
+    final fallbackTopSelling = [
+      TopSellingItem(itemName: loc.sampleItem, soldQuantity: 25, revenue: 750),
+      TopSellingItem(itemName: loc.specialDish, soldQuantity: 18, revenue: 540),
+      TopSellingItem(itemName: loc.popularItem, soldQuantity: 12, revenue: 360),
+    ];
+
+    final fallbackLeastOrdered = [
+      LeastOrderedItem(
+          itemName: "Seasonal Special", soldQuantity: 2, revenue: 40),
+      LeastOrderedItem(
+          itemName: "Premium Dessert", soldQuantity: 3, revenue: 75),
+      LeastOrderedItem(
+          itemName: "Specialty Drink", soldQuantity: 4, revenue: 60),
+    ];
 
     // Generate sample revenue chart data
     List<DailyRevenue> revenueChart = List.generate(7, (index) {
@@ -78,13 +138,33 @@ class _AnalyticsPageState extends State<AnalyticsPage>
       monthlyRevenue: monthlyRevenue,
       totalOrders: widget.orders.length,
       averageOrderValue: averageOrderValue,
-      topSellingItems: [
-        TopSellingItem(
-            itemName: loc.sampleItem, soldQuantity: 25, revenue: 750),
-        TopSellingItem(
-            itemName: loc.specialDish, soldQuantity: 18, revenue: 540),
-        TopSellingItem(
-            itemName: loc.popularItem, soldQuantity: 12, revenue: 360),
+      topSellingItems:
+          topSellingItems.isNotEmpty ? topSellingItems : fallbackTopSelling,
+      leastOrderedItems: leastOrderedItems.isNotEmpty
+          ? leastOrderedItems
+          : fallbackLeastOrdered,
+      recentReviews: [
+        ReviewData(
+          customerName: "Ahmed M.",
+          rating: 4.5,
+          comment: "Great food and fast delivery!",
+          createdAt: DateTime.now().subtract(Duration(hours: 2)),
+          orderId: "ORD-001",
+        ),
+        ReviewData(
+          customerName: "Sarah K.",
+          rating: 5.0,
+          comment: "Excellent service, highly recommended!",
+          createdAt: DateTime.now().subtract(Duration(hours: 6)),
+          orderId: "ORD-002",
+        ),
+        ReviewData(
+          customerName: "Mohammed A.",
+          rating: 4.0,
+          comment: "Good quality food, will order again.",
+          createdAt: DateTime.now().subtract(Duration(days: 1)),
+          orderId: "ORD-003",
+        ),
       ],
       ordersByStatus: {
         for (var status in OrderStatus.values)
@@ -95,6 +175,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
       customersServed: widget.orders.length,
       cancellationRate: 2.1,
       averagePreparationTime: 18.5,
+      averageRating: 4.3,
+      totalReviews: 156,
     );
   }
 
@@ -105,90 +187,59 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 120,
-              floating: false,
-              pinned: true,
-              elevation: 0,
-              flexibleSpace: FlexibleSpaceBar(
-                title: Text(
-                  loc.analytics,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+      body: Column(
+        children: [
+          // Time Range Selector
+          Container(
+            margin: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
                 ),
-                background: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        theme.primaryColor,
-                        theme.primaryColor.withValues(alpha: 0.8),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ];
-        },
-        body: Column(
-          children: [
-            // Time Range Selector
-            Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  _buildTimeRangeButton(loc.today, 0),
-                  _buildTimeRangeButton(loc.week, 1),
-                  _buildTimeRangeButton(loc.month, 2),
-                  _buildTimeRangeButton(loc.year, 3),
-                ],
-              ),
-            ),
-
-            // Tab Bar
-            TabBar(
-              controller: _tabController,
-              labelColor: theme.primaryColor,
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: theme.primaryColor,
-              indicatorWeight: 3,
-              tabs: [
-                Tab(text: loc.overview),
-                Tab(text: loc.revenue),
-                Tab(text: loc.performance),
               ],
             ),
-
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildOverviewTab(analytics, loc, theme),
-                  _buildRevenueTab(analytics, loc, theme),
-                  _buildPerformanceTab(analytics, loc, theme),
-                ],
-              ),
+            child: Row(
+              children: [
+                _buildTimeRangeButton(loc.today, 0),
+                _buildTimeRangeButton(loc.week, 1),
+                _buildTimeRangeButton(loc.month, 2),
+                _buildTimeRangeButton(loc.year, 3),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          // Tab Bar
+          TabBar(
+            controller: _tabController,
+            labelColor: theme.primaryColor,
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: theme.primaryColor,
+            indicatorWeight: 3,
+            tabs: [
+              Tab(text: loc.overview),
+              Tab(text: loc.revenue),
+              Tab(text: loc.performance),
+              Tab(text: loc.reviewsAndInsights),
+            ],
+          ),
+
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildOverviewTab(analytics, loc, theme),
+                _buildRevenueTab(analytics, loc, theme),
+                _buildPerformanceTab(analytics, loc, theme),
+                _buildReviewsTab(analytics, loc, theme),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -236,14 +287,14 @@ class _AnalyticsPageState extends State<AnalyticsPage>
             children: [
               _buildRevenueCard(
                 title: loc.totalRevenue,
-                value: "\$${analytics.totalRevenue.toStringAsFixed(2)}",
+                value: "${analytics.totalRevenue.toStringAsFixed(2)} IQD",
                 icon: Icons.monetization_on,
                 color: const Color(0xFF4CAF50),
                 growth: "+${analytics.growthRate}%",
               ),
               _buildRevenueCard(
                 title: loc.todaysRevenue,
-                value: "\$${analytics.dailyRevenue.toStringAsFixed(2)}",
+                value: "${analytics.dailyRevenue.toStringAsFixed(2)} IQD",
                 icon: Icons.today,
                 color: const Color(0xFF2196F3),
                 growth: "+8.2%",
@@ -257,7 +308,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
               ),
               _buildRevenueCard(
                 title: loc.avgOrderValue,
-                value: "\$${analytics.averageOrderValue.toStringAsFixed(2)}",
+                value: "${analytics.averageOrderValue.toStringAsFixed(2)} IQD",
                 icon: Icons.analytics,
                 color: const Color(0xFF9C27B0),
                 growth: "+5.8%",
@@ -274,6 +325,43 @@ class _AnalyticsPageState extends State<AnalyticsPage>
 
           // Top Selling Items
           _buildTopSellingItemsCard(analytics, loc),
+
+          const SizedBox(height: 24),
+
+          // Quick Insights Row
+          Row(
+            children: [
+              Expanded(
+                child: _buildQuickInsightCard(
+                  title: loc.bestPerformer,
+                  subtitle: analytics.topSellingItems.isNotEmpty
+                      ? analytics.topSellingItems.first.itemName
+                      : "N/A",
+                  value: analytics.topSellingItems.isNotEmpty
+                      ? loc.quickInsightSoldCount(
+                          analytics.topSellingItems.first.soldQuantity)
+                      : "0 sold",
+                  icon: Icons.trending_up,
+                  color: const Color(0xFF4CAF50),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildQuickInsightCard(
+                  title: loc.needsAttention,
+                  subtitle: analytics.leastOrderedItems.isNotEmpty
+                      ? analytics.leastOrderedItems.first.itemName
+                      : "N/A",
+                  value: analytics.leastOrderedItems.isNotEmpty
+                      ? loc.quickInsightSoldCount(
+                          analytics.leastOrderedItems.first.soldQuantity)
+                      : "0 sold",
+                  icon: Icons.trending_down,
+                  color: const Color(0xFFFF9800),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -334,7 +422,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                               reservedSize: 40,
                               getTitlesWidget: (value, meta) {
                                 return Text(
-                                  '\$${value.toInt()}',
+                                  '${value.toInt()} IQD',
                                   style: const TextStyle(fontSize: 12),
                                 );
                               },
@@ -423,6 +511,29 @@ class _AnalyticsPageState extends State<AnalyticsPage>
 
           // Order Status Distribution
           _buildOrderStatusChart(analytics, loc),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewsTab(
+      AnalyticsData analytics, AppLocalizations loc, ThemeData theme) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Customer Reviews & Ratings
+          _buildCustomerReviewsCard(analytics, loc),
+
+          const SizedBox(height: 24),
+
+          // Least Ordered Items
+          _buildLeastOrderedItemsCard(analytics, loc),
+
+          const SizedBox(height: 24),
+
+          // Business Insights
+          _buildBusinessInsightsCard(analytics, loc),
         ],
       ),
     );
@@ -649,7 +760,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          "\$${item.revenue.toStringAsFixed(2)}",
+                          "${item.revenue.toStringAsFixed(2)} IQD",
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -728,7 +839,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
             ),
           ),
           Text(
-            "\$${amount.toStringAsFixed(2)}",
+            "${amount.toStringAsFixed(2)} IQD",
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -905,18 +1016,20 @@ class _AnalyticsPageState extends State<AnalyticsPage>
       case OrderStatus.confirmed:
         return const Color(0xFF2196F3);
       case OrderStatus.preparing:
-        return const Color(0xFF9C27B0);
+        return const Color(0xFF4169E1);
       case OrderStatus.ready:
         return const Color(0xFF4CAF50);
       case OrderStatus.onTheWay:
-        return const Color(0xFF2196F3);
+        return const Color(0xFF9932CC);
       case OrderStatus.delivered:
-        return const Color(0xFF00BCD4);
+        return const Color(0xFF228B22);
       case OrderStatus.cancelled:
         return const Color(0xFFF44336);
       case OrderStatus.returned:
         return const Color(0xFF795548);
       case OrderStatus.expired:
+        return const Color(0xFF607D8B);
+      default:
         return const Color(0xFF607D8B);
     }
   }
@@ -953,5 +1066,423 @@ class _AnalyticsPageState extends State<AnalyticsPage>
       case OrderStatus.expired:
         return loc.orderStatusExpired;
     }
+  }
+
+  Widget _buildCustomerReviewsCard(
+      AnalyticsData analytics, AppLocalizations loc) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  loc.customerReviews,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4CAF50).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.star,
+                        color: Color(0xFFFF9800),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        "${analytics.averageRating.toStringAsFixed(1)}",
+                        style: const TextStyle(
+                          color: Color(0xFF4CAF50),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...analytics.recentReviews
+                .map((review) => Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                review.customerName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              Row(
+                                children: List.generate(5, (index) {
+                                  return Icon(
+                                    index < review.rating.floor()
+                                        ? Icons.star
+                                        : index < review.rating
+                                            ? Icons.star_half
+                                            : Icons.star_border,
+                                    color: const Color(0xFFFF9800),
+                                    size: 16,
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            review.comment,
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Order: ${review.orderId}",
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 12,
+                                ),
+                              ),
+                              Text(
+                                _formatTimeAgo(review.createdAt),
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLeastOrderedItemsCard(
+      AnalyticsData analytics, AppLocalizations loc) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              loc.leastOrderedItems,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              loc.leastOrderedItemsDescription,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...analytics.leastOrderedItems.map((item) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.orange[400],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.trending_down,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.itemName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            loc.onlySoldCount(item.soldQuantity),
+                            style: TextStyle(
+                              color: Colors.orange[700],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          "${item.revenue.toStringAsFixed(2)} IQD",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.orange,
+                          ),
+                        ),
+                        Text(
+                          loc.revenueLabel,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBusinessInsightsCard(
+      AnalyticsData analytics, AppLocalizations loc) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              loc.businessInsights,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            _buildInsightItem(
+              icon: Icons.trending_up,
+              title: loc.growingPopularity,
+              description:
+                  loc.growingPopularityDescription(analytics.growthRate),
+              color: const Color(0xFF4CAF50),
+            ),
+            const SizedBox(height: 12),
+            _buildInsightItem(
+              icon: Icons.star_rate,
+              title: loc.customerSatisfaction,
+              description: loc.customerSatisfactionDescription(
+                  analytics.averageRating.toStringAsFixed(1),
+                  analytics.totalReviews),
+              color: const Color(0xFFFF9800),
+            ),
+            const SizedBox(height: 12),
+            _buildInsightItem(
+              icon: Icons.schedule,
+              title: loc.efficientService,
+              description: loc.efficientServiceDescription(
+                  analytics.averagePreparationTime.toStringAsFixed(1)),
+              color: const Color(0xFF2196F3),
+            ),
+            const SizedBox(height: 12),
+            _buildInsightItem(
+              icon: Icons.people,
+              title: loc.customerBase,
+              description: loc.customerBaseDescription(
+                  analytics.customersServed, analytics.cancellationRate),
+              color: const Color(0xFF9C27B0),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInsightItem({
+    required IconData icon,
+    required String title,
+    required String description,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays > 0) {
+      return "${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago";
+    } else if (difference.inHours > 0) {
+      return "${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago";
+    } else if (difference.inMinutes > 0) {
+      return "${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago";
+    } else {
+      return "Just now";
+    }
+  }
+
+  Widget _buildQuickInsightCard({
+    required String title,
+    required String subtitle,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              color.withOpacity(0.1),
+              color.withOpacity(0.05),
+            ],
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Icon(icon, color: color, size: 20),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -8,6 +8,7 @@ import '../providers/session_provider.dart';
 import '../providers/business_provider.dart';
 import '../config/app_config.dart';
 import './api_service.dart';
+import './realtime_order_service.dart';
 
 class AppAuthService {
   static bool _isInitialized = false;
@@ -155,6 +156,17 @@ class AppAuthService {
           });
         }
 
+        // Also establish Amplify session for password change
+        try {
+          await CognitoAuthService.signIn(
+            username: email,
+            password: password,
+          );
+          print('✅ Amplify sign-in successful');
+        } catch (e) {
+          print('⚠️ Amplify sign-in failed: $e');
+        }
+
         // Update session provider
         if (apiResponse['businesses'] != null &&
             apiResponse['businesses'].isNotEmpty) {
@@ -193,6 +205,12 @@ class AppAuthService {
 
   static Future<void> signOut() async {
     try {
+      // Disconnect from real-time service to prevent lingering connections
+      if (_container != null) {
+        print('🔌 Disconnecting real-time service on sign-out...');
+        _container!.read(realtimeOrderServiceProvider).disconnect();
+      }
+
       await _clearStoredTokens();
       _container?.read(sessionProvider.notifier).clearSession();
       _container?.invalidate(businessProvider);

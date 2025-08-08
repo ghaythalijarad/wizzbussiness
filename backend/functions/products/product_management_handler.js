@@ -8,12 +8,15 @@ const {
   UpdateCommand,
   QueryCommand,
 } = require('@aws-sdk/lib-dynamodb');
+const { CognitoIdentityProviderClient, GetUserCommand } = require('@aws-sdk/client-cognito-identity-provider');
 const { getBusinessIdFromToken } = require('../auth/utils');
 const { v4: uuidv4 } = require('uuid');
 
 const PRODUCTS_TABLE = process.env.PRODUCTS_TABLE;
 const CATEGORIES_TABLE = process.env.CATEGORIES_TABLE;
+const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE;
 const DYNAMODB_REGION = process.env.DYNAMODB_REGION || 'us-east-1';
+const COGNITO_REGION = process.env.COGNITO_REGION || 'us-east-1';
 
 const client = new DynamoDBClient({ region: DYNAMODB_REGION });
 const docClient = DynamoDBDocumentClient.from(client);
@@ -24,16 +27,51 @@ const headers = {
   'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
 };
 
-function getBusinessId(event) {
+async function getBusinessId(event) {
     try {
-        const token = event.headers.Authorization || event.headers.authorization;
-        if (!token) {
-            console.log("Authorization token is missing");
+        const authHeader = event.headers?.Authorization || event.headers?.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            console.log("Authorization header is missing or invalid");
             return null;
         }
-        return getBusinessIdFromToken(token);
+
+        const accessToken = authHeader.replace('Bearer ', '');
+
+        // Verify the access token with Cognito to get user email
+        const cognitoClient = new CognitoIdentityProviderClient({ region: COGNITO_REGION });
+        const userResponse = await cognitoClient.send(new GetUserCommand({ AccessToken: accessToken }));
+        const email = userResponse.UserAttributes.find(attr => attr.Name === 'email')?.Value;
+
+        if (!email) {
+            console.log("Email not found in user attributes");
+            return null;
+        }
+
+        console.log(`Getting business for user: ${email}`);
+
+        // Query businesses by email using the email-index
+        const queryParams = {
+            TableName: BUSINESSES_TABLE,
+            IndexName: 'email-index',
+            KeyConditionExpression: 'email = :email',
+            ExpressionAttributeValues: { ':email': email.toLowerCase().trim() }
+        };
+
+        const result = await docClient.send(new QueryCommand(queryParams));
+        const businesses = result.Items || [];
+
+        if (businesses.length === 0) {
+            console.log(`No businesses found for user: ${email}`);
+            return null;
+        }
+
+        // Return the first business ID (users typically have one business)
+        const businessId = businesses[0].businessId;
+        console.log(`Found business ID: ${businessId} for user: ${email}`);
+        return businessId;
+
     } catch (error) {
-        console.error("Error decoding token in getBusinessId:", error);
+        console.error("Error getting business ID:", error);
         return null;
     }
 }
@@ -42,7 +80,7 @@ function getBusinessId(event) {
 // --- Product Handlers ---
 
 async function handleGetProducts(event) {
-  const businessId = getBusinessId(event);
+    const businessId = await getBusinessId(event);
   if (!businessId) {
     return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorized' }), headers };
   }
@@ -63,7 +101,7 @@ async function handleGetProducts(event) {
 }
 
 async function handleSearchProducts(event) {
-    const businessId = getBusinessId(event);
+    const businessId = await getBusinessId(event);
     if (!businessId) {
         return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorized' }), headers };
     }
@@ -88,7 +126,7 @@ async function handleSearchProducts(event) {
 }
 
 async function handleCreateProduct(event) {
-    const businessId = getBusinessId(event);
+    const businessId = await getBusinessId(event);
     if (!businessId) {
         return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorized' }), headers };
     }
@@ -121,7 +159,7 @@ async function handleCreateProduct(event) {
 }
 
 async function handleGetProduct(event) {
-    const businessId = getBusinessId(event);
+    const businessId = await getBusinessId(event);
     if (!businessId) {
         return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorized' }), headers };
     }
@@ -141,7 +179,7 @@ async function handleGetProduct(event) {
 }
 
 async function handleUpdateProduct(event) {
-    const businessId = getBusinessId(event);
+    const businessId = await getBusinessId(event);
     if (!businessId) {
         return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorized' }), headers };
     }
@@ -186,7 +224,7 @@ async function handleUpdateProduct(event) {
 }
 
 async function handleDeleteProduct(event) {
-    const businessId = getBusinessId(event);
+    const businessId = await getBusinessId(event);
     if (!businessId) {
         return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorized' }), headers };
     }

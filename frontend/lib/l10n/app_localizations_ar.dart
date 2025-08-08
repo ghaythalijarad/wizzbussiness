@@ -39,6 +39,45 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dontHaveAnAccount => 'ليس لديك حساب؟';
 
   @override
+  String get joinOrderReceiver => 'انضم إلى مستلم الطلبات';
+
+  @override
+  String get signUpSubtitle => 'أنشئ حسابك للبدء';
+
+  @override
+  String get accountSecurity => 'أمان الحساب';
+
+  @override
+  String get and => 'و';
+
+  @override
+  String get back => 'رجوع';
+
+  @override
+  String get next => 'التالي';
+
+  @override
+  String get iAgreeToThe => 'أوافق على';
+
+  @override
+  String get privacyPolicy => 'سياسة الخصوصية';
+
+  @override
+  String get termsOfService => 'شروط الخدمة';
+
+  @override
+  String get takePicture => 'التقاط صورة';
+
+  @override
+  String get verificationCode => 'رمز التحقق';
+
+  @override
+  String get verificationCodeRequired => 'يرجى إدخال رمز التحقق';
+
+  @override
+  String get verifyYourEmail => 'تحقق من بريدك الإلكتروني';
+
+  @override
   String get welcomeBack => 'مرحباً بعودتك';
 
   @override
@@ -67,7 +106,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loginFailed => 'فشل تسجيل الدخول';
 
   @override
-  String get loginFailedMessage => 'Login failed';
+  String get loginFailedMessage =>
+      'Login failed. Please check your credentials.';
 
   @override
   String get errorInvalidCredentials =>
@@ -150,25 +190,53 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dashboard => 'لوحة التحكم';
 
   @override
-  String get online => 'Online';
+  String get online => 'متصل';
 
   @override
-  String get offline => 'Offline';
+  String get offline => 'غير متصل';
 
   @override
   String get quickActions => 'إجراءات سريعة';
 
   @override
-  String get goOnline => 'Go Online';
+  String get goOnline => 'الانتقال للحالة المتصلة';
 
   @override
-  String get goOffline => 'Go Offline';
+  String get goOffline => 'فصل الاتصال';
 
   @override
-  String get businessIsNowOnline => 'Business is now online';
+  String get menu => 'القائمة';
 
   @override
-  String get businessIsNowOffline => 'Business is now offline';
+  String get retry => 'إعادة المحاولة';
+
+  @override
+  String get errorPickingImage => 'خطأ في اختيار الصورة';
+
+  @override
+  String get errorPickingFile => 'خطأ في اختيار الملف';
+
+  @override
+  String get chooseFromGallery => 'اختر من المعرض';
+
+  @override
+  String get takePhoto => 'التقط صورة';
+
+  @override
+  String get businessIsNowOnline => 'النشاط التجاري متصل الآن';
+
+  @override
+  String get businessIsNowOffline => 'النشاط التجاري غير متصل الآن';
+
+  @override
+  String get businessNowOnline => 'النشاط التجاري متصل الآن';
+
+  @override
+  String get businessNowOffline => 'النشاط التجاري غير متصل الآن';
+
+  @override
+  String get errorUpdatingStatus =>
+      'خطأ في تحديث الحالة. يرجى المحاولة مرة أخرى.';
 
   @override
   String get returnOrderFeature => 'Return order feature coming soon';
@@ -1088,7 +1156,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get testRegistrationForm => 'Test Registration Form';
 
   @override
-  String get networkError => 'Network error';
+  String get networkError => 'Network Error';
 
   @override
   String get returnOrderTitle => 'Return Order';
@@ -1148,9 +1216,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get failedToSaveLocation => 'فشل في حفظ الموقع';
 
   @override
-  String get retry => 'إعادة المحاولة';
-
-  @override
   String get businessLocationDescription =>
       'حدد موقع نشاطك التجاري لمساعدة العملاء في العثور عليك وتحسين دقة التوصيل.';
 
@@ -1195,7 +1260,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get menuItemsAndCategories => 'Menu items & categories';
 
   @override
-  String get businessInsights => 'Business insights';
+  String get businessInsights => 'Business Insights';
 
   @override
   String get offersAndPromotions => 'Offers & promotions';
@@ -1419,7 +1484,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String failedToSendTestNotification(String error) {
-    return 'Failed to send test notification';
+    return 'Failed to send test notification: $error';
   }
 
   @override
@@ -1476,19 +1541,78 @@ class AppLocalizationsAr extends AppLocalizations {
   String get overview => 'Overview';
 
   @override
-  String get revenue => 'الإيرادات';
-
-  @override
   String get performance => 'Performance';
 
   @override
-  String get totalRevenue => 'Total Revenue';
+  String get revenue => 'الإيرادات';
 
   @override
-  String get todaysRevenue => 'Today\'s Revenue';
+  String get reviewsAndInsights => 'Reviews & Insights';
 
   @override
-  String get avgOrderValue => 'Avg Order Value';
+  String get customerReviews => 'Customer Reviews';
+
+  @override
+  String get leastOrderedItems => 'Least Ordered Items';
+
+  @override
+  String get leastOrderedItemsDescription =>
+      'Items that need more attention or promotion';
+
+  @override
+  String get growingPopularity => 'Growing Popularity';
+
+  @override
+  String get customerSatisfaction => 'Customer Satisfaction';
+
+  @override
+  String get efficientService => 'Efficient Service';
+
+  @override
+  String get customerBase => 'Customer Base';
+
+  @override
+  String get bestPerformer => 'Best Performer';
+
+  @override
+  String get needsAttention => 'Needs Attention';
+
+  @override
+  String get revenueLabel => 'Revenue';
+
+  @override
+  String growingPopularityDescription(double growthRate) {
+    return 'Your business has a $growthRate% growth rate this month';
+  }
+
+  @override
+  String customerSatisfactionDescription(
+      String averageRating, int totalReviews) {
+    return 'Average rating of $averageRating/5.0 from $totalReviews reviews';
+  }
+
+  @override
+  String efficientServiceDescription(String averagePreparationTime) {
+    return 'Average preparation time: $averagePreparationTime minutes';
+  }
+
+  @override
+  String customerBaseDescription(int customersServed, double cancellationRate) {
+    return 'Served $customersServed customers with $cancellationRate% cancellation rate';
+  }
+
+  @override
+  String quickInsightSoldCount(int quantity) {
+    return '$quantity sold';
+  }
+
+  @override
+  String onlySoldCount(int quantity) {
+    return 'Only $quantity sold';
+  }
+
+  @override
+  String get revenueTrend => 'Revenue Trend';
 
   @override
   String get quickStats => 'Quick Stats';
@@ -1498,9 +1622,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cancellationRate => 'Cancellation Rate';
-
-  @override
-  String get revenueTrend => 'Revenue Trend';
 
   @override
   String get revenueBreakdown => 'Revenue Breakdown';
@@ -1518,7 +1639,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get performanceMetrics => 'مقاييس الأداء';
 
   @override
-  String get avgPrepTime => 'Avg Prep Time';
+  String get avgPrepTime => 'Avg. Prep Time';
 
   @override
   String get successRate => 'Success Rate';
@@ -1530,760 +1651,204 @@ class AppLocalizationsAr extends AppLocalizations {
   String get popularItem => 'Popular Item';
 
   @override
-  String get revenueLabel => 'Revenue';
+  String get totalRevenue => 'Total Revenue';
 
   @override
-  String get errorLoadingUserData => 'Error loading user data';
+  String get todaysRevenue => 'Today\'s Revenue';
 
   @override
-  String get userInformation => 'User Information';
+  String get avgOrderValue => 'Avg. Order Value';
 
   @override
-  String get security => 'Security';
+  String get upload => 'تحميل';
 
   @override
-  String get passwordChangeAvailableInSettings =>
-      'Password change is available in the main Settings page.';
+  String get tapToSelectFile => 'اضغط لاختيار ملف';
 
   @override
-  String get notSpecified => 'Not specified';
+  String get businessPhoto => 'صورة العمل';
 
   @override
-  String get kitchen => 'مطبخ';
+  String get requiredPleaseAddAPhoto => 'مطلوب. الرجاء إضافة صورة.';
 
   @override
-  String get errorLoadingProfile => 'Error loading profile';
+  String get change => 'تغيير';
 
   @override
-  String get verified => 'Verified';
+  String get addPhoto => 'إضافة صورة';
 
   @override
-  String get centralizedPlatform => 'Centralized Platform';
+  String get pleaseFillInAllRequiredFields => 'يرجى ملء جميع الحقول المطلوبة.';
 
   @override
-  String get platformConnection => 'Platform Connection';
+  String get businessPhotoIsRequired => 'صورة العمل مطلوبة.';
 
   @override
-  String get connected => 'متصل';
+  String get businessLicenseRequired => 'رخصة العمل مطلوبة.';
 
   @override
-  String get disconnected => 'غير متصل';
+  String get ownerIdentityRequired => 'هوية المالك مطلوبة.';
 
   @override
-  String get account => 'Account';
+  String get healthCertificateRequired => 'الشهادة الصحية مطلوبة.';
 
   @override
-  String get syncStatus => 'حالة المزامنة';
+  String get ownerPhotoRequired => 'صورة المالك مطلوبة.';
 
   @override
-  String get platformApps => 'Platform Apps';
+  String get loginInstead => 'تسجيل الدخول بدلا من ذلك';
 
   @override
-  String get localBusinesses => 'Local Businesses';
+  String get failedToUploadBusinessPhoto => 'فشل تحميل صورة العمل';
 
   @override
-  String get syncRecommended => 'Sync Recommended';
+  String get errorUploadingBusinessPhoto => 'خطأ في تحميل صورة العمل';
 
   @override
-  String get yes => 'Yes';
+  String get failedToUploadBusinessLicense => 'فشل تحميل رخصة العمل';
 
   @override
-  String get no => 'No';
+  String get failedToUploadOwnerIdentity => 'فشل تحميل هوية المالك';
 
   @override
-  String get noAppsFound => 'No apps found';
+  String get failedToUploadHealthCertificate => 'فشل تحميل الشهادة الصحية';
 
   @override
-  String get unknown => 'Unknown';
+  String get failedToUploadOwnerPhoto => 'فشل تحميل صورة المالك';
 
   @override
-  String get actions => 'Actions';
+  String get errorUploadingDocuments => 'خطأ في تحميل المستندات';
 
   @override
-  String get setupPlatform => 'Setup Platform';
+  String get registrationInitiated => 'بدء التسجيل';
 
   @override
-  String get syncAllBusinesses => 'Sync All Businesses';
-
-  @override
-  String get refreshStatus => 'Refresh Status';
-
-  @override
-  String get failedToLoadPlatformStatus => 'Failed to load platform status';
-
-  @override
-  String get platformSetupCompletedSuccessfully =>
-      'Platform setup completed successfully!';
-
-  @override
-  String get platformSetupFailed => 'Platform setup failed';
-
-  @override
-  String get errorSettingUpPlatform => 'Error setting up platform';
-
-  @override
-  String get allBusinessesSyncedSuccessfully =>
-      'All businesses synced successfully!';
-
-  @override
-  String get errorSyncingBusinesses => 'Error syncing businesses';
-
-  @override
-  String get noBusinessFoundForThisUser => 'No business found for this user';
-
-  @override
-  String get notAvailable => 'N/A';
-
-  @override
-  String get oldPassword => 'Old Password';
-
-  @override
-  String get pleaseEnterOldPassword => 'Please enter your old password';
-
-  @override
-  String get pleaseEnterNewPassword => 'Please enter your new password';
-
-  @override
-  String get confirmNewPasswordLabel => 'Confirm New Password';
-
-  @override
-  String get passwordsDoNotMatchError => 'Passwords do not match';
-
-  @override
-  String get generateTestOrders =>
-      'Generate test orders to help with development and testing.';
-
-  @override
-  String get createRealisticOrders =>
-      'This will create realistic orders with random customer data, items, and pricing.';
-
-  @override
-  String get createOneOrder => 'Create 1 Order';
-
-  @override
-  String get createThreeOrders => 'Create 3 Orders';
-
-  @override
-  String get failedToCreateOrders => 'Failed to create orders';
-
-  @override
-  String get categoriesLoaded => 'تم تحميل الفئات';
-
-  @override
-  String get createFirstCategory => 'إنشاء أول فئة';
-
-  @override
-  String get noCategoriesFoundMessage =>
-      'لم يتم العثور على فئات. أنشئ فئتك الأولى لتنظيم عناصرك.';
-
-  @override
-  String get failedToDeleteItem => 'Failed to delete item';
-
-  @override
-  String get failedToLoadCategories => 'Failed to load categories';
-
-  @override
-  String get failedToAddItem => 'Failed to add item';
-
-  @override
-  String get failedToUpdateItem => 'Failed to update item';
-
-  @override
-  String get pleaseSelectCategoryOrCreate =>
-      'يرجى اختيار فئة أو إنشاء فئة جديدة';
-
-  @override
-  String get confirmPasswordLabel => 'Confirm Password';
-
-  @override
-  String get pleaseCompleteAllRequiredFields =>
-      'Please complete all required fields';
-
-  @override
-  String get documentSelectedSuccessfully => 'Document selected successfully';
-
-  @override
-  String get errorGettingLocation => 'Error getting location';
-
-  @override
-  String get pleaseEnterValidEmailAddress =>
-      'Please enter a valid email address';
-
-  @override
-  String get phoneNumberIsRequired => 'Phone number is required';
-
-  @override
-  String get passwordIsRequired => 'Password is required';
-
-  @override
-  String get passwordMustBeAtLeast8Characters =>
-      'Password must be at least 8 characters long';
-
-  @override
-  String get passwordMustContainLowercase =>
-      'Password must contain at least one lowercase letter';
-
-  @override
-  String get passwordMustContainUppercase =>
-      'Password must contain at least one uppercase letter';
-
-  @override
-  String get passwordMustContainNumber =>
-      'Password must contain at least one number';
-
-  @override
-  String get passwordMustContainSpecialCharacter =>
-      'Password must contain at least one special character';
-
-  @override
-  String get pleaseConfirmYourPassword => 'Please confirm your password';
-
-  @override
-  String get passwordsDoNotMatchRegistration => 'Passwords do not match';
-
-  @override
-  String get pleaseEnterExactly10Digits => 'Please enter exactly 10 digits';
-
-  @override
-  String get pleaseEnterOnlyNumbers => 'Please enter only numbers';
-
-  @override
-  String get pleaseEnterValidIraqiNumber =>
-      'Please enter a valid Iraqi number (77X/78X/79X for mobile)';
-
-  @override
-  String get userWithEmailAlreadyExists =>
-      'A user with this email already exists';
-
-  @override
-  String get passwordResetEmailSentSuccessfully =>
-      'Password reset email sent successfully';
-
-  @override
-  String get failedToSendPasswordResetEmail =>
-      'Failed to send password reset email';
-
-  @override
-  String get registrationFailedStatus => 'Registration failed';
-
-  @override
-  String get validationError => 'Validation error';
-
-  @override
-  String get failedToFetchTestUserProfile =>
-      'Failed to fetch test user profile';
-
-  @override
-  String get unknownErrorOccurred => 'An unknown error occurred';
-
-  @override
-  String get loginSuccessful => 'Login successful';
-
-  @override
-  String get noAccessTokenFound => 'No access token found';
-
-  @override
-  String get sessionExpiredPleaseLoginAgain =>
-      'Session expired. Please login again.';
-
-  @override
-  String get loggedOutSuccessfully => 'Logged out successfully';
-
-  @override
-  String get errorDuringLogout => 'Error during logout';
-
-  @override
-  String get registrationSuccessful => 'Registration successful';
-
-  @override
-  String get passwordResetSuccessfully => 'Password reset successfully';
-
-  @override
-  String get failedToResetPassword => 'Failed to reset password';
-
-  @override
-  String get passwordChangedSuccessfully => 'Password changed successfully';
-
-  @override
-  String get otpSentSuccessfully => 'OTP sent successfully';
-
-  @override
-  String get viewAndManageOrders => 'View and manage orders';
-
-  @override
-  String get businessDashboardVersion => 'Business Dashboard v2.0';
-
-  @override
-  String get modernMaterialDesign => 'Modern Material Design';
-
-  @override
-  String get menu => 'Menu';
-
-  @override
-  String get aUserWithThisEmailAlreadyExists =>
-      'A user with this email already exists';
-
-  @override
-  String get anUnknownErrorOccurred => 'An unknown error occurred';
-
-  @override
-  String get failedToCreateCategory => 'Failed to create category';
-
-  @override
-  String get failedToLoadItems => 'Failed to load items';
-
-  @override
-  String get failedToCreateItem => 'Failed to create item';
-
-  @override
-  String get failedToLoadNotificationHistory =>
-      'Failed to load notification history';
-
-  @override
-  String get failedToMarkNotificationAsRead =>
-      'Failed to mark notification as read';
-
-  @override
-  String get failedToCreateOrder => 'Failed to create order';
-
-  @override
-  String get failedToLoadOrders => 'Failed to load orders';
-
-  @override
-  String get failedToUpdateOrderStatus => 'Failed to update order status';
-
-  @override
-  String get failedToLoadSupportedPosSystems =>
-      'Failed to load supported POS systems';
-
-  @override
-  String get failedToLoadPosSettings => 'Failed to load POS settings';
-
-  @override
-  String get failedToCreatePosSettings => 'Failed to create POS settings';
-
-  @override
-  String get failedToUpdatePosSettings => 'Failed to update POS settings';
-
-  @override
-  String get failedToDeletePosSettings => 'Failed to delete POS settings';
-
-  @override
-  String get failedToTestPosConnection => 'Failed to test POS connection';
-
-  @override
-  String get failedToGetPosSystemHealth => 'Failed to get POS system health';
-
-  @override
-  String get failedToRetryPosSync => 'Failed to retry POS sync';
-
-  @override
-  String get failedToLoadPosIntegrationStatistics =>
-      'Failed to load POS integration statistics';
-
-  @override
-  String get failedToBulkSyncOrdersToPos => 'Failed to bulk sync orders to POS';
-
-  @override
-  String get failedToUpdateWebhookConfiguration =>
-      'Failed to update webhook configuration';
-
-  @override
-  String get failedToValidatePosCredentials =>
-      'Failed to validate POS credentials';
-
-  @override
-  String get failedToLoadUserBusinesses => 'Failed to load user businesses';
-
-  @override
-  String get failedToLoadComparativeAnalytics =>
-      'Failed to load comparative analytics';
-
-  @override
-  String get failedToTestPlatformConnection =>
-      'Failed to test platform connection';
-
-  @override
-  String get errorTestingPlatformConnection =>
-      'Error testing platform connection';
-
-  @override
-  String get failedToGetPlatformApps => 'Failed to get platform apps';
-
-  @override
-  String get errorGettingPlatformApps => 'Error getting platform apps';
-
-  @override
-  String get failedToDeployCentralizedApp => 'Failed to deploy centralized app';
-
-  @override
-  String get errorDeployingCentralizedApp => 'Error deploying centralized app';
-
-  @override
-  String get failedToSyncBusinessToPlatform =>
-      'Failed to sync business to platform';
-
-  @override
-  String get errorSyncingBusinessToPlatform =>
-      'Error syncing business to platform';
-
-  @override
-  String get failedToSyncAllBusinessesToPlatform =>
-      'Failed to sync all businesses to platform';
-
-  @override
-  String get errorSyncingAllBusinessesToPlatform =>
-      'Error syncing all businesses to platform';
-
-  @override
-  String get language => 'اللغة';
-
-  @override
-  String get english => 'English';
-
-  @override
-  String get arabic => 'العربية';
-
-  @override
-  String get selectLanguage => 'Select Language';
-
-  @override
-  String get selectItems => 'Select Items';
-
-  @override
-  String get discountApplicability => 'Discount Applicability';
-
-  @override
-  String get allItems => 'All Items';
-
-  @override
-  String get specificItems => 'Specific Items';
-
-  @override
-  String get specificCategories => 'Specific Categories';
-
-  @override
-  String get noItemsSelected => 'No items selected';
-
-  @override
-  String get selectCategories => 'Select Categories';
-
-  @override
-  String get noCategoriesSelected => 'No categories selected';
-
-  @override
-  String get conflictingDiscounts => 'Conflicting Discounts';
-
-  @override
-  String get categories => 'Categories';
-
-  @override
-  String get helpSectionTitle => 'Help & Support';
-
-  @override
-  String get setupGuides => 'Setup Guides';
-
-  @override
-  String get troubleshootingSection => 'Troubleshooting';
-
-  @override
-  String get supportSection => 'Support';
-
-  @override
-  String get squareSetupTitle => 'Square POS Setup';
-
-  @override
-  String get squareSetupDescription =>
-      'Follow these steps to connect your Square POS system:';
-
-  @override
-  String get squareStep1 => '1. Log in to your Square Dashboard';
-
-  @override
-  String get squareStep2 => '2. Navigate to Apps & Integrations';
-
-  @override
-  String get squareStep3 => '3. Find and select Order Receiver App';
-
-  @override
-  String get squareStep4 => '4. Generate API credentials';
-
-  @override
-  String get squareStep5 => '5. Copy your Application ID and Access Token';
-
-  @override
-  String get squareStep6 => '6. Enter credentials in the form above';
-
-  @override
-  String get squareStep7 => '7. Select your business location';
-
-  @override
-  String get squareStep8 => '8. Test connection and save settings';
-
-  @override
-  String get toastSetupTitle => 'Toast POS Setup';
-
-  @override
-  String get toastSetupDescription =>
-      'Connect your Toast POS system with these steps:';
-
-  @override
-  String get toastStep1 => '1. Access Toast Web Dashboard';
-
-  @override
-  String get toastStep2 => '2. Go to Admin > Integrations';
-
-  @override
-  String get toastStep3 => '3. Search for Order Receiver integration';
-
-  @override
-  String get toastStep4 => '4. Click \'Connect\' and authorize access';
-
-  @override
-  String get toastStep5 => '5. Copy the generated API key';
-
-  @override
-  String get toastStep6 => '6. Enter API key in the configuration above';
-
-  @override
-  String get toastStep7 => '7. Select your restaurant location';
-
-  @override
-  String get toastStep8 => '8. Test the connection to verify setup';
-
-  @override
-  String get cloverSetupTitle => 'Clover POS Setup';
-
-  @override
-  String get cloverSetupDescription => 'Set up Clover POS integration:';
-
-  @override
-  String get cloverStep1 => '1. Open Clover Dashboard';
-
-  @override
-  String get cloverStep2 => '2. Navigate to Account & Setup > Integrations';
-
-  @override
-  String get cloverStep3 => '3. Find Order Receiver app';
-
-  @override
-  String get cloverStep4 => '4. Install and configure the app';
-
-  @override
-  String get cloverStep5 => '5. Generate API token';
-
-  @override
-  String get cloverStep6 => '6. Copy Merchant ID and API token';
-
-  @override
-  String get cloverStep7 => '7. Enter credentials in the form';
-
-  @override
-  String get cloverStep8 => '8. Test connection and save';
-
-  @override
-  String get shopifySetupTitle => 'Shopify POS Setup';
-
-  @override
-  String get shopifySetupDescription =>
-      'Connect Shopify POS to Order Receiver:';
-
-  @override
-  String get shopifyStep1 => '1. Log in to Shopify Admin';
-
-  @override
-  String get shopifyStep2 => '2. Go to Apps > App Store';
-
-  @override
-  String get shopifyStep3 => '3. Search for Order Receiver';
-
-  @override
-  String get shopifyStep4 => '4. Install the app';
-
-  @override
-  String get shopifyStep5 => '5. Authorize app permissions';
-
-  @override
-  String get shopifyStep6 => '6. Generate private app credentials';
-
-  @override
-  String get shopifyStep7 => '7. Copy API key and password';
-
-  @override
-  String get shopifyStep8 => '8. Enter shop domain and credentials';
-
-  @override
-  String get genericApiSetupTitle => 'Generic API Setup';
-
-  @override
-  String get genericApiSetupDescription => 'Configure custom API integration:';
-
-  @override
-  String get genericStep1 => '1. Prepare your API endpoint URL';
-
-  @override
-  String get genericStep2 => '2. Ensure API supports required order operations';
-
-  @override
-  String get genericStep3 => '3. Generate or obtain API key/token';
-
-  @override
-  String get genericStep4 => '4. Test API endpoint with tools like Postman';
-
-  @override
-  String get genericStep5 => '5. Enter API endpoint and authentication';
-
-  @override
-  String get genericStep6 => '6. Configure webhook URLs if supported';
-
-  @override
-  String get genericStep7 => '7. Test connection thoroughly';
-
-  @override
-  String get genericStep8 => '8. Monitor sync logs for any issues';
-
-  @override
-  String get connectionIssuesTitle => 'Connection Issues';
-
-  @override
-  String get connectionIssuesDescription =>
-      'Troubleshoot common connection problems:';
-
-  @override
-  String get connectionIssue1 => '• Check internet connectivity';
-
-  @override
-  String get connectionIssue2 => '• Verify API credentials are correct';
-
-  @override
-  String get connectionIssue3 => '• Ensure API endpoint URL is accessible';
-
-  @override
-  String get connectionIssue4 =>
-      '• Check for firewall or security restrictions';
-
-  @override
-  String get connectionIssue5 => '• Verify API key has sufficient permissions';
-
-  @override
-  String get connectionIssue6 => '• Try regenerating API credentials';
-
-  @override
-  String get connectionIssue7 =>
-      '• Contact POS system support if issues persist';
-
-  @override
-  String get syncFailuresTitle => 'Sync Failures';
-
-  @override
-  String get syncFailuresDescription => 'Resolve order synchronization issues:';
-
-  @override
-  String get syncFailure1 => '• Check sync logs for specific error details';
-
-  @override
-  String get syncFailure2 => '• Verify order data format compatibility';
-
-  @override
-  String get syncFailure3 => '• Ensure POS system is online and accessible';
-
-  @override
-  String get syncFailure4 => '• Check for data validation errors';
-
-  @override
-  String get syncFailure5 => '• Review API rate limits and quotas';
-
-  @override
-  String get syncFailure6 => '• Retry failed sync operations manually';
-
-  @override
-  String get syncFailure7 => '• Update API credentials if expired';
-
-  @override
-  String get apiErrorsTitle => 'API Errors';
-
-  @override
-  String get apiErrorsDescription => 'Common API error codes and solutions:';
-
-  @override
-  String get apiError1 => '• 401 Unauthorized: Check API credentials';
-
-  @override
-  String get apiError2 => '• 403 Forbidden: Verify API permissions';
-
-  @override
-  String get apiError3 => '• 404 Not Found: Check endpoint URL';
-
-  @override
-  String get apiError4 => '• 429 Too Many Requests: Reduce request frequency';
-
-  @override
-  String get apiError5 => '• 500 Internal Server Error: Contact support';
-
-  @override
-  String get joinOrderReceiver => 'انضم إلى مستلم الطلبات';
-
-  @override
-  String get kwd => 'د.ك';
-
-  @override
-  String get signUpSubtitle => 'أنشئ حسابك للبدء';
-
-  @override
-  String get accountSecurity => 'أمان الحساب';
-
-  @override
-  String get iAgreeToThe => 'أوافق على';
-
-  @override
-  String get termsOfService => 'شروط الخدمة';
-
-  @override
-  String get and => 'و';
-
-  @override
-  String get privacyPolicy => 'سياسة الخصوصية';
-
-  @override
-  String get back => 'رجوع';
-
-  @override
-  String get next => 'التالي';
-
-  @override
-  String get alreadyHaveAccount => 'هل لديك حساب بالفعل؟';
-
-  @override
-  String get verificationCode => 'رمز التحقق';
-
-  @override
-  String get verificationCodeRequired => 'يرجى إدخال رمز التحقق';
-
-  @override
-  String get verifyYourEmail => 'تحقق من بريدك الإلكتروني';
+  String get registrationCompletedSuccessfully => 'اكتمل التسجيل بنجاح';
 
   @override
   String get verificationFailed => 'فشل التحقق';
 
   @override
-  String get failedToResendCode => 'فشل في إعادة إرسال رمز التحقق';
+  String get error => 'خطأ';
 
   @override
-  String verificationCodeSentTo(String email) {
+  String verificationCodeSentTo(Object email) {
     return 'تم إرسال رمز التحقق إلى $email';
   }
 
   @override
-  String get errorPickingFile => 'خطأ في اختيار الملف';
+  String get applicationPending => 'الطلب معلق';
 
   @override
-  String get errorPickingImage => 'خطأ في اختيار الصورة';
+  String get applicationPendingDescription => 'طلبك معلق للموافقة.';
 
   @override
-  String get chooseFromGallery => 'اختيار من المعرض';
+  String get applicationApproved => 'تمت الموافقة على الطلب';
 
   @override
-  String get takePhoto => 'التقاط صورة';
+  String get applicationApprovedDescription => 'تمت الموافقة على طلبك.';
+
+  @override
+  String get applicationRejected => 'تم رفض الطلب';
+
+  @override
+  String get applicationRejectedDescription => 'تم رفض طلبك.';
+
+  @override
+  String get underReview => 'قيد المراجعة';
+
+  @override
+  String get underReviewDescription => 'طلبك قيد المراجعة.';
+
+  @override
+  String get statusUnknown => 'الحالة غير معروفة';
+
+  @override
+  String get statusUnknownDescription => 'حالة طلبك غير معروفة.';
+
+  @override
+  String get applicationStatus => 'حالة الطلب';
+
+  @override
+  String get discountApplicability => 'تطبيق الخصم';
+
+  @override
+  String get allItems => 'جميع العناصر';
+
+  @override
+  String get specificItems => 'عناصر محددة';
+
+  @override
+  String get specificCategories => 'فئات محددة';
+
+  @override
+  String get selectItems => 'اختر العناصر';
+
+  @override
+  String get noItemsSelected => 'لم يتم اختيار أي عناصر';
+
+  @override
+  String get selectCategories => 'اختر الفئات';
+
+  @override
+  String get noCategoriesSelected => 'لم يتم اختيار أي فئات';
+
+  @override
+  String get conflictingDiscounts => 'خصومات متعارضة';
+
+  @override
+  String get kwd => 'دينار كويتي';
+
+  @override
+  String get categories => 'الفئات';
+
+  @override
+  String get notSpecified => 'غير محدد';
+
+  @override
+  String get verified => 'تم التحقق';
+
+  @override
+  String get viewAndManageOrders => 'عرض وإدارة الطلبات';
+
+  @override
+  String get businessDashboardVersion => 'إصدار لوحة تحكم الأعمال';
+
+  @override
+  String get modernMaterialDesign => 'تصميم المواد الحديثة';
+
+  @override
+  String get language => 'اللغة';
+
+  @override
+  String get selectLanguage => 'اختر اللغة';
+
+  @override
+  String get english => 'الإنجليزية';
+
+  @override
+  String get arabic => 'العربية';
+
+  @override
+  String get businessLicense => 'رخصة العمل';
+
+  @override
+  String get ownerIdentity => 'هوية المالك';
+
+  @override
+  String get healthCertificate => 'شهادة صحية';
+
+  @override
+  String get ownerPhoto => 'صورة المالك';
+
+  @override
+  String get alreadyHaveAccount => 'هل لديك حساب بالفعل؟';
+
+  @override
+  String get kitchen => 'مطبخ';
+
+  @override
+  String get chooseFromFiles => 'اختر من الملفات';
 
   @override
   String get accountInformation => 'معلومات الحساب';
@@ -2299,7 +1864,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get passwordMustBeAtLeast8Chars =>
-      'يجب أن تكون كلمة المرور 8 أحرف على الأقل';
+      'كلمة المرور يجب أن تكون 8 أحرف على الأقل';
 
   @override
   String get reEnterYourPassword => 'أعد إدخال كلمة المرور';
@@ -2332,9 +1897,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pleaseEnterYourPhoneNumber => 'يرجى إدخال رقم هاتفك';
 
   @override
-  String get businessPhoto => 'صورة النشاط التجاري';
-
-  @override
   String get addAPhotoToShowcaseYourBusiness => 'أضف صورة لعرض نشاطك التجاري';
 
   @override
@@ -2359,39 +1921,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pleaseEnterYourStreetAddress => 'يرجى إدخال عنوان الشارع';
 
   @override
-  String get documentsOptional => 'المستندات (اختيارية)';
-
-  @override
-  String get documentsRequired => 'المستندات المطلوبة';
-
-  @override
-  String get youCanUploadTheseDocumentsNowOrLater =>
-      'يمكنك رفع هذه المستندات الآن أو لاحقاً';
+  String get documentsRequired => 'الوثائق المطلوبة';
 
   @override
   String get pleaseUploadAllRequiredDocuments =>
-      'يرجى رفع جميع المستندات المطلوبة لإكمال التسجيل';
-
-  @override
-  String get businessLicenseRequired => 'رخصة النشاط التجاري مطلوبة';
-
-  @override
-  String get ownerIdentityRequired => 'وثيقة هوية المالك مطلوبة';
-
-  @override
-  String get healthCertificateRequired => 'الشهادة الصحية مطلوبة';
-
-  @override
-  String get ownerPhotoRequired => 'صورة المالك مطلوبة';
-
-  @override
-  String get selectDocumentSource => 'اختيار مصدر المستند';
-
-  @override
-  String get chooseFromFiles => 'اختيار من الملفات';
-
-  @override
-  String get takePicture => 'التقاط صورة';
+      'يرجى رفع جميع الوثائق المطلوبة';
 
   @override
   String get emailVerification => 'التحقق من البريد الإلكتروني';
@@ -2413,112 +1947,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get resendVerificationCode => 'إعادة إرسال رمز التحقق';
 
   @override
+  String get failedToResendCode => 'فشل في إعادة إرسال رمز التحقق';
+
+  @override
+  String get troubleshootingSection => 'استكشاف الأخطاء وإصلاحها';
+
+  @override
+  String get passwordChangedSuccessfully => 'تم تغيير كلمة المرور بنجاح';
+
+  @override
   String get completeRegistration => 'إكمال التسجيل';
 
   @override
   String get createAccount => 'إنشاء حساب';
-
-  @override
-  String get businessLicense => 'رخصة النشاط التجاري';
-
-  @override
-  String get ownerIdentity => 'هوية المالك';
-
-  @override
-  String get healthCertificate => 'شهادة صحية';
-
-  @override
-  String get ownerPhoto => 'صورة المالك';
-
-  @override
-  String get upload => 'رفع';
-
-  @override
-  String get tapToSelectFile => 'اضغط لاختيار ملف';
-
-  @override
-  String get requiredPleaseAddAPhoto => 'مطلوب - يرجى إضافة صورة';
-
-  @override
-  String get change => 'تغيير';
-
-  @override
-  String get addPhoto => 'إضافة صورة';
-
-  @override
-  String get pleaseFillInAllRequiredFields => 'يرجى ملء جميع الحقول المطلوبة';
-
-  @override
-  String get businessPhotoIsRequired => 'صورة النشاط التجاري مطلوبة';
-
-  @override
-  String get loginInstead => 'تسجيل الدخول بدلاً من ذلك';
-
-  @override
-  String get failedToUploadBusinessPhoto => 'فشل في رفع صورة النشاط التجاري';
-
-  @override
-  String get errorUploadingBusinessPhoto => 'خطأ في رفع صورة النشاط التجاري';
-
-  @override
-  String get failedToUploadBusinessLicense => 'فشل في رفع رخصة النشاط التجاري';
-
-  @override
-  String get failedToUploadOwnerIdentity => 'فشل في رفع هوية المالك';
-
-  @override
-  String get failedToUploadHealthCertificate => 'فشل في رفع الشهادة الصحية';
-
-  @override
-  String get failedToUploadOwnerPhoto => 'فشل في رفع صورة المالك';
-
-  @override
-  String get errorUploadingDocuments => 'خطأ في رفع المستندات';
-
-  @override
-  String get registrationInitiated => 'تم بدء التسجيل';
-
-  @override
-  String get registrationCompletedSuccessfully => 'تم إكمال التسجيل بنجاح';
-
-  @override
-  String get error => 'خطأ';
-
-  @override
-  String get applicationStatus => 'حالة الطلب';
-
-  @override
-  String get applicationPending => 'الطلب قيد الانتظار';
-
-  @override
-  String get applicationPendingDescription =>
-      'طلبك قيد المراجعة حالياً. سنقوم بإشعارك فور معالجته.';
-
-  @override
-  String get applicationApproved => 'تم قبول الطلب';
-
-  @override
-  String get applicationApprovedDescription =>
-      'تهانينا! تم قبول طلبك. يمكنك الآن البدء في استقبال الطلبات.';
-
-  @override
-  String get applicationRejected => 'تم رفض الطلب';
-
-  @override
-  String get applicationRejectedDescription =>
-      'للأسف، تم رفض طلبك. يرجى التواصل مع الدعم الفني للحصول على مزيد من المعلومات.';
-
-  @override
-  String get underReview => 'قيد المراجعة';
-
-  @override
-  String get underReviewDescription =>
-      'طلبك قيد المراجعة الدقيقة من قبل فريقنا. قد تستغرق هذه العملية يوم إلى يومين عمل.';
-
-  @override
-  String get statusUnknown => 'حالة غير معروفة';
-
-  @override
-  String get statusUnknownDescription =>
-      'لا يمكننا تحديد حالة طلبك في الوقت الحالي. يرجى المحاولة مرة أخرى لاحقاً أو التواصل مع الدعم الفني.';
 }

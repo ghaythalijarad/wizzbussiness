@@ -1,5 +1,5 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, PutCommand, ScanCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, PutCommand, ScanCommand, DeleteCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
 const { ApiGatewayManagementApiClient, PostToConnectionCommand } = require('@aws-sdk/client-apigatewaymanagementapi');
 
 const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
@@ -21,33 +21,84 @@ async function handleConnect(event) {
     try {
         const connectionId = event.requestContext.connectionId;
         const merchantId = event.queryStringParameters?.merchantId;
+        const businessId = event.queryStringParameters?.businessId;
+        const userId = event.queryStringParameters?.userId;
+        const entityType = event.queryStringParameters?.entityType || 'user'; // 'user' for customers, 'merchant' for merchants
 
-        if (!merchantId) {
-            return { statusCode: 400, body: 'Missing merchantId parameter' };
+        // For merchants, use merchantId or businessId as the identifier
+        const effectiveMerchantId = merchantId || businessId;
+        const effectiveUserId = userId || effectiveMerchantId;
+
+        if (!effectiveMerchantId && !effectiveUserId) {
+            console.log('❌ Missing required parameters:', { merchantId, businessId, userId });
+            return { statusCode: 400, body: 'Missing merchantId, businessId, or userId parameter' };
         }
 
-        // Store connection in DynamoDB
-        const params = {
-            TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
+        const currentTime = new Date().toISOString();
+        const ttl = Math.floor(Date.now() / 1000) + 3600; // 1 hour TTL
+
+        console.log(`🔌 WebSocket connection attempt:`, {
+            connectionId,
+            merchantId,
+            businessId,
+            userId,
+            entityType,
+            effectiveMerchantId,
+            effectiveUserId
+        });
+
+        // Store connection in merchant endpoints table (existing logic)
+        if (effectiveMerchantId) {
+            const merchantParams = {
+                TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
+                Item: {
+                    merchantId: effectiveMerchantId,
+                    endpointType: 'websocket',
+                    connectionId,
+                    isActive: true,
+                    connectedAt: currentTime,
+                    updatedAt: currentTime
+                }
+            };
+            await dynamodb.send(new PutCommand(merchantParams));
+            console.log(`✅ Stored connection in merchant endpoints table for merchant: ${effectiveMerchantId}`);
+        }
+
+        // Store connection in websocket connections table (unified tracking)
+        const websocketParams = {
+            TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
             Item: {
-                merchantId,
-                endpointType: 'websocket',
+                PK: `CONNECTION#${connectionId}`,
+                SK: `CONNECTION#${connectionId}`,
                 connectionId,
-                isActive: true,
-                connectedAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
+                entityType,
+                connectedAt: currentTime,
+                ttl,
+                userId: effectiveUserId,
+                ...(effectiveMerchantId && {
+                    businessId: effectiveMerchantId,
+                    GSI1PK: `BUSINESS#${effectiveMerchantId}`,
+                    GSI1SK: `CONNECTION#${connectionId}`
+                }),
+                ...(effectiveUserId && !effectiveMerchantId && {
+                    GSI1PK: `USER#${effectiveUserId}`,
+                    GSI1SK: `CONNECTION#${connectionId}`
+                })
             }
         };
 
-        await dynamodb.send(new PutCommand(params));
+        await dynamodb.send(new PutCommand(websocketParams));
+        console.log(`✅ Stored connection in WebSocket connections table`);
 
-        console.log(`🔌 WebSocket connected: ${connectionId} for merchant: ${merchantId}`);
+        console.log(`🔌 WebSocket connected: ${connectionId} for ${entityType}: ${effectiveUserId}${effectiveMerchantId ? ` (business: ${effectiveMerchantId})` : ''}`);
 
         // Send welcome message
         await sendMessageToConnection(connectionId, {
             type: 'CONNECTION_ESTABLISHED',
-            message: 'Connected to order notifications',
-            timestamp: new Date().toISOString()
+            message: `Connected to ${entityType === 'merchant' ? 'merchant' : 'customer'} notifications`,
+            timestamp: currentTime,
+            entityType,
+            ...(effectiveMerchantId && { businessId: effectiveMerchantId })
         });
 
         return { statusCode: 200, body: 'Connected' };
@@ -64,30 +115,25 @@ async function handleConnect(event) {
 async function handleDisconnect(event) {
     try {
         const connectionId = event.requestContext.connectionId;
+        console.log(`🔌 WebSocket disconnecting: ${connectionId}`);
 
-        // Remove connection from DynamoDB - use scan instead of query with index
-        const params = {
-            TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
-            FilterExpression: 'connectionId = :connectionId',
-            ExpressionAttributeValues: {
-                ':connectionId': connectionId
+        // The primary and unified table is WEBSOCKET_CONNECTIONS_TABLE.
+        // We only need to clean up the connection from this table.
+        // The old MERCHANT_ENDPOINTS_TABLE is legacy and its cleanup logic was flawed,
+        // causing errors that prevented the main table cleanup.
+
+        // Remove connection from the primary websocket connections table
+        const deleteParams = {
+            TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
+            Key: {
+                PK: `CONNECTION#${connectionId}`,
+                SK: `CONNECTION#${connectionId}`
             }
         };
 
-        const result = await dynamodb.send(new ScanCommand(params));
+        await dynamodb.send(new DeleteCommand(deleteParams));
 
-        if (result.Items.length > 0) {
-            const item = result.Items[0];
-            await dynamodb.send(new DeleteCommand({
-                TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
-                Key: {
-                    merchantId: item.merchantId,
-                    endpointType: 'websocket'
-                }
-            }));
-        }
-
-        console.log(`🔌 WebSocket disconnected: ${connectionId}`);
+        console.log(`✅ Successfully cleaned up connection from primary table: ${connectionId}`);
 
         return { statusCode: 200, body: 'Disconnected' };
 

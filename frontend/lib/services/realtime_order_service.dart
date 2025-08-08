@@ -2,11 +2,18 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:http/http.dart' as http;
 import '../models/order.dart';
 import '../models/delivery_address.dart';
 import '../config/app_config.dart';
 import 'order_service.dart';
 import 'app_auth_service.dart';
+import 'audio_notification_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final realtimeOrderServiceProvider = Provider<RealtimeOrderService>((ref) {
+  return RealtimeOrderService();
+});
 
 /// Real-time order service for merchant notifications
 class RealtimeOrderService {
@@ -15,16 +22,24 @@ class RealtimeOrderService {
   factory RealtimeOrderService() => _instance;
   RealtimeOrderService._internal();
 
+  // Services
+  final AudioNotificationService _audioService = AudioNotificationService();
+
   // WebSocket connection
   WebSocketChannel? _channel;
   Timer? _pingTimer;
   Timer? _reconnectTimer;
   Timer? _pollingTimer;
   bool _isConnected = false;
+  bool _manualDisconnect = false;
   int _reconnectAttempts = 0;
   String? _businessId;
   String? _authToken;
   bool _isDisposed = false;
+
+  // Sound notification tracking to prevent duplicates
+  final Set<String> _soundPlayedForOrders = <String>{};
+  Timer? _soundTrackingCleanupTimer;
 
   // Stream controllers
   StreamController<Order>? _newOrderController;
@@ -80,6 +95,9 @@ class RealtimeOrderService {
         _newOrderController != null &&
         !_newOrderController!.isClosed) {
       _newOrderController!.add(order);
+      
+      // Play sound notification for new order (with deduplication)
+      _playNewOrderNotificationSoundOnce(order);
     }
   }
 
@@ -88,6 +106,9 @@ class RealtimeOrderService {
         _orderUpdateController != null &&
         !_orderUpdateController!.isClosed) {
       _orderUpdateController!.add(update);
+      
+      // Play sound notification for order updates
+      _playOrderUpdateNotificationSound(update);
     }
   }
 
@@ -99,6 +120,81 @@ class RealtimeOrderService {
     }
   }
 
+  /// Play sound notification for new orders (with deduplication)
+  void _playNewOrderNotificationSoundOnce(Order order) {
+    try {
+      // Check if we've already played sound for this order
+      if (_soundPlayedForOrders.contains(order.id)) {
+        debugPrint('🔇 Sound already played for order: ${order.id}, skipping');
+        return;
+      }
+
+      // Mark this order as having sound played
+      _soundPlayedForOrders.add(order.id);
+
+      // Determine if order should be treated as urgent
+      bool isUrgent = order.totalAmount > 100.0; // Orders over $100 are urgent
+
+      // Play appropriate sound based on urgency
+      _audioService.playNotificationSound('new_order', isUrgent: isUrgent);
+
+      debugPrint(
+          '🔊 Sound notification played for order: ${order.id} (${isUrgent ? 'URGENT' : 'NORMAL'})');
+
+      // Start cleanup timer if not already running
+      _startSoundTrackingCleanup();
+    } catch (e) {
+      debugPrint('❌ Error playing sound notification: $e');
+    }
+  }
+
+  /// Start cleanup timer to remove old order IDs from sound tracking
+  void _startSoundTrackingCleanup() {
+    _soundTrackingCleanupTimer?.cancel();
+    _soundTrackingCleanupTimer =
+        Timer.periodic(const Duration(minutes: 5), (_) {
+      // Keep only recent order IDs (last 50 orders)
+      if (_soundPlayedForOrders.length > 50) {
+        final ordersToRemove = _soundPlayedForOrders.length - 50;
+        final ordersList = _soundPlayedForOrders.toList();
+        for (int i = 0; i < ordersToRemove; i++) {
+          _soundPlayedForOrders.remove(ordersList[i]);
+        }
+        debugPrint(
+            '🧹 Cleaned up ${ordersToRemove} old order IDs from sound tracking');
+      }
+    });
+  }
+
+  /// Play sound notification for order updates
+  void _playOrderUpdateNotificationSound(Map<String, dynamic> update) {
+    try {
+      final status = update['status']?.toString() ?? '';
+      final orderId = update['orderId']?.toString() ?? 'unknown';
+
+      // Play different sounds based on update type
+      switch (status.toLowerCase()) {
+        case 'confirmed':
+        case 'ready':
+        case 'pickedup':
+        case 'delivered':
+          _audioService.playNotificationSound('order_update');
+          debugPrint('🔊 Order update sound played for: $orderId ($status)');
+          break;
+        case 'cancelled':
+        case 'returned':
+          _audioService.playNotificationSound('order_update');
+          debugPrint(
+              '🔊 Order status change sound played for: $orderId ($status)');
+          break;
+        default:
+          debugPrint('📝 Order update received (no sound): $orderId ($status)');
+      }
+    } catch (e) {
+      debugPrint('❌ Error playing order update sound: $e');
+    }
+  }
+
   /// Initialize the service with business context
   Future<void> initialize(String businessId) async {
     _isDisposed = false; // Mark as active
@@ -106,6 +202,10 @@ class RealtimeOrderService {
 
     _businessId = businessId;
     _authToken = await AppAuthService.getAccessToken();
+
+    // Initialize audio service
+    await _audioService.initialize();
+    debugPrint('🔊 Audio notification service initialized');
 
     if (_authToken == null || _authToken!.isEmpty) {
       debugPrint('❌ No auth token available for WebSocket connection');
@@ -136,9 +236,20 @@ class RealtimeOrderService {
       return;
     }
 
+    _manualDisconnect = false; // Reset manual disconnect flag on new connection attempt
+
     try {
-      final wsUrl =
-          '${AppConfig.webSocketUrl}?merchantId=$_businessId&token=$_authToken';
+      // Get current user data for userId parameter
+      final currentUser = await AppAuthService.getCurrentUser();
+      final userId = currentUser?['userId'] ?? currentUser?['user']?['userId'];
+
+      // Build WebSocket URL with proper parameters for unified tracking
+      final wsUrl = '${AppConfig.webSocketUrl}'
+          '?businessId=$_businessId'
+          '&entityType=merchant'
+          '&userId=${userId ?? _businessId}'
+          '&merchantId=$_businessId'; // Keep for backward compatibility
+      
       debugPrint('🔌 Connecting to WebSocket: $wsUrl');
 
       _channel = WebSocketChannel.connect(
@@ -174,51 +285,86 @@ class RealtimeOrderService {
 
   /// Handle incoming WebSocket messages
   void _handleWebSocketMessage(dynamic data) {
+    if (_isDisposed) return;
+
     try {
-      final message = jsonDecode(data as String) as Map<String, dynamic>;
-      debugPrint('📨 WebSocket message received: ${message['type']}');
-
-      switch (message['type']) {
-        case 'CONNECTION_ESTABLISHED':
-          debugPrint('🎉 WebSocket connection established');
-          break;
-
-        case 'ORDER_NOTIFICATION':
-          _handleOrderNotification(message);
-          break;
-
-        case 'NEW_ORDER':
-          _handleNewOrderNotification(message);
-          break;
-
-        case 'ORDER_STATUS_UPDATE':
-          _handleOrderStatusUpdate(message);
-          break;
-
-        case 'PONG':
-          // Keep-alive response
-          break;
-
-        default:
-          debugPrint('📦 Unknown message type: ${message['type']}');
+      final message = json.decode(data);
+      debugPrint('📦 Raw WebSocket message received: $message');
+      
+      // Handle different message structures from backend
+      String? messageType;
+      Map<String, dynamic>? payload;
+      
+      // Check for 'type' field (current backend format from order stream)
+      if (message['type'] != null) {
+        messageType = message['type'];
+        payload = message['payload'] ?? message;
       }
-    } catch (error) {
-      debugPrint('❌ Error parsing WebSocket message: $error');
+      // Check for 'action' field (legacy format)
+      else if (message['action'] != null) {
+        messageType = message['action'];
+        payload = message['payload'] ?? message;
+      }
+      // Check for direct message types
+      else if (message['orderId'] != null || message['id'] != null) {
+        messageType = 'NEW_ORDER';
+        payload = message;
+      }
+
+      debugPrint('📦 WebSocket message type: $messageType');
+
+      switch (messageType) {
+        case 'NEW_ORDER':
+        case 'actionable_order_notification':
+        case 'new_order':
+          _handleNewOrder(payload ?? message);
+          break;
+        case 'ORDER_UPDATE':
+        case 'order_update':
+          _safeAddToOrderUpdateController(payload ?? message);
+          break;
+        case 'CONNECTION_ESTABLISHED':
+        case 'connection_established':
+        case 'SUBSCRIBED':
+          debugPrint('✅ WebSocket connection established.');
+          break;
+        case 'PONG':
+          debugPrint('🏓 Received PONG response');
+          break;
+        default:
+          debugPrint('🤷 Unhandled WebSocket message type: $messageType');
+          debugPrint('📄 Full message: $message');
+      }
+    } catch (e) {
+      debugPrint('❌ Error processing WebSocket message: $e');
+      debugPrint('Raw data: $data');
     }
   }
 
-  /// Handle new order notification
-  void _handleNewOrderNotification(Map<String, dynamic> message) {
+  /// Handle new order messages
+  void _handleNewOrder(Map<String, dynamic> message) {
     try {
       debugPrint('🔍 Processing new order notification: $message');
       
       // Try different possible data structures
       Map<String, dynamic>? orderData;
       
-      // First, try the 'data' field (current backend format)
+      // First, try the 'data' field (current backend format from order stream)
       if (message['data'] is Map<String, dynamic>) {
         orderData = message['data'] as Map<String, dynamic>;
         debugPrint('📦 Found order data in "data" field');
+      }
+      // Try the 'payload.data' structure
+      else if (message['payload'] is Map<String, dynamic>) {
+        final payload = message['payload'] as Map<String, dynamic>;
+        if (payload['data'] is Map<String, dynamic>) {
+          orderData = payload['data'] as Map<String, dynamic>;
+          debugPrint('📦 Found order data in "payload.data" field');
+        } else {
+          // payload itself might contain order data
+          orderData = payload;
+          debugPrint('📦 Using payload as order data');
+        }
       }
       // Try the 'notification' field
       else if (message['notification'] is Map<String, dynamic>) {
@@ -235,6 +381,19 @@ class RealtimeOrderService {
       }
 
       if (orderData != null) {
+        debugPrint('📋 Order data to process: $orderData');
+
+        // For messages from order stream, we need to reconstruct the full order
+        // The stream only sends orderId and businessId, we need the full order details
+        if (orderData.containsKey('orderId') &&
+            orderData.containsKey('businessId') &&
+            !orderData.containsKey('customerName')) {
+          debugPrint(
+              '🔄 Detected order stream message, fetching full order details');
+          _fetchAndAddOrder(orderData['orderId'], orderData['businessId']);
+          return;
+        }
+        
         // Ensure we have the required fields for Order.fromJson
         if (!orderData.containsKey('orderId') && orderData.containsKey('id')) {
           orderData['orderId'] = orderData['id'];
@@ -261,6 +420,52 @@ class RealtimeOrderService {
     } catch (error) {
       debugPrint('❌ Error handling new order notification: $error');
       debugPrint('📄 Original message: $message');
+    }
+  }
+
+  /// Fetch full order details when we only have orderId from stream
+  void _fetchAndAddOrder(String orderId, String businessId) async {
+    try {
+      debugPrint('🔍 Fetching full order details for: $orderId');
+
+      // Fetch fresh orders from the server to get the new order
+      final orders = await _orderService.getMerchantOrders(businessId);
+      final newOrder = orders.firstWhere(
+        (order) => order.id == orderId,
+        orElse: () => throw Exception('Order not found'),
+      );
+
+      _safeAddToNewOrderController(newOrder);
+      debugPrint('✅ Successfully fetched and added order: ${newOrder.id}');
+    } catch (error) {
+      debugPrint('❌ Error fetching order details: $error');
+
+      // Create a minimal placeholder order
+      final placeholderOrder = Order(
+        id: orderId,
+        customerId: 'unknown',
+        customerName: 'New Order (Loading...)',
+        customerPhone: 'N/A',
+        deliveryAddress: DeliveryAddress(
+          street: 'Loading address...',
+          city: 'Unknown',
+          state: 'Unknown',
+          zipCode: '00000',
+        ),
+        items: [],
+        totalAmount: 0.0,
+        createdAt: DateTime.now(),
+        status: OrderStatus.pending,
+        notes: 'Order details loading...',
+      );
+
+      _safeAddToNewOrderController(placeholderOrder);
+      debugPrint('🔄 Added placeholder order, will refresh from server');
+
+      // Trigger a refresh after a short delay
+      Timer(const Duration(seconds: 2), () {
+        _fetchAndAddOrder(orderId, businessId);
+      });
     }
   }
 
@@ -293,33 +498,6 @@ class RealtimeOrderService {
     }
   }
 
-  /// Handle order notification
-  void _handleOrderNotification(Map<String, dynamic> message) {
-    try {
-      final notification = message['notification'] as Map<String, dynamic>?;
-      if (notification == null) return;
-
-      final notificationType = notification['type'] as String?;
-
-      switch (notificationType) {
-        case 'NEW_ORDER':
-          _handleNewOrderNotification(message);
-          break;
-        default:
-          _safeAddToOrderUpdateController(message);
-      }
-    } catch (error) {
-      debugPrint('❌ Error handling order notification: $error');
-    }
-  }
-
-  /// Handle order status update
-  void _handleOrderStatusUpdate(Map<String, dynamic> message) {
-    _safeAddToOrderUpdateController(message);
-    debugPrint(
-        '📊 Order status update: ${message['orderId']} -> ${message['newStatus']}');
-  }
-
   /// Handle WebSocket error
   void _handleWebSocketError(dynamic error) {
     debugPrint('❌ WebSocket error: $error');
@@ -335,7 +513,7 @@ class RealtimeOrderService {
     _isConnected = false;
     _safeAddToConnectionController(false);
     _stopPing();
-    if (!_isDisposed) {
+    if (!_isDisposed && !_manualDisconnect) {
       _scheduleReconnect();
     }
   }
@@ -437,6 +615,7 @@ class RealtimeOrderService {
 
   /// Disconnect WebSocket
   Future<void> disconnect() async {
+    _manualDisconnect = true;
     _channel?.sink.close();
     _stopPing();
     _reconnectTimer?.cancel();
@@ -445,18 +624,16 @@ class RealtimeOrderService {
     debugPrint('🔌 WebSocket disconnected manually');
   }
 
-  /// Dispose resources
+  /// Dispose of the service and clean up resources
   void dispose() {
-    if (_isDisposed) return;
+    debugPrint('🗑️ Disposing RealtimeOrderService...');
     _isDisposed = true;
     disconnect();
-    _pollingTimer?.cancel();
-
-    // Safely close stream controllers
     _newOrderController?.close();
     _orderUpdateController?.close();
     _connectionController?.close();
-
-    debugPrint('🛑 RealtimeOrderService disposed and cleaned up.');
+    _soundTrackingCleanupTimer?.cancel();
+    _audioService.dispose();
+    debugPrint('✅ RealtimeOrderService disposed');
   }
 }

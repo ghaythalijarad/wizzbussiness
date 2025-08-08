@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/app_localizations.dart';
-import '../services/notification_service.dart';
 import '../services/simple_notification_service.dart';
 
 class NotificationSettingsPage extends StatefulWidget {
@@ -85,13 +84,13 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
     if (_useSimpleNotifications) {
       // Switch to simple notifications
-      await NotificationService().dispose();
-      await SimpleNotificationService().startPolling();
+      // Note: NotificationService disposal should be handled by the provider
+      SimpleNotificationService().startPolling();
       SimpleNotificationService().setPollingInterval(_pollingInterval);
     } else {
       // Switch to complex notifications
-      await SimpleNotificationService().stopPolling();
-      await NotificationService().connectToNotifications();
+      SimpleNotificationService().stopPolling();
+      // Note: NotificationService connection should be handled by the provider
     }
   }
 
@@ -100,9 +99,11 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
     try {
       if (_useSimpleNotifications) {
-        await SimpleNotificationService().sendTestNotification();
+        SimpleNotificationService().sendTestNotification();
       } else {
-        await NotificationService().sendTestNotification();
+        // Note: NotificationService should be accessed via provider
+        // await NotificationService().sendTestNotification();
+        _showError('Complex notifications require provider setup');
       }
 
       _showSuccess('Test notification sent!');

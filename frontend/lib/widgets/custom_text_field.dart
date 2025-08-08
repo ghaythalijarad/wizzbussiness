@@ -16,6 +16,7 @@ class CustomTextField extends StatelessWidget {
   final TextAlign textAlign;
   final List<TextInputFormatter>? inputFormatters;
   final TextDirection? textDirection;
+  final TextStyle? style;
 
   const CustomTextField({
     Key? key,
@@ -33,6 +34,7 @@ class CustomTextField extends StatelessWidget {
     this.textAlign = TextAlign.start,
     this.inputFormatters,
     this.textDirection,
+    this.style,
   }) : super(key: key);
 
   @override
@@ -59,6 +61,7 @@ class CustomTextField extends StatelessWidget {
       textAlign: textAlign,
       textDirection: textDirection,
       inputFormatters: inputFormatters,
+      style: style,
     );
   }
 }

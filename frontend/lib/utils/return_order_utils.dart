@@ -60,9 +60,10 @@ class ReturnOrderUtils {
       List<Order> orders, Function(String, OrderStatus) onOrderUpdated) {
     if (orderNumber.isEmpty) return;
 
-    // Find the order by ID
-    final orderIndex = orders.indexWhere(
-        (order) => order.id.toUpperCase() == orderNumber.toUpperCase());
+    // Find the order by ID - search both raw ID and display number
+    final orderIndex = orders.indexWhere((order) =>
+        order.id.toUpperCase() == orderNumber.toUpperCase() ||
+        order.displayOrderNumber.toUpperCase() == orderNumber.toUpperCase());
 
     if (orderIndex == -1) {
       // Order not found
@@ -77,15 +78,14 @@ class ReturnOrderUtils {
       return;
     }
 
-    // Check if order can be returned (should be delivered or ready)
+    // Check if order can be returned (should be ready only in the ultra-simplified flow)
     final order = orders[orderIndex];
-    if (order.status != OrderStatus.delivered &&
-        order.status != OrderStatus.ready) {
+    if (order.status != OrderStatus.ready) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              'Order #${order.id} cannot be returned. Only delivered or ready orders can be returned.'),
+              'Order #${order.displayOrderNumber} cannot be returned. Only ready orders can be returned.'),
           backgroundColor: Colors.orange,
           duration: const Duration(seconds: 3),
         ),

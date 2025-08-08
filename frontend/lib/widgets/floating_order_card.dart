@@ -184,7 +184,7 @@ class _FloatingOrderCardState extends State<FloatingOrderCard>
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    '#${widget.order.id}',
+                                    '#${widget.order.displayOrderNumber}',
                                     style: theme.textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: theme.primaryColor,

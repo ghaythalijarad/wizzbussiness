@@ -143,4 +143,32 @@ class CloudKitchen implements Business {
     }
     return total;
   }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'businessId': id,
+      'name': name,
+      'businessName': name,
+      'email': email,
+      'ownerName': ownerName,
+      'owner_name': ownerName,
+      'phone': phone,
+      'phone_number': phone,
+      'address': address,
+      'latitude': latitude,
+      'longitude': longitude,
+      'description': description,
+      'website': website,
+      'businessPhotoUrl': businessPhotoUrl,
+      'business_photo_url': businessPhotoUrl,
+      'status': status,
+      'offers': offers.map((o) => o.toJson()).toList(),
+      'businessHours': businessHours,
+      'settings': settings,
+      'businessType': businessType.toString().split('.').last,
+      'business_type': businessType.toString().split('.').last,
+    };
+  }
 }

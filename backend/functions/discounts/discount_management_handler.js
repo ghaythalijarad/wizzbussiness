@@ -1,18 +1,19 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, QueryCommand, ScanCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
-const { CognitoIdentityServiceProvider } = require('@aws-sdk/client-cognito-identity-provider');
+const { CognitoIdentityProviderClient, GetUserCommand } = require('@aws-sdk/client-cognito-identity-provider');
 const { v4: uuidv4 } = require('uuid');
 const { createResponse } = require('../auth/utils');
 
 // Environment variables
 const DISCOUNTS_TABLE = process.env.DISCOUNTS_TABLE || 'OrderReceiver-Discounts';
+const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev';
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 
 exports.handler = async (event) => {
     console.log('Discount Management Handler - Event:', JSON.stringify(event, null, 2));
 
     // Instantiate AWS clients for this invocation
-    const cognito = new CognitoIdentityServiceProvider({ region: process.env.AWS_REGION || 'us-east-1' });
+    const cognito = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION || 'us-east-1' });
     const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
     const dynamodb = DynamoDBDocumentClient.from(dynamoDbClient);
 
@@ -85,7 +86,8 @@ exports.handler = async (event) => {
 // Helper function to get user info from access token
 async function getUserInfoFromToken(cognito, accessToken) {
     try {
-        const userResponse = await cognito.getUser({ AccessToken: accessToken });
+        const command = new GetUserCommand({ AccessToken: accessToken });
+        const userResponse = await cognito.send(command);
         const email = userResponse.UserAttributes.find(attr => attr.Name === 'email')?.Value;
         const userId = userResponse.UserAttributes.find(attr => attr.Name === 'sub')?.Value;
         
@@ -102,13 +104,12 @@ async function getUserInfoFromToken(cognito, accessToken) {
 
 // Helper function to get business info for user
 async function getBusinessInfoForUser(dynamodb, email) {
-    // THIS IS INEFFICIENT and should be replaced with a direct query in a real app.
     const params = {
-        TableName: process.env.BUSINESSES_TABLE,
-        IndexName: 'OwnerEmailIndex',
-        KeyConditionExpression: 'ownerEmail = :email',
+        TableName: BUSINESSES_TABLE,
+        IndexName: 'email-index',
+        KeyConditionExpression: 'email = :email',
         ExpressionAttributeValues: {
-            ':email': email
+            ':email': email.toLowerCase().trim()
         }
     };
 
@@ -129,14 +130,12 @@ async function handleGetDiscounts(dynamodb, businessId) {
     try {
         const params = {
             TableName: DISCOUNTS_TABLE,
-            IndexName: 'BusinessIdIndex',
-            KeyConditionExpression: 'businessId = :businessId',
+            FilterExpression: 'businessId = :businessId',
             ExpressionAttributeValues: {
                 ':businessId': businessId
             }
         };
-
-        const result = await dynamodb.send(new QueryCommand(params));
+        const result = await dynamodb.send(new ScanCommand(params));
         
         return createResponse(200, {
             success: true,

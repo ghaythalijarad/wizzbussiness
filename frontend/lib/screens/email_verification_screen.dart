@@ -8,6 +8,8 @@ import '../models/business.dart';
 import 'signin_screen.dart';
 import 'signup_screen.dart';
 import 'dashboards/business_dashboard.dart';
+import 'status/pending_approval_screen.dart';
+import 'status/rejected_screen.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
@@ -70,6 +72,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   prefixIcon: Icons.security_outlined,
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold),
                   validator: (value) {
                     if (value?.isEmpty ?? true) {
                       return l10n.verificationCodeRequired;
@@ -87,6 +91,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   text: l10n.verifyYourEmail,
                   onPressed: _isLoading ? null : _verifyEmail,
                   isLoading: _isLoading,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 const SizedBox(height: 24),
 
@@ -174,6 +179,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   style: TextStyle(
                     color: Theme.of(context).primaryColor,
                     fontWeight: FontWeight.w600,
+                    fontSize: 16,
                   ),
                 ),
         ),
@@ -238,38 +244,49 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         _showSuccessSnackBar(result.message ?? 'Verification successful');
 
         // Check if we have user and business data for auto-navigation
-        if (result.user != null && result.business != null) {
-          // User verified successfully with business data - navigate to dashboard
-          final businessData = Map<String, dynamic>.from(result.business as Map);
-          businessData['email'] = businessData['email'] ?? result.user!['email'] ?? widget.email;
+        if (result.business != null) {
+          final business =
+              Business.fromJson(Map<String, dynamic>.from(result.business!));
 
-          try {
-            Business.fromJson(businessData);
-            
-            // Navigate to business dashboard
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const BusinessDashboard(),
-              ),
-            );
-          } catch (businessError) {
-            print('Error creating business object: $businessError');
-            // Fall back to sign in screen if business data is invalid
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SignInScreen(),
-              ),
-            );
+          switch (business.status.toLowerCase()) {
+            case 'approved':
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const BusinessDashboard()),
+                (route) => false,
+              );
+              break;
+            case 'pending_review':
+            case 'pending':
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const PendingApprovalScreen()),
+                (route) => false,
+              );
+              break;
+            case 'rejected':
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const RejectedScreen()),
+                (route) => false,
+              );
+              break;
+            default:
+              // Fallback to sign in screen if status is unknown
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const SignInScreen()),
+                (route) => false,
+              );
           }
         } else {
           // Original flow - navigate to sign in
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(
-              builder: (context) => const SignInScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const SignInScreen()),
+            (route) => false,
           );
         }
       } else {
@@ -329,10 +346,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         ],
       ),
     );
-  }
-
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
   }
 
   void _showSuccessSnackBar(String message) {

@@ -27,9 +27,11 @@ provider:
     BUSINESS_PHOTOS_BUCKET: order-receiver-business-photos-dev
     ORDERS_TABLE: ${self:custom.ordersTable}
     MERCHANT_ENDPOINTS_TABLE: ${self:custom.merchantEndpointsTable}
+    WEBSOCKET_CONNECTIONS_TABLE: order-receiver-websocket-connections-dev
     # Use dynamic WebSocket endpoint reference - will be updated post-deployment
     WEBSOCKET_ENDPOINT: !Sub "wss://${WebsocketsApi}.execute-api.${aws:region}.amazonaws.com/${self:provider.stage}"
     ORDER_EVENTS_TOPIC_ARN: !Ref OrderEventsTopic
+    TIMEOUT_LOGS_TABLE: ${self:custom.timeoutLogsTable}
     # SNS_FCM_ARN: !Ref FCMPlatformApplication  # Commented out temporarily
     # SNS_APNS_ARN: !Ref APNSPlatformApplication  # Commented out temporarily
     SNS_FCM_ARN: "arn:aws:sns:${self:provider.region}:${aws:accountId}:placeholder-fcm"
@@ -49,6 +51,7 @@ provider:
             - "dynamodb:DeleteItem"
             - "dynamodb:Query"
             - "dynamodb:Scan"
+            - "dynamodb:BatchWriteItem"
           Resource:
             # us-east-1 tables (where existing data is)
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-users-dev"
@@ -67,6 +70,8 @@ provider:
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-business-working-hours-dev/index/*"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-pos-logs-dev"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-pos-logs-dev/index/*"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-timeout-logs-dev"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-timeout-logs-dev/index/*"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.ordersTable}"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.ordersTable}/index/*"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.merchantEndpointsTable}"
@@ -74,6 +79,8 @@ provider:
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.productsTable}"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.categoriesTable}"
             - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/${self:custom.productsTable}/index/BusinessIdIndex"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-websocket-connections-dev"
+            - "arn:aws:dynamodb:us-east-1:${aws:accountId}:table/order-receiver-websocket-connections-dev/index/*"
         - Effect: "Allow"
           Action:
             - "sns:Publish"
@@ -379,6 +386,28 @@ functions:
       - websocket:
           route: $default
 
+  businessOnlineStatus:
+    handler: functions/business/business_online_status_handler.handler
+    name: order-receiver-${self:provider.stage}-business-online-status-v1-sls
+    events:
+      # Business online status endpoints
+      - http:
+          path: /businesses/{businessId}/online-status
+          method: get
+          cors: true
+      - http:
+          path: /businesses/nearby/online
+          method: get
+          cors: true
+      - http:
+          path: /businesses/{businessId}/heartbeat
+          method: put
+          cors: true
+      - http:
+          path: /businesses/{businessId}/status
+          method: put
+          cors: true
+
 package:
   individually: true
 
@@ -390,6 +419,7 @@ custom:
   merchantEndpointsTable: order-receiver-merchant-endpoints-${sls:stage}
   productsTable: order-receiver-products-${sls:stage}
   categoriesTable: order-receiver-categories-${sls:stage}
+  timeoutLogsTable: order-receiver-timeout-logs-${sls:stage}
 
 resources:
   Resources:
@@ -453,6 +483,43 @@ resources:
             Projection:
               ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
+    
+    TimeoutLogsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.timeoutLogsTable}
+        AttributeDefinitions:
+          - AttributeName: orderId
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: S
+          - AttributeName: businessId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: orderId
+            KeyType: HASH
+          - AttributeName: timestamp
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: BusinessIdIndex
+            KeySchema:
+              - AttributeName: businessId
+                KeyType: HASH
+              - AttributeName: timestamp
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+    
+    # WebSocket Connections Table - Using existing table from WizzUser-backend-dev stack
+    # The table order-receiver-websocket-connections-dev already exists with:
+    # - Primary key: PK (HASH), SK (RANGE)  
+    # - GSI: GSI1 with GSI1PK (HASH), GSI1SK (RANGE)
+    # - TTL enabled on 'ttl' attribute
+    
     OrderEventsTopic:
       Type: AWS::SNS::Topic
       Properties:

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/locale_provider.dart';
+import '../providers/session_provider.dart';
 import '../services/language_service.dart';
+import '../screens/merchant_online_status_screen.dart';
 
 class SimpleSidebar extends ConsumerStatefulWidget {
   final bool isOnline;
@@ -26,6 +28,7 @@ class SimpleSidebar extends ConsumerStatefulWidget {
 
 class _SimpleSidebarState extends ConsumerState<SimpleSidebar> {
   late bool _isOnline;
+  bool _isToggling = false;
 
   @override
   void initState() {
@@ -38,6 +41,42 @@ class _SimpleSidebarState extends ConsumerState<SimpleSidebar> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.isOnline != widget.isOnline) {
       _isOnline = widget.isOnline;
+    }
+  }
+
+  Future<void> _handleToggleStatus(bool value) async {
+    if (_isToggling) return; // Prevent multiple simultaneous toggles
+
+    setState(() {
+      _isToggling = true;
+    });
+
+    try {
+      await widget.onToggleStatus(value);
+      // Only update the state if the operation succeeds
+      setState(() {
+        _isOnline = value;
+        _isToggling = false;
+      });
+    } catch (error) {
+      // Revert the switch state if the operation fails
+      setState(() {
+        _isToggling = false;
+      });
+
+      // Show error message to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to update status. Please try again.',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -154,19 +193,36 @@ class _SimpleSidebarState extends ConsumerState<SimpleSidebar> {
                                 ],
                               ),
                             ),
-                            Switch(
-                              value: _isOnline,
-                              onChanged: (value) {
-                                setState(() {
-                                  _isOnline = value;
-                                });
-                                widget.onToggleStatus(value);
-                              },
-                              activeColor: Colors.white,
-                              activeTrackColor: Colors.green,
-                              inactiveThumbColor: Colors.white,
-                              inactiveTrackColor: Colors.red.shade300,
-                            ),
+                            _isToggling
+                                ? SizedBox(
+                                    width: 48,
+                                    height: 28,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                            _isOnline
+                                                ? Colors.green
+                                                : Colors.red,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : Switch(
+                                    value: _isOnline,
+                                    onChanged: _isToggling
+                                        ? null
+                                        : _handleToggleStatus,
+                                    activeColor: Colors.green.shade700,
+                                    activeTrackColor: Colors.green.shade200,
+                                    inactiveThumbColor: Colors.red.shade700,
+                                    inactiveTrackColor: Colors.red.shade200,
+                                  ),
                           ],
                         ),
                       ),
@@ -213,6 +269,25 @@ class _SimpleSidebarState extends ConsumerState<SimpleSidebar> {
                               title: AppLocalizations.of(context)!.settings,
                               onTap: () {
                                 widget.onNavigate(4);
+                                widget.onClose();
+                              },
+                            ),
+                            _buildMenuItem(
+                              icon: Icons.wifi,
+                              title: 'Online Status',
+                              onTap: () {
+                                // Navigate to online status screen
+                                final session = ref.read(sessionProvider);
+                                if (session.businessId != null) {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          MerchantOnlineStatusScreen(
+                                        businessId: session.businessId!,
+                                      ),
+                                    ),
+                                  );
+                                }
                                 widget.onClose();
                               },
                             ),

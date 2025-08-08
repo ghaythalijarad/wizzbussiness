@@ -1,10 +1,11 @@
 // filepath: /Users/ghaythallaheebi/order-receiver-app-2/frontend/lib/components/innovative_sidebar.dart
 import 'package:flutter/material.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
+import '../services/app_state.dart';
 
-class InnovativeSidebar extends StatelessWidget {
+class InnovativeSidebar extends StatefulWidget {
   final bool isOnline;
-  final Function(bool) onToggleStatus;
+  final Future<void> Function(bool) onToggleStatus;
   final VoidCallback onReturnOrder;
   final Function(int) onNavigate;
   final VoidCallback onClose;
@@ -19,6 +20,31 @@ class InnovativeSidebar extends StatelessWidget {
   });
 
   @override
+  State<InnovativeSidebar> createState() => _InnovativeSidebarState();
+}
+
+class _InnovativeSidebarState extends State<InnovativeSidebar> {
+  final AppState _appState = AppState();
+
+  @override
+  void initState() {
+    super.initState();
+    _appState.addListener(_onAppStateChanged);
+  }
+
+  @override
+  void dispose() {
+    _appState.removeListener(_onAppStateChanged);
+    super.dispose();
+  }
+
+  void _onAppStateChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
 
@@ -26,7 +52,7 @@ class InnovativeSidebar extends StatelessWidget {
       children: [
         // Background overlay
         GestureDetector(
-          onTap: onClose,
+          onTap: widget.onClose,
           child: Container(
             color: Colors.black54,
             width: double.infinity,
@@ -71,7 +97,7 @@ class InnovativeSidebar extends StatelessWidget {
                               ),
                             ),
                             IconButton(
-                              onPressed: onClose,
+                              onPressed: widget.onClose,
                               icon: const Icon(
                                 Icons.close,
                                 color: Colors.white,
@@ -87,12 +113,12 @@ class InnovativeSidebar extends StatelessWidget {
                         margin: const EdgeInsets.all(16),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: isOnline
+                          color: _appState.isOnline
                               ? Colors.green.shade50
                               : Colors.red.shade50,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: isOnline
+                            color: _appState.isOnline
                                 ? Colors.green.shade200
                                 : Colors.red.shade200,
                           ),
@@ -100,8 +126,10 @@ class InnovativeSidebar extends StatelessWidget {
                         child: Row(
                           children: [
                             Icon(
-                              isOnline ? Icons.wifi : Icons.wifi_off,
-                              color: isOnline ? Colors.green : Colors.red,
+                              _appState.isOnline ? Icons.wifi : Icons.wifi_off,
+                              color: _appState.isOnline
+                                  ? Colors.green
+                                  : Colors.red,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -109,16 +137,18 @@ class InnovativeSidebar extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    isOnline ? loc.online : loc.offline,
+                                    _appState.isOnline
+                                        ? loc.online
+                                        : loc.offline,
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
-                                      color: isOnline
+                                      color: _appState.isOnline
                                           ? Colors.green.shade700
                                           : Colors.red.shade700,
                                     ),
                                   ),
                                   Text(
-                                    isOnline
+                                    _appState.isOnline
                                         ? loc.readyToReceiveOrders
                                         : loc.ordersArePaused,
                                     style: TextStyle(
@@ -129,11 +159,57 @@ class InnovativeSidebar extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            Switch(
-                              value: isOnline,
-                              onChanged: onToggleStatus,
-                              activeColor: Colors.green,
-                            ),
+                            _appState.isToggling
+                                ? SizedBox(
+                                    width: 48,
+                                    height: 28,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                            _appState.isOnline
+                                                ? Colors.green
+                                                : Colors.red,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : Switch(
+                                    value: _appState.isOnline,
+                                    onChanged: _appState.isToggling
+                                        ? null
+                                        : (value) async {
+                                            try {
+                                              await _appState.setOnline(
+                                                  value, widget.onToggleStatus);
+                                            } catch (error) {
+                                              if (mounted) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      'Failed to update status. Please try again.',
+                                                      style: TextStyle(
+                                                          color: Colors.white),
+                                                    ),
+                                                    backgroundColor: Colors.red,
+                                                    duration:
+                                                        Duration(seconds: 3),
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          },
+                                    activeColor: Colors.green.shade700,
+                                    activeTrackColor: Colors.green.shade300,
+                                    inactiveThumbColor: Colors.red.shade700,
+                                    inactiveTrackColor: Colors.red.shade300,
+                                  ),
                           ],
                         ),
                       ),
@@ -147,32 +223,32 @@ class InnovativeSidebar extends StatelessWidget {
                               icon: Icons.shopping_bag,
                               title: loc.orders,
                               onTap: () {
-                                onNavigate(0);
-                                onClose();
+                                widget.onNavigate(0);
+                                widget.onClose();
                               },
                             ),
                             _buildMenuItem(
                               icon: Icons.inventory_2,
                               title: loc.items,
                               onTap: () {
-                                onNavigate(1);
-                                onClose();
+                                widget.onNavigate(1);
+                                widget.onClose();
                               },
                             ),
                             _buildMenuItem(
                               icon: Icons.local_offer,
                               title: loc.discounts,
                               onTap: () {
-                                onNavigate(2);
-                                onClose();
+                                widget.onNavigate(2);
+                                widget.onClose();
                               },
                             ),
                             _buildMenuItem(
                               icon: Icons.settings,
                               title: loc.settings,
                               onTap: () {
-                                onNavigate(3);
-                                onClose();
+                                widget.onNavigate(3);
+                                widget.onClose();
                               },
                             ),
                             const Divider(),
@@ -180,8 +256,8 @@ class InnovativeSidebar extends StatelessWidget {
                               icon: Icons.undo,
                               title: loc.returnOrder,
                               onTap: () {
-                                onReturnOrder();
-                                onClose();
+                                widget.onReturnOrder();
+                                widget.onClose();
                               },
                               isDestructive: true,
                             ),

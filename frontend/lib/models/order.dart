@@ -15,6 +15,21 @@ enum OrderStatus {
   expired
 }
 
+enum OrderTimeoutStatus {
+  normal, // No timeout alerts
+  firstAlert, // 2 minutes - gentle reminder
+  urgentAlert, // 5 minutes - urgent notification
+  autoReject, // 8 minutes - automatic rejection
+  notApplicable // Order already confirmed/rejected
+}
+
+// Timeout configuration constants
+class TimeoutConfig {
+  static const int firstAlertSeconds = 2 * 60; // 2 minutes
+  static const int urgentAlertSeconds = 5 * 60; // 5 minutes
+  static const int autoRejectSeconds = 8 * 60; // 8 minutes
+}
+
 class Order {
   final String id;
   final String customerId;
@@ -67,6 +82,7 @@ class Order {
         case 'picked_up':
           return OrderStatus.delivered;
         case 'cancelled':
+        case 'rejected': // Map backend 'rejected' status to 'cancelled'
           return OrderStatus.cancelled;
         case 'returned':
           return OrderStatus.returned;
@@ -195,7 +211,7 @@ class Order {
   }
 
   Duration? getRemainingTime() {
-    if (status == OrderStatus.delivered || status == OrderStatus.cancelled) {
+    if (status == OrderStatus.ready || status == OrderStatus.cancelled) {
       return null;
     }
     final remaining = getEstimatedCompletionTime().difference(DateTime.now());
@@ -203,10 +219,105 @@ class Order {
   }
 
   bool get isOverdue {
-    if (status == OrderStatus.delivered || status == OrderStatus.cancelled) {
+    if (status == OrderStatus.ready || status == OrderStatus.cancelled) {
       return false;
     }
     return DateTime.now().isAfter(getEstimatedCompletionTime());
+  }
+
+  /// Get the timeout status based on how long the order has been pending
+  OrderTimeoutStatus getTimeoutStatus() {
+    // Only apply timeout logic to pending orders
+    if (status != OrderStatus.pending) {
+      return OrderTimeoutStatus.notApplicable;
+    }
+
+    final secondsElapsed = DateTime.now().difference(createdAt).inSeconds;
+
+    if (secondsElapsed >= TimeoutConfig.autoRejectSeconds) {
+      return OrderTimeoutStatus.autoReject;
+    } else if (secondsElapsed >= TimeoutConfig.urgentAlertSeconds) {
+      return OrderTimeoutStatus.urgentAlert;
+    } else if (secondsElapsed >= TimeoutConfig.firstAlertSeconds) {
+      return OrderTimeoutStatus.firstAlert;
+    } else {
+      return OrderTimeoutStatus.normal;
+    }
+  }
+
+  /// Get remaining seconds until next timeout threshold
+  int getRemainingSecondsToTimeout() {
+    if (status != OrderStatus.pending) {
+      return 0;
+    }
+
+    final secondsElapsed = DateTime.now().difference(createdAt).inSeconds;
+    final currentStatus = getTimeoutStatus();
+
+    switch (currentStatus) {
+      case OrderTimeoutStatus.normal:
+        return TimeoutConfig.firstAlertSeconds - secondsElapsed;
+      case OrderTimeoutStatus.firstAlert:
+        return TimeoutConfig.urgentAlertSeconds - secondsElapsed;
+      case OrderTimeoutStatus.urgentAlert:
+        return TimeoutConfig.autoRejectSeconds - secondsElapsed;
+      case OrderTimeoutStatus.autoReject:
+      case OrderTimeoutStatus.notApplicable:
+        return 0;
+    }
+  }
+
+  /// Check if this order should be auto-rejected due to timeout
+  bool shouldAutoReject() {
+    return status == OrderStatus.pending &&
+        getTimeoutStatus() == OrderTimeoutStatus.autoReject;
+  }
+
+  /// Get human-readable timeout message
+  String getTimeoutMessage() {
+    final timeoutStatus = getTimeoutStatus();
+    final remainingSeconds = getRemainingSecondsToTimeout();
+    final remainingMinutes = (remainingSeconds / 60).ceil();
+
+    switch (timeoutStatus) {
+      case OrderTimeoutStatus.normal:
+        return '';
+      case OrderTimeoutStatus.firstAlert:
+        return 'Please respond in $remainingMinutes minute${remainingMinutes != 1 ? 's' : ''}';
+      case OrderTimeoutStatus.urgentAlert:
+        return 'URGENT: Respond in $remainingMinutes minute${remainingMinutes != 1 ? 's' : ''} or order will be auto-rejected';
+      case OrderTimeoutStatus.autoReject:
+        return 'Order timeout - Auto-rejecting';
+      case OrderTimeoutStatus.notApplicable:
+        return '';
+    }
+  }
+
+  /// Get a user-friendly display order number
+  String get displayOrderNumber {
+    // If the ID already starts with a recognizable pattern (ORD-, ORDER-), use it
+    if (id.toUpperCase().startsWith('ORD-') ||
+        id.toUpperCase().startsWith('ORDER-')) {
+      return id.toUpperCase();
+    }
+
+    // If it's a UUID format, extract last 8 characters and format as ORD-XXXX
+    if (id.length >= 8) {
+      // For UUIDs or long IDs, use last 8 characters
+      final shortId = id.substring(id.length - 8).toUpperCase();
+      return 'ORD-$shortId';
+    }
+
+    // For short IDs, pad with zeros if needed
+    if (id.length < 4) {
+      final paddedId = id.padLeft(4, '0').toUpperCase();
+      return 'ORD-$paddedId';
+    }
+
+    // Default case: use first 8 characters or the full ID if shorter
+    final displayId =
+        id.length > 8 ? id.substring(0, 8).toUpperCase() : id.toUpperCase();
+    return 'ORD-$displayId';
   }
 
   Order copyWith({

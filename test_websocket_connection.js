@@ -1,77 +1,55 @@
 const WebSocket = require('ws');
 
 async function testWebSocketConnection() {
-    console.log('🧪 Testing WebSocket connection...');
+    console.log('🔍 Testing WebSocket connection status...\n');
 
-    const wsUrl = 'wss://8yn5wr533l.execute-api.us-east-1.amazonaws.com/dev';
-    const testBusinessId = 'test-business-123';
-    const fullUrl = `${wsUrl}?merchantId=${testBusinessId}`;
+    const connectionId = 'O9hYEdIfIAMCLDg=';
+    const wsEndpoint = 'wss://yafz9z7pck.execute-api.us-east-1.amazonaws.com/dev';
 
-    console.log(`🔌 Connecting to: ${fullUrl}`);
+    console.log(`Testing connection to: ${wsEndpoint}`);
+    console.log(`Connection ID to test: ${connectionId}\n`);
 
     try {
-        const ws = new WebSocket(fullUrl);
+      const ws = new WebSocket(wsEndpoint);
 
-        ws.on('open', () => {
-            console.log('✅ WebSocket connection opened successfully!');
+      ws.on('open', function open() {
+          console.log('✅ WebSocket connection opened');
 
-            // Send a test message
-            const testMessage = {
-                type: 'SUBSCRIBE_ORDERS',
-                businessId: testBusinessId,
-                timestamp: new Date().toISOString()
-            };
+          // Send a test message
+          const testMessage = {
+            action: 'ping',
+            connectionId: connectionId
+        };
 
-            console.log('📤 Sending test message:', testMessage);
-            ws.send(JSON.stringify(testMessage));
-        });
+        ws.send(JSON.stringify(testMessage));
+        console.log('📤 Sent test message:', JSON.stringify(testMessage));
+    });
 
-        ws.on('message', (data) => {
-            const message = JSON.parse(data.toString());
-            console.log('📨 Received message:', message);
+      ws.on('message', function message(data) {
+          console.log('📥 Received message:', data.toString());
+          ws.close();
+    });
 
-            if (message.type === 'CONNECTION_ESTABLISHED') {
-                console.log('🎉 WebSocket connection successfully established!');
+      ws.on('close', function close() {
+          console.log('🔴 WebSocket connection closed');
+      });
 
-                // Send a ping to test message handling
-                setTimeout(() => {
-                    const pingMessage = { type: 'PING', timestamp: new Date().toISOString() };
-                    console.log('📤 Sending ping:', pingMessage);
-                    ws.send(JSON.stringify(pingMessage));
-                }, 1000);
-            }
+      ws.on('error', function error(err) {
+          console.error('❌ WebSocket error:', err);
+      });
 
-            if (message.type === 'PONG') {
-                console.log('🏓 Ping/Pong test successful!');
-                setTimeout(() => {
-                    ws.close();
-                }, 1000);
-            }
-        });
+      // Close connection after 10 seconds
+      setTimeout(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+              console.log('⏰ Closing connection after timeout');
+              ws.close();
+          }
+      }, 10000);
 
-        ws.on('error', (error) => {
-            console.error('❌ WebSocket error:', error);
-        });
-
-        ws.on('close', (code, reason) => {
-            console.log(`🔌 WebSocket connection closed: ${code} - ${reason}`);
-        });
-
-        // Keep connection alive for testing
-        setTimeout(() => {
-            if (ws.readyState === WebSocket.OPEN) {
-                console.log('⏰ Closing connection after timeout');
-                ws.close();
-            }
-        }, 10000);
-
-    } catch (error) {
-        console.error('❌ Failed to create WebSocket connection:', error);
-    }
+  } catch (error) {
+      console.error('❌ Error testing WebSocket:', error);
+  }
 }
 
-if (require.main === module) {
-    testWebSocketConnection().catch(console.error);
-}
-
-module.exports = { testWebSocketConnection };
+// Test the connection
+testWebSocketConnection();

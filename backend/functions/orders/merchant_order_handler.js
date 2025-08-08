@@ -7,11 +7,47 @@ const { createResponse } = require('../auth/utils');
 // Environment variables
 const ORDERS_TABLE = process.env.ORDERS_TABLE;
 const MERCHANT_ENDPOINTS_TABLE = process.env.MERCHANT_ENDPOINTS_TABLE || 'order-receiver-merchant-endpoints-dev';
+const WEBSOCKET_CONNECTIONS_TABLE = process.env.WEBSOCKET_CONNECTIONS_TABLE;
+const TIMEOUT_LOGS_TABLE = process.env.TIMEOUT_LOGS_TABLE;
 
 // Initialize AWS clients
 const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
 const dynamodb = DynamoDBDocumentClient.from(dynamoDbClient);
 const sns = new SNSClient({ region: process.env.AWS_REGION || 'us-east-1' });
+
+/**
+ * Check if business is accepting orders by checking the acceptingOrders field
+ * This is the primary source of truth for order acceptance (customer app integration)
+ */
+async function isBusinessOnline(businessId) {
+    try {
+        // Check the acceptingOrders field in the businesses table
+        const businessParams = {
+            TableName: process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev',
+            Key: {
+                businessId: businessId
+            },
+            ProjectionExpression: 'acceptingOrders, lastStatusUpdate'
+        };
+
+        const businessResult = await dynamodb.send(new GetCommand(businessParams));
+        const business = businessResult.Item;
+
+        if (!business) {
+            console.log(`Business ${businessId} not found in businesses table`);
+            return false;
+        }
+
+        const isAcceptingOrders = business.acceptingOrders ?? false;
+        console.log(`Business ${businessId} accepting orders: ${isAcceptingOrders} (lastStatusUpdate: ${business.lastStatusUpdate})`);
+
+        return isAcceptingOrders;
+    } catch (error) {
+        console.error('Error checking business accepting orders status:', error);
+        // In case of error, default to offline to prevent order acceptance
+        return false;
+    }
+}
 
 /**
  * Merchant Order Handler - Handles merchant-specific order operations
@@ -60,6 +96,11 @@ exports.handler = async (event) => {
         if (httpMethod === 'POST' && path.includes('/merchants/') && path.includes('/device-token')) {
             const merchantId = pathParameters?.merchantId;
             return await handleRegisterDeviceToken(merchantId, JSON.parse(requestBody || '{}'));
+        }
+
+        if (httpMethod === 'POST' && path.includes('/merchant/order/') && path.includes('/timeout-log')) {
+            const orderId = pathParameters?.orderId;
+            return await handleTimeoutLog(orderId, JSON.parse(requestBody || '{}'));
         }
 
         if (httpMethod === 'POST' && path.includes('/webhooks/orders')) {
@@ -246,8 +287,6 @@ async function handleUpdateOrderStatus(orderId, data) {
         let eventType = 'ORDER_STATUS_UPDATED';
         if (status === 'ready') {
             eventType = 'ORDER_READY_FOR_PICKUP';
-        } else if (status === 'preparing') {
-            eventType = 'ORDER_PREPARING';
         }
 
         await publishOrderStatusUpdate(updatedOrder, eventType);
@@ -317,6 +356,22 @@ async function handleIncomingOrder(orderData) {
             notes,
             platformOrderId
         } = orderData;
+
+        // Check if business is online before accepting the order
+        const businessOnline = await isBusinessOnline(businessId);
+
+        if (!businessOnline) {
+            console.log(`❌ Order ${orderId} rejected - Business ${businessId} is offline`);
+            return createResponse(423, {
+                success: false,
+                message: 'Business is currently offline and cannot accept orders',
+                orderId,
+                businessId,
+                status: 'rejected_offline'
+            });
+        }
+
+        console.log(`✅ Business ${businessId} is online - proceeding with order ${orderId}`);
 
         const timestamp = new Date().toISOString();
 
@@ -523,5 +578,72 @@ async function removeStaleWebSocketConnection(endpoint) {
         console.log('🔌 Removed stale WebSocket connection for merchant:', endpoint.merchantId);
     } catch (error) {
         console.error('Error removing stale WebSocket connection:', error);
+    }
+}
+
+/**
+ * Log timeout events for orders
+ */
+async function handleTimeoutLog(orderId, requestData) {
+    try {
+        console.log('⏰ Logging timeout event for order:', orderId, 'Data:', requestData);
+
+        const { timeoutType, businessId, remainingSeconds, alertLevel } = requestData;
+
+        if (!timeoutType || !businessId) {
+            return createResponse(400, {
+                success: false,
+                message: 'Missing required fields: timeoutType and businessId'
+            });
+        }
+
+        // Validate timeout type
+        const validTimeoutTypes = ['firstAlert', 'urgentAlert', 'autoReject'];
+        if (!validTimeoutTypes.includes(timeoutType)) {
+            return createResponse(400, {
+                success: false,
+                message: 'Invalid timeout type. Must be: firstAlert, urgentAlert, or autoReject'
+            });
+        }
+
+        // Create timeout log entry
+        const timestamp = new Date().toISOString();
+        const ttl = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60); // 30 days TTL
+
+        const timeoutLogItem = {
+            orderId,
+            timestamp,
+            businessId,
+            timeoutType,
+            alertLevel: alertLevel || timeoutType,
+            remainingSeconds: remainingSeconds || 0,
+            deviceTimestamp: new Date().toISOString(),
+            ttl
+        };
+
+        await dynamodb.send(new PutCommand({
+            TableName: TIMEOUT_LOGS_TABLE,
+            Item: timeoutLogItem
+        }));
+
+        console.log('⏰ Successfully logged timeout event:', timeoutLogItem);
+
+        return createResponse(200, {
+            success: true,
+            message: 'Timeout event logged successfully',
+            data: {
+                orderId,
+                timeoutType,
+                timestamp
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error logging timeout event:', error);
+        return createResponse(500, {
+            success: false,
+            message: 'Failed to log timeout event',
+            error: error.message
+        });
     }
 }

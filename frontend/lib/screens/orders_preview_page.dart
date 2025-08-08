@@ -304,22 +304,23 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
               ],
             ),
             child: Directionality(
-              textDirection: TextDirection.rtl,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+              textDirection:
+                  Localizations.localeOf(context).languageCode == 'ar'
+                      ? TextDirection.rtl
+                      : TextDirection.ltr,
+              child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                child: Row(
+                child: Wrap(
+                  alignment: WrapAlignment.start,
+                  runAlignment: WrapAlignment.center,
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
                     _buildFilterChip('الطلبات الجديدة', 'pending'),
-                    const SizedBox(width: 6),
                     _buildFilterChip('مؤكدة', 'confirmed'),
-                    const SizedBox(width: 6),
                     _buildFilterChip('جاهزة', 'ready'),
-                    const SizedBox(width: 6),
                     _buildFilterChip('مكتملة', 'pickedUp'),
-                    const SizedBox(width: 6),
                     _buildFilterChip('ملغية', 'cancelled'),
-                    const SizedBox(width: 6),
                     _buildFilterChip('مرتجعة', 'returned'),
                   ],
                 ),
@@ -392,12 +393,39 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
     const customBlueColor = Color(0xFF00C1E8);
     const customPinkColor = Color(0xFFC6007E);
 
+    // Responsive sizing for chips - longer and little higher
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = ResponsiveHelper.isMobile(context);
+
+    // Increased horizontal padding for longer chips
+    double horizontalPadding;
+    double verticalPadding; // Increased vertical padding for higher chips
+    double fontSize;
+
+    if (screenWidth < 400) {
+      // Very small mobile screens
+      horizontalPadding = 12; // Increased from 8 for longer chips
+      verticalPadding = 8; // Increased from 4 for higher chips
+      fontSize = 13; // Increased from 11 for better visibility
+    } else if (isMobile) {
+      // Regular mobile screens
+      horizontalPadding = 16; // Increased from 10 for longer chips
+      verticalPadding = 8; // Increased from 4 for higher chips
+      fontSize = 14; // Increased from 12 for better visibility
+    } else {
+      // Desktop/tablet
+      horizontalPadding = 20; // Increased from 12 for longer chips
+      verticalPadding = 10; // Increased from 6 for higher chips
+      fontSize = 15; // Increased from 13 for better visibility
+    }
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
       child: Material(
         elevation: isSelected ? 2 : 0.5,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(
+            8), // Reduced from 16 to 8 for less round corners
         color: isSelected
             ? customBlueColor
             : const Color(0xFF001133).withOpacity(0.05),
@@ -406,11 +434,14 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
             : const Color(0xFF001133).withOpacity(0.1),
         child: InkWell(
           onTap: () => setState(() => _selectedFilter = value),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius:
+              BorderRadius.circular(8), // Match the container border radius
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding, vertical: verticalPadding),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius:
+                  BorderRadius.circular(8), // Reduced corners here too
               border: Border.all(
                 color: isSelected
                     ? customPinkColor
@@ -426,9 +457,11 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
                   style: TextStyle(
                     color: isSelected ? Colors.white : customBlueColor,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    fontSize: 13,
-                    letterSpacing: 0.2,
+                    fontSize: fontSize,
+                    letterSpacing: 0.1, // Slightly reduced letter spacing
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis, // Handle text overflow
                 ),
                 if (count > 0) ...[
                   SizedBox(width: 6),
@@ -438,7 +471,8 @@ class _OrdersPreviewPageState extends State<OrdersPreviewPage> {
                       color: isSelected
                           ? Colors.white.withOpacity(0.3)
                           : customBlueColor,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius:
+                          BorderRadius.circular(8), // Reduced from 10 to 8
                     ),
                     child: Text(
                       count.toString(),

@@ -130,7 +130,7 @@ class Pharmacy implements Business {
   @override
   double calculateOrderDiscount(double orderTotal, List<OrderItem> items) {
     double total = 0;
-    for (final d in getActiveDiscounts()) {
+    for (final d in discounts.where((d) => d.isActive)) {
       double amt = 0;
       switch (d.applicability) {
         case DiscountApplicability.allItems:
@@ -144,9 +144,7 @@ class Pharmacy implements Business {
           }
           break;
         case DiscountApplicability.specificCategories:
-          // Note: Category-based discounts may need to be handled differently
-          // without menu structure. For now, this returns 0 for category-based discounts.
-          amt = 0;
+          amt = 0; // Category-based discounts need menu structure
           break;
         case DiscountApplicability.minimumOrder:
           amt = orderTotal;
@@ -159,5 +157,33 @@ class Pharmacy implements Business {
               : 0.0; // Other types require backend calculation
     }
     return total;
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'businessId': id,
+      'name': name,
+      'businessName': name,
+      'email': email,
+      'ownerName': ownerName,
+      'owner_name': ownerName,
+      'phone': phone,
+      'phone_number': phone,
+      'address': address,
+      'latitude': latitude,
+      'longitude': longitude,
+      'description': description,
+      'website': website,
+      'businessPhotoUrl': businessPhotoUrl,
+      'business_photo_url': businessPhotoUrl,
+      'status': status,
+      'offers': offers.map((o) => o.toJson()).toList(),
+      'businessHours': businessHours,
+      'settings': settings,
+      'businessType': businessType.toString().split('.').last,
+      'business_type': businessType.toString().split('.').last,
+    };
   }
 }

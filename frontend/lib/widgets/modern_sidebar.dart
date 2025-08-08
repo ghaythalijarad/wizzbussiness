@@ -4,10 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../providers/locale_provider.dart';
 import '../services/language_service.dart';
+import '../services/app_state.dart';
 
 class ModernSidebar extends ConsumerStatefulWidget {
   final bool isOnline;
-  final Function(bool) onToggleStatus;
+  final Future<void> Function(bool) onToggleStatus;
   final VoidCallback onReturnOrder;
   final Function(int) onNavigate;
   final VoidCallback onClose;
@@ -32,10 +33,12 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
   late Animation<double> _slideAnimation;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  final AppState _appState = AppState();
 
   @override
   void initState() {
     super.initState();
+    _appState.addListener(_onAppStateChanged);
 
     // Main slide animation
     _animationController = AnimationController(
@@ -80,7 +83,14 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
   void dispose() {
     _animationController.dispose();
     _rippleController.dispose();
+    _appState.removeListener(_onAppStateChanged);
     super.dispose();
+  }
+
+  void _onAppStateChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _closeWithAnimation() async {
@@ -206,15 +216,15 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
         children: [
           // Simple status indicator
           Icon(
-            widget.isOnline ? Icons.wifi : Icons.wifi_off,
-            color: widget.isOnline ? Colors.green : Colors.orange,
+            _appState.isOnline ? Icons.wifi : Icons.wifi_off,
+            color: _appState.isOnline ? Colors.green : Colors.orange,
             size: 20,
           ),
           const SizedBox(width: 12),
 
           Expanded(
             child: Text(
-              widget.isOnline ? localizations.online : localizations.offline,
+              _appState.isOnline ? localizations.online : localizations.offline,
               style: TextStyle(
                 color: colorScheme.onSurface,
                 fontWeight: FontWeight.w500,
@@ -223,12 +233,53 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
             ),
           ),
 
-          // Compact toggle switch
-          Switch.adaptive(
-            value: widget.isOnline,
-            onChanged: widget.onToggleStatus,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
+          // Loading indicator or toggle switch
+          _appState.isToggling
+              ? SizedBox(
+                  width: 48,
+                  height: 28,
+                  child: Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          _appState.isOnline ? Colors.green : Colors.orange,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              : Switch.adaptive(
+                  value: _appState.isOnline,
+                  onChanged: _appState.isToggling
+                      ? null
+                      : (value) async {
+                          try {
+                            await _appState.setOnline(
+                                value, widget.onToggleStatus);
+                          } catch (error) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Failed to update status. Please try again.',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.red,
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  activeColor: Colors.green.shade700,
+                  activeTrackColor: Colors.green.shade300,
+                  inactiveThumbColor: Colors.red.shade700,
+                  inactiveTrackColor: Colors.red.shade300,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
         ],
       ),
     );

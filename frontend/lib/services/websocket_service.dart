@@ -1,6 +1,24 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/io.dart';
+import 'notification_service.dart';
+
+final webSocketServiceProvider = Provider<WebSocketService>((ref) {
+  return WebSocketService(
+    ref: ref,
+    onMessage: (data) {
+      // Handle incoming messages globally or pass to another service
+      print("Global WebSocket Message: $data");
+    },
+    onDone: () {
+      print("Global WebSocket Closed");
+    },
+    onError: (error) {
+      print("Global WebSocket Error: $error");
+    },
+  );
+});
 
 class WebSocketService {
   IOWebSocketChannel? _channel;
@@ -12,11 +30,13 @@ class WebSocketService {
   int _reconnectAttempts = 0;
   String? _lastUrl;
   String? _lastToken;
+  final Ref ref;
 
   WebSocketService({
     required this.onMessage,
     required this.onDone,
     required this.onError,
+    required this.ref,
   });
 
   void connect(String url, String token) {
@@ -44,7 +64,21 @@ class WebSocketService {
     _channelSubscription = _channel!.stream.listen(
       (message) {
         print("WebSocket: Message received: $message");
-        onMessage(jsonDecode(message));
+        final decodedMessage = jsonDecode(message);
+
+        // Check if this is an actionable order notification
+        if (decodedMessage['type'] == 'NEW_ORDER' &&
+            decodedMessage['payload']?['data']?['actions'] != null) {
+          final orderId = decodedMessage['payload']['data']['orderId'];
+          final notificationService = ref.read(notificationServiceProvider);
+          notificationService.addOrderNotification(
+            title: 'New Order!',
+            message: 'You have a new order: $orderId',
+            orderId: orderId,
+          );
+        }
+
+        onMessage(decodedMessage);
       },
       onDone: () {
         print("WebSocket: Connection closed.");

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
+import '../services/app_state.dart';
 
 class InnovativeSidebar extends StatefulWidget {
   final bool isOnline;
-  final Function(bool) onToggleStatus;
+  final Future<void> Function(bool) onToggleStatus;
   final VoidCallback onReturnOrder;
   final Function(int) onNavigate;
   final VoidCallback onClose;
@@ -27,10 +28,12 @@ class _InnovativeSidebarState extends State<InnovativeSidebar>
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
   late Animation<double> _fadeAnimation;
+  final AppState _appState = AppState();
 
   @override
   void initState() {
     super.initState();
+    _appState.addListener(_onAppStateChanged);
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -58,7 +61,14 @@ class _InnovativeSidebarState extends State<InnovativeSidebar>
   @override
   void dispose() {
     _animationController.dispose();
+    _appState.removeListener(_onAppStateChanged);
     super.dispose();
+  }
+
+  void _onAppStateChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -236,17 +246,17 @@ class _InnovativeSidebarState extends State<InnovativeSidebar>
                                       child: Row(
                                         children: [
                                           Icon(
-                                            widget.isOnline
+                                            _appState.isOnline
                                                 ? Icons.wifi
                                                 : Icons.wifi_off,
-                                            color: widget.isOnline
+                                            color: _appState.isOnline
                                                 ? Colors.green
                                                 : Colors.red,
                                           ),
                                           const SizedBox(width: 12),
                                           Expanded(
                                             child: Text(
-                                              widget.isOnline
+                                              _appState.isOnline
                                                   ? localizations.online
                                                   : localizations.offline,
                                               style: const TextStyle(
@@ -255,16 +265,73 @@ class _InnovativeSidebarState extends State<InnovativeSidebar>
                                               ),
                                             ),
                                           ),
-                                          Switch(
-                                            value: widget.isOnline,
-                                            onChanged: widget.onToggleStatus,
-                                            activeColor: Colors.green,
-                                            activeTrackColor: Colors.green
-                                                .withValues(alpha: 0.3),
-                                            inactiveThumbColor: Colors.red,
-                                            inactiveTrackColor: Colors.red
-                                                .withValues(alpha: 0.3),
-                                          ),
+                                          _appState.isToggling
+                                              ? SizedBox(
+                                                  width: 48,
+                                                  height: 28,
+                                                  child: Center(
+                                                    child: SizedBox(
+                                                      width: 20,
+                                                      height: 20,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        valueColor:
+                                                            AlwaysStoppedAnimation<
+                                                                Color>(
+                                                          _appState.isOnline
+                                                              ? Colors.green
+                                                              : Colors.red,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
+                                              : Switch(
+                                                  value: _appState.isOnline,
+                                                  onChanged:
+                                                      _appState.isToggling
+                                                          ? null
+                                                          : (value) async {
+                                                              try {
+                                                                await _appState
+                                                                    .setOnline(
+                                                                        value,
+                                                                        widget
+                                                                            .onToggleStatus);
+                                                              } catch (error) {
+                                                                if (mounted) {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(
+                                                                    SnackBar(
+                                                                      content:
+                                                                          Text(
+                                                                        'Failed to update status. Please try again.',
+                                                                        style: TextStyle(
+                                                                            color:
+                                                                                Colors.white),
+                                                                      ),
+                                                                      backgroundColor:
+                                                                          Colors
+                                                                              .red,
+                                                                      duration: Duration(
+                                                                          seconds:
+                                                                              3),
+                                                                    ),
+                                                                  );
+                                                                }
+                                                              }
+                                                            },
+                                                  activeColor:
+                                                      Colors.green.shade700,
+                                                  activeTrackColor:
+                                                      Colors.green.shade300,
+                                                  inactiveThumbColor:
+                                                      Colors.red.shade700,
+                                                  inactiveTrackColor:
+                                                      Colors.red.shade300,
+                                                ),
                                         ],
                                       ),
                                     ),

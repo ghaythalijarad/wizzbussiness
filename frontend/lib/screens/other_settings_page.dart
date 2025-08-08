@@ -207,17 +207,15 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
           title: Text(loc.businessLocation),
           backgroundColor: Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: Colors.white,
-                shape: const RoundedRectangleBorder(),
-                elevation: 0,
-                padding: const EdgeInsets.all(12),
-              ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              shape: const RoundedRectangleBorder(),
+              elevation: 0,
+              padding: const EdgeInsets.all(12),
             ),
           ),
         ),
@@ -235,17 +233,15 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
         foregroundColor: Colors.white,
         elevation: 2,
         shadowColor: Theme.of(context).primaryColor.withOpacity(0.3),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              foregroundColor: Colors.white,
-              shape: const RoundedRectangleBorder(),
-              elevation: 0,
-              padding: const EdgeInsets.all(12),
-            ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            shape: const RoundedRectangleBorder(),
+            elevation: 0,
+            padding: const EdgeInsets.all(12),
           ),
         ),
         actions: [

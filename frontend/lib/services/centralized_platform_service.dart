@@ -3,8 +3,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import '../config/app_config.dart';
 import 'dart:async';
-import 'dart:convert';
-import 'websocket_service.dart';
+// import 'websocket_service.dart'; // Temporarily disabled - requires Ref parameter
 import '../models/order.dart';
 
 class CentralizedPlatformService with ChangeNotifier {
@@ -12,7 +11,7 @@ class CentralizedPlatformService with ChangeNotifier {
       CentralizedPlatformService._internal();
   bool _isDisposed = false;
   String? _businessId;
-  late WebSocketService _webSocketService; // Add WebSocketService instance
+  // late WebSocketService _webSocketService; // Temporarily disabled - requires Ref parameter
   final _orderStreamController = StreamController<Order>.broadcast();
 
   List<Map<String, dynamic>> _availablePlatforms = [];
@@ -26,7 +25,10 @@ class CentralizedPlatformService with ChangeNotifier {
   Stream<Order> get orderStream => _orderStreamController.stream;
 
   CentralizedPlatformService._internal() {
+    // TODO: WebSocketService temporarily disabled - requires Ref parameter from Riverpod
+    /*
     _webSocketService = WebSocketService(
+      ref: ref, // Requires Riverpod Ref instance
       onMessage: (message) {
         print("CentralizedPlatformService: Message received: $message");
         try {
@@ -53,7 +55,8 @@ class CentralizedPlatformService with ChangeNotifier {
         // Handle error, maybe schedule a reconnect
       },
     );
-    _connectToWebSocket();
+    */
+    // _connectToWebSocket(); // Disabled until WebSocketService is fixed
     initializePlatforms();
   }
 
@@ -62,9 +65,9 @@ class CentralizedPlatformService with ChangeNotifier {
     try {
       final token = await _getStoredToken();
       if (token != null) {
-        final url = AppConfig.webSocketUrl;
-        _webSocketService.connect(url, token);
-        print('WebSocket connection established.');
+        // final url = AppConfig.webSocketUrl; // Would be used for WebSocket connection
+        // _webSocketService.connect(url, token); // Disabled until WebSocketService is fixed
+        print('WebSocket connection would be established here.');
       } else {
         print('Authentication token not found, WebSocket not connected.');
       }
@@ -85,7 +88,7 @@ class CentralizedPlatformService with ChangeNotifier {
   @override
   void dispose() {
     _isDisposed = true;
-    _webSocketService.disconnect();
+    // _webSocketService.disconnect(); // Disabled until WebSocketService is fixed
     
     // Safely close stream controller
     if (!_orderStreamController.isClosed) {

@@ -133,58 +133,61 @@ class Store implements Business {
 
   @override
   double calculateOrderDiscount(double orderTotal, List<OrderItem> items) {
-    double totalDiscount = 0.0;
-    final activeDiscounts = getActiveDiscounts();
-
-    for (final discount in activeDiscounts) {
-      totalDiscount +=
-          _calculateDiscountWithCategoryMapping(discount, orderTotal, items);
+    double total = 0;
+    for (final d in discounts.where((d) => d.isActive)) {
+      double amt = 0;
+      switch (d.applicability) {
+        case DiscountApplicability.allItems:
+          amt = orderTotal;
+          break;
+        case DiscountApplicability.specificItems:
+          for (final item in items) {
+            if (d.applicableItemIds.contains(item.dishId)) {
+              amt += item.price * item.quantity;
+            }
+          }
+          break;
+        case DiscountApplicability.specificCategories:
+          amt = 0; // Category-based discounts need menu structure
+          break;
+        case DiscountApplicability.minimumOrder:
+          amt = orderTotal;
+          break;
+      }
+      total += d.type == DiscountType.percentage
+          ? amt * (d.value / 100)
+          : d.type == DiscountType.freeDelivery
+              ? 0.0 // Free delivery handled separately
+              : 0.0; // Other types require backend calculation
     }
-
-    return totalDiscount;
+    return total;
   }
 
-  double _calculateDiscountWithCategoryMapping(
-      Discount discount, double orderTotal, List<OrderItem> items) {
-    if (!discount.isActive) return 0.0;
-
-    if (orderTotal < discount.minimumOrderAmount) return 0.0;
-
-    double discountableAmount = 0.0;
-
-    switch (discount.applicability) {
-      case DiscountApplicability.allItems:
-        discountableAmount = orderTotal;
-        break;
-      case DiscountApplicability.specificItems:
-        for (final item in items) {
-          if (discount.applicableItemIds.contains(item.dishId)) {
-            discountableAmount += item.price * item.quantity;
-          }
-        }
-        break;
-      case DiscountApplicability.specificCategories:
-        for (final item in items) {
-          // For simplified implementation, we'll treat all items as eligible
-          // In a real app, you'd need a way to map dishId to categoryId
-          if (discount.applicableCategoryIds.isNotEmpty) {
-            discountableAmount += item.price * item.quantity;
-          }
-        }
-        break;
-      case DiscountApplicability.minimumOrder:
-        discountableAmount = orderTotal;
-        break;
-    }
-
-    if (discount.type == DiscountType.percentage) {
-      return discountableAmount * (discount.value / 100);
-    } else if (discount.type == DiscountType.freeDelivery) {
-      return 0.0; // Free delivery is handled separately in delivery fee calculation
-    } else {
-      // For conditional and buyXGetY types
-      // These require more complex logic that should be handled by the backend
-      return 0.0;
-    }
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'businessId': id,
+      'name': name,
+      'businessName': name,
+      'email': email,
+      'ownerName': ownerName,
+      'owner_name': ownerName,
+      'phone': phone,
+      'phone_number': phone,
+      'address': address,
+      'latitude': latitude,
+      'longitude': longitude,
+      'description': description,
+      'website': website,
+      'businessPhotoUrl': businessPhotoUrl,
+      'business_photo_url': businessPhotoUrl,
+      'status': status,
+      'offers': offers.map((o) => o.toJson()).toList(),
+      'businessHours': businessHours,
+      'settings': settings,
+      'businessType': businessType.toString().split('.').last,
+      'business_type': businessType.toString().split('.').last,
+    };
   }
 }

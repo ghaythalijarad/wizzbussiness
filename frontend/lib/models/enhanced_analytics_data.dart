@@ -8,12 +8,16 @@ class AnalyticsData {
   final int totalOrders;
   final double averageOrderValue;
   final List<TopSellingItem> topSellingItems;
+  final List<LeastOrderedItem> leastOrderedItems;
+  final List<ReviewData> recentReviews;
   final Map<OrderStatus, int> ordersByStatus;
   final List<DailyRevenue> revenueChart;
   final double growthRate;
   final int customersServed;
   final double cancellationRate;
   final double averagePreparationTime;
+  final double averageRating;
+  final int totalReviews;
 
   AnalyticsData({
     required this.totalRevenue,
@@ -23,12 +27,16 @@ class AnalyticsData {
     required this.totalOrders,
     required this.averageOrderValue,
     required this.topSellingItems,
+    required this.leastOrderedItems,
+    required this.recentReviews,
     required this.ordersByStatus,
     required this.revenueChart,
     required this.growthRate,
     required this.customersServed,
     required this.cancellationRate,
     required this.averagePreparationTime,
+    required this.averageRating,
+    required this.totalReviews,
   });
 }
 
@@ -41,6 +49,34 @@ class TopSellingItem {
     required this.itemName,
     required this.soldQuantity,
     required this.revenue,
+  });
+}
+
+class LeastOrderedItem {
+  final String itemName;
+  final int soldQuantity;
+  final double revenue;
+
+  LeastOrderedItem({
+    required this.itemName,
+    required this.soldQuantity,
+    required this.revenue,
+  });
+}
+
+class ReviewData {
+  final String customerName;
+  final double rating;
+  final String comment;
+  final DateTime createdAt;
+  final String orderId;
+
+  ReviewData({
+    required this.customerName,
+    required this.rating,
+    required this.comment,
+    required this.createdAt,
+    required this.orderId,
   });
 }
 

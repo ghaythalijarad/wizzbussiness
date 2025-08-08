@@ -107,16 +107,10 @@ class OrderService {
         return 'pending';
       case 'confirmed':
         return 'confirmed';
-      case 'preparing':
-        return 'preparing';
       case 'ready':
         return 'ready';
-      case 'ontheway':
-        return 'on_the_way';
-      case 'delivered':
-        return 'delivered';
       case 'cancelled':
-        return 'cancelled';
+        return 'rejected'; // Backend expects 'rejected' for cancelled orders
       case 'returned':
         return 'returned';
       case 'expired':

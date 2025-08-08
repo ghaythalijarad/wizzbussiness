@@ -5,7 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/order.dart';
 import '../services/order_service.dart';
 import '../services/order_timer_service.dart';
-import '../services/realtime_order_service.dart'; // Import real-time service
+import '../services/realtime_order_service.dart';
 import '../screens/login_page.dart';
 import '../widgets/order_card.dart';
 import '../utils/responsive_helper.dart';
@@ -32,8 +32,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
   bool _isLoading = true;
   StreamSubscription? _newOrderSubscription;
   StreamSubscription? _orderUpdateSubscription;
-  StreamSubscription? _connectionSubscription;
-  bool _isConnected = false;
+  Timer? _expiredOrdersTimer; // Add timer for checking expired orders
 
   @override
   void initState() {
@@ -75,7 +74,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '🆕 New order from ${newOrder.customerName}\nTotal: \$${newOrder.totalAmount.toStringAsFixed(2)}',
+                    '🆕 New order from ${newOrder.customerName}\nTotal: ${newOrder.totalAmount.toStringAsFixed(2)} IQD',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -114,20 +113,11 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
         _handleRealtimeOrderUpdate(update);
       }
     });
-
-    // Subscribe to connection status
-    _connectionSubscription =
-        _realtimeService.connectionStream.listen((connected) {
-      if (mounted) {
-        setState(() {
-          _isConnected = connected;
-        });
-      }
-    });
   }
 
   @override
   void dispose() {
+    _expiredOrdersTimer?.cancel();
     _cleanupRealtimeService();
     super.dispose();
   }
@@ -136,12 +126,10 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     // Cancel subscriptions safely
     _newOrderSubscription?.cancel();
     _orderUpdateSubscription?.cancel();
-    _connectionSubscription?.cancel();
     
     // Reset subscription references
     _newOrderSubscription = null;
     _orderUpdateSubscription = null;
-    _connectionSubscription = null;
     
     // Disconnect but don't dispose the singleton service
     // The service handles its own lifecycle as a singleton
@@ -193,9 +181,11 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
       // Sync connection state and finish initialization
       if (mounted) {
         setState(() {
-          _isConnected = _realtimeService.isConnected;
           _isInitializing = false;
         });
+        
+        // Start the expired orders timer after successful initialization
+        _startExpiredOrdersTimer();
       }
       
       print('✅ OrdersPage: Initialization completed successfully');
@@ -217,19 +207,44 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
       final orders = await _orderService.getMerchantOrders(businessId);
       if (mounted) {
         setState(() {
+          List<Order> processedOrders = orders;
+          
+          // Check for orders that should be expired and update them automatically
+          final ordersToExpire = processedOrders
+              .where((order) => order.status == OrderStatus.pending && order.shouldAutoReject())
+              .toList();
+          
+          // Process expired orders
+          for (final order in ordersToExpire) {
+            debugPrint('⏰ Auto-expiring order ${order.id} due to timeout');
+            // Update order status to expired locally immediately
+            order.status = OrderStatus.expired;
+            
+            // Update on backend asynchronously (don't await to avoid blocking UI)
+            _handleOrderUpdate(order.id, OrderStatus.expired).catchError((error) {
+              debugPrint('❌ Failed to update expired order ${order.id} on backend: $error');
+              // Revert status if backend update fails
+              if (mounted) {
+                setState(() {
+                  order.status = OrderStatus.pending;
+                });
+              }
+            });
+          }
+          
           if (preserveNewOrders) {
             // Merge server orders with any locally added new orders
-            final serverOrderIds = orders.map((o) => o.id).toSet();
+            final serverOrderIds = processedOrders.map((o) => o.id).toSet();
             final localNewOrders = _orders.where((order) => 
               !serverOrderIds.contains(order.id) && 
               order.status == OrderStatus.pending
             ).toList();
             
             // Combine local new orders (at top) with server orders
-            _orders = [...localNewOrders, ...orders];
-            debugPrint('📋 Merged ${localNewOrders.length} local new orders with ${orders.length} server orders');
+            _orders = [...localNewOrders, ...processedOrders];
+            debugPrint('📋 Merged ${localNewOrders.length} local new orders with ${processedOrders.length} server orders');
           } else {
-            _orders = orders;
+            _orders = processedOrders;
           }
           _isLoading = false;
         });
@@ -359,6 +374,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
         return OrderStatus.cancelled;
       case 'returned':
         return OrderStatus.returned;
+      case 'expired':
+        return OrderStatus.expired;
       default:
         return null;
     }
@@ -407,6 +424,316 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     }
   }
 
+  void _startExpiredOrdersTimer() {
+    // Check for expired orders every 10 seconds
+    _expiredOrdersTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted) {
+        _checkAndExpireOrders();
+      }
+    });
+  }
+
+  void _checkAndExpireOrders() {
+    if (_orders.isEmpty) return;
+
+    bool hasExpiredOrders = false;
+    
+    // Find orders that should be expired
+    for (final order in _orders) {
+      if (order.status == OrderStatus.pending && order.shouldAutoReject()) {
+        debugPrint('⏰ Auto-expiring order ${order.id} due to timeout');
+        
+        // Update order status to expired locally immediately
+        setState(() {
+          order.status = OrderStatus.expired;
+        });
+        
+        hasExpiredOrders = true;
+        
+        // Update on backend asynchronously
+        _handleOrderUpdate(order.id, OrderStatus.expired).catchError((error) {
+          debugPrint('❌ Failed to update expired order ${order.id} on backend: $error');
+          // Revert status if backend update fails
+          if (mounted) {
+            setState(() {
+              order.status = OrderStatus.pending;
+            });
+          }
+        });
+      }
+    }
+    
+    // If we expired orders and user is viewing pending, show notification
+    if (hasExpiredOrders && _selectedFilter == 'pending' && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.timer_off, color: Colors.white),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '⏰ Some orders have expired and moved to Expired tab',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'VIEW EXPIRED',
+            textColor: Colors.white,
+            onPressed: () {
+              setState(() {
+                _selectedFilter = 'expired';
+              });
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  void _showArchiveStatusMenu(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                const Icon(
+                  Icons.archive_outlined,
+                  color: Color(0xFF00C1E8),
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Archive & History',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF001133),
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: Color(0xFF001133)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            
+            // Archive status options
+            _buildArchiveMenuItem(
+              context,
+              icon: Icons.cancel_outlined,
+              label: loc.cancelled,
+              subtitle: 'View cancelled orders',
+              value: 'cancelled',
+              color: Colors.red,
+            ),
+            const SizedBox(height: 12),
+            _buildArchiveMenuItem(
+              context,
+              icon: Icons.keyboard_return,
+              label: loc.orderReturned,
+              subtitle: 'View returned orders',
+              value: 'returned',
+              color: Colors.orange,
+            ),
+            const SizedBox(height: 12),
+            _buildArchiveMenuItem(
+              context,
+              icon: Icons.timer_off_outlined,
+              label: 'Expired',
+              subtitle: 'View expired/timed out orders',
+              value: 'expired',
+              color: Colors.grey,
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildArchiveMenuItem(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required String value,
+    required Color color,
+  }) {
+    final isSelected = _selectedFilter == value;
+    
+    return Material(
+      color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedFilter = value;
+          });
+          Navigator.pop(context);
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? color : color.withOpacity(0.2),
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: isSelected ? color : const Color(0xFF001133),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: const Color(0xFF001133).withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle,
+                  color: color,
+                  size: 20,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildArchiveMenuButton() {
+    final isArchiveSelected = ['cancelled', 'returned', 'expired'].contains(_selectedFilter);
+    const customBlueColor = Color(0xFF00C1E8);
+    const customPinkColor = Color(0xFFC6007E);
+    
+    // Responsive sizing
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = ResponsiveHelper.isMobile(context);
+    
+    double horizontalPadding;
+    double verticalPadding;
+    double fontSize;
+    
+    if (screenWidth < 400) {
+      horizontalPadding = 12;
+      verticalPadding = 8;
+      fontSize = 13;
+    } else if (isMobile) {
+      horizontalPadding = 16;
+      verticalPadding = 8;
+      fontSize = 14;
+    } else {
+      horizontalPadding = 20;
+      verticalPadding = 10;
+      fontSize = 15;
+    }
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      child: Material(
+        elevation: isArchiveSelected ? 2 : 0.5,
+        borderRadius: BorderRadius.circular(8),
+        color: isArchiveSelected
+            ? customBlueColor
+            : const Color(0xFF001133).withOpacity(0.05),
+        shadowColor: isArchiveSelected
+            ? customBlueColor.withOpacity(0.3)
+            : const Color(0xFF001133).withOpacity(0.1),
+        child: InkWell(
+          onTap: () => _showArchiveStatusMenu(context),
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: verticalPadding,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isArchiveSelected
+                    ? customPinkColor
+                    : customPinkColor.withOpacity(0.4),
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.archive_outlined,
+                  color: isArchiveSelected ? Colors.white : customBlueColor,
+                  size: fontSize + 2,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Archive',
+                  style: TextStyle(
+                    color: isArchiveSelected ? Colors.white : customBlueColor,
+                    fontWeight: isArchiveSelected ? FontWeight.w600 : FontWeight.w500,
+                    fontSize: fontSize,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.keyboard_arrow_down,
+                  color: isArchiveSelected ? Colors.white : customBlueColor,
+                  size: fontSize + 2,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isInitializing) {
@@ -438,35 +765,6 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     return Scaffold(
       body: Column(
         children: [
-          // Connection status indicator
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-            decoration: BoxDecoration(
-              color: _isConnected ? Colors.green.shade600 : Colors.orange,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  _isConnected ? Icons.wifi : Icons.wifi_off,
-                  color: Colors.white,
-                  size: 14,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  _isConnected
-                      ? 'Real-time sync active'
-                      : 'Using backup sync - WebSocket disconnected',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
           // Filter bar
           Container(
             width: double.infinity,
@@ -485,27 +783,22 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                   Localizations.localeOf(context).languageCode == 'ar'
                       ? TextDirection.rtl
                       : TextDirection.ltr,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+              child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                child: Row(
-                  children: [
-                    _buildFilterChip(loc.pending, 'pending'),
-                    const SizedBox(width: 6),
-                    _buildFilterChip(loc.confirmed, 'confirmed'),
-                    const SizedBox(width: 6),
-                    _buildFilterChip(loc.preparing, 'preparing'),
-                    const SizedBox(width: 6),
-                    _buildFilterChip(loc.orderReady, 'ready'),
-                    const SizedBox(width: 6),
-                    _buildFilterChip(loc.onTheWay, 'on_the_way'),
-                    const SizedBox(width: 6),
-                    _buildFilterChip(loc.delivered, 'delivered'),
-                    const SizedBox(width: 6),
-                    _buildFilterChip(loc.cancelled, 'cancelled'),
-                    const SizedBox(width: 6),
-                    _buildFilterChip(loc.orderReturned, 'returned'),
-                  ],
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildFilterChip(loc.pending, 'pending'),
+                      const SizedBox(width: 6),
+                      _buildFilterChip(loc.confirmed, 'confirmed'),
+                      const SizedBox(width: 6),
+                      _buildFilterChip(loc.orderReady, 'ready'),
+                      const SizedBox(width: 12),
+                      // Archive menu button
+                      _buildArchiveMenuButton(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -530,7 +823,6 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
           ),
         ],
       ),
-      floatingActionButton: null,
     );
   }
 
@@ -540,12 +832,40 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     const customBlueColor = Color(0xFF00C1E8);
     const customPinkColor = Color(0xFFC6007E);
 
+    // Responsive sizing for chips - longer and little higher
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = ResponsiveHelper.isMobile(context);
+
+    // Increased horizontal padding for longer chips
+    double horizontalPadding;
+    double verticalPadding; // Increased vertical padding for higher chips
+    double fontSize;
+
+    if (screenWidth < 400) {
+      // Very small mobile screens
+      horizontalPadding = 12; // Increased from 8 for longer chips
+      verticalPadding = 8; // Increased from 4 for higher chips
+      fontSize = 13; // Increased from 11 for better visibility
+    } else if (isMobile) {
+      // Regular mobile screens
+      horizontalPadding = 16; // Increased from 10 for longer chips
+      verticalPadding = 8; // Increased from 4 for higher chips
+      fontSize = 14; // Increased from 12 for better visibility
+    } else {
+      // Desktop/tablet
+      horizontalPadding = 20; // Increased from 12 for longer chips
+      verticalPadding = 10; // Increased from 6 for higher chips
+      fontSize = 15; // Increased from 13 for better visibility
+    }
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
       child: Material(
         elevation: isSelected ? 2 : 0.5,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(
+          8,
+        ), // Reduced from 16 to 8 for less round corners
         color: isSelected
             ? customBlueColor
             : const Color(0xFF001133).withOpacity(0.05),
@@ -554,11 +874,18 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
             : const Color(0xFF001133).withOpacity(0.1),
         child: InkWell(
           onTap: () => setState(() => _selectedFilter = value),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(
+            8,
+          ), // Match the container border radius
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: verticalPadding,
+            ),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(
+                8,
+              ), // Reduced corners here too
               border: Border.all(
                 color: isSelected
                     ? customPinkColor
@@ -571,9 +898,11 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
               style: TextStyle(
                 color: isSelected ? Colors.white : customBlueColor,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                fontSize: 13,
-                letterSpacing: 0.2,
+                fontSize: fontSize,
+                letterSpacing: 0.1, // Slightly reduced letter spacing
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis, // Handle text overflow
             ),
           ),
         ),

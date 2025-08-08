@@ -20,13 +20,22 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    // Handle email_verified conversion from string to boolean
+    bool emailVerified = false;
+    final emailVerifiedValue = json['emailVerified'] ?? json['email_verified'];
+    if (emailVerifiedValue is bool) {
+      emailVerified = emailVerifiedValue;
+    } else if (emailVerifiedValue is String) {
+      emailVerified = emailVerifiedValue.toLowerCase() == 'true';
+    }
+    
     return User(
       id: json['userId'] ?? json['user_id'] ?? json['id'] ?? json['sub'] ?? '',
       email: json['email'] ?? '',
       firstName: json['firstName'] ?? json['first_name'] ?? json['given_name'],
       lastName: json['lastName'] ?? json['last_name'] ?? json['family_name'],
       phone: json['phone'] ?? json['phoneNumber'] ?? json['phone_number'],
-      emailVerified: json['emailVerified'] ?? json['email_verified'] ?? false,
+      emailVerified: emailVerified,
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'])
           : null,

@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../config/app_config.dart';
+import 'app_auth_service.dart';
 
 class ApiService {
   final String baseUrl = AppConfig.baseUrl;
@@ -32,14 +32,44 @@ class ApiService {
   }
 
   Future<User> getMerchantDetails() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? userString = prefs.getString('user');
+    try {
+      // Use AppAuthService to get current user data
+      final userMap = await AppAuthService.getCurrentUser();
 
-    if (userString != null) {
-      final user = User.fromJson(jsonDecode(userString));
-      return user;
-    } else {
-      throw Exception('Failed to load user details');
+      if (userMap != null && userMap['userId'] != null) {
+        // Create a User object from the data returned by AppAuthService
+        // Ensure email_verified is properly converted to boolean
+        bool emailVerified = false;
+        final emailVerifiedValue = userMap['email_verified'];
+        if (emailVerifiedValue is bool) {
+          emailVerified = emailVerifiedValue;
+        } else if (emailVerifiedValue is String) {
+          emailVerified = emailVerifiedValue.toLowerCase() == 'true';
+        }
+
+        final user = User(
+          id: userMap['userId'],
+          email: userMap['email'] ?? '',
+          firstName: userMap['firstName'] ?? '',
+          lastName: userMap['lastName'] ?? '',
+          emailVerified: emailVerified,
+        );
+        return user;
+      } else {
+        throw Exception('No user data found in AppAuthService');
+      }
+    } catch (e) {
+      // Fallback to SharedPreferences if AppAuthService fails
+      final prefs = await SharedPreferences.getInstance();
+      final String? userString = prefs.getString('user');
+
+      if (userString != null) {
+        final user = User.fromJson(jsonDecode(userString));
+        return user;
+      } else {
+        throw Exception(
+            'Failed to load user details from both AppAuthService and SharedPreferences: $e');
+      }
     }
   }
 
@@ -516,6 +546,62 @@ class ApiService {
 
     if (response.statusCode != 200) {
       throw Exception('Failed to register device token: ${response.body}');
+    }
+  }
+
+  /// Update business online/offline status
+  Future<void> updateBusinessOnlineStatus(
+      String businessId, String userId, bool isOnline) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('access_token');
+
+    if (token == null) {
+      throw Exception('No access token found');
+    }
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/businesses/$businessId/status'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'userId': userId,
+        'status': isOnline ? 'ONLINE' : 'OFFLINE',
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      final errorData = jsonDecode(response.body);
+      throw Exception(
+          'Failed to update business status: ${errorData['error'] ?? response.body}');
+    }
+  }
+
+  /// Get business online status
+  Future<Map<String, dynamic>> getBusinessOnlineStatus(
+      String businessId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('access_token');
+
+    if (token == null) {
+      throw Exception('No access token found');
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/businesses/$businessId/online-status'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      final errorData = jsonDecode(response.body);
+      throw Exception(
+          'Failed to get business status: ${errorData['error'] ?? response.body}');
     }
   }
 }

@@ -1,8 +1,20 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/notification.dart';
+import '../providers/order_providers.dart'; // To invalidate order lists
+import 'order_service.dart';
+
+// Provider for the NotificationService
+final notificationServiceProvider =
+    ChangeNotifierProvider<NotificationService>((ref) {
+  return NotificationService(ref);
+});
 
 /// Service for managing application notifications
 class NotificationService extends ChangeNotifier {
+  final Ref _ref;
+  NotificationService(this._ref);
+
   final List<NotificationModel> _notifications = [];
   bool _enabled = true;
   bool _soundEnabled = true;
@@ -16,6 +28,41 @@ class NotificationService extends ChangeNotifier {
     _notifications.insert(0, notification); // Add at beginning for newest first
     notifyListeners();
     debugPrint('📧 Notification added: ${notification.title}');
+  }
+
+  /// Handles an action from a notification, like 'Accept' or 'Reject'
+  Future<void> handleOrderAction(String orderId, String action) async {
+    debugPrint('Handling action "$action" for order "$orderId"');
+    try {
+      final orderService = OrderService();
+      bool success = false;
+      if (action == 'ACCEPT_ORDER') {
+        await orderService.acceptMerchantOrder(orderId);
+        success = true;
+      } else if (action == 'REJECT_ORDER') {
+        await orderService.rejectMerchantOrder(orderId);
+        success = true;
+      }
+
+      if (success) {
+        debugPrint(
+            'Action "$action" for order "$orderId" was successful. Invalidating order providers.');
+        // Invalidate providers to force a refresh of the order lists in the UI
+        _ref.invalidate(pendingOrdersProvider);
+        _ref.invalidate(confirmedOrdersProvider);
+        _ref.invalidate(allOrdersProvider);
+
+        // Optionally, remove the notification from the list now that it's handled
+        _notifications.removeWhere((n) => n.data['orderId'] == orderId);
+        notifyListeners();
+      } else {
+        debugPrint('Failed to handle action "$action" for order "$orderId"');
+        // Optionally, show an error to the user
+      }
+    } catch (e) {
+      debugPrint('Error handling order action: $e');
+      // Optionally, show an error to the user
+    }
   }
 
   /// Mark notification as read

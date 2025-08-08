@@ -73,7 +73,27 @@ exports.handler = async (event) => {
       // Send the new order data under the "data" key so front-end can parse it
       const notification = {
         type: 'NEW_ORDER',
-        data: newOrder,
+        payload: {
+          aps: {
+            alert: {
+              title: 'New Order Received',
+              subtitle: `Order ID: ${newOrder.orderId}`,
+              body: `You have a new order for $${newOrder.totalAmount || 'N/A'}. Please review and respond.`,
+            },
+            category: 'NEW_ORDER_CATEGORY', // For iOS to show actions
+            'mutable-content': 1,
+          },
+          data: {
+            ...newOrder, // Send the complete order data
+            orderId: newOrder.orderId,
+            businessId: businessId,
+            // Adding actions for the frontend to display
+            actions: [
+              { id: 'ACCEPT_ORDER', title: 'Accept' },
+              { id: 'REJECT_ORDER', title: 'Reject' },
+            ]
+          }
+        }
       };
 
       const promises = connections.map(connection =>

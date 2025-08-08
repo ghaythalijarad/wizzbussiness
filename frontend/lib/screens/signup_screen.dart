@@ -608,8 +608,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (result.success) {
         _showSuccessSnackBar(result.message);
 
-        // Navigate to email verification with business data
-        Navigator.pushReplacement(
+        // Navigate to email verification, clearing the navigation stack.
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (context) => EmailVerificationScreen(
@@ -617,6 +617,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               businessData: businessData,
             ),
           ),
+          (route) => false,
         );
       } else {
         _showErrorSnackBar(result.message);

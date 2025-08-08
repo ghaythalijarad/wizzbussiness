@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../models/business.dart';
+import '../l10n/app_localizations.dart';
 
 class AccountSettingsPage extends StatefulWidget {
   final Business business;
@@ -143,28 +144,28 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
           const SizedBox(height: 16),
           Text(
             businessName,
-            style: theme.textTheme.headline6!.copyWith(
+            style: theme.textTheme.titleLarge!.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
           Text(
             ownerName,
-            style: theme.textTheme.subtitle1!.copyWith(
+            style: theme.textTheme.titleMedium!.copyWith(
               color: Colors.white70,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             email,
-            style: theme.textTheme.bodyText2!.copyWith(
+            style: theme.textTheme.bodyMedium!.copyWith(
               color: Colors.white70,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             _formatAddress(_userData?['address']),
-            style: theme.textTheme.bodyText2!.copyWith(
+            style: theme.textTheme.bodyMedium!.copyWith(
               color: Colors.white70,
             ),
           ),

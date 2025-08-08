@@ -24,6 +24,7 @@ import 'services/notification_helper.dart';
 import 'services/firebase_service.dart';
 import 'providers/session_provider.dart';
 import 'firebase_options.dart';
+import 'services/floating_order_notification_service.dart';
 
 // Background notification handler (must be top-level function)
 @pragma('vm:entry-point')
@@ -73,6 +74,8 @@ class AuthStateWrapper extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize the notification service here
+    ref.read(floatingOrderNotificationServiceProvider).initialize(context);
     return const MyApp();
   }
 }

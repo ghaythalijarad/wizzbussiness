@@ -29,8 +29,6 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
   final ImagePicker _picker = ImagePicker();
 
   Map<String, dynamic>? _userData;
-  bool _isLoadingUserData = true;
-  String? _errorMessage;
   bool _isInitializing = true;
   bool _isUploadingImage = false;
 
@@ -356,7 +354,6 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
 
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final session = ref.watch(sessionProvider);
     final businessAsyncValue = ref.watch(businessProvider);
 
     return Scaffold(
@@ -442,77 +439,6 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     );
   }
 
-  Widget _buildErrorState(AppLocalizations l10n, ThemeData theme) {
-    return Container(
-      margin: const EdgeInsets.all(24),
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.error_outline_rounded,
-              size: 48,
-              color: Colors.red,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            l10n.errorLoadingUserData,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            _errorMessage!,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _loadUserData,
-              icon: const Icon(Icons.refresh_rounded),
-              label: Text(l10n.retry),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3399FF),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildErrorStateWithMessage(AppLocalizations l10n, ThemeData theme, String message) {
     return Container(
       margin: const EdgeInsets.all(24),
@@ -584,42 +510,6 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     );
   }
 
-  Widget _buildAccountContent(AppLocalizations l10n, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Account Overview Card
-          _buildAccountOverviewCard(l10n, theme),
-
-          const SizedBox(height: 24),
-
-          // Personal Information Section
-          _buildSectionHeader(l10n.personalInformation, Icons.person_rounded),
-          const SizedBox(height: 16),
-          _buildPersonalInfoCard(l10n, theme),
-
-          const SizedBox(height: 32),
-
-          // Business Information Section
-          _buildSectionHeader(l10n.businessInformation, Icons.business_rounded),
-          const SizedBox(height: 16),
-          _buildBusinessInfoCard(l10n, theme),
-
-          const SizedBox(height: 32),
-
-          // Account Status Section
-          _buildSectionHeader(l10n.accountStatus, Icons.verified_user_rounded),
-          const SizedBox(height: 16),
-          _buildAccountStatusCard(l10n, theme),
-
-          const SizedBox(height: 40),
-        ],
-      ),
-    );
-  }
-
   Widget _buildAccountContentWithBusiness(AppLocalizations l10n, ThemeData theme, Business business) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -678,136 +568,6 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildAccountOverviewCard(AppLocalizations l10n, ThemeData theme) {
-    final businessName = _userData?['business_name'] ?? 'Business';
-    final ownerName = _userData?['owner_name'] ?? 'Owner';
-    final email = _userData?['email'] ?? '';
-    final businessPhotoUrl = widget.business.businessPhotoUrl;
-
-    ImageProvider? backgroundImage;
-    if (_image != null) {
-      // Show the newly selected image immediately
-      backgroundImage = FileImage(_image!);
-    } else if (businessPhotoUrl != null && businessPhotoUrl.isNotEmpty) {
-      // Show the existing business photo
-      backgroundImage = NetworkImage(businessPhotoUrl);
-    }
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        image: backgroundImage != null
-            ? DecorationImage(
-                image: backgroundImage,
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Colors.black.withOpacity(0.4),
-                  BlendMode.darken,
-                ),
-              )
-            : null,
-        gradient: backgroundImage == null
-            ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF3399FF),
-                  Color(0xFF00C1E8),
-                ],
-              )
-            : null,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF3399FF).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildCircularBusinessPhoto(
-                _userData?['business_photo_url'] ??
-                widget.business.businessPhotoUrl
-              ),
-              IconButton(
-                icon: _isUploadingImage
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Icon(Icons.edit, color: Colors.white, size: 28),
-                tooltip: _isUploadingImage
-                    ? 'Uploading...'
-                    : 'Change Business Photo',
-                onPressed: _isUploadingImage ? null : _pickImage,
-                splashRadius: 24,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            businessName,
-            style: theme.textTheme.titleLarge!.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              shadows: [
-                const Shadow(
-                  blurRadius: 4.0,
-                  color: Colors.black54,
-                  offset: Offset(2.0, 2.0),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            ownerName,
-            style: theme.textTheme.titleMedium!.copyWith(
-              color: Colors.white.withOpacity(0.9),
-              shadows: [
-                const Shadow(
-                  blurRadius: 2.0,
-                  color: Colors.black45,
-                  offset: Offset(1.0, 1.0),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Icon(Icons.email_rounded, color: Colors.white70, size: 16),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  email,
-                  style: theme.textTheme.bodyMedium!.copyWith(
-                    color: Colors.white70,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
@@ -957,9 +717,33 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
   Widget _buildPersonalInfoCardWithBusiness(AppLocalizations l10n, ThemeData theme, Business business) {
     return _buildModernCard([
       _buildInfoRow(l10n.ownerName, business.ownerName ?? 'Not provided', Icons.person),
-      const Divider(height: 32),
+      Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        height: 1,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.transparent,
+              Colors.grey.shade300,
+              Colors.transparent,
+            ],
+          ),
+        ),
+      ),
       _buildInfoRow(l10n.emailAddress, business.email, Icons.email),
-      const Divider(height: 32),
+      Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        height: 1,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.transparent,
+              Colors.grey.shade300,
+              Colors.transparent,
+            ],
+          ),
+        ),
+      ),
       _buildInfoRow(l10n.phoneNumber, business.phone ?? 'Not provided', Icons.phone),
     ]);
   }
@@ -1000,9 +784,33 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
   Widget _buildBusinessInfoCardWithBusiness(AppLocalizations l10n, ThemeData theme, Business business) {
     return _buildModernCard([
       _buildInfoRow(l10n.businessName, business.name, Icons.business),
-      const Divider(height: 32),
+      Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        height: 1,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.transparent,
+              Colors.grey.shade300,
+              Colors.transparent,
+            ],
+          ),
+        ),
+      ),
       _buildInfoRow(l10n.businessType, business.businessType.name, Icons.category),
-      const Divider(height: 32),
+      Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        height: 1,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.transparent,
+              Colors.grey.shade300,
+              Colors.transparent,
+            ],
+          ),
+        ),
+      ),
       _buildInfoRow(l10n.addressLabel, business.address ?? 'Not provided', Icons.location_on, isMultiline: true),
     ]);
   }
@@ -1182,40 +990,57 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
 
   Widget _buildInfoRow(String label, String value, IconData icon,
       {bool isMultiline = false}) {
-    return Row(
-      crossAxisAlignment:
-          isMultiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
-      children: [
-        Icon(
-          icon,
-          color: const Color(0xFF3399FF),
-          size: 22,
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment:
+            isMultiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3399FF).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF3399FF).withOpacity(0.2),
+                width: 1,
               ),
-              const SizedBox(height: 4),
-              Text(
-                value.isNotEmpty ? value : 'Not provided',
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+            ),
+            child: Icon(
+              icon,
+              color: const Color(0xFF3399FF),
+              size: 24,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  value.isNotEmpty ? value : 'Not provided',
+                  style: TextStyle(
+                    color: Colors.grey[900],
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1279,13 +1104,31 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
 
   Widget _buildModernCard(List<Widget> children) {
     return Card(
-      elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.05),
+      elevation: 8,
+      shadowColor: Colors.black.withOpacity(0.15),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: children,
+      color: Colors.white,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white,
+              Colors.grey.shade50,
+            ],
+          ),
+          border: Border.all(
+            color: Colors.grey.shade200,
+            width: 1.5,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: children,
+          ),
         ),
       ),
     );

@@ -5,6 +5,8 @@ import './pos_settings_page.dart';
 import './change_password_screen.dart';
 import './other_settings_page.dart';
 import './discount_management_page.dart';
+import './sound_notification_settings_page.dart';
+import './notification_settings_page.dart';
 import '../l10n/app_localizations.dart';
 import '../models/business.dart';
 import '../models/order.dart';
@@ -553,6 +555,38 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                     MaterialPageRoute(
                       builder: (context) =>
                           PosSettingsPage(business: widget.business),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildModernSettingsCard(
+                icon: Icons.volume_up_rounded,
+                title: 'Sound Notifications',
+                subtitle: 'Configure sound alerts for new orders and updates',
+                color: const Color(0xFF9C27B0),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const SoundNotificationSettingsPage(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildModernSettingsCard(
+                icon: Icons.notifications_rounded,
+                title: loc.notifications,
+                subtitle:
+                    'Manage notification preferences and delivery methods',
+                color: const Color(0xFFFF5722),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationSettingsPage(),
                     ),
                   );
                 },

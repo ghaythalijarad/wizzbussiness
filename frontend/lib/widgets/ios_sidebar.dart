@@ -8,7 +8,7 @@ import '../utils/responsive_helper.dart';
 
 class IOSSidebar extends ConsumerStatefulWidget {
   final bool isOnline;
-  final Function(bool) onToggleStatus;
+  final Future<void> Function(bool) onToggleStatus;
   final VoidCallback onReturnOrder;
   final Function(int) onNavigate;
   final VoidCallback onClose;
@@ -44,6 +44,39 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
   void _onAppStateChanged() {
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  Future<void> _signOut() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Sign Out'),
+        content: Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Sign Out', style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      // Disconnect from real-time service is now handled by AppAuthService.signOut()
+      // context.read(realtimeOrderServiceProvider).disconnect();
+      
+      await AppAuthService.signOut();
+      
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+        (route) => false,
+      );
     }
   }
 
@@ -266,15 +299,57 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // iOS-style switch
-                    Switch.adaptive(
-                      value: _appState.isOnline,
-                      onChanged: (value) {
-                        _appState.setOnline(value);
-                        widget.onToggleStatus(value);
-                      },
-                      activeColor: const Color(0xFF34C759),
-                    ),
+                    // iOS-style switch with loading state
+                    _appState.isToggling
+                        ? SizedBox(
+                            width: 48,
+                            height: 28,
+                            child: Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    _appState.isOnline
+                                        ? const Color(0xFF34C759)
+                                        : const Color(0xFFFF3B30),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Switch.adaptive(
+                            value: _appState.isOnline,
+                            onChanged: _appState.isToggling
+                                ? null
+                                : (value) async {
+                                    try {
+                                      await _appState.setOnline(
+                                          value, widget.onToggleStatus);
+                                    } catch (error) {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Failed to update status. Please try again.',
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                            backgroundColor:
+                                                const Color(0xFFFF3B30),
+                                            duration: Duration(seconds: 3),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                            activeColor: const Color(0xFF34C759),
+                            inactiveThumbColor: const Color(0xFFFF3B30),
+                            inactiveTrackColor:
+                                const Color(0xFFFF3B30).withOpacity(0.3),
+                          ),
                   ],
                 ),
               ],

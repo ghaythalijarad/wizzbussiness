@@ -10,17 +10,17 @@ import 'dart:io';
 ///
 /// Note: MongoDB/Beanie backend has been removed and replaced with DynamoDB
 class AppConfig {
-  // Use deployed AWS API Gateway URL for development/testing (us-east-1)
-  static const String _defaultLocalUrl =
-      'https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev';
-  static const String _defaultAndroidUrl =
-      'https://72nmgq5rc4.execute-api.us-east-1.amazonaws.com/dev';
-
-  // Environment configuration
+  // Environment configuration - prioritize dart-define values
   static const String _awsApiUrl = String.fromEnvironment(
     'API_URL',
     defaultValue: '',
   );
+
+  // Fallback URLs (only used if API_URL not provided via dart-define)
+  static const String _defaultLocalUrl =
+      'https://zz9cszv6a8.execute-api.us-east-1.amazonaws.com/dev';
+  static const String _defaultAndroidUrl =
+      'https://zz9cszv6a8.execute-api.us-east-1.amazonaws.com/dev';
 
   static const String _environment = String.fromEnvironment(
     'ENVIRONMENT',
@@ -42,15 +42,22 @@ class AppConfig {
     defaultValue: '',
   );
 
-  // AWS Cognito configuration (Stage 1 Fix: hardcoded defaults for reliable authentication)
-  static const String _cognitoUserPoolId = String.fromEnvironment(
-    'COGNITO_USER_POOL_ID',
-    defaultValue: 'us-east-1_bDqnKdrqo',
+  // Optional override for WebSocket endpoint via build-time define
+  static const String _webSocketUrlOverride = String.fromEnvironment(
+    'WEBSOCKET_URL',
+    defaultValue: '',
   );
 
-  static const String _cognitoUserPoolClientId = String.fromEnvironment(
-    'COGNITO_USER_POOL_CLIENT_ID',
-    defaultValue: '6n752vrmqmbss6nmlg6be2nn9a',
+  // AWS Cognito configuration (MIGRATED to new account - merchants-pool)
+  static const String _cognitoUserPoolId = String.fromEnvironment(
+    'COGNITO_USER_POOL_ID',
+    defaultValue: 'us-east-1_PHPkG78b5', // NEW target pool id
+  );
+
+  // New unified app client id (required)
+  static const String _appClientId = String.fromEnvironment(
+    'APP_CLIENT_ID',
+    defaultValue: '1tl9g7nk2k2chtj5fg960fgdth', // NEW target client id
   );
 
   static const String _cognitoRegion = String.fromEnvironment(
@@ -68,16 +75,63 @@ class AppConfig {
 
   // Base URL for API requests
   static String get baseUrl {
+    String url;
     if (_awsApiUrl.isNotEmpty) {
-      return _awsApiUrl;
+      url = _awsApiUrl;
+    } else {
+      url = Platform.isAndroid ? _defaultAndroidUrl : _defaultLocalUrl;
     }
-    return Platform.isAndroid ? _defaultAndroidUrl : _defaultLocalUrl;
+    // Remove trailing slash to prevent double slashes in URL construction
+    return url.endsWith('/') ? url.substring(0, url.length - 1) : url;
   }
 
-  // WebSocket URL - Updated with new deployed endpoint
+  // WebSocket URL - Derived from API base when not explicitly overridden
   static String get webSocketUrl {
-    // Use the newly deployed WebSocket API Gateway endpoint
-    return 'wss://8yn5wr533l.execute-api.us-east-1.amazonaws.com/dev';
+    // 1. Explicit override always wins
+    if (_webSocketUrlOverride.isNotEmpty) {
+      return _webSocketUrlOverride.endsWith('/')
+          ? _webSocketUrlOverride.substring(0, _webSocketUrlOverride.length - 1)
+          : _webSocketUrlOverride;
+    }
+
+    // 2. Derive from baseUrl (convert https->wss, keep host + stage path)
+    try {
+      final rest =
+          Uri.parse(baseUrl); // baseUrl already trimmed of trailing slash
+      if (rest.host.isNotEmpty) {
+        final wsUri = Uri(
+          scheme: 'wss',
+          host: rest.host,
+          port: rest.hasPort ? rest.port : null,
+          path: rest.path, // includes stage (e.g. /Prod or /dev)
+        );
+        final derived = wsUri.toString();
+        // Warn if previously hardcoded value would have differed
+        if (enableLogging && derived.contains('execute-api.') == true) {
+          // If someone accidentally left a mismatch, log it once
+          if (rest.host != '3sfzxlb2v8.execute-api.us-east-1.amazonaws.com') {
+            // Only log when differing from old hardcoded host to aid migration
+            // ignore: avoid_print
+            print('🔄 Derived WebSocket URL: ' + derived);
+          }
+        }
+        return derived;
+      }
+    } catch (e) {
+      if (enableLogging) {
+        // ignore: avoid_print
+        print('⚠️ Failed deriving WebSocket URL from baseUrl: $e');
+      }
+    }
+
+    // 3. Fallback (should rarely be used) – keep previous value but note mismatch
+    const fallback =
+        'wss://s8nf89antk.execute-api.us-east-1.amazonaws.com/Prod';
+    if (enableLogging) {
+      // ignore: avoid_print
+      print('⚠️ Using fallback WebSocket URL: $fallback');
+    }
+    return fallback;
   }
 
   // Environment type
@@ -99,14 +153,15 @@ class AppConfig {
 
   /// Cognito configuration
   static String get cognitoUserPoolId => _cognitoUserPoolId;
-  static String get cognitoUserPoolClientId => _cognitoUserPoolClientId;
+  /// Preferred getter for the Cognito app client id (legacy removed)
+  static String get appClientId => _appClientId;
   static String get cognitoRegion => _cognitoRegion;
   static String get cognitoIdentityPoolId => _cognitoIdentityPoolId;
   static String get googleMapsApiKey => _googleMapsApiKey;
 
   /// Check if Cognito is properly configured
   static bool get isCognitoConfigured =>
-      _cognitoUserPoolId.isNotEmpty && _cognitoUserPoolClientId.isNotEmpty;
+      _cognitoUserPoolId.isNotEmpty && appClientId.isNotEmpty;
 
   /// API timeouts
   static const Duration apiTimeout = Duration(seconds: 30);
@@ -130,7 +185,7 @@ class AppConfig {
       print('Auth Mode: $authMode');
       if (useCognito) {
         print('Cognito User Pool ID: $cognitoUserPoolId');
-        print('Cognito Client ID: $cognitoUserPoolClientId');
+        print('App Client ID: $appClientId');
         print('Cognito Region: $cognitoRegion');
         print('Cognito Configured: $isCognitoConfigured');
       }

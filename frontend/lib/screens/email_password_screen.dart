@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hadhir_business/l10n/app_localizations.dart';
 
 class EmailPasswordScreen extends StatelessWidget {
   final TextEditingController emailController;
@@ -18,6 +19,7 @@ class EmailPasswordScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Form(
@@ -32,18 +34,18 @@ class EmailPasswordScreen extends StatelessWidget {
               color: Colors.blue,
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Create Account',
-              style: TextStyle(
+            Text(
+              l10n.createAccount,
+              style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Step 1 of 3: Account Information',
-              style: TextStyle(
+            Text(
+              l10n.accountInformation,
+              style: const TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
               ),
@@ -52,19 +54,21 @@ class EmailPasswordScreen extends StatelessWidget {
             const SizedBox(height: 32),
             TextFormField(
               controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email Address',
-                hintText: 'Enter your email',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
+              decoration: InputDecoration(
+                labelText: l10n.emailAddress,
+                hintText: l10n.enterYourEmail,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.email),
               ),
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
+                  return l10n.pleaseEnterYourEmail;
                 }
-                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                  return 'Please enter a valid email address';
+                final trimmed = value.trim();
+                final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                if (!emailRegex.hasMatch(trimmed)) {
+                  return l10n.invalidEmailFormat;
                 }
                 return null;
               },
@@ -72,19 +76,25 @@ class EmailPasswordScreen extends StatelessWidget {
             const SizedBox(height: 16),
             TextFormField(
               controller: passwordController,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                hintText: 'Choose a strong password',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
+              decoration: InputDecoration(
+                labelText: l10n.password,
+                hintText: l10n.enterYourPassword,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.lock),
               ),
               obscureText: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your password';
+                  return l10n.pleaseEnterYourPassword;
                 }
-                if (value.length < 8) {
-                  return 'Password must be at least 8 characters';
+                final pwd = value;
+                final hasMinLen = pwd.length >= 8;
+                final hasUpper = RegExp(r'[A-Z]').hasMatch(pwd);
+                final hasLower = RegExp(r'[a-z]').hasMatch(pwd);
+                final hasDigit = RegExp(r'[0-9]').hasMatch(pwd);
+                final hasSpecial = RegExp(r'[!@#\$%\^&*()_+\-\[\]{}|;:,./<>?~`]').hasMatch(pwd);
+                if (!(hasMinLen && hasUpper && hasLower && hasDigit && hasSpecial)) {
+                  return l10n.weakPassword;
                 }
                 return null;
               },
@@ -92,16 +102,19 @@ class EmailPasswordScreen extends StatelessWidget {
             const SizedBox(height: 16),
             TextFormField(
               controller: confirmPasswordController,
-              decoration: const InputDecoration(
-                labelText: 'Confirm Password',
-                hintText: 'Re-enter your password',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock_outline),
+              decoration: InputDecoration(
+                labelText: l10n.confirmPassword,
+                hintText: l10n.reEnterYourPassword,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.lock_outline),
               ),
               obscureText: true,
               validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return l10n.confirmPasswordRequired;
+                }
                 if (value != passwordController.text) {
-                  return 'Passwords do not match';
+                  return l10n.passwordsDoNotMatch;
                 }
                 return null;
               },
@@ -112,9 +125,9 @@ class EmailPasswordScreen extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: const Text(
-                'Continue to Business Details',
-                style: TextStyle(fontSize: 16),
+              child: Text(
+                l10n.next,
+                style: const TextStyle(fontSize: 16),
               ),
             ),
             const SizedBox(height: 16),
@@ -124,9 +137,9 @@ class EmailPasswordScreen extends StatelessWidget {
                 color: Colors.blue.shade50,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
-                'We\'ll check if this email is available and then collect your business information.',
-                style: TextStyle(
+              child: Text(
+                l10n.verificationCodeSentToEmail,
+                style: const TextStyle(
                   fontSize: 12,
                   color: Colors.blue,
                 ),

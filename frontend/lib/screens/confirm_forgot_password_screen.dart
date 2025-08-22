@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/app_auth_service.dart';
+import 'package:hadhir_business/l10n/app_localizations.dart';
 
 class ConfirmForgotPasswordScreen extends StatefulWidget {
   final String email;
@@ -64,11 +65,12 @@ class _ConfirmForgotPasswordScreenState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text('Reset Password'),
+        title: Text(l10n.changePassword),
         backgroundColor: theme.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -101,7 +103,7 @@ class _ConfirmForgotPasswordScreenState
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'Enter Verification Code',
+                      l10n.enterVerificationCode,
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: theme.primaryColor,
@@ -117,15 +119,8 @@ class _ConfirmForgotPasswordScreenState
                           height: 1.5,
                         ),
                         children: [
-                          const TextSpan(
-                            text: 'We sent a verification code to\n',
-                          ),
                           TextSpan(
-                            text: widget.email,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: theme.primaryColor,
-                            ),
+                            text: l10n.verificationCodeSentTo(widget.email),
                           ),
                         ],
                       ),
@@ -151,9 +146,13 @@ class _ConfirmForgotPasswordScreenState
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         TextFormField(
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
+                          ),
                           decoration: InputDecoration(
-                            labelText: 'Verification Code',
-                            hintText: 'Enter 6-digit code',
+                            labelText: l10n.verificationCode,
+                            hintText: l10n.enter6DigitCode,
                             prefixIcon: Icon(
                               Icons.vpn_key,
                               color: theme.primaryColor,
@@ -181,10 +180,10 @@ class _ConfirmForgotPasswordScreenState
                           maxLength: 6,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter the verification code';
+                              return l10n.pleaseEnterTheVerificationCode;
                             }
                             if (value.length != 6) {
-                              return 'Verification code must be 6 digits';
+                              return l10n.verificationCodeMustBe6Digits;
                             }
                             return null;
                           },
@@ -196,9 +195,14 @@ class _ConfirmForgotPasswordScreenState
                         const SizedBox(height: 24),
 
                         TextFormField(
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
+                          ),
                           decoration: InputDecoration(
-                            labelText: 'New Password',
-                            hintText: 'Enter your new password',
+                            labelText: l10n
+                                .enterYourPassword, // Using existing key instead of non-existent newPassword
+                            hintText: l10n.enterYourPassword,
                             prefixIcon: Icon(
                               Icons.lock_outline,
                               color: theme.primaryColor,
@@ -225,10 +229,22 @@ class _ConfirmForgotPasswordScreenState
                           obscureText: true,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter a new password';
+                              return l10n.pleaseEnterYourPassword;
                             }
-                            if (value.length < 8) {
-                              return 'Password must be at least 8 characters';
+                            final pwd = value;
+                            final hasMinLen = pwd.length >= 8;
+                            final hasUpper = RegExp(r'[A-Z]').hasMatch(pwd);
+                            final hasLower = RegExp(r'[a-z]').hasMatch(pwd);
+                            final hasDigit = RegExp(r'[0-9]').hasMatch(pwd);
+                            final hasSpecial =
+                                RegExp(r'[!@#\$%\^&*()_+\-\[\]{}|;:,./<>?~`]')
+                                    .hasMatch(pwd);
+                            if (!(hasMinLen &&
+                                hasUpper &&
+                                hasLower &&
+                                hasDigit &&
+                                hasSpecial)) {
+                              return l10n.weakPassword;
                             }
                             return null;
                           },
@@ -253,7 +269,7 @@ class _ConfirmForgotPasswordScreenState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Password Requirements:',
+                                l10n.passwordRequirementsTitle,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   color: Colors.blue.shade700,
@@ -262,7 +278,7 @@ class _ConfirmForgotPasswordScreenState
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                '• At least 8 characters long\n• Mix of letters and numbers recommended',
+                                l10n.passwordRequirementsBullets,
                                 style: TextStyle(
                                   color: Colors.blue.shade600,
                                   fontSize: 12,
@@ -305,7 +321,7 @@ class _ConfirmForgotPasswordScreenState
                                         ),
                                       ),
                                       const SizedBox(width: 12),
-                                      const Text('Resetting...'),
+                                      Text(l10n.saving),
                                     ],
                                   )
                                 : Row(
@@ -313,9 +329,9 @@ class _ConfirmForgotPasswordScreenState
                                     children: [
                                       const Icon(Icons.check_circle, size: 20),
                                       const SizedBox(width: 8),
-                                      const Text(
-                                        'Reset Password',
-                                        style: TextStyle(
+                                      Text(
+                                        l10n.changePassword,
+                                        style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -324,13 +340,80 @@ class _ConfirmForgotPasswordScreenState
                                   ),
                           ),
                         ),
+
+                        const SizedBox(height: 16),
+
+                        // Resend Code Button
+                        Center(
+                          child: TextButton(
+                            onPressed: _isLoading
+                                ? null
+                                : () async {
+                                    try {
+                                      await AppAuthService.forgotPassword(
+                                          email: widget.email);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              l10n.verificationCodeSentToEmail),
+                                          backgroundColor: Colors.green,
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content:
+                                              Text(l10n.failedToResendCode),
+                                          backgroundColor: Colors.red,
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                            style: TextButton.styleFrom(
+                              foregroundColor: theme.primaryColor,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.refresh,
+                                  size: 18,
+                                  color: theme.primaryColor,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  l10n.resendVerificationCode,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: theme.primaryColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
 
-              // Error Message
               if (_errorMessage != null) ...[
                 const SizedBox(height: 24),
                 Container(
@@ -363,70 +446,6 @@ class _ConfirmForgotPasswordScreenState
                   ),
                 ),
               ],
-
-              const SizedBox(height: 32),
-
-              // Resend Code Button
-              Center(
-                child: TextButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () async {
-                          // Implement resend functionality
-                          try {
-                            await AppAuthService.forgotPassword(
-                                email: widget.email);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content:
-                                    const Text('Verification code sent again!'),
-                                backgroundColor: Colors.green,
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            );
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Failed to resend code: $e'),
-                                backgroundColor: Colors.red,
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                  style: TextButton.styleFrom(
-                    foregroundColor: theme.primaryColor,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.refresh,
-                        size: 18,
-                        color: theme.primaryColor,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Resend Code',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          color: theme.primaryColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           ),
         ),

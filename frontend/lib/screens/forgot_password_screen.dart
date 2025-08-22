@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/app_auth_service.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 
@@ -65,7 +66,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text(_isCodeSent ? 'Reset Password' : loc.forgotPasswordQuestion),
+        title:
+            Text(_isCodeSent ? loc.changePassword : loc.forgotPasswordQuestion),
         backgroundColor: theme.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -85,8 +87,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 24),
               Text(
                 _isCodeSent
-                  ? 'Enter the verification code we sent to $_email and choose a new password.'
-                  : 'Enter your email address and we\'ll send you a verification code.',
+                    ? loc.enterTheCodeSentToYourEmail
+                    : loc.forgotPasswordQuestion,
                 style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
                 textAlign: TextAlign.center,
               ),
@@ -103,32 +105,81 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       children: [
                         if (!_isCodeSent) ...[
                           TextFormField(
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 16,
+                            ),
                             decoration: InputDecoration(
-                              labelText: 'Email',
+                              labelText: loc.email,
                               prefixIcon: Icon(Icons.email_outlined, color: theme.primaryColor),
                             ),
                             keyboardType: TextInputType.emailAddress,
-                            validator: (v) => v == null || v.isEmpty ? 'Please enter email' : null,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Z0-9@._%+-]')),
+                            ],
+                            validator: (v) {
+                              if (v == null || v.isEmpty)
+                                return loc.pleaseEnterYourEmail;
+                              final trimmed = v.trim();
+                              final emailRegex = RegExp(
+                                  r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                              if (!emailRegex.hasMatch(trimmed))
+                                return loc.invalidEmailFormat;
+                              return null;
+                            },
                             onSaved: (v) => _email = v!.trim(),
                           ),
                         ] else ...[
                           TextFormField(
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 16,
+                            ),
                             decoration: InputDecoration(
-                              labelText: 'Verification Code',
+                              labelText: loc.verificationCode,
                               prefixIcon: Icon(Icons.vpn_key, color: theme.primaryColor),
                             ),
                             keyboardType: TextInputType.number,
-                            validator: (v) => v == null || v.isEmpty ? 'Please enter code' : null,
+                            validator: (v) => v == null || v.isEmpty
+                                ? loc.verificationCodeRequired
+                                : (v.length != 6
+                                    ? loc.verificationCodeMustBe6Digits
+                                    : null),
                             onSaved: (v) => _confirmationCode = v!.trim(),
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 16,
+                            ),
                             decoration: InputDecoration(
-                              labelText: 'New Password',
+                              labelText: loc
+                                  .enterYourPassword, // Using existing key instead of non-existent newPassword
                               prefixIcon: Icon(Icons.lock_outline, color: theme.primaryColor),
                             ),
                             obscureText: true,
-                            validator: (v) => v == null || v.length < 8 ? 'At least 8 chars' : null,
+                            validator: (v) {
+                              if (v == null || v.isEmpty)
+                                return loc.pleaseEnterYourPassword;
+                              final pwd = v;
+                              final hasMinLen = pwd.length >= 8;
+                              final hasUpper = RegExp(r'[A-Z]').hasMatch(pwd);
+                              final hasLower = RegExp(r'[a-z]').hasMatch(pwd);
+                              final hasDigit = RegExp(r'[0-9]').hasMatch(pwd);
+                              final hasSpecial =
+                                  RegExp(r'[!@#\$%\^&*()_+\-\[\]{}|;:,./<>?~`]')
+                                      .hasMatch(pwd);
+                              if (!(hasMinLen &&
+                                  hasUpper &&
+                                  hasLower &&
+                                  hasDigit &&
+                                  hasSpecial)) {
+                                return loc.weakPassword;
+                              }
+                              return null;
+                            },
                             onSaved: (v) => _newPassword = v!,
                           ),
                         ],
@@ -143,14 +194,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             ),
                             child: _isLoading
                               ? CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Colors.white))
-                              : Text(!_isCodeSent ? 'Send Reset Code' : 'Reset Password'),
+                                : Text(!_isCodeSent
+                                    ? loc.resendVerificationCode
+                                    : loc.changePassword),
                           ),
                         ),
                         if (_isCodeSent) ...[
                           const SizedBox(height: 16),
                           TextButton(
                             onPressed: () => setState(() => _isCodeSent = false),
-                            child: Text('Change Email', style: TextStyle(color: theme.primaryColor)),
+                            child: Text(loc.changeEmail,
+                                style: TextStyle(color: theme.primaryColor)),
                           ),
                         ],
                         if (_errorMessage != null) ...[

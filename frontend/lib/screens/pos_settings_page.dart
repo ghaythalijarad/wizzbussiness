@@ -5,7 +5,8 @@ import '../models/business.dart';
 import '../models/pos_settings.dart';
 import '../services/api_service.dart';
 import '../services/app_auth_service.dart';
-import '../screens/login_page.dart';
+import '../screens/signin_screen.dart';
+import '../theme/cravevolt_theme.dart';
 
 class PosSettingsPage extends StatefulWidget {
   final Business business;
@@ -25,11 +26,13 @@ class _PosSettingsPageState extends State<PosSettingsPage>
   bool _isLoading = false;
   bool _isTesting = false;
   bool _isLoadingSettings = true;
-  bool _isLoadingSyncLogs = false;
   bool _isInitializing = true;
   List<Map<String, dynamic>> _syncLogs = [];
   late TabController _tabController;
   final _formKey = GlobalKey<FormState>();
+  
+  // Add missing state for sync logs loading
+  bool _isLoadingSyncLogs = false;
 
   // Controllers
   final _apiEndpointController = TextEditingController();
@@ -91,21 +94,21 @@ class _PosSettingsPageState extends State<PosSettingsPage>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         icon: const Icon(
           Icons.security,
-          color: Color(0xFF00C1E8),
+          color: CraveVoltColors.neonLime,
           size: 48,
         ),
         title: Text(
           loc.userNotLoggedIn,
           style: const TextStyle(
             fontWeight: FontWeight.w600,
-            color: Color(0xFF001133),
+            color: CraveVoltColors.textPrimary,
           ),
           textAlign: TextAlign.center,
         ),
         content: Text(
           'Please sign in to access POS settings',
-          style: TextStyle(
-            color: const Color(0xFF001133).withOpacity(0.7),
+          style: const TextStyle(
+            color: CraveVoltColors.textSecondary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -113,8 +116,8 @@ class _PosSettingsPageState extends State<PosSettingsPage>
           TextButton(
             onPressed: () => _navigateToLogin(),
             style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFF00C1E8),
-              foregroundColor: Colors.white,
+              backgroundColor: CraveVoltColors.neonLime,
+              foregroundColor: CraveVoltColors.background,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -131,7 +134,9 @@ class _PosSettingsPageState extends State<PosSettingsPage>
   void _navigateToLogin() {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
-        builder: (context) => const LoginPage(),
+        builder: (context) => const SignInScreen(
+          noticeMessage: 'Please sign in to access POS settings',
+        ),
       ),
       (route) => false,
     );
@@ -296,13 +301,17 @@ class _PosSettingsPageState extends State<PosSettingsPage>
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.posSettings),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF3399FF),
+        backgroundColor: CraveVoltColors.surface,
+        foregroundColor: CraveVoltColors.textPrimary,
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+        ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFF3399FF),
-          unselectedLabelColor: const Color(0xFF3399FF).withOpacity(0.6),
-          indicatorColor: const Color(0xFF3399FF),
+          labelColor: CraveVoltColors.neonLime,
+          unselectedLabelColor: CraveVoltColors.textSecondary,
+          indicatorColor: CraveVoltColors.neonLime,
           tabs: [
             Tab(icon: const Icon(Icons.settings), text: loc.general),
             Tab(icon: const Icon(Icons.sync), text: loc.syncLogs),
@@ -312,9 +321,16 @@ class _PosSettingsPageState extends State<PosSettingsPage>
         ),
       ),
       body: _isLoadingSettings
-          ? const Center(child: CircularProgressIndicator())
+          ? Container(
+              color: CraveVoltColors.background,
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: CraveVoltColors.neonLime,
+                ),
+              ),
+            )
           : Container(
-              color: Colors.grey[50],
+              color: CraveVoltColors.background,
               child: TabBarView(
                 controller: _tabController,
                 children: [
@@ -352,6 +368,14 @@ class _PosSettingsPageState extends State<PosSettingsPage>
     final loc = AppLocalizations.of(context)!;
 
     return Card(
+      color: CraveVoltColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: CraveVoltColors.neonLime.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -359,24 +383,41 @@ class _PosSettingsPageState extends State<PosSettingsPage>
           children: [
             Row(
               children: [
-                Icon(
-                  _posSettings.enabled ? Icons.check_circle : Icons.error,
-                  color: _posSettings.enabled ? Colors.green : Colors.red,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _posSettings.enabled
+                        ? CraveVoltColors.neonLime.withOpacity(0.1)
+                        : Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    _posSettings.enabled ? Icons.check_circle : Icons.error,
+                    color: _posSettings.enabled
+                        ? CraveVoltColors.neonLime
+                        : Colors.red,
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Text(
                   loc.connectionStatus,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: CraveVoltColors.textPrimary,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               _posSettings.enabled
                   ? loc.connectionSuccessful
                   : loc.connectionFailed,
               style: TextStyle(
-                color: _posSettings.enabled ? Colors.green : Colors.red,
+                color: _posSettings.enabled
+                    ? CraveVoltColors.neonLime
+                    : Colors.red,
+                fontSize: 14,
               ),
             ),
           ],
@@ -389,20 +430,54 @@ class _PosSettingsPageState extends State<PosSettingsPage>
     final loc = AppLocalizations.of(context)!;
 
     return Card(
+      color: CraveVoltColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: CraveVoltColors.neonLime.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              loc.posIntegration,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: CraveVoltColors.neonLime.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.point_of_sale,
+                    color: CraveVoltColors.neonLime,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  loc.posIntegration,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: CraveVoltColors.textPrimary,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             SwitchListTile(
-              title: Text(loc.enablePosIntegration),
-              subtitle: Text(loc.enablePosIntegrationDescription),
+              title: Text(
+                loc.enablePosIntegration,
+                style: TextStyle(color: CraveVoltColors.textPrimary),
+              ),
+              subtitle: Text(
+                loc.enablePosIntegrationDescription,
+                style: TextStyle(color: CraveVoltColors.textSecondary),
+              ),
               value: _posSettings.enabled,
+              activeColor: CraveVoltColors.neonLime,
               onChanged: (value) {
                 setState(() {
                   _posSettings.enabled = value;
@@ -419,26 +494,79 @@ class _PosSettingsPageState extends State<PosSettingsPage>
     final loc = AppLocalizations.of(context)!;
 
     return Card(
+      color: CraveVoltColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: CraveVoltColors.neonLime.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              loc.posSystemType,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: CraveVoltColors.neonLime.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.dns,
+                    color: CraveVoltColors.neonLime,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  loc.posSystemType,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: CraveVoltColors.textPrimary,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<PosSystemType>(
               value: _posSettings.systemType,
               decoration: InputDecoration(
                 labelText: loc.selectPosSystem,
-                border: const OutlineInputBorder(),
+                labelStyle: TextStyle(color: CraveVoltColors.textSecondary),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.textSecondary.withOpacity(0.3),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.textSecondary.withOpacity(0.3),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.neonLime,
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: CraveVoltColors.background,
               ),
+              dropdownColor: CraveVoltColors.surface,
+              style: TextStyle(color: CraveVoltColors.textPrimary),
               items: PosSystemType.values.map((type) {
                 return DropdownMenuItem(
                   value: type,
-                  child: Text(_getPosSystemTypeName(type)),
+                  child: Text(
+                    _getPosSystemTypeName(type),
+                    style: TextStyle(color: CraveVoltColors.textPrimary),
+                  ),
                 );
               }).toList(),
               onChanged: (value) {
@@ -459,22 +587,73 @@ class _PosSettingsPageState extends State<PosSettingsPage>
     final loc = AppLocalizations.of(context)!;
 
     return Card(
+      color: CraveVoltColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: CraveVoltColors.neonLime.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              loc.apiConfiguration,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: CraveVoltColors.neonLime.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.api,
+                    color: CraveVoltColors.neonLime,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  loc.apiConfiguration,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: CraveVoltColors.textPrimary,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _apiEndpointController,
+              style: TextStyle(color: CraveVoltColors.textPrimary),
               decoration: InputDecoration(
                 labelText: loc.apiEndpoint,
+                labelStyle: TextStyle(color: CraveVoltColors.textSecondary),
                 hintText: 'https://api.yourpos.com',
-                border: const OutlineInputBorder(),
+                hintStyle: TextStyle(
+                    color: CraveVoltColors.textSecondary.withOpacity(0.7)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.textSecondary.withOpacity(0.3),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.textSecondary.withOpacity(0.3),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.neonLime,
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: CraveVoltColors.background,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -486,11 +665,36 @@ class _PosSettingsPageState extends State<PosSettingsPage>
             const SizedBox(height: 16),
             TextFormField(
               controller: _apiKeyController,
+              style: TextStyle(color: CraveVoltColors.textPrimary),
               decoration: InputDecoration(
                 labelText: loc.apiKey,
-                border: const OutlineInputBorder(),
+                labelStyle: TextStyle(color: CraveVoltColors.textSecondary),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.textSecondary.withOpacity(0.3),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.textSecondary.withOpacity(0.3),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.neonLime,
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: CraveVoltColors.background,
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.visibility),
+                  icon: Icon(
+                    Icons.visibility,
+                    color: CraveVoltColors.textSecondary,
+                  ),
                   onPressed: () {
                     // Toggle password visibility
                   },
@@ -507,17 +711,61 @@ class _PosSettingsPageState extends State<PosSettingsPage>
             const SizedBox(height: 16),
             TextFormField(
               controller: _accessTokenController,
+              style: TextStyle(color: CraveVoltColors.textPrimary),
               decoration: InputDecoration(
                 labelText: '${loc.accessToken} (${loc.optional})',
-                border: const OutlineInputBorder(),
+                labelStyle: TextStyle(color: CraveVoltColors.textSecondary),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.textSecondary.withOpacity(0.3),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.textSecondary.withOpacity(0.3),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.neonLime,
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: CraveVoltColors.background,
               ),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _locationIdController,
+              style: TextStyle(color: CraveVoltColors.textPrimary),
               decoration: InputDecoration(
                 labelText: '${loc.locationId} (${loc.optional})',
-                border: const OutlineInputBorder(),
+                labelStyle: TextStyle(color: CraveVoltColors.textSecondary),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.textSecondary.withOpacity(0.3),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.textSecondary.withOpacity(0.3),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: CraveVoltColors.neonLime,
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: CraveVoltColors.background,
               ),
             ),
           ],
@@ -536,17 +784,24 @@ class _PosSettingsPageState extends State<PosSettingsPage>
           child: ElevatedButton.icon(
             onPressed: _isTesting ? null : _testConnection,
             icon: _isTesting
-                ? const SizedBox(
+                ? SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: CraveVoltColors.background,
+                    ),
                   )
                 : const Icon(Icons.wifi_tethering),
             label: Text(_isTesting ? loc.testing : loc.testConnection),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
+              backgroundColor: CraveVoltColors.neonLime,
+              foregroundColor: CraveVoltColors.background,
               padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
             ),
           ),
         ),
@@ -556,17 +811,28 @@ class _PosSettingsPageState extends State<PosSettingsPage>
           child: ElevatedButton.icon(
             onPressed: _isLoading ? null : _savePosSettings,
             icon: _isLoading
-                ? const SizedBox(
+                ? SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: CraveVoltColors.background,
+                    ),
                   )
                 : const Icon(Icons.save),
             label: Text(_isLoading ? loc.saving : loc.saveSettings),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
+              backgroundColor: CraveVoltColors.surface,
+              foregroundColor: CraveVoltColors.textPrimary,
+              side: BorderSide(
+                color: CraveVoltColors.neonLime.withOpacity(0.5),
+                width: 1,
+              ),
               padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
             ),
           ),
         ),
@@ -879,7 +1145,7 @@ class _PosSettingsPageState extends State<PosSettingsPage>
       case 'error':
         return Colors.red;
       case 'pending':
-        return Colors.orange;
+        return Theme.of(context).colorScheme.primary;
       default:
         return Colors.grey;
     }

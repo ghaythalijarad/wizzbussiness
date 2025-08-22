@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../../models/business.dart';
 import '../../services/app_auth_service.dart';
-import 'login_page.dart';
+import 'signin_screen.dart';
 
 class MerchantStatusScreen extends StatelessWidget {
   final Business business;
@@ -25,7 +25,7 @@ class MerchantStatusScreen extends StatelessWidget {
         statusMessage = loc.applicationPending;
         statusDescription = loc.applicationPendingDescription;
         statusIcon = Icons.hourglass_empty;
-        statusColor = Colors.orange;
+        statusColor = Theme.of(context).colorScheme.primary;
         break;
       case 'approved':
         statusMessage = loc.applicationApproved;
@@ -62,7 +62,9 @@ class MerchantStatusScreen extends StatelessWidget {
               await AppAuthService.signOut();
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
-                    builder: (context) => const LoginPage()),
+                    builder: (context) => const SignInScreen(
+                          noticeMessage: 'Signed out successfully',
+                        )),
                 (Route<dynamic> route) => false,
               );
             },

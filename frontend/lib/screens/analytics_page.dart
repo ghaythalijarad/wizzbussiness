@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../models/order.dart';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
 import 'dart:math' as math;
 import '../models/enhanced_analytics_data.dart';
 import '../services/demand_forecasting_service.dart';
+import '../widgets/material_card.dart';
+import '../theme/theme_extensions.dart';
 
 class AnalyticsPage extends StatefulWidget {
   final Business business;
   final List<Order> orders;
   final VoidCallback? onNavigateToOrders;
   final Function(String, OrderStatus)? onOrderUpdated;
+  final bool embedded;
 
   const AnalyticsPage({
     Key? key,
@@ -19,6 +21,7 @@ class AnalyticsPage extends StatefulWidget {
     required this.orders,
     this.onNavigateToOrders,
     this.onOrderUpdated,
+    this.embedded = false,
   }) : super(key: key);
 
   @override
@@ -218,89 +221,89 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     final analytics = _generateAnalyticsData(loc);
     final theme = Theme.of(context);
 
-    return Scaffold(
-      body: Column(
-        children: [
-          // Time Range Selector
-          Container(
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
+    final body = Column(
+      children: [
+        // Material You Time Range Selector
+        MaterialCard.filled(
+          margin: EdgeInsets.all(16),
+          padding: EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Icon(
+                Icons.date_range,
+                color: context.colorScheme.primary,
+                size: 20,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Time Period',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: context.colorScheme.onSurface,
+                    ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildMaterialTimeRangeChip(loc.today, 0),
+                      SizedBox(width: 8),
+                      _buildMaterialTimeRangeChip(loc.week, 1),
+                      SizedBox(width: 8),
+                      _buildMaterialTimeRangeChip(loc.month, 2),
+                      SizedBox(width: 8),
+                      _buildMaterialTimeRangeChip(loc.year, 3),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                _buildTimeRangeButton(loc.today, 0),
-                _buildTimeRangeButton(loc.week, 1),
-                _buildTimeRangeButton(loc.month, 2),
-                _buildTimeRangeButton(loc.year, 3),
-              ],
-            ),
-          ),
-
-          // Tab Bar
-          TabBar(
-            controller: _tabController,
-            labelColor: theme.primaryColor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: theme.primaryColor,
-            indicatorWeight: 3,
-            tabs: [
-              Tab(text: loc.overview),
-              Tab(text: loc.revenue),
-              Tab(text: loc.performance),
-              Tab(text: loc.reviewsAndInsights),
-              Tab(text: 'AI Forecasting'), // New AI/ML tab
+              ),
             ],
           ),
+        ),
 
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildOverviewTab(analytics, loc, theme),
-                _buildRevenueTab(analytics, loc, theme),
-                _buildPerformanceTab(analytics, loc, theme),
-                _buildReviewsTab(analytics, loc, theme),
-                _buildAIForecastingTab(analytics, loc, theme), // New AI forecasting tab
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        // Tab Bar
+        TabBar(
+          controller: _tabController,
+          labelColor: theme.primaryColor,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: theme.primaryColor,
+          indicatorWeight: 3,
+          tabs: [
+            Tab(text: loc.overview),
+            Tab(text: loc.revenue),
+            Tab(text: loc.performance),
+            Tab(text: loc.reviewsAndInsights),
+            Tab(text: 'AI Forecasting'), // New AI/ML tab
+          ],
+        ),
 
-  Widget _buildTimeRangeButton(String label, int index) {
-    final isSelected = _selectedTimeRange == index;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _selectedTimeRange = index),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? Theme.of(context).primaryColor
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey[600],
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildOverviewTab(analytics, loc, theme),
+              _buildRevenueTab(analytics, loc, theme),
+              _buildPerformanceTab(analytics, loc, theme),
+              _buildReviewsTab(analytics, loc, theme),
+              _buildAIForecastingTab(
+                  analytics, loc, theme), // New AI forecasting tab
+            ],
           ),
         ),
+      ],
+    );
+
+    if (widget.embedded) {
+      return body;
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(loc.analytics),
       ),
+      body: body,
     );
   }
 
@@ -525,108 +528,91 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     required Color color,
     required String growth,
   }) {
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              color,
-              color.withOpacity(0.8),
-            ],
-          ),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(icon, color: Colors.white, size: 28),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    growth,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
+    return MaterialCard(
+      gradient: CardGradient.primary, // Use primary gradient for now
+      elevation: CardElevation.medium,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(icon, color: Colors.white, size: 28),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  growth,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
               ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
-                fontSize: 14,
-              ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 14,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildQuickStatsCard(AnalyticsData analytics, AppLocalizations loc) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              loc.quickStats,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildQuickStatItem(
-                    loc.customersServed,
-                    "${analytics.customersServed}",
-                    Icons.people,
-                    const Color(0xFF4CAF50),
-                  ),
+    return MaterialCard.elevated(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            loc.quickStats,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: context.colorScheme.onSurface,
                 ),
-                Expanded(
-                  child: _buildQuickStatItem(
-                    loc.cancellationRate,
-                    "${analytics.cancellationRate}%",
-                    Icons.cancel,
-                    const Color(0xFFF44336),
-                  ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildQuickStatItem(
+                  loc.customersServed,
+                  "${analytics.customersServed}",
+                  Icons.people,
+                  context.colorScheme.primary,
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              Expanded(
+                child: _buildQuickStatItem(
+                  loc.cancellationRate,
+                  "${analytics.cancellationRate}%",
+                  Icons.cancel,
+                  context.colorScheme.error,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -658,7 +644,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[600],
+              color: context.colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -668,128 +654,119 @@ class _AnalyticsPageState extends State<AnalyticsPage>
 
   Widget _buildTopSellingItemsCard(
       AnalyticsData analytics, AppLocalizations loc) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              loc.topSellingItems,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 16),
-            ...analytics.topSellingItems.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[200]!),
+    return MaterialCard.elevated(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            loc.topSellingItems,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: context.colorScheme.onSurface,
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: _getItemColor(index),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "${index + 1}",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+          ),
+          const SizedBox(height: 16),
+          ...analytics.topSellingItems.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            return MaterialCard.filled(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: _getItemColor(index),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Center(
+                      child: Text(
+                        "${index + 1}",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.itemName,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            loc.itemSoldQuantity(item.soldQuantity),
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "${item.revenue.toStringAsFixed(2)} IQD",
-                          style: const TextStyle(
+                          item.itemName,
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: Color(0xFF4CAF50),
+                            color: context.colorScheme.onSurface,
                           ),
                         ),
                         Text(
-                          loc.revenueLabel,
+                          loc.itemSoldQuantity(item.soldQuantity),
                           style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
+                            color: context.colorScheme.onSurfaceVariant,
+                            fontSize: 14,
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ],
-        ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        "${item.revenue.toStringAsFixed(2)} IQD",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      Text(
+                        loc.revenueLabel,
+                        style: TextStyle(
+                          color: context.colorScheme.onSurfaceVariant,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
       ),
     );
   }
 
   Widget _buildRevenueBreakdownCard(
       AnalyticsData analytics, AppLocalizations loc) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              loc.revenueBreakdown,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 20),
-            _buildRevenueBreakdownItem(loc.dailyRevenue, analytics.dailyRevenue,
-                const Color(0xFF2196F3)),
-            _buildRevenueBreakdownItem(loc.weeklyRevenue,
-                analytics.weeklyRevenue, const Color(0xFF4CAF50)),
-            _buildRevenueBreakdownItem(loc.monthlyRevenue,
-                analytics.monthlyRevenue, const Color(0xFFFF9800)),
-          ],
-        ),
+    return MaterialCard.elevated(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            loc.revenueBreakdown,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: context.colorScheme.onSurface,
+                ),
+          ),
+          const SizedBox(height: 20),
+          _buildRevenueBreakdownItem(loc.dailyRevenue, analytics.dailyRevenue,
+              context.colorScheme.primary),
+          _buildRevenueBreakdownItem(loc.weeklyRevenue,
+              analytics.weeklyRevenue,
+              context.colorScheme.secondary),
+          _buildRevenueBreakdownItem(loc.monthlyRevenue,
+              analytics.monthlyRevenue, context.colorScheme.tertiary),
+        ],
       ),
     );
   }
@@ -832,43 +809,40 @@ class _AnalyticsPageState extends State<AnalyticsPage>
 
   Widget _buildPerformanceMetricsCard(
       AnalyticsData analytics, AppLocalizations loc) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              loc.performanceMetrics,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildPerformanceMetric(
-                    loc.avgPrepTime,
-                    "${analytics.averagePreparationTime.toStringAsFixed(1)} min",
-                    Icons.timer,
-                    const Color(0xFF2196F3),
-                  ),
+    return MaterialCard.elevated(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            loc.performanceMetrics,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: context.colorScheme.onSurface,
                 ),
-                Expanded(
-                  child: _buildPerformanceMetric(
-                    loc.successRate,
-                    "${(100 - analytics.cancellationRate).toStringAsFixed(1)}%",
-                    Icons.check_circle,
-                    const Color(0xFF4CAF50),
-                  ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _buildPerformanceMetric(
+                  loc.avgPrepTime,
+                  "${analytics.averagePreparationTime.toStringAsFixed(1)} min",
+                  Icons.timer,
+                  context.colorScheme.primary,
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              Expanded(
+                child: _buildPerformanceMetric(
+                  loc.successRate,
+                  "${(100 - analytics.cancellationRate).toStringAsFixed(1)}%",
+                  Icons.check_circle,
+                  context.colorScheme.secondary,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -900,7 +874,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[600],
+              color: context.colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -975,51 +949,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     );
   }
 
-  List<PieChartSectionData> _buildPieChartSections(
-      Map<OrderStatus, int> ordersByStatus) {
-    final total =
-        ordersByStatus.values.fold<int>(0, (sum, count) => sum + count);
-    if (total == 0) return [];
-
-    return ordersByStatus.entries.map((entry) {
-      final percentage = (entry.value / total) * 100;
-      return PieChartSectionData(
-        color: _getStatusColor(entry.key),
-        value: percentage,
-        title: '${percentage.toStringAsFixed(1)}%',
-        radius: 50,
-        titleStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      );
-    }).toList();
-  }
-
   Color _getStatusColor(OrderStatus status) {
-    switch (status) {
-      case OrderStatus.pending:
-        return const Color(0xFFFF9800);
-      case OrderStatus.confirmed:
-        return const Color(0xFF2196F3);
-      case OrderStatus.preparing:
-        return const Color(0xFF4169E1);
-      case OrderStatus.ready:
-        return const Color(0xFF4CAF50);
-      case OrderStatus.onTheWay:
-        return const Color(0xFF9932CC);
-      case OrderStatus.delivered:
-        return const Color(0xFF228B22);
-      case OrderStatus.cancelled:
-        return const Color(0xFFF44336);
-      case OrderStatus.returned:
-        return const Color(0xFF795548);
-      case OrderStatus.expired:
-        return const Color(0xFF607D8B);
-      default:
-        return const Color(0xFF607D8B);
-    }
+    return context.getStatusColor(status);
   }
 
   Color _getItemColor(int index) {
@@ -1209,9 +1140,13 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.orange[50],
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.orange[200]!),
+                  border: Border.all(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.3)),
                 ),
                 child: Row(
                   children: [
@@ -1219,7 +1154,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Colors.orange[400],
+                        color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Center(
@@ -1245,7 +1180,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                           Text(
                             loc.onlySoldCount(item.soldQuantity),
                             style: TextStyle(
-                              color: Colors.orange[700],
+                              color: Theme.of(context).colorScheme.primary,
                               fontSize: 14,
                             ),
                           ),
@@ -1257,10 +1192,10 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                       children: [
                         Text(
                           "${item.revenue.toStringAsFixed(2)} IQD",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: Colors.orange,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                         Text(
@@ -1593,7 +1528,9 @@ class _AnalyticsPageState extends State<AnalyticsPage>
               value: forecast.confidenceScore,
               backgroundColor: Colors.grey[300],
               color: forecast.confidenceScore > 0.8 ? Colors.green : 
-                     forecast.confidenceScore > 0.6 ? Colors.orange : Colors.red,
+                     forecast.confidenceScore > 0.6
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.red,
               strokeWidth: 6,
             ),
           ],
@@ -1870,7 +1807,9 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                         pattern.trend == 'increasing' ? Icons.trending_up : 
                         pattern.trend == 'decreasing' ? Icons.trending_down : Icons.trending_flat,
                         color: pattern.trend == 'increasing' ? Colors.green : 
-                               pattern.trend == 'decreasing' ? Colors.red : Colors.orange,
+                               pattern.trend == 'decreasing'
+                                    ? Colors.red
+                                    : Theme.of(context).colorScheme.primary,
                       ),
                     ],
                   ),
@@ -1903,7 +1842,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     switch (type) {
       case 'staffing': return Colors.blue;
       case 'menu': return Colors.green;
-      case 'marketing': return Colors.orange;
+      case 'marketing':
+        return const Color(0xFF32CD32);
       case 'pricing': return Colors.purple;
       default: return Colors.grey;
     }
@@ -1980,6 +1920,33 @@ class _AnalyticsPageState extends State<AnalyticsPage>
             child: const Text('Take Action'),
           ),
         ],
+      ),
+    );
+  }
+
+  // Material You time range chip builder
+  Widget _buildMaterialTimeRangeChip(String label, int index) {
+    final isSelected = _selectedTimeRange == index;
+
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        setState(() => _selectedTimeRange = index);
+      },
+      selectedColor: context.colorScheme.primaryContainer,
+      checkmarkColor: context.colorScheme.onPrimaryContainer,
+      backgroundColor: context.colorScheme.surface,
+      side: BorderSide(
+        color: isSelected
+            ? context.colorScheme.primary
+            : context.colorScheme.outline,
+      ),
+      labelStyle: TextStyle(
+        color: isSelected
+            ? context.colorScheme.onPrimaryContainer
+            : context.colorScheme.onSurface,
+        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
       ),
     );
   }

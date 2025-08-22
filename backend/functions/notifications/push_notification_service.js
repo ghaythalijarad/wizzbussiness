@@ -2,6 +2,7 @@ const AWS = require('aws-sdk');
 
 const sns = new AWS.SNS();
 const dynamodb = new AWS.DynamoDB.DocumentClient();
+const WEBSOCKET_CONNECTIONS_TABLE = process.env.WEBSOCKET_CONNECTIONS_TABLE; // unified table
 
 /**
  * Push Notification Service
@@ -120,24 +121,16 @@ async function createOrGetPlatformEndpoint(deviceToken, platform, platformArn) {
  */
 async function disableEndpoint(endpoint) {
     try {
-        const params = {
-            TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
-            Key: {
-                merchantId: endpoint.merchantId,
-                endpointType: endpoint.endpointType
-            },
-            UpdateExpression: 'SET isActive = :inactive, disabledAt = :timestamp',
-            ExpressionAttributeValues: {
-                ':inactive': false,
-                ':timestamp': new Date().toISOString()
-            }
-        };
-        
-        await dynamodb.update(params).promise();
-        console.log('📱 Disabled inactive endpoint:', endpoint.deviceToken.substring(0, 20));
-        
+        if (!endpoint.deviceToken) return;
+        await dynamodb.update({
+            TableName: WEBSOCKET_CONNECTIONS_TABLE,
+            Key: { PK: `DEVICE#${endpoint.deviceToken}`, SK: `DEVICE#${endpoint.deviceToken}` },
+            UpdateExpression: 'SET isActive = :inactive, disabledAt = :ts',
+            ExpressionAttributeValues: { ':inactive': false, ':ts': new Date().toISOString() }
+        }).promise();
+        console.log('📱 Disabled unified endpoint token prefix:', endpoint.deviceToken.substring(0, 12));
     } catch (error) {
-        console.error('Error disabling endpoint:', error);
+        console.error('Error disabling unified endpoint:', error);
     }
 }
 
@@ -147,32 +140,23 @@ async function disableEndpoint(endpoint) {
 async function sendBulkPushNotifications(merchantIds, notification) {
     try {
         const promises = merchantIds.map(async (merchantId) => {
-            // Get active endpoints for merchant
+            // Query unified table GSI1 for mobile_push items
             const params = {
-                TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
-                KeyConditionExpression: 'merchantId = :merchantId',
-                FilterExpression: 'endpointType = :type AND isActive = :active',
-                ExpressionAttributeValues: {
-                    ':merchantId': merchantId,
-                    ':type': 'mobile_push',
-                    ':active': true
-                }
+                TableName: WEBSOCKET_CONNECTIONS_TABLE,
+                IndexName: 'GSI1',
+                KeyConditionExpression: 'GSI1PK = :pk',
+                ExpressionAttributeValues: { ':pk': `BUSINESS#${merchantId}` }
             };
-            
             const result = await dynamodb.query(params).promise();
-            const endpoints = result.Items;
-            
-            // Send notification to all endpoints
-            return Promise.all(
-                endpoints.map(endpoint => sendPushNotification(endpoint, notification))
-            );
+            const endpoints = (result.Items || []).filter(i => i.entityType === 'mobile_push' && i.isActive !== false);
+            await Promise.all(endpoints.map(ep => sendPushNotification(ep, notification)));
+            return endpoints.length;
         });
-        
-        await Promise.all(promises);
-        console.log(`📱 Bulk notifications sent to ${merchantIds.length} merchants`);
-        
+        const counts = await Promise.all(promises);
+        const total = counts.reduce((a, b) => a + b, 0);
+        console.log(`📱 Bulk notifications sent to ${merchantIds.length} merchants (total endpoints ${total})`);
     } catch (error) {
-        console.error('Error sending bulk push notifications:', error);
+        console.error('Error sending bulk push notifications (unified):', error);
     }
 }
 

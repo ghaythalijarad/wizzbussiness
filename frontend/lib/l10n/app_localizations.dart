@@ -656,6 +656,24 @@ abstract class AppLocalizations {
   /// **'Sunday'**
   String get sunday;
 
+  /// No description provided for @timeoutFirstAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-reject in {remainingTime}'**
+  String timeoutFirstAlert(String remainingTime);
+
+  /// No description provided for @timeoutUrgentAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'URGENT: Reject in {remainingTime}'**
+  String timeoutUrgentAlert(String remainingTime);
+
+  /// No description provided for @timeoutAutoReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Order will be auto-rejected'**
+  String get timeoutAutoReject;
+
   /// No description provided for @openingTime.
   ///
   /// In en, this message translates to:
@@ -1957,6 +1975,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cafe'**
   String get cafe;
+
+  /// No description provided for @bakery.
+  ///
+  /// In en, this message translates to:
+  /// **'Bakery'**
+  String get bakery;
+
+  /// No description provided for @herbalspices.
+  ///
+  /// In en, this message translates to:
+  /// **'Herbal & Spices'**
+  String get herbalspices;
+
+  /// No description provided for @cosmetics.
+  ///
+  /// In en, this message translates to:
+  /// **'Cosmetics'**
+  String get cosmetics;
+
+  /// No description provided for @betshop.
+  ///
+  /// In en, this message translates to:
+  /// **'Bet Shop'**
+  String get betshop;
 
   /// No description provided for @registrationFailed.
   ///
@@ -3370,11 +3412,29 @@ abstract class AppLocalizations {
   /// **'Error'**
   String get error;
 
+  /// No description provided for @selectImageSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Image Source'**
+  String get selectImageSource;
+
+  /// No description provided for @camera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get camera;
+
+  /// No description provided for @gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get gallery;
+
   /// No description provided for @verificationCodeSentTo.
   ///
   /// In en, this message translates to:
   /// **'Verification code sent to {email}'**
-  String verificationCodeSentTo(Object email);
+  String verificationCodeSentTo(String email);
 
   /// No description provided for @applicationPending.
   ///
@@ -3646,6 +3706,12 @@ abstract class AppLocalizations {
   /// **'Enter your business name'**
   String get enterYourBusinessName;
 
+  /// No description provided for @enterOwnerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter owner name'**
+  String get enterOwnerName;
+
   /// No description provided for @ownerFirstName.
   ///
   /// In en, this message translates to:
@@ -3778,11 +3844,29 @@ abstract class AppLocalizations {
   /// **'Enter 6-digit code'**
   String get enter6DigitCode;
 
+  /// No description provided for @enterVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter verification code'**
+  String get enterVerificationCode;
+
+  /// No description provided for @pleaseEnterVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter verification code'**
+  String get pleaseEnterVerificationCode;
+
   /// No description provided for @pleaseEnterTheVerificationCode.
   ///
   /// In en, this message translates to:
   /// **'Please enter the verification code'**
   String get pleaseEnterTheVerificationCode;
+
+  /// No description provided for @verificationCodeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code sent to your email'**
+  String get verificationCodeSent;
 
   /// No description provided for @resendVerificationCode.
   ///
@@ -3819,6 +3903,414 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create Account'**
   String get createAccount;
+
+  /// No description provided for @none.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get none;
+
+  /// No description provided for @account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get account;
+
+  /// No description provided for @business.
+  ///
+  /// In en, this message translates to:
+  /// **'Business'**
+  String get business;
+
+  /// No description provided for @location.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get location;
+
+  /// No description provided for @documents.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents'**
+  String get documents;
+
+  /// No description provided for @createYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your Account'**
+  String get createYourAccount;
+
+  /// No description provided for @enterAccountDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your account details to get started'**
+  String get enterAccountDetails;
+
+  /// No description provided for @tellUsAboutYourBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about your business'**
+  String get tellUsAboutYourBusiness;
+
+  /// No description provided for @whereIsYourBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Where is your business located?'**
+  String get whereIsYourBusiness;
+
+  /// No description provided for @uploadDocumentsOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload documents to verify your business (optional)'**
+  String get uploadDocumentsOptional;
+
+  /// No description provided for @selectSubcategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Subcategory (Optional)'**
+  String get selectSubcategory;
+
+  /// No description provided for @businessSubcategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Subcategory (Optional)'**
+  String get businessSubcategory;
+
+  /// No description provided for @uploadBusinessLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload your business license'**
+  String get uploadBusinessLicense;
+
+  /// No description provided for @identityDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity Document'**
+  String get identityDocument;
+
+  /// No description provided for @uploadIdentityDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload your identity document'**
+  String get uploadIdentityDocument;
+
+  /// No description provided for @uploadHealthCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload your health certificate'**
+  String get uploadHealthCertificate;
+
+  /// No description provided for @uploadOwnerPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a photo of the owner'**
+  String get uploadOwnerPhoto;
+
+  /// No description provided for @uploadBusinessPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a photo of your business'**
+  String get uploadBusinessPhoto;
+
+  /// No description provided for @country.
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get country;
+
+  /// No description provided for @enterCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your country'**
+  String get enterCountry;
+
+  /// No description provided for @pleaseEnterCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your country'**
+  String get pleaseEnterCountry;
+
+  /// No description provided for @enterCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your city'**
+  String get enterCity;
+
+  /// No description provided for @pleaseEnterCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your city'**
+  String get pleaseEnterCity;
+
+  /// No description provided for @enterDistrict.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your district'**
+  String get enterDistrict;
+
+  /// No description provided for @pleaseEnterDistrict.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your district'**
+  String get pleaseEnterDistrict;
+
+  /// No description provided for @enterStreetAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your street address'**
+  String get enterStreetAddress;
+
+  /// No description provided for @pleaseEnterStreetAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your street address'**
+  String get pleaseEnterStreetAddress;
+
+  /// No description provided for @registrationSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration successful! Welcome to Hadhir Business.'**
+  String get registrationSuccessful;
+
+  /// No description provided for @registrationVerifiedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration verified successfully!'**
+  String get registrationVerifiedSuccessfully;
+
+  /// No description provided for @verificationFailedWithReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed: {reason}'**
+  String verificationFailedWithReason(String reason);
+
+  /// No description provided for @verificationCodeSentToEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code sent to your email'**
+  String get verificationCodeSentToEmail;
+
+  /// No description provided for @registrationFailedWithReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration failed: {reason}'**
+  String registrationFailedWithReason(String reason);
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @didntReceiveCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t receive the code?'**
+  String get didntReceiveCode;
+
+  /// No description provided for @wrongEmailChangeIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong email? Change it'**
+  String get wrongEmailChangeIt;
+
+  /// No description provided for @verificationCodeMustBe6Digits.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code must be 6 digits'**
+  String get verificationCodeMustBe6Digits;
+
+  /// No description provided for @accountAlreadyVerifiedPleaseSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Account already verified. Please sign in.'**
+  String get accountAlreadyVerifiedPleaseSignIn;
+
+  /// No description provided for @tooManyAttemptsPleaseWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please wait and try again.'**
+  String get tooManyAttemptsPleaseWait;
+
+  /// No description provided for @noAccountFoundForThisEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'No account found for this email.'**
+  String get noAccountFoundForThisEmail;
+
+  /// No description provided for @mustAgreeToTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'You must agree to the terms and conditions'**
+  String get mustAgreeToTerms;
+
+  /// No description provided for @passwordRequirementsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Password Requirements'**
+  String get passwordRequirementsTitle;
+
+  /// No description provided for @passwordRequirementsBullets.
+  ///
+  /// In en, this message translates to:
+  /// **'• At least 8 characters\n• Include uppercase, lowercase, numbers, and a special character'**
+  String get passwordRequirementsBullets;
+
+  /// No description provided for @changeEmailAddressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Email Address'**
+  String get changeEmailAddressTitle;
+
+  /// No description provided for @changeEmailAddressMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to change your email address? This will take you back to the sign-up screen.'**
+  String get changeEmailAddressMessage;
+
+  /// No description provided for @invalidIraqiPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid Iraqi number (77X/78X/79X for mobile)'**
+  String get invalidIraqiPhoneNumber;
+
+  /// No description provided for @centralizedPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Centralized Platform'**
+  String get centralizedPlatform;
+
+  /// No description provided for @platformConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform Connection'**
+  String get platformConnection;
+
+  /// No description provided for @connected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get connected;
+
+  /// No description provided for @disconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get disconnected;
+
+  /// No description provided for @syncStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Status'**
+  String get syncStatus;
+
+  /// No description provided for @platformApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform Apps'**
+  String get platformApps;
+
+  /// No description provided for @localBusinesses.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Businesses'**
+  String get localBusinesses;
+
+  /// No description provided for @syncRecommended.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Recommended'**
+  String get syncRecommended;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @no.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
+
+  /// No description provided for @unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknown;
+
+  /// No description provided for @actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get actions;
+
+  /// No description provided for @setupPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup Platform'**
+  String get setupPlatform;
+
+  /// No description provided for @syncAllBusinesses.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync All Businesses'**
+  String get syncAllBusinesses;
+
+  /// No description provided for @refreshStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh Status'**
+  String get refreshStatus;
+
+  /// No description provided for @failedToLoadPlatformStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load platform status'**
+  String get failedToLoadPlatformStatus;
+
+  /// No description provided for @platformSetupCompletedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform setup completed successfully'**
+  String get platformSetupCompletedSuccessfully;
+
+  /// No description provided for @platformSetupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform setup failed'**
+  String get platformSetupFailed;
+
+  /// No description provided for @errorSettingUpPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Error setting up platform'**
+  String get errorSettingUpPlatform;
+
+  /// No description provided for @allBusinessesSyncedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'All businesses synced successfully'**
+  String get allBusinessesSyncedSuccessfully;
+
+  /// No description provided for @failedToSyncAllBusinessesToPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to sync all businesses to platform'**
+  String get failedToSyncAllBusinessesToPlatform;
+
+  /// No description provided for @errorSyncingBusinesses.
+  ///
+  /// In en, this message translates to:
+  /// **'Error syncing businesses'**
+  String get errorSyncingBusinesses;
+
+  /// No description provided for @noAppsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No apps found'**
+  String get noAppsFound;
 }
 
 class _AppLocalizationsDelegate

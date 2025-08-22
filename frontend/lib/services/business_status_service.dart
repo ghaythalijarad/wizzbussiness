@@ -13,8 +13,8 @@ class BusinessStatusService {
   factory BusinessStatusService() => _instance;
   BusinessStatusService._internal();
 
-  /// Check if a specific business is online
-  Future<bool> isBusinessOnline(String businessId) async {
+  /// Check if a specific business is accepting orders
+  Future<bool> isAcceptingOrders(String businessId) async {
     try {
       final token = await AppAuthService.getAccessToken();
       if (token == null) {

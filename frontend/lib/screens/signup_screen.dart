@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/app_auth_service.dart';
+import '../services/api_service.dart';
+import '../models/business_subcategory.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import 'signin_screen.dart';
@@ -23,8 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
+  final _fullNameController = TextEditingController();
   final _businessNameController = TextEditingController();
   final _phoneController = TextEditingController();
 
@@ -32,7 +33,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _streetController = TextEditingController();
   final _cityController = TextEditingController();
   final _stateController = TextEditingController();
-  final _zipCodeController = TextEditingController();
 
   // State variables
   bool _isLoading = false;
@@ -45,26 +45,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final List<String> _businessTypes = [
     'restaurant',
     'store',
-    'caffe',
-    'cloud kitchen',
+    'cafe',
+    'bakery',
+    'cloudkitchen',
     'pharmacy',
+    'herbalspices',
+    'cosmetics',
+    'betshop',
   ];
+
+  List<BusinessSubcategory> _availableSubcategories = [];
+  final Set<String> _selectedSubcategoryIds = <String>{};
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _firstNameController.dispose();
-    _lastNameController.dispose();
+    _fullNameController.dispose();
     _businessNameController.dispose();
     _phoneController.dispose();
     _streetController.dispose();
     _cityController.dispose();
     _stateController.dispose();
-    _zipCodeController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSubcategoriesForType(_selectedBusinessType);
   }
 
   @override
@@ -188,36 +199,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: CustomTextField(
-                controller: _firstNameController,
-                labelText: l10n.firstName,
-                prefixIcon: Icons.person_outline,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return l10n.firstNameRequired;
-                  }
-                  return null;
-                },
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: CustomTextField(
-                controller: _lastNameController,
-                labelText: l10n.lastName,
-                prefixIcon: Icons.person_outline,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return l10n.lastNameRequired;
-                  }
-                  return null;
-                },
-              ),
-            ),
-          ],
+        CustomTextField(
+          controller: _fullNameController,
+          labelText: l10n.ownerName,
+          prefixIcon: Icons.person_outline,
+          validator: (value) {
+            if (value?.isEmpty ?? true) {
+              return l10n.pleaseEnterOwnerName;
+            }
+            return null;
+          },
         ),
         const SizedBox(height: 16),
         CustomTextField(
@@ -298,9 +289,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
             );
           }).toList(),
           onChanged: (value) {
-            setState(() {
-              _selectedBusinessType = value!;
-            });
+            setState(() => _selectedBusinessType = value!);
+            _loadSubcategoriesForType(_selectedBusinessType);
           },
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -309,7 +299,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
             return null;
           },
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+        if (_availableSubcategories.isNotEmpty) ...[
+          Text('Business Subcategories (optional)',
+              style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _availableSubcategories.map((sub) {
+              final selected =
+                  _selectedSubcategoryIds.contains(sub.subcategoryId);
+              final label = Localizations.localeOf(context).languageCode == 'ar'
+                  ? sub.nameAr
+                  : sub.nameEn;
+              return FilterChip(
+                label: Text(label),
+                selected: selected,
+                onSelected: (val) {
+                  setState(() {
+                    if (val) {
+                      _selectedSubcategoryIds.add(sub.subcategoryId);
+                    } else {
+                      _selectedSubcategoryIds.remove(sub.subcategoryId);
+                    }
+                  });
+                },
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+        ],
         Text(
           l10n.businessAddress,
           style: const TextStyle(
@@ -342,12 +362,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 16),
-        CustomTextField(
-          controller: _zipCodeController,
-          labelText: l10n.zipCode,
-          keyboardType: TextInputType.number,
         ),
       ],
     );
@@ -504,9 +518,52 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  void _nextStep() {
+  void _nextStep() async {
     if (_currentStep < 2) {
       if (_validateCurrentStep()) {
+        // Async email availability pre-check on step 0
+        if (_currentStep == 0) {
+          final l10n = AppLocalizations.of(context)!;
+          final email = _emailController.text.trim();
+          try {
+            setState(() => _isLoading = true);
+            print('🧪 EMAIL DEBUG (signup): Pre-check availability for "$email"');
+            final emailCheck = await AppAuthService.checkEmailExists(email: email);
+            print('🧪 EMAIL DEBUG (signup): Exists=${emailCheck.exists} message=${emailCheck.message}');
+
+            if (emailCheck.exists) {
+              setState(() => _isLoading = false);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    emailCheck.message.isNotEmpty
+                        ? emailCheck.message
+                        : l10n.emailAlreadyInUse,
+                  ),
+                  backgroundColor: Colors.red,
+                  action: SnackBarAction(
+                    label: l10n.loginInstead,
+                    textColor: Colors.white,
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SignInScreen()),
+                      );
+                    },
+                  ),
+                ),
+              );
+              return; // stop progression
+            }
+          } catch (e) {
+            print('⚠️ EMAIL DEBUG (signup): Availability check failed: $e');
+            // Non-blocking on network issues
+          } finally {
+            if (mounted) setState(() => _isLoading = false);
+          }
+        }
+
         setState(() {
           _currentStep++;
         });
@@ -548,8 +605,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   bool _validatePersonalInfo() {
-    return _firstNameController.text.isNotEmpty &&
-        _lastNameController.text.isNotEmpty &&
+    return _fullNameController.text.isNotEmpty &&
         _emailController.text.isNotEmpty &&
         _isValidEmail(_emailController.text) &&
         _phoneController.text.isNotEmpty;
@@ -583,20 +639,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'street': _streetController.text.trim(),
         'city': _cityController.text.trim(),
         'state': _stateController.text.trim(),
-        'zipCode': _zipCodeController.text.trim(),
       };
 
       final businessData = {
-        'owner_name':
-            '${_firstNameController.text} ${_lastNameController.text}',
+        'owner_name': _fullNameController.text,
         'business_name': _businessNameController.text,
         'phone_number': _phoneController.text,
         'business_type': _selectedBusinessType,
-        'address': address['street'] ?? '',
+        'address': {
+          'city': address['city'] ?? '',
+          'district': address['state'] ?? '',
+          'street': address['street'] ?? '',
+          'country': 'Iraq',
+        },
+        // flat fallbacks for backward compatibility
         'city': address['city'] ?? '',
         'district': address['state'] ?? '',
         'street': address['street'] ?? '',
         'country': 'Iraq',
+        if (_selectedSubcategoryIds.isNotEmpty)
+          'businessSubcategories': _selectedSubcategoryIds.toList(),
       };
 
       final result = await AppAuthService.registerWithBusiness(
@@ -652,37 +714,69 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   String _getBusinessTypeLabel(String type) {
-    // Map internal type codes to display labels
+    final l10n = AppLocalizations.of(context)!;
     switch (type.toLowerCase()) {
       case 'restaurant':
-        return 'Restaurant';
+        return l10n.restaurant;
       case 'store':
-        return 'Store';
-      case 'caffe':
-        return 'Caffe';
-      case 'cloud kitchen':
-        return 'Cloud Kitchen';
+        return l10n.store;
+      case 'cafe':
+        return l10n.cafe;
+      case 'bakery':
+        return l10n.bakery;
+      case 'cloudkitchen':
+        return l10n.cloudKitchen;
       case 'pharmacy':
-        return 'Pharmacy';
+        return l10n.pharmacy;
+      case 'herbalspices':
+        return l10n.herbalspices;
+      case 'cosmetics':
+        return l10n.cosmetics;
+      case 'betshop':
+        return l10n.betshop;
       default:
-        // Fallback to capitalized
         return type[0].toUpperCase() + type.substring(1);
     }
   }
 
   // Validation methods
   bool _isValidEmail(String email) {
-    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
+    final trimmed = email.trim();
+    print('🧪 EMAIL DEBUG (signup): Validating "$trimmed"');
+    final emailRegex =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    final ok = emailRegex.hasMatch(trimmed);
+    if (!ok) {
+      print('🧪 EMAIL DEBUG (signup): Validation failed for "$trimmed"');
+    } else {
+      print('🧪 EMAIL DEBUG (signup): Validation passed');
+    }
+    return ok;
   }
 
   bool _isValidPassword(String password) {
-    return password.length >= 8 &&
-        password.contains(RegExp(r'[A-Z]')) &&
-        password.contains(RegExp(r'[a-z]')) &&
-        password.contains(RegExp(r'[0-9]'));
+    final lengthOk = password.length >= 8;
+    final hasUpper = RegExp(r'[A-Z]').hasMatch(password);
+    final hasLower = RegExp(r'[a-z]').hasMatch(password);
+    final hasNumber = RegExp(r'[0-9]').hasMatch(password);
+    final hasSpecial = RegExp(r'[!@#\$%^&*(),.?":{}|<>]').hasMatch(password);
+    return lengthOk && hasUpper && hasLower && hasNumber && hasSpecial;
   }
 
   String _getPasswordRequirements() {
-    return 'Password must be at least 8 characters long and contain uppercase, lowercase, and numbers.';
+    return 'Password must be at least 8 characters long and include uppercase, lowercase, numbers, and a special character.';
+  }
+
+  Future<void> _loadSubcategoriesForType(String businessType) async {
+    try {
+      final list =
+          await ApiService().getBusinessSubcategoriesByType(businessType);
+      setState(() {
+        _availableSubcategories = list
+            .map((e) => BusinessSubcategory.fromJson(e))
+            .toList(growable: false);
+        _selectedSubcategoryIds.clear();
+      });
+    } catch (_) {}
   }
 }

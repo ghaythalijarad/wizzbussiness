@@ -6,7 +6,7 @@
             "Effect": "Allow",
             "Principal": "*",
             "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::order-receiver-business-photos-dev/*"
+            "Resource": "arn:aws:s3:::order-receiver-business-photos-dev-1755170214/*"
         }
     ]
 }

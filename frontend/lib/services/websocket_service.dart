@@ -30,6 +30,7 @@ class WebSocketService {
   int _reconnectAttempts = 0;
   String? _lastUrl;
   String? _lastToken;
+  String? _lastBusinessId; // added
   final Ref ref;
 
   WebSocketService({
@@ -39,9 +40,10 @@ class WebSocketService {
     required this.ref,
   });
 
-  void connect(String url, String token) {
+  void connect(String url, String token, {String? businessId}) {
     _lastUrl = url;
     _lastToken = token;
+    _lastBusinessId = businessId ?? _lastBusinessId;
     _disconnect(); // Clean up previous connection state
     _connect();
   }
@@ -52,22 +54,52 @@ class WebSocketService {
       return;
     }
     print("WebSocket: Attempting to connect to $_lastUrl");
-    final headers = {'Authorization': _lastToken!};
-    _channel = IOWebSocketChannel.connect(
-      Uri.parse(_lastUrl!),
-      headers: headers,
-      pingInterval: const Duration(seconds: 30),
-    );
-    print("WebSocket: Connection established.");
-    _reconnectAttempts = 0; // Reset on successful connection
+
+    // Build URI with required query params (businessId + entityType)
+    Uri base = Uri.parse(_lastUrl!);
+    final qp = Map<String, String>.from(base.queryParameters);
+    if (_lastBusinessId != null && _lastBusinessId!.isNotEmpty) {
+      qp['businessId'] = _lastBusinessId!;
+      qp['entityType'] = 'merchant';
+    }
+    final uri = base.replace(queryParameters: qp);
+    print("WebSocket: Final URI: $uri");
+
+    // Ensure Bearer prefix (avoid duplicating if already present)
+    final bearerHeader = _lastToken!.startsWith('Bearer ')
+        ? _lastToken!
+        : 'Bearer ${_lastToken!}';
+    final headers = {'Authorization': bearerHeader};
+
+    try {
+      _channel = IOWebSocketChannel.connect(
+        uri,
+        headers: headers,
+        pingInterval: const Duration(seconds: 30),
+      );
+    } catch (e) {
+      print("WebSocket: Immediate connect exception: $e");
+      _scheduleReconnect();
+      return;
+    }
+
+    print("WebSocket: Connection initiated.");
+    _reconnectAttempts = 0; // Reset on successful initiation
 
     _channelSubscription = _channel!.stream.listen(
       (message) {
         print("WebSocket: Message received: $message");
-        final decodedMessage = jsonDecode(message);
+        dynamic decodedMessage;
+        try {
+          decodedMessage = jsonDecode(message);
+        } catch (_) {
+          print("WebSocket: Non-JSON message");
+          decodedMessage = message;
+        }
 
-        // Check if this is an actionable order notification
-        if (decodedMessage['type'] == 'NEW_ORDER' &&
+        // Minimal example NEW_ORDER handling retained
+        if (decodedMessage is Map &&
+            decodedMessage['type'] == 'NEW_ORDER' &&
             decodedMessage['payload']?['data']?['actions'] != null) {
           final orderId = decodedMessage['payload']['data']['orderId'];
           final notificationService = ref.read(notificationServiceProvider);

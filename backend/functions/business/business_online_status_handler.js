@@ -1,5 +1,6 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, QueryCommand, UpdateCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
+const jwt = require('jsonwebtoken');
 
 const dynamoClient = new DynamoDBClient({ region: process.env.DYNAMODB_REGION || 'us-east-1' });
 const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
@@ -9,6 +10,14 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Amz-Date, X-Api-Key, X-Amz-Security-Token',
 };
+
+const HEARTBEAT_GRACE_SECONDS = parseInt(process.env.HEARTBEAT_GRACE_SECONDS || '180'); // 3 minutes
+const AUTO_OFFLINE_ENFORCE = (process.env.AUTO_OFFLINE_ENFORCE || 'true') === 'true';
+
+// Structured logging helper
+function logEvent(component, event, details = {}) {
+    console.log(JSON.stringify({ component, event, timestamp: new Date().toISOString(), ...details }));
+}
 
 /**
  * Get business online status by checking real WebSocket connections and acceptingOrders field
@@ -39,7 +48,7 @@ const getBusinessOnlineStatus = async (businessId) => {
 
         // 2. Check acceptingOrders field in businesses table (primary source of truth)
         const businessParams = {
-            TableName: process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev',
+            TableName: process.env.BUSINESSES_TABLE || 'WhizzMerchants_Businesses',
             Key: {
                 businessId: businessId
             },
@@ -94,7 +103,7 @@ const getMultipleBusinessesStatus = async (businessIds) => {
 /**
  * Update business heartbeat
  */
-const updateBusinessHeartbeat = async (businessId, userId, connectionId) => {
+async function updateBusinessHeartbeat(businessId, userId, connectionId) { // rename kept for compatibility
     try {
         const currentTime = Math.floor(Date.now() / 1000);
         const ttl = currentTime + 300; // 5 minutes from now
@@ -126,7 +135,7 @@ const updateBusinessHeartbeat = async (businessId, userId, connectionId) => {
         console.error('Error updating business heartbeat:', error);
         throw error;
     }
-};
+}
 
 /**
  * Set business online/offline status
@@ -137,9 +146,22 @@ const setBusinessOnlineStatus = async (businessId, userId, isOnline) => {
         console.log('--- Inside setBusinessOnlineStatus ---');
         console.log('Arguments:', { businessId, userId, isOnline });
 
+        // If attempting to go ONLINE, ensure there is at least one active real connection
+        if (isOnline) {
+            const status = await getBusinessOnlineStatus(businessId);
+            if (!status.isOnline) { // status.isOnline reflects presence of active real connections
+                logEvent('businessStatus', 'online_blocked_no_active_connections', { businessId, userId });
+                return {
+                    blocked: true,
+                    reason: 'NO_ACTIVE_CONNECTIONS',
+                    message: 'Cannot set ONLINE: no active merchant WebSocket connections detected. Connect the app (WebSocket) first.'
+                };
+            }
+        }
+
         // Update acceptingOrders field in businesses table - this is the primary source of truth
         const businessUpdateParams = {
-            TableName: process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev',
+            TableName: process.env.BUSINESSES_TABLE || 'WhizzMerchants_Businesses',
             Key: {
                 businessId: businessId
             },
@@ -153,6 +175,7 @@ const setBusinessOnlineStatus = async (businessId, userId, isOnline) => {
         console.log(`🔄 Updating business ${businessId} acceptingOrders field to ${isOnline}`);
         await dynamodb.send(new UpdateCommand(businessUpdateParams));
         console.log(`✅ Successfully updated acceptingOrders to ${isOnline} for business ${businessId}`);
+        logEvent('businessStatus', 'status_updated', { businessId, userId, isOnline });
 
         return {
             businessId,
@@ -167,6 +190,73 @@ const setBusinessOnlineStatus = async (businessId, userId, isOnline) => {
     }
 };
 
+/**
+ * Verify user has access to the specified business
+ */
+const verifyBusinessAccess = async (userId, businessId) => {
+    try {
+        const params = {
+            TableName: process.env.BUSINESSES_TABLE || 'WhizzMerchants_Businesses',
+            Key: { businessId: businessId }
+        };
+
+        const result = await dynamodb.send(new GetCommand(params));
+
+        if (!result.Item) {
+            console.log(`❌ Business ${businessId} not found`);
+            return false;
+        }
+
+        // Check if user is the owner or has access
+        const business = result.Item;
+        const hasAccess = business.ownerId === userId ||
+            business.cognitoUserId === userId ||
+            business.adminUsers?.includes(userId) ||
+            business.staffUsers?.includes(userId);
+
+        console.log(`🔐 Business access check for ${userId}: ${hasAccess}`);
+        console.log(`🏢 Business ownerId: ${business.ownerId}`);
+        console.log(`🏢 Business cognitoUserId: ${business.cognitoUserId}`);
+        return hasAccess;
+    } catch (error) {
+        console.error('❌ Error verifying business access:', error);
+        return false;
+    }
+};
+
+async function autoOfflineIfStale(businessId) {
+    try {
+        // Fetch current status + connections
+        const status = await getBusinessOnlineStatus(businessId);
+        if (!status.acceptingOrders) return { changed: false, reason: 'already_offline' };
+        // If acceptingOrders true but no active connections and lastConnected older than grace -> set offline
+        if (!status.isOnline) {
+            const businessParams = { TableName: process.env.BUSINESSES_TABLE || 'WhizzMerchants_Businesses', Key: { businessId } };
+            const businessResult = await dynamodb.send(new GetCommand(businessParams));
+            const lastStatusUpdate = businessResult.Item?.lastStatusUpdate ? new Date(businessResult.Item.lastStatusUpdate).getTime() : 0;
+            const nowMs = Date.now();
+            if ((nowMs - lastStatusUpdate) / 1000 > HEARTBEAT_GRACE_SECONDS) {
+                if (!AUTO_OFFLINE_ENFORCE) {
+                    logEvent('businessStatus', 'auto_offline_skipped', { businessId, grace: HEARTBEAT_GRACE_SECONDS });
+                    return { changed: false, reason: 'enforcement_disabled' };
+                }
+                await dynamodb.send(new UpdateCommand({
+                    TableName: process.env.BUSINESSES_TABLE || 'WhizzMerchants_Businesses',
+                    Key: { businessId },
+                    UpdateExpression: 'SET acceptingOrders = :off, lastStatusUpdate = :ts, autoOfflineReason = :r',
+                    ExpressionAttributeValues: { ':off': false, ':ts': new Date().toISOString(), ':r': 'HEARTBEAT_MISSED' }
+                }));
+                logEvent('businessStatus', 'auto_offline_applied', { businessId, reason: 'HEARTBEAT_MISSED' });
+                return { changed: true, reason: 'HEARTBEAT_MISSED' };
+            }
+        }
+        return { changed: false, reason: 'conditions_not_met' };
+    } catch (e) {
+        console.error('autoOfflineIfStale error', e);
+        return { changed: false, reason: 'error' };
+    }
+}
+
 exports.handler = async (event) => {
     try {
         console.log('Business Online Status Event:', JSON.stringify(event, null, 2));
@@ -176,6 +266,51 @@ exports.handler = async (event) => {
         const httpMethod = event.httpMethod;
         const pathParameters = event.pathParameters || {};
         const queryStringParameters = event.queryStringParameters || {};
+
+        // Handle preflight CORS requests
+        if (httpMethod === 'OPTIONS') {
+            return {
+                statusCode: 200,
+                headers: corsHeaders,
+                body: ''
+            };
+        }
+
+        // Extract user information from JWT token for authenticated endpoints
+        const authHeader = event.headers.Authorization || event.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return {
+                statusCode: 401,
+                headers: corsHeaders,
+                body: JSON.stringify({ error: 'Authorization token required' })
+            };
+        }
+
+        const token = authHeader.substring(7);
+        let decodedToken;
+
+        try {
+            decodedToken = jwt.decode(token);
+            console.log('🔐 Decoded token:', decodedToken);
+        } catch (error) {
+            console.error('❌ Token decode error:', error);
+            return {
+                statusCode: 401,
+                headers: corsHeaders,
+                body: JSON.stringify({ error: 'Invalid authorization token' })
+            };
+        }
+
+        const userId = decodedToken.sub || decodedToken['cognito:username'];
+        if (!userId) {
+            return {
+                statusCode: 401,
+                headers: corsHeaders,
+                body: JSON.stringify({ error: 'User ID not found in token' })
+            };
+        }
+
+        console.log(`👤 User ID: ${userId}`);
 
         switch (httpMethod) {
             case 'GET': {
@@ -190,6 +325,16 @@ exports.handler = async (event) => {
                             body: JSON.stringify({
                                 error: 'Business ID is required'
                             })
+                        };
+                    }
+
+                    // Verify user has access to this business
+                    const hasAccess = await verifyBusinessAccess(userId, businessId);
+                    if (!hasAccess) {
+                        return {
+                            statusCode: 403,
+                            headers: corsHeaders,
+                            body: JSON.stringify({ error: 'Access denied to this business' })
                         };
                     }
 
@@ -219,6 +364,24 @@ exports.handler = async (event) => {
                         };
                     }
 
+                    // Verify user has access to at least one of these businesses
+                    let hasAccessToAny = false;
+                    for (const businessId of businessIds) {
+                        const hasAccess = await verifyBusinessAccess(userId, businessId);
+                        if (hasAccess) {
+                            hasAccessToAny = true;
+                            break;
+                        }
+                    }
+
+                    if (!hasAccessToAny) {
+                        return {
+                            statusCode: 403,
+                            headers: corsHeaders,
+                            body: JSON.stringify({ error: 'Access denied to these businesses' })
+                        };
+                    }
+
                     const businessesStatus = await getMultipleBusinessesStatus(businessIds);
 
                     return {
@@ -239,9 +402,9 @@ exports.handler = async (event) => {
                     // Update business heartbeat
                     const { businessId } = pathParameters;
                     const body = JSON.parse(event.body || '{}');
-                    const { userId, connectionId } = body;
+                    const { userId: bodyUserId, connectionId } = body;
 
-                    if (!businessId || !userId || !connectionId) {
+                    if (!businessId || !bodyUserId || !connectionId) {
                         return {
                             statusCode: 400,
                             headers: corsHeaders,
@@ -251,8 +414,19 @@ exports.handler = async (event) => {
                         };
                     }
 
-                    const heartbeatResult = await updateBusinessHeartbeat(businessId, userId, connectionId);
+                    // Verify user has access to this business
+                    const hasAccess = await verifyBusinessAccess(userId, businessId);
+                    if (!hasAccess) {
+                        return {
+                            statusCode: 403,
+                            headers: corsHeaders,
+                            body: JSON.stringify({ error: 'Access denied to this business' })
+                        };
+                    }
 
+                    const heartbeatResult = await updateBusinessHeartbeat(businessId, bodyUserId, connectionId);
+                    // After updating heartbeat, optionally re-evaluate stale auto-offline (no-op if connections present)
+                    // (Could add metrics increment here)
                     return {
                         statusCode: 200,
                         headers: corsHeaders,
@@ -272,9 +446,9 @@ exports.handler = async (event) => {
                     }
 
                     const body = JSON.parse(bodyString);
-                    const { userId, status } = body;
+                    const { userId: bodyUserId, status } = body;
 
-                    if (!businessId || !userId || !status) {
+                    if (!businessId || !bodyUserId || !status) {
                         return {
                             statusCode: 400,
                             headers: corsHeaders,
@@ -284,9 +458,36 @@ exports.handler = async (event) => {
                         };
                     }
 
+                    // Verify user has access to this business
+                    const hasAccess = await verifyBusinessAccess(userId, businessId);
+                    if (!hasAccess) {
+                        return {
+                            statusCode: 403,
+                            headers: corsHeaders,
+                            body: JSON.stringify({ error: 'Access denied to this business' })
+                        };
+                    }
+
                     // Convert status string to boolean
                     const isOnline = status.toLowerCase() === 'online';
-                    const statusResult = await setBusinessOnlineStatus(businessId, userId, isOnline);
+                    const statusResult = await setBusinessOnlineStatus(businessId, bodyUserId, isOnline);
+
+                    if (statusResult.blocked) {
+                        return {
+                            statusCode: 409,
+                            headers: corsHeaders,
+                            body: JSON.stringify({
+                                status: 'BLOCKED',
+                                code: statusResult.reason,
+                                message: statusResult.message
+                            })
+                        };
+                    }
+
+                    if (!statusResult.blocked && !isOnline) {
+                        // When going offline manually we can log explicit action
+                        logEvent('businessStatus', 'manual_offline', { businessId, userId: bodyUserId });
+                    }
 
                     return {
                         statusCode: 200,
@@ -316,6 +517,11 @@ exports.handler = async (event) => {
                         error: 'Method not allowed'
                     })
                 };
+        }
+
+        // Before 404 return, attempt passive auto-offline for any status queries (optional)
+        if (event.resource === '/businesses/{businessId}/online-status' && event.pathParameters?.businessId) {
+            await autoOfflineIfStale(event.pathParameters.businessId);
         }
 
         return {

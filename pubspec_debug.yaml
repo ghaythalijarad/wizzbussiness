@@ -1,0 +1,4 @@
+name: debug_token_corruption
+description: Test token corruption issues
+dependencies:
+  http: ^1.1.0

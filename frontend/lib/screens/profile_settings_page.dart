@@ -11,7 +11,7 @@ import '../l10n/app_localizations.dart';
 import '../models/business.dart';
 import '../models/order.dart';
 import '../services/app_auth_service.dart';
-import '../screens/login_page.dart';
+import '../screens/signin_screen.dart';
 import './working_hours_settings_screen.dart';
 import '../providers/session_provider.dart';
 import '../providers/business_provider.dart';
@@ -21,6 +21,7 @@ class ProfileSettingsPage extends ConsumerStatefulWidget {
   final List<Order> orders;
   final Function(int)? onNavigateToPage;
   final Function(String, OrderStatus)? onOrderUpdated;
+  final bool embedded;
 
   const ProfileSettingsPage({
     Key? key,
@@ -28,6 +29,7 @@ class ProfileSettingsPage extends ConsumerStatefulWidget {
     required this.orders,
     this.onNavigateToPage,
     this.onOrderUpdated,
+    this.embedded = false,
   }) : super(key: key);
 
   @override
@@ -35,6 +37,7 @@ class ProfileSettingsPage extends ConsumerStatefulWidget {
 }
 
 class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
+  // ignore: unused_field
   Map<String, dynamic>? _userData;
 
   @override
@@ -80,6 +83,14 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       case 'caffe':
       case 'cafe':
         return 'Caffe';
+      case 'bakery':
+        return 'Bakery';
+      case 'herbalspices':
+        return 'Herbal & Spices';
+      case 'cosmetics':
+        return 'Cosmetics';
+      case 'betshop':
+        return 'Bet Shop';
       default:
         return businessType;
     }
@@ -127,7 +138,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
@@ -153,7 +164,9 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
               _buildStatusChip(
                 loc.active,
                 business.status == 'approved',
-                business.status == 'approved' ? Colors.green : Colors.orange,
+                business.status == 'approved'
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.error,
               ),
               const SizedBox(width: 8),
               _buildStatusChip(
@@ -176,10 +189,10 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: Colors.white.withOpacity(0.2),
         shape: BoxShape.circle,
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
+          color: Colors.white.withOpacity(0.3),
           width: 2,
         ),
       ),
@@ -217,7 +230,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: Colors.white.withOpacity(0.2),
         shape: BoxShape.circle,
       ),
       child: const Icon(
@@ -232,9 +245,9 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -270,10 +283,10 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: Colors.white.withOpacity(0.15),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white.withOpacity(0.2),
           width: 1,
         ),
       ),
@@ -282,7 +295,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
         children: [
           Icon(
             Icons.star_rounded,
-            color: Colors.amber[300],
+            color: Theme.of(context).colorScheme.primary,
             size: 18,
           ),
           const SizedBox(width: 4),
@@ -294,13 +307,13 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
               color: Colors.white,
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(height: 6),
           _buildStarRating(businessRating),
           const SizedBox(width: 8),
           Container(
             width: 1,
             height: 16,
-            color: Colors.white.withValues(alpha: 0.3),
+            color: Colors.white.withOpacity(0.3),
           ),
           const SizedBox(width: 8),
           Column(
@@ -338,7 +351,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
           return Icon(
             Icons.star_rounded,
             size: 14,
-            color: Colors.amber[300],
+            color: Theme.of(context).colorScheme.primary,
           );
         } else if (fillAmount > 0.0) {
           // Half star
@@ -347,7 +360,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
               Icon(
                 Icons.star_rounded,
                 size: 14,
-                color: Colors.white.withValues(alpha: 0.3),
+                color: Colors.white.withOpacity(0.3),
               ),
               ClipRect(
                 child: Align(
@@ -356,7 +369,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                   child: Icon(
                     Icons.star_rounded,
                     size: 14,
-                    color: Colors.amber[300],
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
@@ -367,94 +380,10 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
           return Icon(
             Icons.star_rounded,
             size: 14,
-            color: Colors.white.withValues(alpha: 0.3),
+            color: Colors.white.withOpacity(0.3),
           );
         }
       }),
-    );
-  }
-
-  Widget _buildModernSettingsCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: color,
-                    size: 16,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -486,7 +415,9 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-            builder: (context) => const LoginPage()),
+            builder: (context) => const SignInScreen(
+                  noticeMessage: 'Signed out successfully',
+                )),
         (route) => false,
       );
     }
@@ -495,206 +426,162 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFF8FBFF), Color(0xFFFFFFFF)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.all(24.0),
-            children: [
-              // User Profile Header
-              _buildUserProfileHeader(),
-              const SizedBox(height: 24),
-
-              // Settings Cards with Modern Design
-              _buildModernSettingsCard(
-                icon: Icons.account_circle_rounded,
-                title: loc.accountSettings,
-                subtitle: 'Manage your personal information',
-                color: const Color(0xFF3399FF),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          AccountSettingsPage(business: widget.business),
-                    ),
-                  );
-                },
+    final content = SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildUserProfileHeader(),
+          const SizedBox(height: 24),
+          _buildSettingsSection(
+            loc.accountSettings,
+            [
+              _buildSettingsItem(
+                context,
+                Icons.person_outline,
+                loc.personalInformation,
+                () =>
+                    _navigateTo(AccountSettingsPage(business: widget.business)),
               ),
-              const SizedBox(height: 16),
-              _buildModernSettingsCard(
-                icon: Icons.lock_rounded,
-                title: loc.changePassword,
-                subtitle: 'Update your password and security',
-                color: const Color(0xFF00C1E8),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ChangePasswordScreen(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildModernSettingsCard(
-                icon: Icons.point_of_sale_rounded,
-                title: loc.posSettings,
-                subtitle: 'Configure point of sale integration',
-                color: const Color(0xFF00D4FF),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          PosSettingsPage(business: widget.business),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildModernSettingsCard(
-                icon: Icons.volume_up_rounded,
-                title: 'Sound Notifications',
-                subtitle: 'Configure sound alerts for new orders and updates',
-                color: const Color(0xFF9C27B0),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const SoundNotificationSettingsPage(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildModernSettingsCard(
-                icon: Icons.notifications_rounded,
-                title: loc.notifications,
-                subtitle:
-                    'Manage notification preferences and delivery methods',
-                color: const Color(0xFFFF5722),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const NotificationSettingsPage(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildModernSettingsCard(
-                icon: Icons.location_on_rounded,
-                title: AppLocalizations.of(context)!.locationSettings,
-                subtitle: 'Manage business location and GPS coordinates',
-                color: const Color(0xFF4CAF50),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          OtherSettingsPage(business: widget.business),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildModernSettingsCard(
-                icon: Icons.access_time_rounded,
-                title: AppLocalizations.of(context)!.workingHoursSettings,
-                subtitle: 'Set up opening and closing hours for your business',
-                color: const Color(0xFF2196F3),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          WorkingHoursSettingsScreen(business: widget.business),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildModernSettingsCard(
-                icon: Icons.local_offer_rounded,
-                title: 'Discount Management',
-                subtitle: 'Create and manage your discounts',
-                color: const Color(0xFFFF9800),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DiscountManagementPage(
-                        business: widget.business,
-                        orders: widget.orders,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // Logout Button with Compact Design
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.red.shade400, Colors.red.shade600],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.red.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _signOut,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.logout_rounded,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            loc.logout,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+              _buildSettingsItem(
+                context,
+                Icons.lock_outline,
+                loc.changePassword,
+                () => _navigateTo(const ChangePasswordScreen()),
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          _buildSettingsSection(
+            loc.businessManagement,
+            [
+              _buildSettingsItem(
+                context,
+                Icons.store_outlined,
+                loc.businessInformation,
+                () =>
+                    _navigateTo(AccountSettingsPage(business: widget.business)),
+              ),
+              _buildSettingsItem(
+                context,
+                Icons.local_offer_outlined,
+                loc.manageDiscounts,
+                () => _navigateTo(DiscountManagementPage(
+                  business: widget.business,
+                  orders: widget.orders,
+                )),
+              ),
+              _buildSettingsItem(
+                context,
+                Icons.access_time,
+                loc.workingHoursSettings,
+                () => _navigateTo(
+                    WorkingHoursSettingsScreen(business: widget.business)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildSettingsSection(
+            loc.appConfiguration,
+            [
+              _buildSettingsItem(
+                context,
+                Icons.language_outlined,
+                loc.languageSettings,
+                () => _navigateTo(const OtherSettingsPage()),
+              ),
+              _buildSettingsItem(
+                context,
+                Icons.notifications_outlined,
+                loc.notifications,
+                () => _navigateTo(const NotificationSettingsPage()),
+              ),
+              _buildSettingsItem(
+                context,
+                Icons.volume_up_outlined,
+                'Sound & Notification',
+                () => _navigateTo(const SoundNotificationSettingsPage()),
+              ),
+              _buildSettingsItem(
+                context,
+                Icons.print_outlined,
+                loc.posSettings,
+                () => _navigateTo(PosSettingsPage(business: widget.business)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildLogoutButton(context),
+        ],
+      ),
+    );
+
+    if (widget.embedded) {
+      return content;
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(loc.settings),
+        elevation: 0,
+        backgroundColor: Theme.of(context).colorScheme.background,
+      ),
+      body: content,
+    );
+  }
+
+  Widget _buildSettingsSection(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Column(
+          children: children,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSettingsItem(
+      BuildContext context, IconData icon, String title, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+      title: Text(title),
+      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    return Center(
+      child: ElevatedButton.icon(
+        icon: const Icon(Icons.logout, color: Colors.white),
+        label: Text(loc.logout, style: const TextStyle(color: Colors.white)),
+        onPressed: () => _signOut(),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
         ),
       ),
+    );
+  }
+
+  void _navigateTo(Widget page) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => page),
     );
   }
 }

@@ -161,11 +161,42 @@ jobs:
           flutter-version: '3.16.0'
           channel: 'stable'
 
-      - name: Build Flutter web
+      - name: Configure AWS credentials (for API URL)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Select environment and get API URL
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            STACK_NAME="order-receiver-production"
+            echo "ENVIRONMENT=production" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.environment }}" = "staging" ]; then
+            STACK_NAME="order-receiver-staging"
+            echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+          else
+            STACK_NAME="order-receiver-dev"
+            echo "ENVIRONMENT=development" >> $GITHUB_ENV
+          fi
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query 'Stacks[0].Outputs[?OutputKey==`ApiGatewayUrl`].OutputValue' \
+            --output text)
+          echo "API_URL=$API_URL" >> $GITHUB_ENV
+
+      - name: Build Flutter web (with dart-defines)
         run: |
           cd frontend
           flutter pub get
-          flutter build web --release
+          flutter build web --release \
+            --dart-define=AUTH_MODE=cognito \
+            --dart-define=COGNITO_USER_POOL_ID=${{ secrets.COGNITO_USER_POOL_ID }} \
+            --dart-define=APP_CLIENT_ID=${{ secrets.APP_CLIENT_ID }} \
+            --dart-define=COGNITO_REGION=us-east-1 \
+            --dart-define=ENVIRONMENT=$ENVIRONMENT \
+            --dart-define=API_URL=$API_URL
 
       - name: Start local server
         run: |

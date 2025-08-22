@@ -48,7 +48,7 @@ class _BusinessOnlineStatusIndicatorState
 
   Future<void> _checkBusinessStatus() async {
     try {
-      final isOnline = await _statusService.isBusinessOnline(widget.businessId);
+      final isOnline = await _statusService.isAcceptingOrders(widget.businessId);
       if (mounted) {
         setState(() {
           _isOnline = isOnline;

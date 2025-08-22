@@ -1,5 +1,5 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, PutCommand, ScanCommand, DeleteCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, PutCommand, DeleteCommand, QueryCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
 const { ApiGatewayManagementApiClient, PostToConnectionCommand } = require('@aws-sdk/client-apigatewaymanagementapi');
 
 const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
@@ -20,86 +20,80 @@ const apiGatewayManagementApi = new ApiGatewayManagementApiClient({
 async function handleConnect(event) {
     try {
         const connectionId = event.requestContext.connectionId;
-        const merchantId = event.queryStringParameters?.merchantId;
         const businessId = event.queryStringParameters?.businessId;
         const userId = event.queryStringParameters?.userId;
-        const entityType = event.queryStringParameters?.entityType || 'user'; // 'user' for customers, 'merchant' for merchants
+        const entityType = event.queryStringParameters?.entityType || (businessId ? 'merchant' : 'user');
 
-        // For merchants, use merchantId or businessId as the identifier
-        const effectiveMerchantId = merchantId || businessId;
-        const effectiveUserId = userId || effectiveMerchantId;
-
-        if (!effectiveMerchantId && !effectiveUserId) {
-            console.log('❌ Missing required parameters:', { merchantId, businessId, userId });
-            return { statusCode: 400, body: 'Missing merchantId, businessId, or userId parameter' };
+        if (!businessId && !userId) {
+            console.log('❌ Missing required parameters:', { businessId, userId });
+            return { statusCode: 400, body: 'Missing businessId or userId parameter' };
         }
 
         const currentTime = new Date().toISOString();
-        const ttl = Math.floor(Date.now() / 1000) + 3600; // 1 hour TTL
+        const ttl = Math.floor(Date.now() / 1000) + 3600;
 
-        console.log(`🔌 WebSocket connection attempt:`, {
-            connectionId,
-            merchantId,
-            businessId,
-            userId,
-            entityType,
-            effectiveMerchantId,
-            effectiveUserId
-        });
+        console.log('🔌 WebSocket connection attempt', { connectionId, businessId, userId, entityType });
 
-        // Store connection in merchant endpoints table (existing logic)
-        if (effectiveMerchantId) {
-            const merchantParams = {
-                TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
-                Item: {
-                    merchantId: effectiveMerchantId,
-                    endpointType: 'websocket',
-                    connectionId,
-                    isActive: true,
-                    connectedAt: currentTime,
-                    updatedAt: currentTime
+        // Deduplicate via GSI1 (BUSINESS#<id>)
+        if (businessId) {
+            const existingConnections = await dynamodb.send(new QueryCommand({
+                TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
+                IndexName: 'GSI1',
+                KeyConditionExpression: 'GSI1PK = :pk',
+                ExpressionAttributeValues: { ':pk': `BUSINESS#${businessId}` },
+                FilterExpression: 'attribute_not_exists(isStale)'
+            }));
+
+            for (const oldConn of existingConnections.Items || []) {
+                if (oldConn.connectionId !== connectionId) {
+                    try {
+                        await dynamodb.send(new UpdateCommand({
+                            TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
+                            Key: { PK: oldConn.PK, SK: oldConn.SK },
+                            UpdateExpression: 'SET isStale = :s, staleMarkedAt = :t',
+                            ExpressionAttributeValues: { ':s': true, ':t': currentTime }
+                        }));
+                        await dynamodb.send(new DeleteCommand({
+                            TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
+                            Key: { PK: oldConn.PK, SK: oldConn.SK }
+                        }));
+                        console.log('🧹 Removed stale duplicate', oldConn.connectionId);
+                    } catch (e) {
+                        console.error('❌ Failed stale removal', oldConn.connectionId, e.message);
+                    }
                 }
-            };
-            await dynamodb.send(new PutCommand(merchantParams));
-            console.log(`✅ Stored connection in merchant endpoints table for merchant: ${effectiveMerchantId}`);
+            }
         }
 
-        // Store connection in websocket connections table (unified tracking)
-        const websocketParams = {
-            TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
-            Item: {
-                PK: `CONNECTION#${connectionId}`,
-                SK: `CONNECTION#${connectionId}`,
-                connectionId,
-                entityType,
-                connectedAt: currentTime,
-                ttl,
-                userId: effectiveUserId,
-                ...(effectiveMerchantId && {
-                    businessId: effectiveMerchantId,
-                    GSI1PK: `BUSINESS#${effectiveMerchantId}`,
-                    GSI1SK: `CONNECTION#${connectionId}`
-                }),
-                ...(effectiveUserId && !effectiveMerchantId && {
-                    GSI1PK: `USER#${effectiveUserId}`,
-                    GSI1SK: `CONNECTION#${connectionId}`
-                })
-            }
+        // Unified table write only
+        const item = {
+            PK: `CONNECTION#${connectionId}`,
+            SK: `CONNECTION#${connectionId}`,
+            connectionId,
+            entityType,
+            connectedAt: currentTime,
+            ttl,
+            userId: userId || businessId,
+            ...(businessId ? { businessId: businessId, GSI1PK: `BUSINESS#${businessId}`, GSI1SK: `CONNECTION#${connectionId}` } : { GSI1PK: `USER#${userId}`, GSI1SK: `CONNECTION#${connectionId}` })
         };
 
-        await dynamodb.send(new PutCommand(websocketParams));
-        console.log(`✅ Stored connection in WebSocket connections table`);
+        try {
+            await dynamodb.send(new PutCommand({ TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE, Item: item }));
+        } catch (putErr) {
+            console.error('❌ Failed to store connection item', {
+                message: putErr.message,
+                name: putErr.name,
+                table: process.env.WEBSOCKET_CONNECTIONS_TABLE,
+                connectionId,
+                hasBusinessId: !!businessId,
+                region: process.env.AWS_REGION,
+                stack: putErr.stack?.split('\n').slice(0, 5).join('\n')
+            });
+            throw putErr; // bubble to outer catch -> 500
+        }
+        console.log('✅ Stored unified connection');
 
-        console.log(`🔌 WebSocket connected: ${connectionId} for ${entityType}: ${effectiveUserId}${effectiveMerchantId ? ` (business: ${effectiveMerchantId})` : ''}`);
-
-        // Send welcome message
-        await sendMessageToConnection(connectionId, {
-            type: 'CONNECTION_ESTABLISHED',
-            message: `Connected to ${entityType === 'merchant' ? 'merchant' : 'customer'} notifications`,
-            timestamp: currentTime,
-            entityType,
-            ...(effectiveMerchantId && { businessId: effectiveMerchantId })
-        });
+        await sendMessageToConnection(connectionId, { type: 'CONNECTION_ESTABLISHED', connectionId, timestamp: currentTime, entityType, ...(businessId && { businessId: businessId }) });
 
         return { statusCode: 200, body: 'Connected' };
 
@@ -169,34 +163,18 @@ async function sendMessageToConnection(connectionId, message) {
 /**
  * Send message to all connections for a merchant
  */
-async function sendMessageToMerchant(merchantId, message) {
+async function sendMessageToMerchant(businessId, message) {
     try {
-        // Get active WebSocket connections for merchant
-        const params = {
-            TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
-            FilterExpression: 'merchantId = :merchantId AND endpointType = :type AND isActive = :active',
-            ExpressionAttributeValues: {
-                ':merchantId': merchantId,
-                ':type': 'websocket',
-                ':active': true
-            }
-        };
-
-        const result = await dynamodb.send(new ScanCommand(params));
-        const connections = result.Items;
-
-        // Send message to all connections
-        const promises = connections.map(connection =>
-            sendMessageToConnection(connection.connectionId, {
-                ...message,
-                timestamp: new Date().toISOString()
-            })
-        );
-
-        await Promise.all(promises);
-
-        console.log(`🔌 Message sent to ${connections.length} connections for merchant ${merchantId}`);
-
+        const queryRes = await dynamodb.send(new QueryCommand({
+            TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
+            IndexName: 'GSI1',
+            KeyConditionExpression: 'GSI1PK = :pk',
+            ExpressionAttributeValues: { ':pk': `BUSINESS#${businessId}` },
+            FilterExpression: 'attribute_not_exists(isStale)'
+        }));
+        const connections = queryRes.Items || [];
+        await Promise.all(connections.map(c => sendMessageToConnection(c.connectionId, { ...message, timestamp: new Date().toISOString() })));
+        console.log(`🔌 Message sent to ${connections.length} unified connections for business ${businessId}`);
     } catch (error) {
         console.error('Error sending message to merchant:', error);
     }
@@ -205,15 +183,15 @@ async function sendMessageToMerchant(merchantId, message) {
 /**
  * Broadcast message to multiple merchants
  */
-async function broadcastToMerchants(merchantIds, message) {
+async function broadcastToMerchants(businessIds, message) {
     try {
-        const promises = merchantIds.map(merchantId =>
-            sendMessageToMerchant(merchantId, message)
+        const promises = businessIds.map(businessId =>
+            sendMessageToMerchant(businessId, message)
         );
 
         await Promise.all(promises);
 
-        console.log(`🔌 Broadcast sent to ${merchantIds.length} merchants`);
+        console.log(`🔌 Broadcast sent to ${businessIds.length} merchants`);
 
     } catch (error) {
         console.error('Error broadcasting to merchants:', error);
@@ -225,29 +203,12 @@ async function broadcastToMerchants(merchantIds, message) {
  */
 async function removeStaleConnection(connectionId) {
     try {
-        const params = {
-            TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
-            FilterExpression: 'connectionId = :connectionId',
-            ExpressionAttributeValues: {
-                ':connectionId': connectionId
-            }
-        };
-
-        const result = await dynamodb.send(new ScanCommand(params));
-
-        if (result.Items.length > 0) {
-            const item = result.Items[0];
-            await dynamodb.send(new DeleteCommand({
-                TableName: process.env.MERCHANT_ENDPOINTS_TABLE,
-                Key: {
-                    merchantId: item.merchantId,
-                    endpointType: 'websocket'
-                }
-            }));
-        }
-
-        console.log(`🔌 Removed stale connection for: ${connectionId}`);
-
+        // Direct delete by known PK/SK
+        await dynamodb.send(new DeleteCommand({
+            TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
+            Key: { PK: `CONNECTION#${connectionId}`, SK: `CONNECTION#${connectionId}` }
+        }));
+        console.log('🔌 Removed stale unified connection', connectionId);
     } catch (error) {
         console.error('Error removing stale connection:', error);
     }
@@ -263,25 +224,40 @@ async function handleMessage(event) {
 
         console.log(`🔌 Received message from ${connectionId}:`, message);
 
-        // Handle different message types
-        switch (message.type) {
+        // Support both 'action' and legacy 'type'
+        const action = message.action || message.type;
+        const topic = message.topic;
+
+        // Legacy topic prefix shim
+        let effectiveTopic = topic;
+        if (topic && topic.startsWith('restaurant:')) {
+            const mapped = topic.replace('restaurant:', 'business:');
+            console.log('⚠️ Deprecation: legacy topic prefix restaurant: -> business:', { legacy: topic, mapped });
+            effectiveTopic = mapped;
+        } else if (topic && topic.startsWith('merchant:')) {
+            const mapped = topic.replace('merchant:', 'business:');
+            console.log('⚠️ Deprecation: legacy topic prefix merchant: -> business:', { legacy: topic, mapped });
+            effectiveTopic = mapped;
+        }
+
+        switch (action) {
             case 'PING':
-                await sendMessageToConnection(connectionId, {
-                    type: 'PONG',
-                    timestamp: new Date().toISOString()
-                });
+            case 'ping':
+                await sendMessageToConnection(connectionId, { type: 'PONG', timestamp: new Date().toISOString() });
                 break;
-
             case 'SUBSCRIBE_ORDERS':
-                // Subscribe to order updates (could implement filtering here)
-                await sendMessageToConnection(connectionId, {
-                    type: 'SUBSCRIBED',
-                    message: 'Subscribed to order updates'
-                });
+                await sendMessageToConnection(connectionId, { type: 'SUBSCRIBED', message: 'Subscribed to order updates' });
                 break;
-
+            case 'subscribe': {
+                await sendMessageToConnection(connectionId, { action: 'subscribed', topic: effectiveTopic, ...(effectiveTopic !== topic ? { legacyTopic: topic } : {}) });
+                break;
+            }
+            case 'unsubscribe': {
+                await sendMessageToConnection(connectionId, { action: 'unsubscribed', topic: effectiveTopic, ...(effectiveTopic !== topic ? { legacyTopic: topic } : {}) });
+                break;
+            }
             default:
-                console.log('Unknown message type:', message.type);
+                console.log('Unknown message action/type:', action);
         }
 
         return { statusCode: 200, body: 'Message processed' };

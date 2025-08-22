@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_api/amplify_api.dart';
+import 'package:flutter/foundation.dart';
 import '../config/app_config.dart';
 
 /// Real AWS Cognito Auth Service implementation using Amplify
@@ -16,6 +17,14 @@ class CognitoAuthService {
     String? identityPoolId,
   }) async {
     if (_isConfigured) return;
+
+    // Skip Amplify configuration on web platform to avoid platform-specific errors
+    if (kIsWeb) {
+      print(
+          '🌐 CognitoAuthService: Running on web - skipping Amplify configuration');
+      _isConfigured = true;
+      return;
+    }
 
     try {
       // Check if Amplify is already configured
@@ -90,8 +99,8 @@ class CognitoAuthService {
     required String password,
     Map<String, String>? userAttributes,
   }) async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+    if (!_isConfigured || kIsWeb) {
+      throw Exception('CognitoAuthService not available on web platform');
     }
 
     try {
@@ -129,8 +138,8 @@ class CognitoAuthService {
     required String username,
     required String confirmationCode,
   }) async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+    if (!_isConfigured || kIsWeb) {
+      throw Exception('CognitoAuthService not available on web platform');
     }
 
     try {
@@ -155,8 +164,8 @@ class CognitoAuthService {
 
   /// Resend signup confirmation code
   static Future<void> resendSignUpCode({required String email}) async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+    if (!_isConfigured || kIsWeb) {
+      throw Exception('CognitoAuthService not available on web platform');
     }
 
     try {
@@ -171,8 +180,8 @@ class CognitoAuthService {
     required String username,
     required String password,
   }) async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+    if (!_isConfigured || kIsWeb) {
+      throw Exception('CognitoAuthService not available on web platform');
     }
 
     try {
@@ -237,8 +246,10 @@ class CognitoAuthService {
 
   /// Sign out user
   static Future<void> signOut() async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+    if (!_isConfigured || kIsWeb) {
+      // On web platform, gracefully handle sign out without Amplify
+      print('🌐 CognitoAuthService: Sign out on web platform (no-op)');
+      return;
     }
 
     try {
@@ -250,8 +261,8 @@ class CognitoAuthService {
 
   /// Get current access token
   static Future<String?> getAccessToken() async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+    if (!_isConfigured || kIsWeb) {
+      return null;
     }
 
     try {
@@ -278,8 +289,8 @@ class CognitoAuthService {
 
   /// Get current user information
   static Future<Map<String, dynamic>?> getCurrentUser() async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+    if (!_isConfigured || kIsWeb) {
+      return null;
     }
 
     try {
@@ -321,7 +332,7 @@ class CognitoAuthService {
 
   /// Check if user is signed in
   static Future<bool> isSignedIn() async {
-    if (!_isConfigured) {
+    if (!_isConfigured || kIsWeb) {
       return false;
     }
 
@@ -340,8 +351,8 @@ class CognitoAuthService {
     required String oldPassword,
     required String newPassword,
   }) async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+    if (!_isConfigured || kIsWeb) {
+      throw Exception('CognitoAuthService not available on web platform');
     }
 
     try {
@@ -366,8 +377,8 @@ class CognitoAuthService {
   static Future<Map<String, dynamic>> forgotPassword({
     required String username,
   }) async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+    if (!_isConfigured || kIsWeb) {
+      throw Exception('CognitoAuthService not available on web platform');
     }
 
     try {
@@ -391,8 +402,8 @@ class CognitoAuthService {
     required String confirmationCode,
     required String newPassword,
   }) async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+    if (!_isConfigured || kIsWeb) {
+      throw Exception('CognitoAuthService not available on web platform');
     }
 
     try {
@@ -416,8 +427,8 @@ class CognitoAuthService {
 
   /// Get user attributes
   static Future<Map<String, dynamic>?> getUserAttributes() async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+    if (!_isConfigured || kIsWeb) {
+      throw Exception('CognitoAuthService not available on web platform');
     }
 
     try {
@@ -439,8 +450,8 @@ class CognitoAuthService {
   static Future<Map<String, dynamic>> updateUserAttributes(
     Map<String, String> attributes,
   ) async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+    if (!_isConfigured || kIsWeb) {
+      throw Exception('CognitoAuthService not available on web platform');
     }
 
     try {

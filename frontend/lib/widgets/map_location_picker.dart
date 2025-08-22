@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../services/location_service.dart';
-import 'package:latlong2/latlong.dart';
 import '../l10n/app_localizations.dart';
 
 class MapLocationPicker extends StatefulWidget {
@@ -73,7 +72,7 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.enableLocationServices),
-            backgroundColor: Colors.orange,
+            backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
       }
@@ -174,7 +173,7 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Colors.black.withAlpha(25),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),

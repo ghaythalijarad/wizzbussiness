@@ -4,13 +4,44 @@ const { CognitoIdentityProviderClient, GetUserCommand } = require('@aws-sdk/clie
 const { v4: uuidv4 } = require('uuid');
 const { createResponse } = require('../auth/utils');
 
+// --- Contextual logging helpers ---
+function buildRequestContext(event) {
+    const requestId = event?.requestContext?.requestId || event?.headers?.['x-request-id'] || `req-${Date.now()}`;
+    const correlationId = event?.headers?.['x-correlation-id'] || event?.headers?.['x-correlationid'] || requestId;
+    const businessId = event?.pathParameters?.businessId || event?.queryStringParameters?.businessId || undefined;
+    const discountId = event?.pathParameters?.discountId || undefined;
+    return { requestId, correlationId, businessId, discountId, routeKey: event?.routeKey, rawPath: event?.rawPath || event?.path };
+}
+
+function logCTX(context, message, extra = {}) {
+    console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'CTX',
+        message,
+        context,
+        ...extra
+    }));
+}
+
+function logBizResolution(context, stage, details = {}) {
+    console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'BUSINESS_RESOLUTION',
+        stage,
+        context,
+        ...details
+    }));
+}
+
 // Environment variables
-const DISCOUNTS_TABLE = process.env.DISCOUNTS_TABLE || 'OrderReceiver-Discounts';
-const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev';
+const DISCOUNTS_TABLE = process.env.DISCOUNTS_TABLE || 'WhizzMerchants_Discounts';
+if (!process.env.DISCOUNTS_TABLE) console.log('⚠️ DISCOUNTS_TABLE env not set, defaulting to WhizzMerchants_Discounts');
+const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE || 'WhizzMerchants_Businesses';
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 
 exports.handler = async (event) => {
-    console.log('Discount Management Handler - Event:', JSON.stringify(event, null, 2));
+    const context = buildRequestContext(event);
+    logCTX(context, 'Discount Management Handler - Processing request');
 
     // Instantiate AWS clients for this invocation
     const cognito = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION || 'us-east-1' });
@@ -24,38 +55,26 @@ exports.handler = async (event) => {
     if (event.isBase64Encoded && requestBody) {
         try {
             requestBody = Buffer.from(requestBody, 'base64').toString('utf-8');
-            console.log('📝 Decoded Base64 request body');
+            logCTX(context, 'Decoded Base64 request body');
         } catch (decodeError) {
-            console.error('❌ Failed to decode Base64 body:', decodeError);
+            logCTX(context, 'Failed to decode Base64 body', { error: decodeError });
         }
     }
 
     try {
-        // Extract access token from Authorization header
-        const authHeader = headers?.Authorization || headers?.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return createResponse(401, { success: false, message: 'Missing or invalid authorization header' });
+        // Get business ID using dual authentication approach (supports both ID tokens from API Gateway and direct Access tokens)
+        const businessInfo = await getBusinessId(event, cognito, dynamodb, context);
+        if (!businessInfo || !businessInfo.businessId) {
+            logBizResolution(context, 'BUSINESS_NOT_FOUND', { context });
+            return createResponse(404, { success: false, message: 'Business not found for the user' });
         }
 
-        const accessToken = authHeader.replace('Bearer ', '');
+        logBizResolution(context, 'BUSINESS_RESOLVED', {
+            businessId: businessInfo.businessId,
+            businessType: businessInfo.businessType
+        });
 
-        // Verify the access token and get user info
-        console.log('Getting user info from token...');
-        const userInfo = await getUserInfoFromToken(cognito, accessToken);
-        console.log('User info:', JSON.stringify(userInfo, null, 2));
-        if (!userInfo) {
-            return createResponse(401, { success: false, message: 'Invalid access token' });
-        }
-
-        // Get business info for user
-        console.log('Getting business info for user...');
-        const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
-        console.log('Business info:', JSON.stringify(businessInfo, null, 2));
-        if (!businessInfo) {
-            return createResponse(404, { success: false, message: 'Business not found for user' });
-        }
-
-        // Route the request based on HTTP method and path
+        // Route requests based on HTTP method and path
         if (httpMethod === 'GET' && path === '/discounts') {
             return await handleGetDiscounts(dynamodb, businessInfo.businessId);
         } else if (httpMethod === 'POST' && path === '/discounts') {
@@ -82,6 +101,70 @@ exports.handler = async (event) => {
         return createResponse(500, { success: false, message: 'Internal server error', error: error.message });
     }
 };
+
+// Get business ID using dual authentication approach (supports both ID tokens from API Gateway and direct Access tokens)
+async function getBusinessId(event, cognito, dynamodb, context) {
+    try {
+        logCTX(context, 'Starting business ID resolution');
+
+        // Method 1: Try to get user info from API Gateway context (when using ID tokens)
+        if (event.requestContext?.authorizer?.claims) {
+            logCTX(context, 'Found claims in API Gateway context - using ID token approach');
+            const claims = event.requestContext.authorizer.claims;
+            const email = claims.email;
+
+            if (email) {
+                logCTX(context, 'Extracted email from ID token claims', { email });
+                const businessInfo = await getBusinessInfoForUser(dynamodb, email);
+                if (businessInfo && businessInfo.businessId) {
+                    logCTX(context, 'Successfully resolved business via ID token claims', {
+                        businessId: businessInfo.businessId,
+                        email: email
+                    });
+                    return businessInfo;
+                }
+            }
+        }
+
+        // Method 2: Fallback to Cognito GetUserCommand (when using access tokens directly)
+        logCTX(context, 'Falling back to Cognito GetUserCommand approach');
+
+        const authHeader = event.headers?.Authorization || event.headers?.authorization;
+        if (!authHeader) {
+            logCTX(context, 'No authorization header found');
+            return null;
+        }
+
+        let accessToken = authHeader;
+        if (authHeader.startsWith('Bearer ')) {
+            accessToken = authHeader.substring(7);
+        }
+
+        const userInfo = await getUserInfoFromToken(cognito, accessToken);
+        if (!userInfo || !userInfo.email) {
+            logCTX(context, 'Failed to get user info from access token');
+            return null;
+        }
+
+        logCTX(context, 'Got user info from access token', { email: userInfo.email });
+
+        const businessInfo = await getBusinessInfoForUser(dynamodb, userInfo.email);
+        if (businessInfo && businessInfo.businessId) {
+            logCTX(context, 'Successfully resolved business via access token', {
+                businessId: businessInfo.businessId,
+                email: userInfo.email
+            });
+            return businessInfo;
+        }
+
+        logCTX(context, 'Failed to resolve business for user', { email: userInfo.email });
+        return null;
+
+    } catch (error) {
+        logCTX(context, 'Error in getBusinessId', { error: error.message });
+        return null;
+    }
+}
 
 // Helper function to get user info from access token
 async function getUserInfoFromToken(cognito, accessToken) {
@@ -128,14 +211,31 @@ async function getBusinessInfoForUser(dynamodb, email) {
 // GET /discounts - Get all discounts for a business
 async function handleGetDiscounts(dynamodb, businessId) {
     try {
-        const params = {
+        // Try to use BusinessIdIndex first, fallback to scan if index doesn't exist
+        let params = {
             TableName: DISCOUNTS_TABLE,
-            FilterExpression: 'businessId = :businessId',
+            IndexName: 'BusinessIdIndex',
+            KeyConditionExpression: 'businessId = :businessId',
             ExpressionAttributeValues: {
                 ':businessId': businessId
             }
         };
-        const result = await dynamodb.send(new ScanCommand(params));
+
+        let result;
+        try {
+            result = await dynamodb.send(new QueryCommand(params));
+        } catch (indexError) {
+            console.log('BusinessIdIndex not found, falling back to scan:', indexError.message);
+            // Fallback to scan if index doesn't exist
+            params = {
+                TableName: DISCOUNTS_TABLE,
+                FilterExpression: 'businessId = :businessId',
+                ExpressionAttributeValues: {
+                    ':businessId': businessId
+                }
+            };
+            result = await dynamodb.send(new ScanCommand(params));
+        }
         
         return createResponse(200, {
             success: true,

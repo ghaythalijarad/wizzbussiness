@@ -45,7 +45,7 @@ class ReturnOrderUtils {
               onPressed: () => _processReturnOrder(context,
                   orderNumberController.text.trim(), orders, onOrderUpdated),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
               ),
               child: Text(AppLocalizations.of(context)!.returnOrder),
@@ -86,7 +86,7 @@ class ReturnOrderUtils {
         SnackBar(
           content: Text(
               'Order #${order.displayOrderNumber} cannot be returned. Only ready orders can be returned.'),
-          backgroundColor: Colors.orange,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           duration: const Duration(seconds: 3),
         ),
       );

@@ -17,7 +17,8 @@ class PendingApprovalScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              const Icon(Icons.hourglass_top, size: 80, color: Colors.orange),
+              Icon(Icons.hourglass_top,
+                  size: 80, color: Theme.of(context).colorScheme.primary),
               const SizedBox(height: 24),
               const Text(
                 'Your Account is Pending Review',

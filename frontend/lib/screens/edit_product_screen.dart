@@ -6,18 +6,18 @@ import 'dart:io';
 import '../models/product.dart';
 import '../providers/edit_product_provider.dart';
 import '../providers/product_provider.dart';
-import '../services/product_service.dart';
-import '../services/image_upload_service.dart';
 import '../widgets/wizz_business_button.dart';
 import '../widgets/wizz_business_text_form_field.dart';
 import '../widgets/image_picker_widget.dart';
 
 class EditProductScreen extends ConsumerStatefulWidget {
   final Product product;
+  final String businessType;
 
   const EditProductScreen({
     super.key,
     required this.product,
+    required this.businessType,
   });
 
   @override
@@ -315,7 +315,7 @@ class _EditProductScreenState extends ConsumerState<EditProductScreen> {
 
     final editState = ref.watch(editProductProvider(widget.product.id));
     final isLoading = editState.status == EditProductStateStatus.loading;
-    final categoriesAsync = ref.watch(categoriesProvider('restaurant'));
+    final categoriesAsync = ref.watch(categoriesProvider(widget.businessType));
 
     return PopScope(
       canPop: false,

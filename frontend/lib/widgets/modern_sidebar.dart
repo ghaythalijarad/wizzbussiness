@@ -217,7 +217,9 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
           // Simple status indicator
           Icon(
             _appState.isOnline ? Icons.wifi : Icons.wifi_off,
-            color: _appState.isOnline ? Colors.green : Colors.orange,
+            color: _appState.isOnline
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.error,
             size: 20,
           ),
           const SizedBox(width: 12),
@@ -245,7 +247,9 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          _appState.isOnline ? Colors.green : Colors.orange,
+                          _appState.isOnline
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.error,
                         ),
                       ),
                     ),

@@ -186,12 +186,12 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
             decoration: BoxDecoration(
               color: widget.isOnline
                   ? Colors.green.withOpacity(0.1)
-                  : Colors.orange.withOpacity(0.1),
+                  : Theme.of(context).colorScheme.error.withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: widget.isOnline
                     ? Colors.green.withOpacity(0.3)
-                    : Colors.orange.withOpacity(0.3),
+                    : Theme.of(context).colorScheme.error.withOpacity(0.3),
                 width: 1,
               ),
             ),
@@ -199,7 +199,9 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
               children: [
                 Icon(
                   widget.isOnline ? Icons.wifi_rounded : Icons.wifi_off_rounded,
-                  color: widget.isOnline ? Colors.green : Colors.orange,
+                  color: widget.isOnline
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.error,
                   size: 18,
                 ),
                 const SizedBox(width: 8),
@@ -214,7 +216,7 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
                         style: TextStyle(
                           color: widget.isOnline
                               ? Colors.green.shade700
-                              : Colors.orange.shade700,
+                              : Theme.of(context).colorScheme.error,
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                         ),
@@ -235,7 +237,7 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
                   value: widget.isOnline,
                   onChanged: widget.onToggleStatus,
                   activeColor: Colors.green,
-                  inactiveThumbColor: Colors.orange,
+                  inactiveThumbColor: Theme.of(context).colorScheme.error,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ],

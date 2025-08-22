@@ -1,6 +1,5 @@
 {
   "@@locale": "en",
-  
   "appTitle": "Business Manager",
   "welcome": "Welcome",
   "login": "Login",
@@ -31,7 +30,7 @@
   "emailRequired": "Email is required",
   "errorOccurred": "An error occurred",
   "failedToFetchProfile": "Failed to fetch profile",
-  "noBusinessFoundForUser": "No business found for this user",
+  "noBusinessFoundForUser": "No business found for user",
   "loginFailed": "Login failed",
   "loginFailedMessage": "Login failed. Please check your credentials.",
   "errorInvalidCredentials": "Invalid email or password. Please check your credentials and try again.",
@@ -50,19 +49,16 @@
   "tooManyAttemptsTitle": "Too Many Attempts",
   "userNotFoundTitle": "User Not Found",
   "emailVerificationTitle": "Email Verification Required",
-  
   "demoStore": "Demo Store",
-  "demoPharmacy": "Demo Pharmacy", 
+  "demoPharmacy": "Demo Pharmacy",
   "demoRestaurant": "Demo Restaurant",
   "demoKitchen": "Demo Kitchen",
-  
   "orders": "Orders",
   "items": "Items",
   "analytics": "Analytics",
   "discounts": "Discounts",
   "settings": "Settings",
   "dashboard": "Dashboard",
-  
   "online": "Online",
   "offline": "Offline",
   "quickActions": "Quick Actions",
@@ -77,16 +73,14 @@
   "businessIsNowOnline": "Business is now online",
   "businessIsNowOffline": "Business is now offline",
   "businessNowOnline": "Business is now online",
-  "businessNowOffline": "Business is now offline", 
+  "businessNowOffline": "Business is now offline",
   "errorUpdatingStatus": "Error updating status. Please try again.",
   "returnOrderFeature": "Return order feature coming soon",
-  
   "notifications": "Notifications",
   "notificationsTapped": "Notifications tapped",
   "returnAnOrder": "Return an Order",
   "manageDiscounts": "Manage Discounts",
   "returnOrder": "Return Order",
-  
   "accountSettings": "Account Settings",
   "posSettings": "POS Settings",
   "languageSettings": "Language Settings",
@@ -99,6 +93,23 @@
   "friday": "Friday",
   "saturday": "Saturday",
   "sunday": "Sunday",
+  "timeoutFirstAlert": "Auto-reject in {remainingTime}",
+  "@timeoutFirstAlert": {
+    "placeholders": {
+      "remainingTime": {
+        "type": "String"
+      }
+    }
+  },
+  "timeoutUrgentAlert": "URGENT: Reject in {remainingTime}",
+  "@timeoutUrgentAlert": {
+    "placeholders": {
+      "remainingTime": {
+        "type": "String"
+      }
+    }
+  },
+  "timeoutAutoReject": "Order will be auto-rejected",
   "openingTime": "Opening Time",
   "closingTime": "Closing Time",
   "setOpeningTime": "Set Opening Time",
@@ -107,18 +118,15 @@
   "workingHoursSaved": "Working hours saved successfully",
   "businessManagement": "Business Management",
   "logout": "Logout",
-  
   "businessName": "Business Name",
   "ownerName": "Owner Name",
   "phoneNumber": "Phone Number",
   "businessAddressLabel": "Business Address",
   "rating": "Rating",
   "changePassword": "Change Password",
-  
   "personalInformation": "Personal Information",
   "businessInformation": "Business Information",
   "accountStatus": "Account Status",
-  
   "posSettingsUpdated": "POS settings updated successfully",
   "connectionSuccessful": "Connection successful",
   "connectionFailed": "Connection failed",
@@ -187,7 +195,7 @@
   "webhooksDescription": "Configure webhooks for real-time notifications",
   "configureWebhooks": "Configure Webhooks",
   "securitySettings": "Security Settings",
-  "encryptionStatus": "Encryption Status", 
+  "encryptionStatus": "Encryption Status",
   "encryptionEnabled": "Encryption Enabled",
   "apiKeyRotation": "API Key Rotation",
   "lastRotated": "Last Rotated",
@@ -208,7 +216,6 @@
   "syncLogs": "Sync Logs",
   "advancedSettings": "Advanced Settings",
   "help": "Help",
-  
   "allDiscounts": "All Discounts",
   "activeDiscounts": "Active Discounts",
   "scheduledDiscounts": "Scheduled Discounts",
@@ -280,11 +287,10 @@
   "off": "off",
   "discount": "discount",
   "active": "Active",
-  "scheduled": "Scheduled", 
+  "scheduled": "Scheduled",
   "expired": "Expired",
   "validityPeriod": "Validity Period",
   "unknownStatus": "Unknown Status",
-  
   "sampleItem": "Sample Item",
   "totalSales": "Total Sales",
   "totalOrders": "Total Orders",
@@ -317,7 +323,6 @@
   "orderStatusCancelled": "Cancelled",
   "orderStatusReturned": "Returned",
   "orderStatusExpired": "Expired",
-  
   "itemAddedSuccessfully": "Item added successfully",
   "itemUpdatedSuccessfully": "Item updated successfully",
   "refresh": "Refresh",
@@ -348,7 +353,6 @@
   "add": "Add",
   "editItem": "Edit Item",
   "update": "Update",
-  
   "pending": "Pending",
   "confirmed": "Confirmed",
   "preparing": "Preparing",
@@ -357,7 +361,6 @@
   "delivered": "Delivered",
   "pickedUp": "Picked Up",
   "cancelled": "Cancelled",
-  "expired": "Expired",
   "orderReturned": "Returned",
   "noOrdersFoundFor": "No orders found for {filter}",
   "@noOrdersFoundFor": {
@@ -371,7 +374,6 @@
   "total": "Total",
   "reject": "Reject",
   "accept": "Accept",
-  
   "required": "Required",
   "changeFile": "Change File",
   "selectFile": "Select File",
@@ -380,10 +382,13 @@
   "pharmacy": "Pharmacy",
   "cloudKitchen": "Cloud Kitchen",
   "cafe": "Cafe",
+  "bakery": "Bakery",
+  "herbalspices": "Herbal & Spices",
+  "cosmetics": "Cosmetics",
+  "betshop": "Bet Shop",
   "registrationFailed": "Registration failed",
   "registrationSubmitted": "Registration Submitted",
   "registrationSubmittedMessage": "Your registration has been submitted for review",
-  "businessInformation": "Business Information",
   "nameLabel": "Name",
   "typeLabel": "Type",
   "notSelected": "Not Selected",
@@ -422,41 +427,32 @@
   "lastName": "Last Name",
   "firstNameRequired": "First name is required",
   "lastNameRequired": "Last name is required",
-  "emailRequired": "Email is required",
   "invalidEmailFormat": "Please enter a valid email address",
-  "phoneNumber": "Phone Number",
   "phoneNumberRequired": "Phone number is required",
-  "businessName": "Business Name",
   "businessNameRequired": "Business name is required",
   "pleaseEnterYourBusinessName": "Please enter your business name",
-  "businessType": "Business Type",
   "businessAddress": "Business Address",
   "streetAddress": "Street Address",
   "city": "City",
   "state": "State/Province",
   "zipCode": "ZIP/Postal Code",
-  "password": "Password",
   "confirmPassword": "Confirm Password",
   "passwordRequired": "Password is required",
   "weakPassword": "Password is too weak",
   "confirmPasswordRequired": "Please confirm your password",
   "passwordsDoNotMatch": "Passwords do not match",
   "registrationSuccess": "Registration successful",
-  "registrationFailed": "Registration failed",
   "emailAlreadyInUse": "Email address is already in use",
   "passwordResetLinkSent": "Password reset link sent to your email",
   "welcomeToOrderReceiver": "Welcome to Order Receiver",
   "welcomeDescription": "Manage your business orders efficiently with our powerful order management system.",
   "getStarted": "Get Started",
   "testRegistrationForm": "Test Registration Form",
-  
   "networkError": "Network Error",
-  
   "returnOrderTitle": "Return Order",
   "enterOrderNumber": "Enter Order Number",
   "orderNotFound": "Order Not Found",
   "orderReturnedSuccessfully": "Order Returned Successfully",
-  
   "locationSaved": "Location Saved",
   "businessLocation": "Business Location",
   "locationSet": "Location Set",
@@ -466,15 +462,12 @@
   "noLocationSet": "No Location Set",
   "chooseLocationOnMap": "Choose Location on Map",
   "selectLocation": "Select Location",
-  
   "enableLocationServices": "Enable Location Services",
   "locationNotSelected": "Location Not Selected",
   "confirmLocation": "Confirm Location",
   "tapToSelectLocation": "Tap to Select Location",
   "registrationDate": "Registration Date",
-  
   "failedToSaveLocation": "Failed to save location",
-  "retry": "Retry",
   "businessLocationDescription": "Set your business location to help customers find you and improve delivery accuracy.",
   "locationInformation": "Location Information",
   "customerVisibility": "Customer Visibility",
@@ -483,15 +476,12 @@
   "deliveryOptimizationDescription": "Accurate location helps optimize delivery routes and timing",
   "privacyAndSecurity": "Privacy & Security",
   "privacyAndSecurityDescription": "Your location data is encrypted and securely stored",
-  
   "pleaseSignInToAccessLocationSettings": "Please sign in to access location settings",
-  "noBusinessFoundForUser": "No business found for user",
-  
   "smartBusinessControls": "Smart business controls",
   "readyToReceiveOrders": "Ready to receive orders",
   "ordersArePaused": "Orders are paused",
   "menuItemsAndCategories": "Menu items & categories",
-  "businessInsights": "Business insights",
+  "businessInsights": "Business Insights",
   "offersAndPromotions": "Offers & promotions",
   "appConfiguration": "App configuration",
   "changeAppLanguage": "Change app language",
@@ -499,7 +489,6 @@
   "tapOutsideOrPressEscToClose": "Tap outside or press ESC to close",
   "languageChangedToArabic": "تم تغيير اللغة إلى العربية",
   "languageChangedToEnglish": "Language changed to English",
-  
   "managePromotionalOffers": "Manage promotional offers",
   "viewBusinessInsights": "View business insights",
   "manageItemsAndCategories": "Manage items & categories",
@@ -507,7 +496,6 @@
   "centralizedDeliveryPlatform": "Centralized delivery platform",
   "appAndAccountPreferences": "App & account preferences",
   "keyboardShortcutsTip": "Tip: Use keyboard shortcuts for faster actions",
-  
   "conditionalDiscountConfiguration": "Conditional Discount Configuration",
   "buyXGetYConfiguration": "Buy X Get Y Configuration",
   "buyConfiguration": "Buy Configuration",
@@ -552,12 +540,24 @@
   "validFromTo": "Valid: {startDay}/{startMonth}/{startYear} - {endDay}/{endMonth}/{endYear}",
   "@validFromTo": {
     "placeholders": {
-      "startDay": {"type": "int"},
-      "startMonth": {"type": "int"},
-      "startYear": {"type": "int"},
-      "endDay": {"type": "int"},
-      "endMonth": {"type": "int"},
-      "endYear": {"type": "int"}
+      "startDay": {
+        "type": "int"
+      },
+      "startMonth": {
+        "type": "int"
+      },
+      "startYear": {
+        "type": "int"
+      },
+      "endDay": {
+        "type": "int"
+      },
+      "endMonth": {
+        "type": "int"
+      },
+      "endYear": {
+        "type": "int"
+      }
     }
   },
   "minAmount": "Min: ${amount}",
@@ -584,7 +584,6 @@
       }
     }
   },
-
   "missingItemsMessage": "Please select both buy and get items for {discountType} discount.",
   "@missingItemsMessage": {
     "placeholders": {
@@ -597,16 +596,13 @@
   "selectGetItem": "Select Get Item",
   "noCategoriesFound": "No categories found. Please add categories first.",
   "appliesToMinimumOrder": "Applies to orders above minimum amount",
-  
   "startSimulation": "Start Simulation",
   "stopSimulation": "Stop Simulation",
   "simulateNewOrder": "Simulate New Order",
   "newOrder": "New Order",
   "viewDetails": "View Details",
-  
   "notificationsTitle": "Notifications",
   "live": "Live",
-  "offline": "Offline",
   "sendTestNotification": "Send Test Notification",
   "showLocalNotifications": "Show Local Notifications",
   "showLocalNotificationsDescription": "Display notifications on this device",
@@ -615,7 +611,6 @@
   "testNotifications": "Test Notifications",
   "testNotificationDescription": "Send a test notification to verify settings",
   "notConnectedToNotifications": "Not connected to real-time notifications",
-  "total": "Total",
   "unread": "Unread",
   "highPriority": "High Priority",
   "noNotificationsYet": "No notifications yet",
@@ -668,7 +663,6 @@
       }
     }
   },
-
   "today": "Today",
   "week": "Week",
   "month": "Month",
@@ -680,7 +674,6 @@
   "customerReviews": "Customer Reviews",
   "leastOrderedItems": "Least Ordered Items",
   "leastOrderedItemsDescription": "Items that need more attention or promotion",
-  "businessInsights": "Business Insights",
   "growingPopularity": "Growing Popularity",
   "customerSatisfaction": "Customer Satisfaction",
   "efficientService": "Efficient Service",
@@ -782,6 +775,9 @@
   "registrationCompletedSuccessfully": "Registration completed successfully",
   "verificationFailed": "Verification failed",
   "error": "Error",
+  "selectImageSource": "Select Image Source",
+  "camera": "Camera",
+  "gallery": "Gallery",
   "verificationCodeSentTo": "Verification code sent to {email}",
   "applicationPending": "Application Pending",
   "applicationPendingDescription": "Your application is pending approval.",
@@ -814,7 +810,6 @@
   "selectLanguage": "Select Language",
   "english": "English",
   "arabic": "Arabic",
-  "menu": "Menu",
   "businessLicense": "Business License",
   "ownerIdentity": "Owner Identity",
   "healthCertificate": "Health Certificate",
@@ -822,13 +817,6 @@
   "alreadyHaveAccount": "Already have an account?",
   "kitchen": "Kitchen",
   "chooseFromFiles": "Choose from Files",
-  "goOffline": "Go Offline",
-  "menu": "Menu",
-  "retry": "Retry",
-  "errorPickingImage": "Error picking image",
-  "errorPickingFile": "Error picking file",
-  "chooseFromGallery": "Choose from Gallery",
-  "takePhoto": "Take Photo",
   "accountInformation": "Account Information",
   "enterYourEmail": "Enter your email",
   "pleaseEnterAValidEmail": "Please enter a valid email",
@@ -836,6 +824,7 @@
   "passwordMustBeAtLeast8Chars": "Password must be at least 8 characters",
   "reEnterYourPassword": "Re-enter your password",
   "enterYourBusinessName": "Enter your business name",
+  "enterOwnerName": "Enter owner name",
   "ownerFirstName": "Owner First Name",
   "enterOwnerFirstName": "Enter owner first name",
   "pleaseEnterOwnerFirstName": "Please enter owner first name",
@@ -858,11 +847,103 @@
   "enterTheCodeSentToYourEmail": "Enter the code sent to your email",
   "changeEmail": "Change Email",
   "enter6DigitCode": "Enter 6-digit code",
+  "enterVerificationCode": "Enter verification code",
+  "pleaseEnterVerificationCode": "Please enter verification code",
   "pleaseEnterTheVerificationCode": "Please enter the verification code",
+  "verificationCodeSent": "Verification code sent to your email",
   "resendVerificationCode": "Resend Verification Code",
   "failedToResendCode": "Failed to resend verification code",
   "troubleshootingSection": "Troubleshooting",
   "passwordChangedSuccessfully": "Password changed successfully",
   "completeRegistration": "Complete Registration",
-  "createAccount": "Create Account"
+  "createAccount": "Create Account",
+  "none": "None",
+  "account": "Account",
+  "business": "Business",
+  "location": "Location",
+  "documents": "Documents",
+  "createYourAccount": "Create Your Account",
+  "enterAccountDetails": "Enter your account details to get started",
+  "tellUsAboutYourBusiness": "Tell us about your business",
+  "whereIsYourBusiness": "Where is your business located?",
+  "uploadDocumentsOptional": "Upload documents to verify your business (optional)",
+  "selectSubcategory": "Select Subcategory (Optional)",
+  "businessSubcategory": "Business Subcategory (Optional)",
+  "uploadBusinessLicense": "Upload your business license",
+  "identityDocument": "Identity Document",
+  "uploadIdentityDocument": "Upload your identity document",
+  "uploadHealthCertificate": "Upload your health certificate",
+  "uploadOwnerPhoto": "Upload a photo of the owner",
+  "uploadBusinessPhoto": "Upload a photo of your business",
+  "country": "Country",
+  "enterCountry": "Enter your country",
+  "pleaseEnterCountry": "Please enter your country",
+  "enterCity": "Enter your city",
+  "pleaseEnterCity": "Please enter your city",
+  "enterDistrict": "Enter your district",
+  "pleaseEnterDistrict": "Please enter your district",
+  "enterStreetAddress": "Enter your street address",
+  "pleaseEnterStreetAddress": "Please enter your street address",
+  "registrationSuccessful": "Registration successful! Welcome to Hadhir Business.",
+  "registrationVerifiedSuccessfully": "Registration verified successfully!",
+  "verificationFailedWithReason": "Verification failed: {reason}",
+  "@verificationFailedWithReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "verificationCodeSentToEmail": "Verification code sent to your email",
+  "registrationFailedWithReason": "Registration failed: {reason}",
+  "@registrationFailedWithReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "confirm": "Confirm",
+  "didntReceiveCode": "Didn't receive the code?",
+  "wrongEmailChangeIt": "Wrong email? Change it",
+  "verificationCodeMustBe6Digits": "Verification code must be 6 digits",
+  "accountAlreadyVerifiedPleaseSignIn": "Account already verified. Please sign in.",
+  "tooManyAttemptsPleaseWait": "Too many attempts. Please wait and try again.",
+  "noAccountFoundForThisEmail": "No account found for this email.",
+  "mustAgreeToTerms": "You must agree to the terms and conditions",
+  "passwordRequirementsTitle": "Password Requirements",
+  "passwordRequirementsBullets": "• At least 8 characters\n• Include uppercase, lowercase, numbers, and a special character",
+  "changeEmailAddressTitle": "Change Email Address",
+  "changeEmailAddressMessage": "Are you sure you want to change your email address? This will take you back to the sign-up screen.",
+  "invalidIraqiPhoneNumber": "Please enter a valid Iraqi number (77X/78X/79X for mobile)",
+  "centralizedPlatform": "Centralized Platform",
+  "platformConnection": "Platform Connection",
+  "connected": "Connected",
+  "disconnected": "Disconnected",
+  "syncStatus": "Sync Status",
+  "platformApps": "Platform Apps",
+  "localBusinesses": "Local Businesses",
+  "syncRecommended": "Sync Recommended",
+  "yes": "Yes",
+  "no": "No",
+  "unknown": "Unknown",
+  "actions": "Actions",
+  "setupPlatform": "Setup Platform",
+  "syncAllBusinesses": "Sync All Businesses",
+  "refreshStatus": "Refresh Status",
+  "failedToLoadPlatformStatus": "Failed to load platform status",
+  "platformSetupCompletedSuccessfully": "Platform setup completed successfully",
+  "platformSetupFailed": "Platform setup failed",
+  "errorSettingUpPlatform": "Error setting up platform",
+  "allBusinessesSyncedSuccessfully": "All businesses synced successfully",
+  "failedToSyncAllBusinessesToPlatform": "Failed to sync all businesses to platform",
+  "errorSyncingBusinesses": "Error syncing businesses",
+  "noAppsFound": "No apps found",
+  "@verificationCodeSentTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  }
 }

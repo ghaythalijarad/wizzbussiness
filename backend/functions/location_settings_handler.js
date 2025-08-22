@@ -7,9 +7,12 @@ const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'u
 const dynamodb = DynamoDBDocumentClient.from(dynamoDbClient);
 
 // Table names from environment variables
-const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev';
-const BUSINESS_SETTINGS_TABLE = process.env.BUSINESS_SETTINGS_TABLE || 'order-receiver-business-settings-dev';
-const BUSINESS_WORKING_HOURS_TABLE = process.env.BUSINESS_WORKING_HOURS_TABLE || 'order-receiver-business-working-hours-dev';
+const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE || 'WhizzMerchants_Businesses';
+if (!process.env.BUSINESSES_TABLE) console.log('⚠️ BUSINESSES_TABLE env not set, defaulting to WhizzMerchants_Businesses');
+const BUSINESS_SETTINGS_TABLE = process.env.BUSINESS_SETTINGS_TABLE || 'WhizzMerchants_BusinessSettings';
+if (!process.env.BUSINESS_SETTINGS_TABLE) console.log('⚠️ BUSINESS_SETTINGS_TABLE env not set, defaulting to WhizzMerchants_BusinessSettings');
+const BUSINESS_WORKING_HOURS_TABLE = process.env.BUSINESS_WORKING_HOURS_TABLE || 'WhizzMerchants_BusinessWorkingHours';
+if (!process.env.BUSINESS_WORKING_HOURS_TABLE) console.log('⚠️ BUSINESS_WORKING_HOURS_TABLE env not set, defaulting to WhizzMerchants_BusinessWorkingHours');
 
 // CORS headers
 const corsHeaders = {
@@ -173,16 +176,35 @@ async function verifyBusinessAccess(userId, businessId) {
  */
 async function handleGetLocationSettings(businessId) {
   try {
-    const params = {
+    // Try new schema first
+    let params = {
       TableName: BUSINESS_SETTINGS_TABLE,
       Key: { 
-        business_id: businessId,
+        businessId: businessId,
         setting_type: 'location_settings'
       }
     };
 
-    const result = await dynamodb.send(new GetCommand(params));
-    
+    let result = await dynamodb.send(new GetCommand(params));
+
+    // Fallback: legacy key pattern (business_id)
+    if (!result.Item) {
+      const legacyParams = {
+        TableName: BUSINESS_SETTINGS_TABLE,
+        Key: {
+          business_id: businessId,
+          setting_type: 'location_settings'
+        }
+      };
+      try {
+        const legacyResult = await dynamodb.send(new GetCommand(legacyParams));
+        if (legacyResult.Item) {
+          console.log('⚠️ Using legacy location_settings record with business_id key');
+          result = legacyResult;
+        }
+      } catch (legacyErr) { /* ignore */ }
+    }
+
     // Return default settings if none exist
     const defaultSettings = {
       latitude: null,
@@ -223,92 +245,33 @@ async function handleGetLocationSettings(businessId) {
  */
 async function handleUpdateLocationSettings(businessId, requestBody) {
   try {
-    if (!requestBody) {
-      return {
-        statusCode: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          message: 'Request body is required'
-        })
-      };
-    }
+    const data = typeof requestBody === 'string' ? JSON.parse(requestBody || '{}') : (requestBody || {});
+    const updatedAt = new Date().toISOString();
 
-    const settings = JSON.parse(requestBody);
-    console.log('📍 Updating location settings:', settings);
-
-    // Validate location data
-    if (settings.latitude !== null && settings.latitude !== undefined) {
-      const lat = parseFloat(settings.latitude);
-      if (isNaN(lat) || lat < -90 || lat > 90) {
-        return {
-          statusCode: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            message: 'Invalid latitude. Must be between -90 and 90 degrees.'
-          })
-        };
+    const item = {
+      businessId: businessId,
+      setting_type: 'location_settings',
+      settings: {
+        latitude: data.latitude ?? null,
+        longitude: data.longitude ?? null,
+        address: data.address ?? null,
+        updated_at: updatedAt
       }
-      settings.latitude = lat;
-    }
-
-    if (settings.longitude !== null && settings.longitude !== undefined) {
-      const lng = parseFloat(settings.longitude);
-      if (isNaN(lng) || lng < -180 || lng > 180) {
-        return {
-          statusCode: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            message: 'Invalid longitude. Must be between -180 and 180 degrees.'
-          })
-        };
-      }
-      settings.longitude = lng;
-    }
-
-    const params = {
-      TableName: BUSINESS_SETTINGS_TABLE,
-      Key: {
-        business_id: businessId,
-        setting_type: 'location_settings'
-      },
-      UpdateExpression: 'SET settings = :settings, updated_at = :updated_at',
-      ExpressionAttributeValues: {
-        ':settings': settings,
-        ':updated_at': new Date().toISOString()
-      },
-      ReturnValues: 'ALL_NEW'
     };
 
-    const result = await dynamodb.send(new UpdateCommand(params));
-
-    // Also update the main business table with the location data for consistency
-    if (settings.latitude !== null && settings.longitude !== null) {
-      await updateBusinessLocation(businessId, settings.latitude, settings.longitude, settings.address);
-    }
+    await dynamodb.send(new PutCommand({ TableName: BUSINESS_SETTINGS_TABLE, Item: item }));
 
     return {
       statusCode: 200,
       headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        message: 'Location settings updated successfully',
-        settings: result.Attributes.settings
-      })
+      body: JSON.stringify({ message: 'Location settings updated', settings: item.settings })
     };
-
   } catch (error) {
     console.error('❌ Error updating location settings:', error);
     return {
       statusCode: 500,
       headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        message: 'Failed to update location settings',
-        error: error.message
-      })
+      body: JSON.stringify({ message: 'Failed to update location settings', error: error.message })
     };
   }
 }
@@ -317,41 +280,26 @@ async function handleUpdateLocationSettings(businessId, requestBody) {
  * Get working hours for a business
  */
 async function handleGetWorkingHours(businessId) {
-  console.log(`🕒 Getting working hours for business: ${businessId}`);
-  
   try {
-    const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-    
-    console.log(`📅 Querying working hours for weekdays: ${weekdays.join(', ')}`);
-    
-    const results = await Promise.all(
-      weekdays.map(async (day) => {
-        try {
-          const result = await dynamodb.send(new GetCommand({
-            TableName: BUSINESS_WORKING_HOURS_TABLE,
-            Key: { business_id: businessId, weekday: day }
-          }));
-          
-          console.log(`📋 ${day}: ${result.Item ? 'Found data' : 'No data'}`);
-          return result;
-        } catch (error) {
-          console.error(`❌ Error querying ${day}:`, error);
-          return { Item: null }; // Return empty result on error
-        }
-      })
-    );
-    
+    let params = {
+      TableName: BUSINESS_WORKING_HOURS_TABLE,
+      Key: { businessId: businessId, record_type: 'working_hours' }
+    };
+    let result = await dynamodb.send(new GetCommand(params));
+    if (!result.Item) {
+      const legacyParams = { TableName: BUSINESS_WORKING_HOURS_TABLE, Key: { business_id: businessId, record_type: 'working_hours' } };
+      try {
+        const legacyResult = await dynamodb.send(new GetCommand(legacyParams));
+        if (legacyResult.Item) { console.log('⚠️ Using legacy working_hours record with business_id key'); result = legacyResult; }
+      } catch (e) { /* ignore */ }
+    }
+
+    const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const workingHours = {};
-    weekdays.forEach((day, idx) => {
-      workingHours[day] = results[idx].Item ? {
-        opening: results[idx].Item.opening,
-        closing: results[idx].Item.closing
-      } : { opening: null, closing: null };
+    weekdays.forEach((day) => {
+      workingHours[day] = result.Item?.hours?.[day] || { opening: null, closing: null };
     });
-    
-    console.log(`✅ Successfully retrieved working hours for business ${businessId}`);
-    console.log(`📊 Working hours data:`, JSON.stringify(workingHours, null, 2));
-    
+
     return {
       statusCode: 200,
       headers: corsHeaders,
@@ -359,24 +307,10 @@ async function handleGetWorkingHours(businessId) {
     };
   } catch (error) {
     console.error(`❌ Error getting working hours for business ${businessId}:`, error);
-    
-    // Return default empty working hours instead of error
-    const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-    const defaultWorkingHours = {};
-    weekdays.forEach(day => {
-      defaultWorkingHours[day] = { opening: null, closing: null };
-    });
-    
-    console.log(`🔄 Returning default empty working hours for business ${businessId}`);
-    
     return {
-      statusCode: 200,
+      statusCode: 500,
       headers: corsHeaders,
-      body: JSON.stringify({ 
-        success: true, 
-        workingHours: defaultWorkingHours,
-        message: 'No working hours found, returning defaults'
-      })
+      body: JSON.stringify({ success: false, message: 'Failed to retrieve working hours', error: error.message })
     };
   }
 }
@@ -385,76 +319,30 @@ async function handleGetWorkingHours(businessId) {
  * Update working hours for a business
  */
 async function handleUpdateWorkingHours(businessId, requestBody) {
-  console.log(`🕒 Updating working hours for business: ${businessId}`);
-  
   try {
-    if (!requestBody) {
-      console.error(`❌ No request body provided for business ${businessId}`);
-      return {
-        statusCode: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({ success: false, message: 'Request body is required' })
-      };
-    }
-    
-    const workingHours = JSON.parse(requestBody);
-    console.log(`📊 Working hours data to save:`, JSON.stringify(workingHours, null, 2));
-    
-    const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-    
-    const updatePromises = weekdays.map(async (day) => {
-      const hours = workingHours[day] || {};
-      
-      // Debug logging for each day
-      console.log(`🔍 Processing ${day}:`, {
-        received_hours: hours,
-        opening_value: hours.opening,
-        opening_type: typeof hours.opening,
-        closing_value: hours.closing,
-        closing_type: typeof hours.closing
-      });
-      
-      // Fix the null handling - only convert undefined to null, preserve empty strings and other falsy values
-      const openingTime = hours.opening !== undefined ? hours.opening : null;
-      const closingTime = hours.closing !== undefined ? hours.closing : null;
-      
-      console.log(`📝 Saving ${day}: opening="${openingTime}", closing="${closingTime}"`);
-      
-      try {
-        const result = await dynamodb.send(new PutCommand({
-          TableName: BUSINESS_WORKING_HOURS_TABLE,
-          Item: {
-            business_id: businessId,
-            weekday: day,
-            opening: openingTime,
-            closing: closingTime,
-            updated_at: new Date().toISOString()
-          }
-        }));
-        
-        console.log(`✅ Updated ${day} for business ${businessId}`);
-        return result;
-      } catch (error) {
-        console.error(`❌ Error updating ${day} for business ${businessId}:`, error);
-        throw error;
-      }
-    });
-    
-    await Promise.all(updatePromises);
-    
-    console.log(`✅ Successfully updated all working hours for business ${businessId}`);
-    
+    const data = typeof requestBody === 'string' ? JSON.parse(requestBody || '{}') : (requestBody || {});
+    const updatedAt = new Date().toISOString();
+
+    const item = {
+      businessId: businessId,
+      record_type: 'working_hours',
+      hours: data.hours ?? [],
+      updated_at: updatedAt
+    };
+
+    await dynamodb.send(new PutCommand({ TableName: BUSINESS_WORKING_HOURS_TABLE, Item: item }));
+
     return {
       statusCode: 200,
       headers: corsHeaders,
-      body: JSON.stringify({ success: true, message: 'Working hours updated successfully' })
+      body: JSON.stringify({ message: 'Working hours updated', hours: item.hours })
     };
   } catch (error) {
-    console.error(`❌ Error updating working hours for business ${businessId}:`, error);
+    console.error('❌ Error updating working hours:', error);
     return {
       statusCode: 500,
       headers: corsHeaders,
-      body: JSON.stringify({ success: false, message: 'Failed to update working hours', error: error.message })
+      body: JSON.stringify({ message: 'Failed to update working hours', error: error.message })
     };
   }
 }

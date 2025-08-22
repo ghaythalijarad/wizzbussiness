@@ -27,7 +27,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get password => 'كلمة المرور';
 
   @override
-  String get register => 'إنشاء حساب';
+  String get register => 'تسجيل';
 
   @override
   String get forgotPassword => 'نسيت كلمة المرور';
@@ -217,7 +217,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errorPickingFile => 'خطأ في اختيار الملف';
 
   @override
-  String get chooseFromGallery => 'اختر من المعرض';
+  String get chooseFromGallery => 'اختيار من المعرض';
 
   @override
   String get takePhoto => 'التقط صورة';
@@ -291,6 +291,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sunday => 'الأحد';
+
+  @override
+  String timeoutFirstAlert(String remainingTime) {
+    return 'سيتم رفض الطلب تلقائيًا في غضون $remainingTime.';
+  }
+
+  @override
+  String timeoutUrgentAlert(String remainingTime) {
+    return 'عاجل: سيتم الرفض التلقائي في غضون $remainingTime.';
+  }
+
+  @override
+  String get timeoutAutoReject => 'تم رفض الطلب تلقائيًا بسبب انتهاء الوقت.';
 
   @override
   String get openingTime => 'وقت الافتتاح';
@@ -901,13 +914,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pending => 'قيد الانتظار';
 
   @override
-  String get confirmed => 'مؤكد';
+  String get confirmed => 'Confirmed';
 
   @override
-  String get preparing => 'قيد التحضير';
+  String get preparing => 'Preparing';
 
   @override
-  String get orderReady => 'جاهز';
+  String get orderReady => 'الطلب جاهز';
 
   @override
   String get onTheWay => 'في الطريق';
@@ -964,6 +977,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cafe => 'مقهى';
+
+  @override
+  String get bakery => 'مخبزة';
+
+  @override
+  String get herbalspices => 'الأعشاب والتوابل';
+
+  @override
+  String get cosmetics => 'مستحضرات التجميل';
+
+  @override
+  String get betshop => 'بيت الرهان';
 
   @override
   String get registrationFailed => 'Registration failed';
@@ -1092,7 +1117,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get lastNameRequired => 'Last name is required';
 
   @override
-  String get invalidEmailFormat => 'Please enter a valid email address';
+  String get invalidEmailFormat => 'يرجى إدخال بريد إلكتروني صالح';
 
   @override
   String get phoneNumberRequired => 'Phone number is required';
@@ -1107,7 +1132,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get businessAddress => 'عنوان النشاط التجاري';
 
   @override
-  String get streetAddress => 'Street Address';
+  String get streetAddress => 'عنوان الشارع';
 
   @override
   String get city => 'المدينة';
@@ -1128,7 +1153,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get weakPassword => 'كلمة المرور ضعيفة جداً';
 
   @override
-  String get confirmPasswordRequired => 'Please confirm your password';
+  String get confirmPasswordRequired => 'يرجى تأكيد كلمة المرور';
 
   @override
   String get passwordsDoNotMatch => 'Passwords do not match';
@@ -1137,7 +1162,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get registrationSuccess => 'Registration successful';
 
   @override
-  String get emailAlreadyInUse => 'Email address is already in use';
+  String get emailAlreadyInUse => 'البريد الإلكتروني مستخدم بالفعل';
 
   @override
   String get passwordResetLinkSent => 'Password reset link sent to your email';
@@ -1174,7 +1199,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get locationSaved => 'Location Saved';
 
   @override
-  String get businessLocation => 'Business Location';
+  String get businessLocation => 'موقع النشاط التجاري';
 
   @override
   String get locationSet => 'Location Set';
@@ -1660,70 +1685,74 @@ class AppLocalizationsAr extends AppLocalizations {
   String get avgOrderValue => 'Avg. Order Value';
 
   @override
-  String get upload => 'تحميل';
+  String get upload => 'Upload';
 
   @override
-  String get tapToSelectFile => 'اضغط لاختيار ملف';
+  String get tapToSelectFile => 'Tap to select file';
 
   @override
-  String get businessPhoto => 'صورة العمل';
+  String get businessPhoto => 'صورة النشاط التجاري';
 
   @override
-  String get requiredPleaseAddAPhoto => 'مطلوب. الرجاء إضافة صورة.';
+  String get requiredPleaseAddAPhoto => 'Required. Please add a photo.';
 
   @override
-  String get change => 'تغيير';
+  String get change => 'Change';
 
   @override
-  String get addPhoto => 'إضافة صورة';
+  String get addPhoto => 'Add Photo';
 
   @override
-  String get pleaseFillInAllRequiredFields => 'يرجى ملء جميع الحقول المطلوبة.';
+  String get pleaseFillInAllRequiredFields =>
+      'Please fill in all required fields.';
 
   @override
-  String get businessPhotoIsRequired => 'صورة العمل مطلوبة.';
+  String get businessPhotoIsRequired => 'Business photo is required.';
 
   @override
-  String get businessLicenseRequired => 'رخصة العمل مطلوبة.';
+  String get businessLicenseRequired => 'Business license is required.';
 
   @override
-  String get ownerIdentityRequired => 'هوية المالك مطلوبة.';
+  String get ownerIdentityRequired => 'Owner identity is required.';
 
   @override
-  String get healthCertificateRequired => 'الشهادة الصحية مطلوبة.';
+  String get healthCertificateRequired => 'Health certificate is required.';
 
   @override
-  String get ownerPhotoRequired => 'صورة المالك مطلوبة.';
+  String get ownerPhotoRequired => 'Owner photo is required.';
 
   @override
-  String get loginInstead => 'تسجيل الدخول بدلا من ذلك';
+  String get loginInstead => 'تسجيل الدخول بدلاً من ذلك';
 
   @override
-  String get failedToUploadBusinessPhoto => 'فشل تحميل صورة العمل';
+  String get failedToUploadBusinessPhoto => 'Failed to upload business photo';
 
   @override
-  String get errorUploadingBusinessPhoto => 'خطأ في تحميل صورة العمل';
+  String get errorUploadingBusinessPhoto => 'Error uploading business photo';
 
   @override
-  String get failedToUploadBusinessLicense => 'فشل تحميل رخصة العمل';
+  String get failedToUploadBusinessLicense =>
+      'Failed to upload business license';
 
   @override
-  String get failedToUploadOwnerIdentity => 'فشل تحميل هوية المالك';
+  String get failedToUploadOwnerIdentity => 'Failed to upload owner identity';
 
   @override
-  String get failedToUploadHealthCertificate => 'فشل تحميل الشهادة الصحية';
+  String get failedToUploadHealthCertificate =>
+      'Failed to upload health certificate';
 
   @override
-  String get failedToUploadOwnerPhoto => 'فشل تحميل صورة المالك';
+  String get failedToUploadOwnerPhoto => 'Failed to upload owner photo';
 
   @override
-  String get errorUploadingDocuments => 'خطأ في تحميل المستندات';
+  String get errorUploadingDocuments => 'Error uploading documents';
 
   @override
-  String get registrationInitiated => 'بدء التسجيل';
+  String get registrationInitiated => 'Registration initiated';
 
   @override
-  String get registrationCompletedSuccessfully => 'اكتمل التسجيل بنجاح';
+  String get registrationCompletedSuccessfully =>
+      'Registration completed successfully';
 
   @override
   String get verificationFailed => 'فشل التحقق';
@@ -1732,108 +1761,121 @@ class AppLocalizationsAr extends AppLocalizations {
   String get error => 'خطأ';
 
   @override
-  String verificationCodeSentTo(Object email) {
+  String get selectImageSource => 'اختر مصدر الصورة';
+
+  @override
+  String get camera => 'الكاميرا';
+
+  @override
+  String get gallery => 'المعرض';
+
+  @override
+  String verificationCodeSentTo(String email) {
     return 'تم إرسال رمز التحقق إلى $email';
   }
 
   @override
-  String get applicationPending => 'الطلب معلق';
+  String get applicationPending => 'Application Pending';
 
   @override
-  String get applicationPendingDescription => 'طلبك معلق للموافقة.';
+  String get applicationPendingDescription =>
+      'Your application is pending approval.';
 
   @override
-  String get applicationApproved => 'تمت الموافقة على الطلب';
+  String get applicationApproved => 'Application Approved';
 
   @override
-  String get applicationApprovedDescription => 'تمت الموافقة على طلبك.';
+  String get applicationApprovedDescription =>
+      'Your application has been approved.';
 
   @override
-  String get applicationRejected => 'تم رفض الطلب';
+  String get applicationRejected => 'Application Rejected';
 
   @override
-  String get applicationRejectedDescription => 'تم رفض طلبك.';
+  String get applicationRejectedDescription =>
+      'Your application has been rejected.';
 
   @override
-  String get underReview => 'قيد المراجعة';
+  String get underReview => 'Under Review';
 
   @override
-  String get underReviewDescription => 'طلبك قيد المراجعة.';
+  String get underReviewDescription => 'Your application is under review.';
 
   @override
-  String get statusUnknown => 'الحالة غير معروفة';
+  String get statusUnknown => 'Status Unknown';
 
   @override
-  String get statusUnknownDescription => 'حالة طلبك غير معروفة.';
+  String get statusUnknownDescription =>
+      'The status of your application is unknown.';
 
   @override
-  String get applicationStatus => 'حالة الطلب';
+  String get applicationStatus => 'Application Status';
 
   @override
-  String get discountApplicability => 'تطبيق الخصم';
+  String get discountApplicability => 'Discount Applicability';
 
   @override
-  String get allItems => 'جميع العناصر';
+  String get allItems => 'All Items';
 
   @override
-  String get specificItems => 'عناصر محددة';
+  String get specificItems => 'Specific Items';
 
   @override
-  String get specificCategories => 'فئات محددة';
+  String get specificCategories => 'Specific Categories';
 
   @override
-  String get selectItems => 'اختر العناصر';
+  String get selectItems => 'Select Items';
 
   @override
-  String get noItemsSelected => 'لم يتم اختيار أي عناصر';
+  String get noItemsSelected => 'No items selected';
 
   @override
-  String get selectCategories => 'اختر الفئات';
+  String get selectCategories => 'Select Categories';
 
   @override
-  String get noCategoriesSelected => 'لم يتم اختيار أي فئات';
+  String get noCategoriesSelected => 'No categories selected';
 
   @override
-  String get conflictingDiscounts => 'خصومات متعارضة';
+  String get conflictingDiscounts => 'Conflicting Discounts';
 
   @override
-  String get kwd => 'دينار كويتي';
+  String get kwd => 'د.ك';
 
   @override
-  String get categories => 'الفئات';
+  String get categories => 'categories';
 
   @override
-  String get notSpecified => 'غير محدد';
+  String get notSpecified => 'Not Specified';
 
   @override
-  String get verified => 'تم التحقق';
+  String get verified => 'Verified';
 
   @override
-  String get viewAndManageOrders => 'عرض وإدارة الطلبات';
+  String get viewAndManageOrders => 'View and manage orders';
 
   @override
-  String get businessDashboardVersion => 'إصدار لوحة تحكم الأعمال';
+  String get businessDashboardVersion => 'Business Dashboard Version';
 
   @override
-  String get modernMaterialDesign => 'تصميم المواد الحديثة';
+  String get modernMaterialDesign => 'Modern Material Design';
 
   @override
   String get language => 'اللغة';
 
   @override
-  String get selectLanguage => 'اختر اللغة';
+  String get selectLanguage => 'Select Language';
 
   @override
-  String get english => 'الإنجليزية';
+  String get english => 'English';
 
   @override
   String get arabic => 'العربية';
 
   @override
-  String get businessLicense => 'رخصة العمل';
+  String get businessLicense => 'رخصة النشاط التجاري';
 
   @override
-  String get ownerIdentity => 'هوية المالك';
+  String get ownerIdentity => 'Owner Identity';
 
   @override
   String get healthCertificate => 'شهادة صحية';
@@ -1848,7 +1890,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get kitchen => 'مطبخ';
 
   @override
-  String get chooseFromFiles => 'اختر من الملفات';
+  String get chooseFromFiles => 'Choose from Files';
 
   @override
   String get accountInformation => 'معلومات الحساب';
@@ -1871,6 +1913,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get enterYourBusinessName => 'أدخل اسم نشاطك التجاري';
+
+  @override
+  String get enterOwnerName => 'Enter owner name';
 
   @override
   String get ownerFirstName => 'الاسم الأول للمالك';
@@ -1941,7 +1986,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get enter6DigitCode => 'أدخل الرمز المكون من 6 أرقام';
 
   @override
+  String get enterVerificationCode => 'Enter verification code';
+
+  @override
+  String get pleaseEnterVerificationCode => 'Please enter verification code';
+
+  @override
   String get pleaseEnterTheVerificationCode => 'يرجى إدخال رمز التحقق';
+
+  @override
+  String get verificationCodeSent => 'Verification code sent to your email';
 
   @override
   String get resendVerificationCode => 'إعادة إرسال رمز التحقق';
@@ -1960,4 +2014,224 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get createAccount => 'إنشاء حساب';
+
+  @override
+  String get none => 'لا شيء';
+
+  @override
+  String get account => 'الحساب';
+
+  @override
+  String get business => 'النشاط التجاري';
+
+  @override
+  String get location => 'الموقع';
+
+  @override
+  String get documents => 'الوثائق';
+
+  @override
+  String get createYourAccount => 'إنشاء حسابك';
+
+  @override
+  String get enterAccountDetails => 'أدخل تفاصيل حسابك للبدء';
+
+  @override
+  String get tellUsAboutYourBusiness => 'أخبرنا عن نشاطك التجاري';
+
+  @override
+  String get whereIsYourBusiness => 'أين يقع نشاطك التجاري؟';
+
+  @override
+  String get uploadDocumentsOptional =>
+      'ارفع الوثائق للتحقق من نشاطك التجاري (اختياري)';
+
+  @override
+  String get selectSubcategory => 'اختر الفئة الفرعية (اختياري)';
+
+  @override
+  String get businessSubcategory => 'الفئة الفرعية للنشاط التجاري (اختياري)';
+
+  @override
+  String get uploadBusinessLicense => 'ارفع رخصة نشاطك التجاري';
+
+  @override
+  String get identityDocument => 'وثيقة الهوية';
+
+  @override
+  String get uploadIdentityDocument => 'ارفع وثيقة هويتك';
+
+  @override
+  String get uploadHealthCertificate => 'ارفع الشهادة الصحية';
+
+  @override
+  String get uploadOwnerPhoto => 'ارفع صورة المالك';
+
+  @override
+  String get uploadBusinessPhoto => 'ارفع صورة نشاطك التجاري';
+
+  @override
+  String get country => 'البلد';
+
+  @override
+  String get enterCountry => 'أدخل بلدك';
+
+  @override
+  String get pleaseEnterCountry => 'يرجى إدخال البلد';
+
+  @override
+  String get enterCity => 'أدخل مدينتك';
+
+  @override
+  String get pleaseEnterCity => 'يرجى إدخال المدينة';
+
+  @override
+  String get enterDistrict => 'أدخل منطقتك';
+
+  @override
+  String get pleaseEnterDistrict => 'يرجى إدخال المنطقة';
+
+  @override
+  String get enterStreetAddress => 'أدخل عنوان الشارع';
+
+  @override
+  String get pleaseEnterStreetAddress => 'يرجى إدخال عنوان الشارع';
+
+  @override
+  String get registrationSuccessful =>
+      'تم التسجيل بنجاح! مرحباً بك في حاضر للأعمال.';
+
+  @override
+  String get registrationVerifiedSuccessfully => 'تم التحقق من التسجيل بنجاح!';
+
+  @override
+  String verificationFailedWithReason(String reason) {
+    return 'فشل التحقق: $reason';
+  }
+
+  @override
+  String get verificationCodeSentToEmail =>
+      'تم إرسال رمز التحقق إلى بريدك الإلكتروني';
+
+  @override
+  String registrationFailedWithReason(String reason) {
+    return 'فشل التسجيل: $reason';
+  }
+
+  @override
+  String get confirm => 'تأكيد';
+
+  @override
+  String get didntReceiveCode => 'لم تستلم الرمز؟';
+
+  @override
+  String get wrongEmailChangeIt => 'هل البريد الإلكتروني خاطئ؟ غيّره';
+
+  @override
+  String get verificationCodeMustBe6Digits =>
+      'يجب أن يتكون رمز التحقق من 6 أرقام';
+
+  @override
+  String get accountAlreadyVerifiedPleaseSignIn =>
+      'تم التحقق من الحساب مسبقاً. يرجى تسجيل الدخول.';
+
+  @override
+  String get tooManyAttemptsPleaseWait =>
+      'محاولات كثيرة. يرجى الانتظار ثم المحاولة مرة أخرى.';
+
+  @override
+  String get noAccountFoundForThisEmail =>
+      'لا يوجد حساب مرتبط بهذا البريد الإلكتروني.';
+
+  @override
+  String get mustAgreeToTerms => 'يجب الموافقة على الشروط والأحكام';
+
+  @override
+  String get passwordRequirementsTitle => 'متطلبات كلمة المرور';
+
+  @override
+  String get passwordRequirementsBullets =>
+      '• 8 أحرف على الأقل\n• تشمل أحرفاً كبيرة وصغيرة وأرقاماً ورمزاً خاصاً';
+
+  @override
+  String get changeEmailAddressTitle => 'تغيير عنوان البريد الإلكتروني';
+
+  @override
+  String get changeEmailAddressMessage =>
+      'هل أنت متأكد من رغبتك في تغيير بريدك الإلكتروني؟ سيؤدي ذلك إلى إعادتك إلى شاشة التسجيل.';
+
+  @override
+  String get invalidIraqiPhoneNumber =>
+      'يرجى إدخال رقم عراقي صالح (77X/78X/79X للهاتف المحمول)';
+
+  @override
+  String get centralizedPlatform => 'المنصة المركزية';
+
+  @override
+  String get platformConnection => 'اتصال المنصة';
+
+  @override
+  String get connected => 'متصل';
+
+  @override
+  String get disconnected => 'غير متصل';
+
+  @override
+  String get syncStatus => 'حالة المزامنة';
+
+  @override
+  String get platformApps => 'تطبيقات المنصة';
+
+  @override
+  String get localBusinesses => 'الأعمال المحلية';
+
+  @override
+  String get syncRecommended => 'المزامنة مُوصى بها';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get actions => 'Actions';
+
+  @override
+  String get setupPlatform => 'إعداد المنصة';
+
+  @override
+  String get syncAllBusinesses => 'مزامنة جميع الأعمال';
+
+  @override
+  String get refreshStatus => 'تحديث الحالة';
+
+  @override
+  String get failedToLoadPlatformStatus => 'فشل في تحميل حالة المنصة';
+
+  @override
+  String get platformSetupCompletedSuccessfully =>
+      'تم إكمال إعداد المنصة بنجاح';
+
+  @override
+  String get platformSetupFailed => 'فشل في إعداد المنصة';
+
+  @override
+  String get errorSettingUpPlatform => 'خطأ في إعداد المنصة';
+
+  @override
+  String get allBusinessesSyncedSuccessfully => 'تم مزامنة جميع الأعمال بنجاح';
+
+  @override
+  String get failedToSyncAllBusinessesToPlatform =>
+      'فشل في مزامنة جميع الأعمال مع المنصة';
+
+  @override
+  String get errorSyncingBusinesses => 'خطأ في مزامنة الأعمال';
+
+  @override
+  String get noAppsFound => 'لم يتم العثور على تطبيقات';
 }

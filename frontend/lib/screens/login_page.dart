@@ -6,7 +6,7 @@ import '../widgets/language_switcher.dart';
 import '../widgets/wizz_business_text_form_field.dart';
 import '../widgets/wizz_business_button.dart';
 import '../screens/forgot_password_screen.dart';
-import '../screens/registration_form_screen.dart';
+import '../screens/compact_multi_step_registration_screen.dart';
 import '../screens/dashboards/business_dashboard.dart';
 import '../services/app_auth_service.dart';
 import '../providers/session_provider.dart';
@@ -133,7 +133,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 SnackBar(
                   content: Text(
                       'No business associated with this account. Please contact support.'),
-                  backgroundColor: Colors.orange,
+                  backgroundColor: Theme.of(context).colorScheme.error,
                 ),
               );
             }
@@ -259,14 +259,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           labelText: loc.email,
                           keyboardType: TextInputType.emailAddress,
                           inputFormatters: [
-                            // Only allow English Latin letters, numbers, and email symbols
+                            // Allow Latin letters, numbers, and email symbols including + and %
                             FilteringTextInputFormatter.allow(
-                              RegExp(r'[a-zA-Z0-9@._-]'),
+                              RegExp(r'[a-zA-Z0-9@._%+-]'),
                             ),
                           ],
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return loc.pleaseEnterYourEmail;
+                            }
+                            final trimmed = value.trim();
+                            debugPrint(
+                                '🧪 EMAIL DEBUG (login): Validating "$trimmed"');
+                            final emailRegex = RegExp(
+                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                            if (!emailRegex.hasMatch(trimmed)) {
+                              debugPrint(
+                                  '🧪 EMAIL DEBUG (login): Invalid format for "$trimmed"');
+                              return loc.invalidEmailFormat;
                             }
                             return null;
                           },
@@ -342,7 +352,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const RegistrationFormScreen(),
+                                        const CompactMultiStepRegistrationScreen(),
                                   ),
                                 );
                               },

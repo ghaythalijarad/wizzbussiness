@@ -1,0 +1,7 @@
+{
+  "name": "order-receiver-upload-function",
+  "version": "1.0.0",
+  "description": "upload function for order receiver API",
+  "main": "index.js",
+  "dependencies": {}
+}

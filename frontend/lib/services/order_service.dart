@@ -1,103 +1,94 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/order.dart';
 import '../config/app_config.dart';
+import 'api_service.dart';
 
 class OrderService {
   final String baseUrl = AppConfig.baseUrl;
 
-  Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('access_token');
-  }
-
   Future<List<Order>> getMerchantOrders(String? businessId) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('Token not found');
-    }
-
     if (businessId == null || businessId.isEmpty) {
       throw Exception('Business ID not provided');
     }
 
-    final response = await http.get(
-      Uri.parse('$baseUrl/merchant/orders/$businessId'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
+    try {
+      final apiService = ApiService();
+      final response = await apiService.makeAuthenticatedRequest(
+        method: 'GET',
+        path: '/merchant/orders/$businessId',
+        preferIdToken: false, // Use access token for API Gateway authorizers
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final List<dynamic> ordersJson = data['orders'];
-      return ordersJson.map((json) => Order.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load orders');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('📦 Orders response: ${response.body}');
+        final List<dynamic> ordersJson = data['orders'];
+        return ordersJson.map((json) => Order.fromJson(json)).toList();
+      } else {
+        print('❌ Orders API Error: ${response.statusCode}');
+        print('❌ Response body: ${response.body}');
+        throw Exception(
+            'Failed to load orders: HTTP ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Error loading orders: $e');
+      rethrow;
     }
   }
 
   Future<void> acceptMerchantOrder(String orderId) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('Token not found');
-    }
+    try {
+      final apiService = ApiService();
+      final response = await apiService.makeAuthenticatedRequest(
+        method: 'PUT',
+        path: '/merchant/order/$orderId/confirm',
+        preferIdToken: false, // Use access token for API Gateway authorizers
+      );
 
-    final response = await http.put(
-      Uri.parse('$baseUrl/merchant/order/$orderId/confirm'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to confirm order');
+      if (response.statusCode != 200) {
+        throw Exception('Failed to confirm order');
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 
   Future<void> rejectMerchantOrder(String orderId, {String? reason}) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('Token not found');
-    }
+    try {
+      final apiService = ApiService();
+      final response = await apiService.makeAuthenticatedRequest(
+        method: 'PUT',
+        path: '/merchant/order/$orderId/reject',
+        body: jsonEncode({'reason': reason ?? 'No reason provided'}),
+        preferIdToken: false, // Use access token for API Gateway authorizers
+      );
 
-    final response = await http.put(
-      Uri.parse('$baseUrl/merchant/order/$orderId/reject'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({'reason': reason ?? 'No reason provided'}),
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to reject order');
+      if (response.statusCode != 200) {
+        throw Exception('Failed to reject order');
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 
   Future<void> updateMerchantOrderStatus(String orderId, String status) async {
-    final token = await _getToken();
-    if (token == null) {
-      throw Exception('Token not found');
-    }
+    try {
+      // Convert internal status to backend format
+      String backendStatus = _convertStatusToBackend(status);
 
-    // Convert internal status to backend format
-    String backendStatus = _convertStatusToBackend(status);
+      final apiService = ApiService();
+      final response = await apiService.makeAuthenticatedRequest(
+        method: 'PUT',
+        path: '/merchant/order/$orderId/status',
+        body: jsonEncode({'status': backendStatus}),
+        preferIdToken: false, // Use access token for API Gateway authorizers
+      );
 
-    final response = await http.put(
-      Uri.parse('$baseUrl/merchant/order/$orderId/status'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({'status': backendStatus}),
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to update order status');
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update order status');
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 

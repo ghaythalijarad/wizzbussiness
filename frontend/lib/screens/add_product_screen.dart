@@ -3,18 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../models/product.dart';
 import '../providers/add_product_provider.dart';
 import '../providers/product_provider.dart';
-import '../services/product_service.dart';
 import '../widgets/wizz_business_button.dart';
 import '../widgets/wizz_business_text_form_field.dart';
 import '../widgets/image_picker_widget.dart';
-import '../l10n/app_localizations.dart';
 
 class AddProductScreen extends ConsumerStatefulWidget {
+  final String businessType;
+
   const AddProductScreen({
     super.key,
+    required this.businessType,
   });
 
   @override
@@ -245,7 +245,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
     final addProductState = ref.watch(addProductProvider);
     final isLoading = addProductState.status == AddProductStateStatus.loading;
-    final categoriesAsync = ref.watch(categoriesProvider('restaurant'));
+    final categoriesAsync = ref.watch(categoriesProvider(widget.businessType));
 
     return Scaffold(
       appBar: AppBar(
@@ -308,18 +308,27 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.orange[50],
-                        border: Border.all(color: Colors.orange[200]!),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withOpacity(0.05),
+                        border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.3)),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.warning, color: Colors.orange[600]),
+                          Icon(Icons.warning,
+                              color: Theme.of(context).colorScheme.primary),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Text(
                               'No categories available. Please add categories first.',
-                              style: TextStyle(color: Colors.orange),
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary),
                             ),
                           ),
                         ],

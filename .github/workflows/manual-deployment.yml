@@ -140,10 +140,38 @@ jobs:
           cd frontend
           flutter pub get
 
-      - name: Build Flutter web
+      # Configure AWS credentials early to fetch API URL for dart-defines
+      - name: Configure AWS credentials (for API URL)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get API Gateway URL (production)
+        run: |
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name order-receiver-production \
+            --query 'Stacks[0].Outputs[?OutputKey==`ApiGatewayUrl`].OutputValue' \
+            --output text)
+          echo "ENVIRONMENT=production" >> $GITHUB_ENV
+          echo "API_URL=$API_URL" >> $GITHUB_ENV
+
+      - name: Validate frontend secrets (APP_CLIENT_ID)
+        run: |
+          if [ -z "${{ secrets.COGNITO_USER_POOL_ID }}" ]; then echo "Missing COGNITO_USER_POOL_ID secret"; exit 1; fi
+          if [ -z "${{ secrets.APP_CLIENT_ID }}" ]; then echo "Missing APP_CLIENT_ID secret"; exit 1; fi
+
+      - name: Build Flutter web (with dart-defines)
         run: |
           cd frontend
-          flutter build web --release
+          flutter build web --release \
+            --dart-define=AUTH_MODE=cognito \
+            --dart-define=COGNITO_USER_POOL_ID=${{ secrets.COGNITO_USER_POOL_ID }} \
+            --dart-define=APP_CLIENT_ID=${{ secrets.APP_CLIENT_ID }} \
+            --dart-define=COGNITO_REGION=${{ env.AWS_REGION }} \
+            --dart-define=ENVIRONMENT=$ENVIRONMENT \
+            --dart-define=API_URL=$API_URL
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

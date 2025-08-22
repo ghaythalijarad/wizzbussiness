@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:ui' as ui;
-import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
 
@@ -17,36 +14,23 @@ class AccountSettingsPage extends StatefulWidget {
 }
 
 class _AccountSettingsPageState extends State<AccountSettingsPage> {
-  late TextEditingController _businessNameController;
-  late TextEditingController _ownerNameController;
-  late TextEditingController _addressController;
-  File? _image;
   final ImagePicker _picker = ImagePicker();
-
   Map<String, dynamic>? _userData;
   bool _isInitializing = true;
 
   @override
   void initState() {
     super.initState();
-    _businessNameController = TextEditingController();
-    _ownerNameController = TextEditingController();
-    _addressController = TextEditingController();
-
-    // Simulate a future where the user data is fetched
     Future.delayed(Duration.zero, () {
+      if (!mounted) return;
       setState(() {
         _isInitializing = false;
       });
-
-      // Load user data after authentication is verified
       _loadUserData();
     });
   }
 
   void _loadUserData() {
-    // Here you would load the user data from your backend or state management
-    // For now, we use dummy data
     setState(() {
       _userData = {
         'business_name': 'My Business',
@@ -59,27 +43,18 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-
     if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
-      // Here you would ideally upload the image to your backend
-      // and update the businessPhotoUrl. For now, we just update the UI.
+      // Image selection currently unused; upload or persistence can be implemented later.
     }
   }
 
   String _formatAddress(Map<String, dynamic>? address) {
-    if (address == null) {
-      return '';
-    }
-
+    if (address == null) return '';
     final street = address['street'] ?? '';
     final city = address['city'] ?? '';
     final state = address['state'] ?? '';
     final zip = address['zip'] ?? '';
-
-    return '$street, $city, $state $zip';
+    return '$street, $city, $state $zip'.replaceAll(RegExp(r'^, | ,'), '').trim();
   }
 
   Widget _buildAccountOverviewCard(AppLocalizations l10n, ThemeData theme) {
@@ -110,8 +85,9 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
             : null,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
+          // 0.3 opacity => alpha 0x4D
           BoxShadow(
-            color: const Color(0xFF3399FF).withOpacity(0.3),
+            color: const Color(0x4D3399FF),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -124,8 +100,9 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               CircleAvatar(
+                // 0.9 opacity => alpha 0xE6
+                backgroundColor: const Color(0xE6FFFFFF),
                 radius: 30,
-                backgroundColor: Colors.white.withOpacity(0.9),
                 child: Text(
                   businessName.isNotEmpty ? businessName[0].toUpperCase() : 'B',
                   style: const TextStyle(
@@ -136,7 +113,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.edit, color: Colors.white),
+                icon: const Icon(Icons.edit, color: Colors.white),
                 onPressed: _pickImage,
               ),
             ],
@@ -184,14 +161,13 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         title: Text(l10n.accountSettings),
       ),
       body: _isInitializing
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
                   _buildAccountOverviewCard(l10n, theme),
                   const SizedBox(height: 24),
-                  // ... other settings widgets
                 ],
               ),
             ),

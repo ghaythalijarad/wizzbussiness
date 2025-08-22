@@ -7,9 +7,12 @@ const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'u
 const dynamodb = DynamoDBDocumentClient.from(dynamoDbClient);
 
 // Table names from environment variables
-const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev';
-const BUSINESS_SETTINGS_TABLE = process.env.BUSINESS_SETTINGS_TABLE || 'order-receiver-business-settings-dev';
-const POS_LOGS_TABLE = process.env.POS_LOGS_TABLE || 'order-receiver-pos-logs-dev';
+const BUSINESSES_TABLE = process.env.BUSINESSES_TABLE || 'WhizzMerchants_Businesses';
+if (!process.env.BUSINESSES_TABLE) console.log('⚠️ BUSINESSES_TABLE env not set, defaulting to WhizzMerchants_Businesses');
+const BUSINESS_SETTINGS_TABLE = process.env.BUSINESS_SETTINGS_TABLE || 'WhizzMerchants_BusinessSettings';
+if (!process.env.BUSINESS_SETTINGS_TABLE) console.log('⚠️ BUSINESS_SETTINGS_TABLE env not set, defaulting to WhizzMerchants_BusinessSettings');
+const POS_LOGS_TABLE = process.env.POS_LOGS_TABLE || 'WhizzMerchants_PosLogs';
+if (!process.env.POS_LOGS_TABLE) console.log('⚠️ POS_LOGS_TABLE env not set, defaulting to WhizzMerchants_PosLogs');
 
 // CORS headers
 const corsHeaders = {
@@ -141,23 +144,22 @@ async function verifyBusinessAccess(userId, businessId) {
   try {
     const params = {
       TableName: BUSINESSES_TABLE,
-      Key: { id: businessId }
+      Key: { businessId }
     };
 
     const result = await dynamodb.send(new GetCommand(params));
-    
     if (!result.Item) {
-      console.log(`❌ Business ${businessId} not found`);
+      console.log(`❌ Business ${businessId} not found in ${BUSINESSES_TABLE}`);
       return false;
     }
 
-    // Check if user is the owner or has access
     const business = result.Item;
-    const hasAccess = business.owner_id === userId || 
-                     business.admin_users?.includes(userId) ||
-                     business.staff_users?.includes(userId);
+    const hasAccess = business.ownerId === userId ||
+      business.cognitoUserId === userId ||
+      business.adminUsers?.includes(userId) ||
+      business.staffUsers?.includes(userId);
 
-    console.log(`🔐 Business access check for ${userId}: ${hasAccess}`);
+    console.log(`🔐 Business access check for ${userId}: ${hasAccess} (ownerId=${business.ownerId} cognitoUserId=${business.cognitoUserId})`);
     return hasAccess;
   } catch (error) {
     console.error('❌ Error verifying business access:', error);

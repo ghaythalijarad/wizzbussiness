@@ -55,7 +55,7 @@ class OrderTimeoutService {
 
   /// Check individual order for timeout
   void _checkOrderTimeout(Order order) {
-    final currentStatus = order.getTimeoutStatus();
+    final currentStatus = order.timeoutStatus;
     final previousStatus = _lastTimeoutStatus[order.id];
 
     // Only process if status has changed to prevent duplicate alerts

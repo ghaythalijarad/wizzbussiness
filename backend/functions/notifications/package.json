@@ -1,0 +1,7 @@
+{
+  "name": "order-receiver-notifications-function",
+  "version": "1.0.0",
+  "description": "notifications function for order receiver API",
+  "main": "index.js",
+  "dependencies": {}
+}

@@ -3,16 +3,91 @@ import 'package:intl/intl.dart';
 import '../models/order.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/responsive_helper.dart';
+import '../services/realtime_order_service.dart';
+import '../theme/theme_extensions.dart';
 
-class OrderCard extends StatelessWidget {
+class OrderCard extends StatefulWidget {
   final Order order;
   final Function(String, OrderStatus) onOrderUpdated;
+  final bool initiallyExpanded;
 
   const OrderCard({
     Key? key,
     required this.order,
     required this.onOrderUpdated,
+    this.initiallyExpanded = false,
   }) : super(key: key);
+
+  @override
+  State<OrderCard> createState() => _OrderCardState();
+}
+
+class _OrderCardState extends State<OrderCard> {
+  bool _expanded = false;
+  final RealtimeOrderService _realtimeService = RealtimeOrderService();
+
+  @override
+  void initState() {
+    super.initState();
+    _expanded = widget.initiallyExpanded;
+    if (_expanded) _subscribeIfNeeded();
+  }
+
+  @override
+  void didUpdateWidget(covariant OrderCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.order.id != widget.order.id) {
+      // Unsubscribe old
+      _unsubscribe(oldWidget.order.id);
+      // Subscribe new if expanded
+      if (_expanded) _subscribeIfNeeded();
+    }
+    // Auto-collapse & unsubscribe if order reached terminal status
+    if (_isTerminal(widget.order.status)) {
+      _unsubscribe(widget.order.id);
+      if (mounted && _expanded) setState(() => _expanded = false);
+    }
+  }
+
+  bool _isTerminal(OrderStatus s) {
+    switch (s) {
+      case OrderStatus.delivered:
+      case OrderStatus.cancelled:
+      case OrderStatus.returned:
+      case OrderStatus.expired:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  void _subscribeIfNeeded() {
+    if (!_isTerminal(widget.order.status)) {
+      _realtimeService.subscribeToOrderDetail(widget.order.id);
+    }
+  }
+
+  void _unsubscribe(String orderId) {
+    _realtimeService.unsubscribeFromOrderDetail(orderId);
+  }
+
+  void _toggleExpanded() {
+    setState(() => _expanded = !_expanded);
+    if (_expanded) {
+      _subscribeIfNeeded();
+    } else {
+      _unsubscribe(widget.order.id);
+    }
+  }
+
+  @override
+  void dispose() {
+    _unsubscribe(widget.order.id);
+    super.dispose();
+  }
+
+  Order get order => widget.order;
+  Function(String, OrderStatus) get onOrderUpdated => widget.onOrderUpdated;
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +96,7 @@ class OrderCard extends StatelessWidget {
         order.status == OrderStatus.confirmed ||
         order.status == OrderStatus.ready;
 
-    // Responsive spacing and layout
     final horizontalPadding = ResponsiveHelper.getResponsivePadding(context);
-
-    // Define the custom pink color #C6007E
     const customPinkColor = Color(0xFFC6007E);
 
     return Card(
@@ -43,30 +115,40 @@ class OrderCard extends StatelessWidget {
       ),
       elevation: 2.0,
       shadowColor: customPinkColor.withOpacity(0.1),
-      child: Container(
-        width: double.infinity,
-        constraints: BoxConstraints(
-          maxWidth: ResponsiveHelper.getCardWidth(context),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(horizontalPadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context, loc),
-              const SizedBox(height: 12),
-              _buildCustomerDetails(context, loc),
-              const SizedBox(height: 12),
-              _buildOrderItems(context, loc),
-              const SizedBox(height: 12),
-              if (order.notes != null && order.notes!.isNotEmpty)
-                _buildNotes(context, loc),
-              if (order.notes != null && order.notes!.isNotEmpty)
-                const SizedBox(height: 12),
-              const Divider(height: 24),
-              _buildFooter(context, loc),
-              if (showActionButtons) _buildActionButtons(context, loc),
-            ],
+      child: InkWell(
+        onTap: _toggleExpanded,
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          child: Container(
+            width: double.infinity,
+            constraints: BoxConstraints(
+              maxWidth: ResponsiveHelper.getCardWidth(context),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(horizontalPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(context, loc),
+                  if (_expanded) ...[
+                    const SizedBox(height: 12),
+                    _buildCustomerDetails(context, loc),
+                    const SizedBox(height: 12),
+                    _buildOrderItems(context, loc),
+                    const SizedBox(height: 12),
+                    if (order.notes != null && order.notes!.isNotEmpty)
+                      _buildNotes(context, loc),
+                    if (order.notes != null && order.notes!.isNotEmpty)
+                      const SizedBox(height: 12),
+                    const Divider(height: 24),
+                    _buildFooter(context, loc),
+                    if (showActionButtons) _buildActionButtons(context, loc),
+                  ],
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -75,44 +157,63 @@ class OrderCard extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context, AppLocalizations loc) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Left side - Order ID (flexible to take available space)
         Expanded(
           flex: 2,
-          child: Text(
-            '#${order.displayOrderNumber}',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-            overflow: TextOverflow.ellipsis,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Order #',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11)),
+              const SizedBox(height: 2),
+              Text(order.id,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                      fontSize: 12,
+                      fontFamily: 'monospace',
+                      letterSpacing: 0.5),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1),
+            ],
           ),
         ),
         const SizedBox(width: 8),
-        // Right side - Status and timeout indicator (flexible)
         Expanded(
           flex: 3,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(order.status).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  _getStatusText(order.status, loc),
-                  style: TextStyle(
-                    color: _getStatusColor(order.status),
-                    fontWeight: FontWeight.bold,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: context
+                          .getStatusColor(order.status)
+                          .withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _getStatusText(order.status, loc),
+                      style: TextStyle(
+                          color: context.getStatusColor(order.status),
+                          fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  const SizedBox(width: 6),
+                  Icon(_expanded ? Icons.expand_less : Icons.expand_more,
+                      size: 20, color: Colors.grey.shade600),
+                ],
               ),
-              // Timeout indicator for pending orders
-              if (order.status == OrderStatus.pending) ...[
+              if (order.status == OrderStatus.pending && _expanded) ...[
                 const SizedBox(height: 4),
                 _buildTimeoutIndicator(context),
               ],
@@ -148,41 +249,98 @@ class OrderCard extends StatelessWidget {
   }
 
   Widget _buildOrderItems(BuildContext context, AppLocalizations loc) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          loc.items,
-          style: Theme.of(context).textTheme.titleMedium,
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
         ),
-        const SizedBox(height: 8),
-        ...order.items.map(
-          (item) => Padding(
-            padding: const EdgeInsets.only(bottom: 4.0),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    '${item.quantity}x ${item.dishName}',
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.restaurant_menu,
+                size: 18,
+                color: Colors.grey.shade700,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                loc.items,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade800,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ...order.items.map(
+            (item) => Container(
+              margin: const EdgeInsets.only(bottom: 6.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  width: 0.5,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 1,
-                  child: Text(
+              ),
+              child: Row(
+                children: [
+                  // Quantity badge
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00C1E8),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${item.quantity}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Item name
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      item.dishName,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Price
+                  Text(
                     'IQD ${item.price.toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFFC6007E),
+                        ),
                     textAlign: TextAlign.end,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -241,7 +399,8 @@ class OrderCard extends StatelessWidget {
 
   Widget _buildActionButtons(BuildContext context, AppLocalizations loc) {
     // Check if order should be auto-rejected due to timeout
-    final shouldAutoReject = order.shouldAutoReject();
+    final shouldAutoReject =
+        order.timeoutStatus == OrderTimeoutStatus.autoReject;
     
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
@@ -267,7 +426,7 @@ class OrderCard extends StatelessWidget {
                     onPressed: () =>
                         onOrderUpdated(order.id, OrderStatus.confirmed),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                     ),
                     child: Text(loc.accept),
                   ),
@@ -353,34 +512,6 @@ class OrderCard extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(OrderStatus status) {
-    // Define custom colors with better hue consistency
-    const customPinkColor = Color(0xFFC6007E);
-
-    switch (status) {
-      case OrderStatus.pending:
-        return const Color(0xFFFF8C00); // Dark orange for better contrast
-      case OrderStatus.confirmed:
-        return const Color(0xFF00A86B); // Sea green for confirmed
-      case OrderStatus.preparing:
-        return const Color(0xFF4169E1); // Royal blue for preparing
-      case OrderStatus.ready:
-        return customPinkColor; // Use the main pink theme for ready orders (final state)
-      case OrderStatus.onTheWay:
-        return const Color(0xFF9932CC); // Dark orchid for on the way
-      case OrderStatus.delivered:
-        return const Color(0xFF228B22); // Forest green for delivered
-      case OrderStatus.cancelled:
-        return const Color(0xFFDC143C); // Crimson red for cancelled
-      case OrderStatus.expired:
-        return const Color(0xFF708090); // Slate gray for expired
-      case OrderStatus.returned:
-        return const Color(0xFF8B4513); // Saddle brown for returned
-      default:
-        return const Color(0xFF2F4F4F); // Dark slate gray as default
-    }
-  }
-
   String _getStatusText(OrderStatus status, AppLocalizations loc) {
     switch (status) {
       case OrderStatus.pending:
@@ -408,8 +539,8 @@ class OrderCard extends StatelessWidget {
 
   /// Build timeout indicator widget for pending orders
   Widget _buildTimeoutIndicator(BuildContext context) {
-    final timeoutStatus = order.getTimeoutStatus();
-    final timeoutMessage = order.getTimeoutMessage();
+    final timeoutStatus = order.timeoutStatus;
+    final timeoutMessage = order.getTimeoutMessage(context);
 
     if (timeoutStatus == OrderTimeoutStatus.normal || timeoutMessage.isEmpty) {
       return const SizedBox.shrink();
@@ -420,7 +551,7 @@ class OrderCard extends StatelessWidget {
 
     switch (timeoutStatus) {
       case OrderTimeoutStatus.firstAlert:
-        indicatorColor = Colors.orange;
+        indicatorColor = Theme.of(context).colorScheme.secondary;
         indicatorIcon = Icons.access_time;
         break;
       case OrderTimeoutStatus.urgentAlert:

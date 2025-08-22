@@ -41,13 +41,24 @@ final businessProvider = FutureProvider<Business?>((ref) async {
           
           final business = Business.fromJson(businessData);
           print('🏢 BusinessProvider: Created business object - ID: ${business.id}, Name: ${business.name}');
+          
+          // Update session with the actual business ID if it was different
+          if (business.id != session.businessId) {
+            print('🔄 BusinessProvider: Updating session with correct businessId: ${business.id}');
+            ref.read(sessionProvider.notifier).setSession(business.id);
+          }
+          
           return business;
         } else {
-          print('🏢 BusinessProvider: No specific businessId, using first business');
-          // No specific businessId, use the first business
+          print('🏢 BusinessProvider: No specific businessId, using first business and updating session');
+          // No specific businessId, use the first business and update session
           final businessData = businesses.first;
           final business = Business.fromJson(businessData);
           print('🏢 BusinessProvider: Created business object - ID: ${business.id}, Name: ${business.name}');
+          
+          // Update session with the business ID
+          ref.read(sessionProvider.notifier).setSession(business.id);
+          
           return business;
         }
       } else {
@@ -55,8 +66,18 @@ final businessProvider = FutureProvider<Business?>((ref) async {
       }
     } catch (e) {
       print('❌ BusinessProvider: Error fetching business details: $e');
-      // Don't clear session on error, just return null
-      return null;
+      
+      // Only rethrow authentication errors - for other errors, try to maintain session
+      if (e.toString().contains('401') ||
+          e.toString().contains('Invalid or expired access token') ||
+          e.toString().contains('Missing or invalid authorization header')) {
+        print('🧹 BusinessProvider: Authentication error detected, propagating error');
+        rethrow;
+      } else {
+        print('ℹ️ BusinessProvider: Non-auth error, returning null but maintaining session');
+        // For temporary API issues, don't break the entire flow
+        return null;
+      }
     }
   } else {
     print('🏢 BusinessProvider: User not authenticated');

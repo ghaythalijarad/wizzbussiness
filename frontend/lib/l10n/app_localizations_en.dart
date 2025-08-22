@@ -292,6 +292,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sunday => 'Sunday';
 
   @override
+  String timeoutFirstAlert(String remainingTime) {
+    return 'Auto-reject in $remainingTime';
+  }
+
+  @override
+  String timeoutUrgentAlert(String remainingTime) {
+    return 'URGENT: Reject in $remainingTime';
+  }
+
+  @override
+  String get timeoutAutoReject => 'Order will be auto-rejected';
+
+  @override
   String get openingTime => 'Opening Time';
 
   @override
@@ -964,6 +977,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cafe => 'Cafe';
+
+  @override
+  String get bakery => 'Bakery';
+
+  @override
+  String get herbalspices => 'Herbal & Spices';
+
+  @override
+  String get cosmetics => 'Cosmetics';
+
+  @override
+  String get betshop => 'Bet Shop';
 
   @override
   String get registrationFailed => 'Registration failed';
@@ -1738,7 +1763,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get error => 'Error';
 
   @override
-  String verificationCodeSentTo(Object email) {
+  String get selectImageSource => 'Select Image Source';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String verificationCodeSentTo(String email) {
     return 'Verification code sent to $email';
   }
 
@@ -1883,6 +1917,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterYourBusinessName => 'Enter your business name';
 
   @override
+  String get enterOwnerName => 'Enter owner name';
+
+  @override
   String get ownerFirstName => 'Owner First Name';
 
   @override
@@ -1951,8 +1988,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enter6DigitCode => 'Enter 6-digit code';
 
   @override
+  String get enterVerificationCode => 'Enter verification code';
+
+  @override
+  String get pleaseEnterVerificationCode => 'Please enter verification code';
+
+  @override
   String get pleaseEnterTheVerificationCode =>
       'Please enter the verification code';
+
+  @override
+  String get verificationCodeSent => 'Verification code sent to your email';
 
   @override
   String get resendVerificationCode => 'Resend Verification Code';
@@ -1971,4 +2017,225 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createAccount => 'Create Account';
+
+  @override
+  String get none => 'None';
+
+  @override
+  String get account => 'Account';
+
+  @override
+  String get business => 'Business';
+
+  @override
+  String get location => 'Location';
+
+  @override
+  String get documents => 'Documents';
+
+  @override
+  String get createYourAccount => 'Create Your Account';
+
+  @override
+  String get enterAccountDetails => 'Enter your account details to get started';
+
+  @override
+  String get tellUsAboutYourBusiness => 'Tell us about your business';
+
+  @override
+  String get whereIsYourBusiness => 'Where is your business located?';
+
+  @override
+  String get uploadDocumentsOptional =>
+      'Upload documents to verify your business (optional)';
+
+  @override
+  String get selectSubcategory => 'Select Subcategory (Optional)';
+
+  @override
+  String get businessSubcategory => 'Business Subcategory (Optional)';
+
+  @override
+  String get uploadBusinessLicense => 'Upload your business license';
+
+  @override
+  String get identityDocument => 'Identity Document';
+
+  @override
+  String get uploadIdentityDocument => 'Upload your identity document';
+
+  @override
+  String get uploadHealthCertificate => 'Upload your health certificate';
+
+  @override
+  String get uploadOwnerPhoto => 'Upload a photo of the owner';
+
+  @override
+  String get uploadBusinessPhoto => 'Upload a photo of your business';
+
+  @override
+  String get country => 'Country';
+
+  @override
+  String get enterCountry => 'Enter your country';
+
+  @override
+  String get pleaseEnterCountry => 'Please enter your country';
+
+  @override
+  String get enterCity => 'Enter your city';
+
+  @override
+  String get pleaseEnterCity => 'Please enter your city';
+
+  @override
+  String get enterDistrict => 'Enter your district';
+
+  @override
+  String get pleaseEnterDistrict => 'Please enter your district';
+
+  @override
+  String get enterStreetAddress => 'Enter your street address';
+
+  @override
+  String get pleaseEnterStreetAddress => 'Please enter your street address';
+
+  @override
+  String get registrationSuccessful =>
+      'Registration successful! Welcome to Hadhir Business.';
+
+  @override
+  String get registrationVerifiedSuccessfully =>
+      'Registration verified successfully!';
+
+  @override
+  String verificationFailedWithReason(String reason) {
+    return 'Verification failed: $reason';
+  }
+
+  @override
+  String get verificationCodeSentToEmail =>
+      'Verification code sent to your email';
+
+  @override
+  String registrationFailedWithReason(String reason) {
+    return 'Registration failed: $reason';
+  }
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get didntReceiveCode => 'Didn\'t receive the code?';
+
+  @override
+  String get wrongEmailChangeIt => 'Wrong email? Change it';
+
+  @override
+  String get verificationCodeMustBe6Digits =>
+      'Verification code must be 6 digits';
+
+  @override
+  String get accountAlreadyVerifiedPleaseSignIn =>
+      'Account already verified. Please sign in.';
+
+  @override
+  String get tooManyAttemptsPleaseWait =>
+      'Too many attempts. Please wait and try again.';
+
+  @override
+  String get noAccountFoundForThisEmail => 'No account found for this email.';
+
+  @override
+  String get mustAgreeToTerms => 'You must agree to the terms and conditions';
+
+  @override
+  String get passwordRequirementsTitle => 'Password Requirements';
+
+  @override
+  String get passwordRequirementsBullets =>
+      '• At least 8 characters\n• Include uppercase, lowercase, numbers, and a special character';
+
+  @override
+  String get changeEmailAddressTitle => 'Change Email Address';
+
+  @override
+  String get changeEmailAddressMessage =>
+      'Are you sure you want to change your email address? This will take you back to the sign-up screen.';
+
+  @override
+  String get invalidIraqiPhoneNumber =>
+      'Please enter a valid Iraqi number (77X/78X/79X for mobile)';
+
+  @override
+  String get centralizedPlatform => 'Centralized Platform';
+
+  @override
+  String get platformConnection => 'Platform Connection';
+
+  @override
+  String get connected => 'Connected';
+
+  @override
+  String get disconnected => 'Disconnected';
+
+  @override
+  String get syncStatus => 'Sync Status';
+
+  @override
+  String get platformApps => 'Platform Apps';
+
+  @override
+  String get localBusinesses => 'Local Businesses';
+
+  @override
+  String get syncRecommended => 'Sync Recommended';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get actions => 'Actions';
+
+  @override
+  String get setupPlatform => 'Setup Platform';
+
+  @override
+  String get syncAllBusinesses => 'Sync All Businesses';
+
+  @override
+  String get refreshStatus => 'Refresh Status';
+
+  @override
+  String get failedToLoadPlatformStatus => 'Failed to load platform status';
+
+  @override
+  String get platformSetupCompletedSuccessfully =>
+      'Platform setup completed successfully';
+
+  @override
+  String get platformSetupFailed => 'Platform setup failed';
+
+  @override
+  String get errorSettingUpPlatform => 'Error setting up platform';
+
+  @override
+  String get allBusinessesSyncedSuccessfully =>
+      'All businesses synced successfully';
+
+  @override
+  String get failedToSyncAllBusinessesToPlatform =>
+      'Failed to sync all businesses to platform';
+
+  @override
+  String get errorSyncingBusinesses => 'Error syncing businesses';
+
+  @override
+  String get noAppsFound => 'No apps found';
 }

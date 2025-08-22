@@ -19,8 +19,8 @@ const uploadToS3 = async (imageBuffer, key, contentType = 'image/jpeg') => {
         Bucket: bucketName,
         Key: key,
         Body: imageBuffer,
-        ContentType: contentType,
-        ACL: 'public-read'  // Ensure images are publicly accessible
+        ContentType: contentType
+        // Removed ACL setting - bucket policy handles public access
     };
     
     console.log(`Uploading to S3: ${bucketName}/${key}`);

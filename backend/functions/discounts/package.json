@@ -1,0 +1,7 @@
+{
+  "name": "order-receiver-discounts-function",
+  "version": "1.0.0",
+  "description": "discounts function for order receiver API",
+  "main": "index.js",
+  "dependencies": {}
+}

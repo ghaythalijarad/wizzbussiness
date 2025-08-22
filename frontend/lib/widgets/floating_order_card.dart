@@ -96,7 +96,7 @@ class _FloatingOrderCardState extends State<FloatingOrderCard>
                 child: Material(
                   elevation: 12,
                   borderRadius: BorderRadius.circular(16),
-                  shadowColor: Colors.black.withOpacity(0.3),
+                  shadowColor: const Color(0x4D000000),
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
@@ -120,7 +120,7 @@ class _FloatingOrderCardState extends State<FloatingOrderCard>
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: const Color(0x33FFFFFF),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Icon(
@@ -145,8 +145,8 @@ class _FloatingOrderCardState extends State<FloatingOrderCard>
                                     Text(
                                       DateFormat('MMM d, h:mm a')
                                           .format(widget.order.createdAt),
-                                      style: TextStyle(
-                                        color: Colors.white.withOpacity(0.9),
+                                      style: const TextStyle(
+                                        color: Color(0xE6FFFFFF),
                                         fontSize: 12,
                                       ),
                                     ),
@@ -155,9 +155,9 @@ class _FloatingOrderCardState extends State<FloatingOrderCard>
                               ),
                               IconButton(
                                 onPressed: _handleDismiss,
-                                icon: Icon(
+                                icon: const Icon(
                                   Icons.close,
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Color(0xCCFFFFFF),
                                   size: 20,
                                 ),
                                 visualDensity: VisualDensity.compact,
@@ -194,16 +194,24 @@ class _FloatingOrderCardState extends State<FloatingOrderCard>
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: Colors.orange.withOpacity(0.1),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: Colors.orange.withOpacity(0.3),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withOpacity(0.3),
                                       ),
                                     ),
                                     child: Text(
                                       loc.pending.toUpperCase(),
                                       style: TextStyle(
-                                        color: Colors.orange.shade700,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
                                       ),

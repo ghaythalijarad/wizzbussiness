@@ -9,8 +9,8 @@ provider:
   environment:
     STAGE: ${self:provider.stage}
     REGION: ${self:provider.region}
-    DEVICE_TOKENS_TABLE: ${self:service}-${self:provider.stage}-device-tokens
-    PUSH_LOGS_TABLE: ${self:service}-${self:provider.stage}-push-logs
+    DEVICE_TOKENS_TABLE: WhizzMerchants_DeviceTokens
+    PUSH_LOGS_TABLE: WhizzMerchants_PushLogs
     FCM_SERVER_KEY: ${env:FCM_SERVER_KEY}
   
   iam:
@@ -80,7 +80,7 @@ resources:
         IdentitySource: method.request.header.Authorization
         RestApiId: !Ref ApiGatewayRestApi
         ProviderARNs:
-          - arn:aws:cognito-idp:${self:provider.region}:#{AWS::AccountId}:userpool/us-east-1_bDqnKdrqo
+          - arn:aws:cognito-idp:${self:provider.region}:#{AWS::AccountId}:userpool/us-east-1_xDptXxzaI
 
     DeviceTokensTable:
       Type: AWS::DynamoDB::Table

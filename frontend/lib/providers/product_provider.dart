@@ -27,8 +27,33 @@ final categoriesProvider =
           .map((json) => ProductCategory.fromJson(json))
           .toList();
     } else {
-      // If the API fails, the service provides a fallback. If that also fails, throw.
-      throw Exception(result['message'] ?? 'Failed to fetch categories');
+      // Handle different error types with appropriate user messages
+      final error = result['error'] ?? 'unknown_error';
+      final message = result['message'] ?? 'Failed to fetch categories';
+
+      // Create a user-friendly error message based on error type
+      String errorMessage = message;
+
+      if (error == 'authorization_required' ||
+          error == 'authentication_required') {
+        errorMessage =
+            'Authentication required. Please sign in again to access categories.';
+      } else if (error == 'authorization_failed' ||
+          error == 'backend_misconfigured') {
+        errorMessage =
+            'Categories service temporarily unavailable. Backend deployment may be required.';
+      } else if (error == 'categories_not_found') {
+        errorMessage =
+            'No categories found for business type "$businessType". You can create custom categories in settings.';
+      } else if (error == 'server_error') {
+        errorMessage =
+            'Server temporarily unavailable. Please try again in a few minutes.';
+      } else if (error == 'network_error') {
+        errorMessage =
+            'Network error. Please check your internet connection and try again.';
+      }
+
+      throw Exception(errorMessage);
     }
   },
 );
@@ -38,17 +63,19 @@ final categoriesProvider =
 final productSearchProvider =
     FutureProvider.autoDispose.family<List<Product>, String>(
   (ref, query) async {
+    // Get all products first
+    final allProducts = await ref.watch(productsProvider.future);
+    
     if (query.isEmpty) {
       // If the query is empty, return the full list of products.
-      return ref.watch(productsProvider.future);
+      return allProducts;
     }
-    // Otherwise, perform a search.
-    final result = await ProductService.searchProducts(query);
-    if (result['success']) {
-      final productsList = result['products'] as List;
-      return productsList.map((json) => Product.fromJson(json)).toList();
-    } else {
-      throw Exception(result['message'] ?? 'Failed to search products');
-    }
+    
+    // Filter products locally by name and description
+    final lowercaseQuery = query.toLowerCase();
+    return allProducts.where((product) {
+      return product.name.toLowerCase().contains(lowercaseQuery) ||
+             product.description.toLowerCase().contains(lowercaseQuery);
+    }).toList();
   },
 );

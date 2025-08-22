@@ -52,12 +52,15 @@ class AddProductNotifier extends StateNotifier<AddProductState> {
         ref.invalidate(productsProvider);
         state = AddProductState(status: AddProductStateStatus.success);
       } else {
+        print(
+            '❌ Failed to create product. Backend message: ${result['message']}');
         state = AddProductState(
           status: AddProductStateStatus.error,
           errorMessage: result['message'] ?? 'Failed to create product',
         );
       }
     } catch (e) {
+      print('❌ Exception when creating product: $e');
       state = AddProductState(status: AddProductStateStatus.error, errorMessage: e.toString());
     }
   }

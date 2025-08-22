@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/discount.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/theme_extensions.dart';
 
 /// Stateless widget extracting the UI for a single discount card.
 class DiscountCard extends StatelessWidget {
@@ -17,7 +18,7 @@ class DiscountCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _getStatusColor(discount);
+    final statusColor = _getStatusColor(context, discount);
     final statusText = _getStatusText(context, discount);
     final loc = AppLocalizations.of(context)!;
 
@@ -27,12 +28,12 @@ class DiscountCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: statusColor.withValues(alpha: 0.3),
+          color: statusColor.withAlpha(30),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
+            color: Colors.grey.withAlpha(10),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -73,7 +74,7 @@ class DiscountCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
+                    color: statusColor.withAlpha(10),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -183,17 +184,8 @@ class DiscountCard extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(Discount discount) {
-    switch (discount.status) {
-      case DiscountStatus.expired:
-        return Colors.red.shade400;
-      case DiscountStatus.scheduled:
-        return Colors.orange.shade400;
-      case DiscountStatus.active:
-        return Colors.green.shade400;
-      default:
-        return Colors.grey.shade400;
-    }
+  Color _getStatusColor(BuildContext context, Discount discount) {
+    return context.getStatusColor(discount.status);
   }
 
   String _getStatusText(BuildContext context, Discount discount) {

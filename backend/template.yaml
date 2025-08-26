@@ -680,6 +680,8 @@ Resources:
             # Upload endpoints (internal auth)
             /upload/product-image:
               post:
+                security:
+                  - CognitoAuthorizer: []
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST
@@ -713,6 +715,144 @@ Resources:
             
             /upload/business-photo:
               post:
+                security: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${ImageUploadFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
+            # Document upload endpoints (public for registration)
+            /upload/business-license:
+              post:
+                security: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${ImageUploadFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
+            /upload/owner-identity:
+              post:
+                security: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${ImageUploadFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
+            /upload/health-certificate:
+              post:
+                security: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${ImageUploadFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
+            /upload/owner-photo:
+              post:
+                security: []
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST

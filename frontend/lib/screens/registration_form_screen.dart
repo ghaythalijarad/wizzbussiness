@@ -1198,7 +1198,10 @@ class _RegistrationFormScreenState
         // Upload optional documents
         if (_licenseFile != null) {
           print('📄 Uploading business license...');
-          final licenseUploadResult = await DocumentUploadService.uploadBusinessLicense(_licenseFile!);
+          final licenseUploadResult = await DocumentUploadService.uploadBusinessLicense(
+            _licenseFile!, 
+            isRegistration: true
+          );
           if (licenseUploadResult['success'] == true) {
             licenseUrl = licenseUploadResult['imageUrl'];
             print('✅ Business license uploaded successfully: $licenseUrl');
@@ -1209,7 +1212,10 @@ class _RegistrationFormScreenState
 
         if (_identityFile != null) {
           print('🆔 Uploading owner identity...');
-          final identityUploadResult = await DocumentUploadService.uploadOwnerIdentity(_identityFile!);
+          final identityUploadResult = await DocumentUploadService.uploadOwnerIdentity(
+            _identityFile!, 
+            isRegistration: true
+          );
           if (identityUploadResult['success'] == true) {
             identityUrl = identityUploadResult['imageUrl'];
             print('✅ Owner identity uploaded successfully: $identityUrl');
@@ -1220,7 +1226,10 @@ class _RegistrationFormScreenState
 
         if (_healthCertificateFile != null) {
           print('🏥 Uploading health certificate...');
-          final healthUploadResult = await DocumentUploadService.uploadHealthCertificate(_healthCertificateFile!);
+          final healthUploadResult = await DocumentUploadService.uploadHealthCertificate(
+            _healthCertificateFile!, 
+            isRegistration: true
+          );
           if (healthUploadResult['success'] == true) {
             healthCertificateUrl = healthUploadResult['imageUrl'];
             print('✅ Health certificate uploaded successfully: $healthCertificateUrl');
@@ -1231,7 +1240,10 @@ class _RegistrationFormScreenState
 
         if (_ownerPhotoFile != null) {
           print('👤 Uploading owner photo...');
-          final ownerPhotoUploadResult = await DocumentUploadService.uploadOwnerPhoto(_ownerPhotoFile!);
+          final ownerPhotoUploadResult = await DocumentUploadService.uploadOwnerPhoto(
+            _ownerPhotoFile!, 
+            isRegistration: true
+          );
           if (ownerPhotoUploadResult['success'] == true) {
             ownerPhotoUrl = ownerPhotoUploadResult['imageUrl'];
             print('✅ Owner photo uploaded successfully: $ownerPhotoUrl');

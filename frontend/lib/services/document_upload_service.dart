@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 import 'package:hadhir_business/config/app_config.dart';
+import 'app_auth_service.dart';
 
 class DocumentUploadService {
   static String get baseUrl => AppConfig.baseUrl;
@@ -10,32 +11,55 @@ class DocumentUploadService {
 
   /// Upload business license document and return the URL
   static Future<Map<String, dynamic>> uploadBusinessLicense(
-      File documentFile) async {
-    return _uploadDocument(documentFile, 'business-license');
+      File documentFile, {bool isRegistration = false}) async {
+    return _uploadDocument(documentFile, 'business-license', isRegistration: isRegistration);
   }
 
   /// Upload owner identity document and return the URL
   static Future<Map<String, dynamic>> uploadOwnerIdentity(
-      File documentFile) async {
-    return _uploadDocument(documentFile, 'owner-identity');
+      File documentFile, {bool isRegistration = false}) async {
+    return _uploadDocument(documentFile, 'owner-identity', isRegistration: isRegistration);
   }
 
   /// Upload health certificate document and return the URL
   static Future<Map<String, dynamic>> uploadHealthCertificate(
-      File documentFile) async {
-    return _uploadDocument(documentFile, 'health-certificate');
+      File documentFile, {bool isRegistration = false}) async {
+    return _uploadDocument(documentFile, 'health-certificate', isRegistration: isRegistration);
   }
 
   /// Upload owner photo and return the URL
   static Future<Map<String, dynamic>> uploadOwnerPhoto(
-      File documentFile) async {
-    return _uploadDocument(documentFile, 'owner-photo');
+      File documentFile, {bool isRegistration = false}) async {
+    return _uploadDocument(documentFile, 'owner-photo', isRegistration: isRegistration);
   }
 
   /// Private method to handle document uploads
   static Future<Map<String, dynamic>> _uploadDocument(
-      File documentFile, String documentType) async {
+      File documentFile, String documentType, {bool isRegistration = false}) async {
     try {
+      String? token;
+      Map<String, String> headers = {
+        'Content-Type': 'application/json',
+        'x-upload-type': documentType,
+      };
+
+      if (isRegistration) {
+        // For registration uploads, don't require a token but add registration header
+        headers['X-Registration-Upload'] = 'true';
+        print('🔓 Uploading ${_getDocumentDisplayName(documentType)} for registration (no auth required)');
+      } else {
+        // For regular uploads, require authentication
+        token = await AppAuthService.getAccessToken();
+        if (token == null) {
+          return {
+            'success': false,
+            'message': 'No access token found',
+          };
+        }
+        headers['Authorization'] = 'Bearer $token';
+        print('🔐 Uploading ${_getDocumentDisplayName(documentType)} with authentication');
+      }
+
       // Read document file as bytes
       final documentBytes = await documentFile.readAsBytes();
 
@@ -61,12 +85,6 @@ class DocumentUploadService {
       final requestBody = {
         'image': base64Document,
         'filename': fileName,
-      };
-
-      // Create headers with document type
-      final headers = {
-        'Content-Type': 'application/json',
-        'x-upload-type': documentType,
       };
 
       // Make HTTP POST request with JSON body

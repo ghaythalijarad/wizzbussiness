@@ -56,7 +56,7 @@ final amplifyConfigurationProvider = FutureProvider<void>((ref) async {
             "CognitoUserPool": {
               "Default": {
                 "PoolId": "${AppConfig.cognitoUserPoolId}",
-                "AppClientId": "${AppConfig.cognitoUserPoolClientId}",
+                "AppClientId": "${AppConfig.appClientId}",
                 "Region": "${AppConfig.cognitoRegion}"
               }
             }

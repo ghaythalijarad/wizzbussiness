@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/order.dart';
-import '../config/app_config.dart';
+import 'package:hadhir_business/config/app_config.dart';
 
 class OrderService {
   final String baseUrl = AppConfig.baseUrl;

@@ -1,21 +1,52 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/language_service.dart';
 
-class LocaleNotifier extends StateNotifier<Locale> {
-  LocaleNotifier() : super(const Locale('en'));
+class LocaleProvider with ChangeNotifier {
+  Locale _locale = const Locale('en', 'US');
 
-  Future<void> loadLocale() async {
-    final languageCode = await LanguageService.getLanguage();
-    state = Locale(languageCode);
+  Locale get locale => _locale;
+
+  void setLocale(Locale locale) {
+    if (_locale == locale) return;
+
+    _locale = locale;
+    notifyListeners();
   }
+  
+  void clearLocale() {
+    _locale = const Locale('en', 'US');
+    notifyListeners();
+  }
+  
+  bool get isEnglish => _locale.languageCode == 'en';
+  bool get isArabic => _locale.languageCode == 'ar';
+  bool get isFrench => _locale.languageCode == 'fr';
 
-  Future<void> setLocale(Locale locale) async {
-    await LanguageService.setLanguage(locale.languageCode);
-    state = locale;
+  String get languageCode => _locale.languageCode;
+  String get countryCode => _locale.countryCode ?? '';
+
+  static List<Locale> get supportedLocales => const [
+        Locale('en', 'US'),
+        Locale('ar', 'SA'),
+        Locale('fr', 'FR'),
+      ];
+
+  static List<String> get supportedLanguageCodes => ['en', 'ar', 'fr'];
+
+  String getLanguageName(String languageCode) {
+    switch (languageCode) {
+      case 'en':
+        return 'English';
+      case 'ar':
+        return 'العربية';
+      case 'fr':
+        return 'Français';
+      default:
+        return 'English';
+    }
+  }
+  
+  String getCurrentLanguageName() {
+    return getLanguageName(_locale.languageCode);
   }
 }
-
-final localeProvider = StateNotifierProvider<LocaleNotifier, Locale>((ref) {
-  return LocaleNotifier()..loadLocale();
-});

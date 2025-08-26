@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Business Manager';
+  String get appTitle => 'WIZZ';
 
   @override
   String get welcome => 'Welcome';
@@ -21,10 +21,201 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signIn => 'Sign In';
 
   @override
+  String get signUp => 'Sign Up';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
+  String get resetPassword => 'Reset Password';
+
+  @override
+  String get createAccount => 'Create Account';
+
+  @override
+  String get createBusinessAccount => 'Create Business Account';
+
+  @override
   String get email => 'Email';
 
   @override
+  String get emailAddress => 'Email Address';
+
+  @override
   String get password => 'Password';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
+
+  @override
+  String get fullName => 'Full Name';
+
+  @override
+  String get businessName => 'Business Name';
+
+  @override
+  String get businessType => 'Business Type';
+
+  @override
+  String get businessPhoto => 'Business Photo';
+
+  @override
+  String get country => 'Country';
+
+  @override
+  String get city => 'City';
+
+  @override
+  String get neighborhood => 'Neighborhood';
+
+  @override
+  String get streetName => 'Street Name';
+
+  @override
+  String get healthCertificate => 'Health Certificate';
+
+  @override
+  String get additionalDocuments => 'Additional Documents';
+
+  @override
+  String get personalInformation => 'Personal Information';
+
+  @override
+  String get businessInformation => 'Business Information';
+
+  @override
+  String get businessAddress => 'Business Address';
+
+  @override
+  String get requiredDocuments => 'Required Documents';
+
+  @override
+  String get welcomeBack => 'Welcome Back';
+
+  @override
+  String get signInToYourAccount => 'Sign in to your account';
+
+  @override
+  String get registerYourBusiness => 'Register Your Business';
+
+  @override
+  String get checkYourEmail => 'Check your email';
+
+  @override
+  String get sendResetLink => 'Send reset link';
+
+  @override
+  String get backToLogin => 'Back to login';
+
+  @override
+  String get resendEmail => 'Resend email';
+
+  @override
+  String get createBusinessAccountButton => 'Create Business Account';
+
+  @override
+  String get enterYourEmail => 'Enter your email';
+
+  @override
+  String get enterYourPassword => 'Enter your password';
+
+  @override
+  String get createAStrongPassword => 'Create a strong password';
+
+  @override
+  String get confirmYourPassword => 'Confirm your password';
+
+  @override
+  String get enterYourFullName => 'Enter your full name';
+
+  @override
+  String get enterYourBusinessName => 'Enter your business name';
+
+  @override
+  String get selectYourBusinessType => 'Select your business type';
+
+  @override
+  String get uploadBusinessPhoto => 'Upload a photo of your business';
+
+  @override
+  String get enterYourCity => 'Enter your city';
+
+  @override
+  String get enterYourNeighborhood => 'Enter your neighborhood';
+
+  @override
+  String get enterYourStreetName => 'Enter your street name';
+
+  @override
+  String get uploadHealthCertificate => 'Upload your health certificate';
+
+  @override
+  String get uploadAdditionalDocuments =>
+      'Upload any additional business documents';
+
+  @override
+  String get confirmYourAccount => 'Confirm Your Account';
+
+  @override
+  String get confirmationCodeSent =>
+      'We\'ve sent a 6-digit confirmation code to:';
+
+  @override
+  String get confirmationCode => 'Confirmation Code';
+
+  @override
+  String get confirmationCodeHint => '123456';
+
+  @override
+  String get confirmAccount => 'Confirm Account';
+
+  @override
+  String get resendCode => 'Resend Code';
+
+  @override
+  String resendCodeIn(Object seconds) {
+    return 'Resend Code in ${seconds}s';
+  }
+
+  @override
+  String get backToSignUp => 'Back to Sign Up';
+
+  @override
+  String get confirmationCodeRequired => 'Confirmation code is required';
+
+  @override
+  String get confirmationCodeLength => 'Code must be 6 digits';
+
+  @override
+  String confirmationCodeResent(Object email) {
+    return 'Confirmation code resent to $email';
+  }
+
+  @override
+  String get invalidConfirmationCode =>
+      'Invalid confirmation code. Please try again.';
+
+  @override
+  String get accountConfirmedSuccess => 'Account confirmed successfully!';
+
+  @override
+  String get enterRegisteredEmail => 'Enter your registered email';
+
+  @override
+  String get resetPasswordDescription =>
+      'Enter your email address and we\'ll send you a link to reset your password.';
+
+  @override
+  String get emailSentDescription =>
+      'We\'ve sent a password reset link to your email address. Please check your inbox and follow the instructions.';
+
+  @override
+  String get accountReviewNotice =>
+      'Your business information will be reviewed before activation.';
+
+  @override
+  String get termsAndConditionsNotice =>
+      'By creating an account, you agree to our Terms of Service and Privacy Policy.';
 
   @override
   String get register => 'Register';
@@ -77,12 +268,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verifyYourEmail => 'Verify Your Email';
-
-  @override
-  String get welcomeBack => 'Welcome Back';
-
-  @override
-  String get signInToYourAccount => 'Sign in to your account';
 
   @override
   String get pleaseEnterYourEmail => 'Please enter your email';
@@ -158,18 +343,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emailVerificationTitle => 'Email Verification Required';
-
-  @override
-  String get demoStore => 'Demo Store';
-
-  @override
-  String get demoPharmacy => 'Demo Pharmacy';
-
-  @override
-  String get demoRestaurant => 'Demo Restaurant';
-
-  @override
-  String get demoKitchen => 'Demo Kitchen';
 
   @override
   String get orders => 'Orders';
@@ -329,9 +502,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logout => 'Logout';
 
   @override
-  String get businessName => 'Business Name';
-
-  @override
   String get ownerName => 'Owner Name';
 
   @override
@@ -345,12 +515,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changePassword => 'Change Password';
-
-  @override
-  String get personalInformation => 'Personal Information';
-
-  @override
-  String get businessInformation => 'Business Information';
 
   @override
   String get accountStatus => 'Account Status';
@@ -1069,9 +1233,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get businessRegistration => 'Business Registration';
 
   @override
-  String get registerYourBusiness => 'Register Your Business';
-
-  @override
   String get welcomeToHadhir => 'Welcome to Hadhir';
 
   @override
@@ -1091,9 +1252,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get businessAndOwnerInformation => 'Business and Owner Information';
 
   @override
-  String get businessType => 'Business Type';
-
-  @override
   String get selectBusinessType => 'Please select a business type';
 
   @override
@@ -1101,9 +1259,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pleaseEnterOwnerName => 'Please enter owner name';
-
-  @override
-  String get emailAddress => 'Email Address';
 
   @override
   String get firstName => 'First Name';
@@ -1130,22 +1285,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleaseEnterYourBusinessName => 'Please enter your business name';
 
   @override
-  String get businessAddress => 'Business Address';
-
-  @override
   String get streetAddress => 'Street Address';
-
-  @override
-  String get city => 'City';
 
   @override
   String get state => 'State/Province';
 
   @override
   String get zipCode => 'ZIP/Postal Code';
-
-  @override
-  String get confirmPassword => 'Confirm Password';
 
   @override
   String get passwordRequired => 'Password is required';
@@ -1693,9 +1839,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tapToSelectFile => 'Tap to select file';
 
   @override
-  String get businessPhoto => 'Business Photo';
-
-  @override
   String get requiredPleaseAddAPhoto => 'Required. Please add a photo.';
 
   @override
@@ -1880,9 +2023,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ownerIdentity => 'Owner Identity';
 
   @override
-  String get healthCertificate => 'Health Certificate';
-
-  @override
   String get ownerPhoto => 'Owner Photo';
 
   @override
@@ -1898,13 +2038,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountInformation => 'Account Information';
 
   @override
-  String get enterYourEmail => 'Enter your email';
-
-  @override
   String get pleaseEnterAValidEmail => 'Please enter a valid email';
-
-  @override
-  String get enterYourPassword => 'Enter your password';
 
   @override
   String get passwordMustBeAtLeast8Chars =>
@@ -1912,9 +2046,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reEnterYourPassword => 'Re-enter your password';
-
-  @override
-  String get enterYourBusinessName => 'Enter your business name';
 
   @override
   String get enterOwnerName => 'Enter owner name';
@@ -1946,9 +2077,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get addAPhotoToShowcaseYourBusiness =>
       'Add a photo to showcase your business';
-
-  @override
-  String get enterYourCity => 'Enter your city';
 
   @override
   String get pleaseEnterYourCity => 'Please enter your city';
@@ -2016,9 +2144,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get completeRegistration => 'Complete Registration';
 
   @override
-  String get createAccount => 'Create Account';
-
-  @override
   String get none => 'None';
 
   @override
@@ -2065,16 +2190,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uploadIdentityDocument => 'Upload your identity document';
 
   @override
-  String get uploadHealthCertificate => 'Upload your health certificate';
-
-  @override
   String get uploadOwnerPhoto => 'Upload a photo of the owner';
-
-  @override
-  String get uploadBusinessPhoto => 'Upload a photo of your business';
-
-  @override
-  String get country => 'Country';
 
   @override
   String get enterCountry => 'Enter your country';
@@ -2238,4 +2354,83 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noAppsFound => 'No apps found';
+
+  @override
+  String get businessDetails => 'Business Details';
+
+  @override
+  String get manageYourBusinessProfileAndInformation =>
+      'Manage your business profile and information';
+
+  @override
+  String get manageYourPersonalInformation =>
+      'Manage your personal information';
+
+  @override
+  String get updateYourPasswordAndSecurity =>
+      'Update your password and security';
+
+  @override
+  String get configurePointOfSaleIntegration =>
+      'Configure point of sale integration';
+
+  @override
+  String get soundNotifications => 'Sound Notifications';
+
+  @override
+  String get configureSoundAlertsForNewOrdersAndUpdates =>
+      'Configure sound alerts for new orders and updates';
+
+  @override
+  String get manageNotificationPreferencesAndDeliveryMethods =>
+      'Manage notification preferences and delivery methods';
+
+  @override
+  String get manageBusinessLocationAndGpsCoordinates =>
+      'Manage business location and GPS coordinates';
+
+  @override
+  String get setUpOpeningAndClosingHoursForYourBusiness =>
+      'Set up opening and closing hours for your business';
+
+  @override
+  String get discountManagement => 'Discount Management';
+
+  @override
+  String get createAndManageYourDiscounts => 'Create and manage your discounts';
+
+  @override
+  String get reviews => 'Reviews';
+
+  @override
+  String get joinThousandsOfBusinessOwners =>
+      'Join thousands of business owners who trust our platform to manage their orders and grow their business.';
+
+  @override
+  String get startBusinessRegistration => 'Start Business Registration';
+
+  @override
+  String get completeBusinessRegistration => 'Complete Business Registration';
+
+  @override
+  String get setUpYourBusinessProfileWithAllNecessaryInformationAndDocuments =>
+      'Set up your business profile with all necessary information and documents';
+
+  @override
+  String get secureAndVerified => 'Secure & Verified';
+
+  @override
+  String get yourBusinessWillBeVerifiedBeforeActivationForSecurityAndTrust =>
+      'Your business will be verified before activation for security and trust';
+
+  @override
+  String get fullDashboardAccess => 'Full Dashboard Access';
+
+  @override
+  String get manageOrdersProductsAnalyticsAndBusinessSettingsInOnePlace =>
+      'Manage orders, products, analytics, and business settings in one place';
+
+  @override
+  String get byCreatingAnAccountYouAgreeToOurTermsOfServiceAndPrivacyPolicy =>
+      'By creating an account, you agree to our Terms of Service and Privacy Policy. Your business information will be reviewed before activation.';
 }

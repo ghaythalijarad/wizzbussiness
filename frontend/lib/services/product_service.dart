@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../config/app_config.dart';
+import 'package:hadhir_business/config/app_config.dart';
 import 'app_auth_service.dart';
 
 class ProductService {

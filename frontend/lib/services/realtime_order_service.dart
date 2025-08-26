@@ -5,7 +5,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:http/http.dart' as http;
 import '../models/order.dart';
 import '../models/delivery_address.dart';
-import '../config/app_config.dart';
+import 'package:hadhir_business/config/app_config.dart';
 import 'order_service.dart';
 import 'app_auth_service.dart';
 import 'audio_notification_service.dart';
@@ -408,7 +408,8 @@ class RealtimeOrderService {
           debugPrint('📄 Order data: $orderData');
           
           // Create a minimal order object as fallback
-          final fallbackOrder = _createFallbackOrder(orderData);
+          final fallbackOrder = _createFallbackOrder(
+              orderData, orderData['businessId']?.toString() ?? 'unknown');
           if (fallbackOrder != null) {
             _safeAddToNewOrderController(fallbackOrder);
             debugPrint('🔄 Created fallback order: ${fallbackOrder.id}');
@@ -443,14 +444,19 @@ class RealtimeOrderService {
       // Create a minimal placeholder order
       final placeholderOrder = Order(
         id: orderId,
+        businessId: businessId, // Add businessId parameter
         customerId: 'unknown',
         customerName: 'New Order (Loading...)',
         customerPhone: 'N/A',
         deliveryAddress: DeliveryAddress(
+          id: 'temp-${DateTime.now().millisecondsSinceEpoch}',
           street: 'Loading address...',
           city: 'Unknown',
-          state: 'Unknown',
-          zipCode: '00000',
+          district: 'Unknown',
+          country: 'Iraq',
+          customerId: 'unknown',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         ),
         items: [],
         totalAmount: 0.0,
@@ -470,21 +476,27 @@ class RealtimeOrderService {
   }
 
   /// Create a fallback order when parsing fails
-  Order? _createFallbackOrder(Map<String, dynamic> data) {
+  Order? _createFallbackOrder(Map<String, dynamic> data, String businessId) {
     try {
       final orderId = data['orderId'] ?? data['id'] ?? 'unknown-${DateTime.now().millisecondsSinceEpoch}';
       
       return Order(
         id: orderId.toString(),
+        businessId: businessId, // Add businessId parameter
         customerId: data['customerId']?.toString() ?? 'unknown',
         customerName: data['customerName']?.toString() ?? 'Unknown Customer',
         customerPhone: data['customerPhone']?.toString() ?? 'N/A',
         deliveryAddress: DeliveryAddress(
+          id: 'temp-${DateTime.now().millisecondsSinceEpoch}',
           street: data['deliveryAddress']?['street']?.toString() ?? 'Unknown Address',
           city: data['deliveryAddress']?['city']?.toString() ?? 'Unknown City',
+          district:
+              data['deliveryAddress']?['district']?.toString() ?? 'Unknown',
           state: data['deliveryAddress']?['state']?.toString(),
-          zipCode: data['deliveryAddress']?['zipCode']?.toString(),
-          instructions: data['deliveryAddress']?['instructions']?.toString(),
+          country: data['deliveryAddress']?['country']?.toString() ?? 'Iraq',
+          customerId: (data['customerId']?.toString() ?? 'unknown'),
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         ),
         items: [], // Will be populated later when full order is fetched
         totalAmount: (data['totalAmount'] ?? data['total'] ?? 0).toDouble(),

@@ -1,45 +1,84 @@
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LanguageService {
   static const String _languageKey = 'selected_language';
-  static const String _defaultLanguage = 'ar'; // Changed to Arabic as default
-
-  static Future<String> getLanguage() async {
+  
+  static Future<String> getSavedLanguage() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_languageKey) ?? _defaultLanguage;
+    return prefs.getString(_languageKey) ?? 'en';
   }
-
-  static Future<void> setLanguage(String languageCode) async {
+  
+  static Future<void> saveLanguage(String languageCode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_languageKey, languageCode);
   }
+  
+  // Alias for saveLanguage for backwards compatibility
+  static Future<void> setLanguage(String languageCode) async {
+    await saveLanguage(languageCode);
+  }
 
+  static Future<Locale> getSavedLocale() async {
+    final languageCode = await getSavedLanguage();
+    return getLocaleFromLanguageCode(languageCode);
+  }
+  
   static Locale getLocaleFromLanguageCode(String languageCode) {
     switch (languageCode) {
       case 'ar':
-        return const Locale('ar');
+        return const Locale('ar', 'SA');
+      case 'fr':
+        return const Locale('fr', 'FR');
       case 'en':
       default:
-        return const Locale('en');
+        return const Locale('en', 'US');
+    }
+  }
+  
+  static List<Locale> getSupportedLocales() {
+    return const [
+      Locale('en', 'US'),
+      Locale('ar', 'SA'),
+      Locale('fr', 'FR'),
+    ];
+  }
+  
+  static List<String> getSupportedLanguageCodes() {
+    return ['en', 'ar', 'fr'];
+  }
+
+  static String getLanguageDisplayName(String languageCode) {
+    switch (languageCode) {
+      case 'en':
+        return 'English';
+      case 'ar':
+        return 'العربية';
+      case 'fr':
+        return 'Français';
+      default:
+        return 'English';
     }
   }
 
-  static List<Locale> getSupportedLocales() {
-    return [
-      const Locale('ar'), // Arabic first (primary)
-      const Locale('en'), // English second
-    ];
+  static String getLanguageNativeName(String languageCode) {
+    switch (languageCode) {
+      case 'en':
+        return 'English';
+      case 'ar':
+        return 'العربية';
+      case 'fr':
+        return 'Français';
+      default:
+        return 'English';
+    }
   }
 
-  static List<Map<String, String>> getAvailableLanguages() {
-    return [
-      {'code': 'ar', 'name': 'Arabic', 'nativeName': 'العربية'}, // Arabic first
-      {
-        'code': 'en',
-        'name': 'English',
-        'nativeName': 'English'
-      }, // English second
-    ];
+  static bool isRTL(String languageCode) {
+    return languageCode == 'ar';
+  }
+
+  static TextDirection getTextDirection(String languageCode) {
+    return isRTL(languageCode) ? TextDirection.rtl : TextDirection.ltr;
   }
 }

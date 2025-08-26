@@ -1,337 +1,194 @@
-import 'dart:async';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
-import 'package:amplify_api/amplify_api.dart';
-import '../config/app_config.dart';
 
-/// Real AWS Cognito Auth Service implementation using Amplify
+enum AuthStatus {
+  unknown,
+  authenticated,
+  unauthenticated,
+  unconfirmed,
+}
+
 class CognitoAuthService {
-  static bool _isConfigured = false;
+  static final CognitoAuthService _instance = CognitoAuthService._internal();
+  factory CognitoAuthService() => _instance;
+  CognitoAuthService._internal();
 
-  /// Configure Cognito settings
-  static Future<void> configure({
-    required String userPoolId,
-    required String userPoolClientId,
-    required String region,
-    String? identityPoolId,
-  }) async {
+  bool _isConfigured = false;
+  AuthStatus _authStatus = AuthStatus.unknown;
+
+  AuthStatus get authStatus => _authStatus;
+  bool get isConfigured => _isConfigured;
+
+  Future<void> configure(String amplifyConfig) async {
     if (_isConfigured) return;
 
     try {
-      // Check if Amplify is already configured
-      if (Amplify.isConfigured) {
-        _isConfigured = true;
-        print('✅ Amplify already configured, skipping configuration');
-        return;
-      }
-
-      // Configure Amplify with Cognito
-      final authPlugin = AmplifyAuthCognito();
-      final apiPlugin = AmplifyAPI();
-      await Amplify.addPlugins([authPlugin, apiPlugin]);
-
-      // Configure Amplify
-      final amplifyconfig = '''{
-        "UserAgent": "aws-amplify-cli/2.0",
-        "Version": "1.0",
-        "auth": {
-          "plugins": {
-            "awsCognitoAuthPlugin": {
-              "UserAgent": "aws-amplify-cli/0.1.0",
-              "Version": "0.1.0",
-              "IdentityManager": {
-                "Default": {}
-              },
-              "CognitoUserPool": {
-                "Default": {
-                  "PoolId": "$userPoolId",
-                  "AppClientId": "$userPoolClientId",
-                  "Region": "$region"
-                }
-              }
-            }
-          }
-        },
-        "api": {
-          "plugins": {
-            "awsAPIPlugin": {
-              "haddir-api": {
-                "endpointType": "REST",
-                "endpoint": "${AppConfig.baseUrl}",
-                "region": "$region",
-                "authorizationType": "AMAZON_COGNITO_USER_POOLS"
-              }
-            }
-          }
-        }
-      }''';
-
-      await Amplify.configure(amplifyconfig);
+      await Amplify.addPlugin(AmplifyAuthCognito());
+      await Amplify.configure(amplifyConfig);
       _isConfigured = true;
-      print('✅ Cognito Auth Service configured successfully');
+      
+      // Check initial auth state
+      await _checkAuthStatus();
+    } on AmplifyAlreadyConfiguredException {
+      _isConfigured = true;
+      await _checkAuthStatus();
     } catch (e) {
-      print('❌ Error configuring Cognito Auth Service: $e');
-      // If Amplify is already configured, that's okay
-      if (e.toString().contains('Amplify has already been configured')) {
-        _isConfigured = true;
-        print('✅ Amplify already configured, continuing...');
-      } else {
-        throw e;
-      }
+      throw Exception('Failed to configure Amplify: $e');
     }
   }
 
-  /// Check if Cognito is properly configured
-  static bool get isConfigured => _isConfigured;
+  Future<void> _checkAuthStatus() async {
+    try {
+      final session = await Amplify.Auth.fetchAuthSession();
+      _authStatus = session.isSignedIn
+          ? AuthStatus.authenticated
+          : AuthStatus.unauthenticated;
+    } catch (e) {
+      _authStatus = AuthStatus.unauthenticated;
+    }
+  }
 
-  /// Sign up a new user
-  static Future<Map<String, dynamic>> signUp({
-    required String username,
+  /// Sign up a new user with email verification
+  Future<SignUpResult> signUp({
+    required String email,
     required String password,
-    Map<String, String>? userAttributes,
+    required Map<AuthUserAttributeKey, String> userAttributes,
   }) async {
     if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+      throw Exception('Amplify is not configured');
     }
 
     try {
       final result = await Amplify.Auth.signUp(
-        username: username,
+        username: email,
         password: password,
         options: SignUpOptions(
-          userAttributes: userAttributes?.map(
-                (key, value) => MapEntry(
-                  CognitoUserAttributeKey.parse(key),
-                  value,
-                ),
-              ) ??
-              {},
+          userAttributes: userAttributes,
         ),
       );
 
-      return {
-        'success': true,
-        'message':
-            'User created successfully. Please check your email for verification code.',
-        'userSub': result.userId,
-        'nextStep': result.nextStep.signUpStep.name,
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': e.toString(),
-      };
+      if (!result.isSignUpComplete) {
+        _authStatus = AuthStatus.unconfirmed;
+      }
+
+      return result;
+    } on AuthException catch (e) {
+      throw _handleAuthException(e);
     }
   }
 
   /// Confirm sign up with verification code
-  static Future<Map<String, dynamic>> confirmSignUp({
-    required String username,
+  Future<SignUpResult> confirmSignUp({
+    required String email,
     required String confirmationCode,
   }) async {
     if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+      throw Exception('Amplify is not configured');
     }
 
     try {
       final result = await Amplify.Auth.confirmSignUp(
-        username: username,
+        username: email,
         confirmationCode: confirmationCode,
       );
 
-      return {
-        'success': result.isSignUpComplete,
-        'message': result.isSignUpComplete
-            ? 'Email verified successfully'
-            : 'Verification in progress',
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': e.toString(),
-      };
+      if (result.isSignUpComplete) {
+        _authStatus = AuthStatus.unauthenticated;
+      }
+
+      return result;
+    } on AuthException catch (e) {
+      throw _handleAuthException(e);
     }
   }
 
-  /// Resend signup confirmation code
-  static Future<void> resendSignUpCode({required String email}) async {
+  /// Resend confirmation code
+  Future<ResendSignUpCodeResult> resendSignUpCode({
+    required String email,
+  }) async {
     if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+      throw Exception('Amplify is not configured');
     }
 
     try {
-      await Amplify.Auth.resendSignUpCode(username: email);
-    } catch (e) {
-      throw Exception('Failed to resend code: $e');
+      final result = await Amplify.Auth.resendSignUpCode(username: email);
+      return result;
+    } on AuthException catch (e) {
+      throw _handleAuthException(e);
     }
   }
 
   /// Sign in user
-  static Future<Map<String, dynamic>> signIn({
-    required String username,
+  Future<SignInResult> signIn({
+    required String email,
     required String password,
   }) async {
     if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+      throw Exception('Amplify is not configured');
     }
 
     try {
       final result = await Amplify.Auth.signIn(
-        username: username,
+        username: email,
         password: password,
       );
 
       if (result.isSignedIn) {
-        // Get tokens
-        final session = await Amplify.Auth.fetchAuthSession();
-        final cognitoSession = session as CognitoAuthSession;
-
-        // Get user attributes
-        final user = await Amplify.Auth.getCurrentUser();
-        final userAttributes = await Amplify.Auth.fetchUserAttributes();
-
-        final userAttributesMap = <String, String>{};
-        for (final attr in userAttributes) {
-          userAttributesMap[attr.userAttributeKey.key] = attr.value;
-        }
-
-        // Check if tokens are available
-        try {
-          final tokens = cognitoSession.userPoolTokensResult.value;
-          print('✅ Cognito tokens retrieved successfully during sign in');
-
-          return {
-            'success': true,
-            'accessToken': tokens.accessToken.raw,
-            'idToken': tokens.idToken.raw,
-            'refreshToken': tokens.refreshToken,
-            'user': {
-              'userId': user.userId,
-              'username': user.username,
-              'email': userAttributesMap['email'],
-              'email_verified': userAttributesMap['email_verified'] == 'true',
-              'sub': user.userId,
-              ...userAttributesMap,
-            },
-          };
-        } catch (tokenError) {
-          print('❌ Cognito tokens not available after sign in: $tokenError');
-          return {
-            'success': false,
-            'message': 'Authentication tokens not available: $tokenError',
-          };
-        }
-      } else {
-        return {
-          'success': false,
-          'message': 'Sign in not completed',
-        };
+        _authStatus = AuthStatus.authenticated;
       }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': e.toString(),
-      };
+
+      return result;
+    } on AuthException catch (e) {
+      throw _handleAuthException(e);
     }
   }
 
   /// Sign out user
-  static Future<void> signOut() async {
+  Future<void> signOut() async {
     if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+      throw Exception('Amplify is not configured');
     }
 
     try {
       await Amplify.Auth.signOut();
-    } catch (e) {
-      throw Exception('Failed to sign out: $e');
+      _authStatus = AuthStatus.unauthenticated;
+    } on AuthException catch (e) {
+      throw _handleAuthException(e);
     }
   }
 
-  /// Get current access token
-  static Future<String?> getAccessToken() async {
+  /// Reset password
+  Future<ResetPasswordResult> resetPassword({required String email}) async {
     if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+      throw Exception('Amplify is not configured');
     }
 
     try {
-      final session = await Amplify.Auth.fetchAuthSession();
-      final cognitoSession = session as CognitoAuthSession;
-
-      if (cognitoSession.isSignedIn) {
-        try {
-          final tokens = cognitoSession.userPoolTokensResult.value;
-          print('✅ Cognito access token retrieved successfully');
-          return tokens.accessToken.raw;
-        } catch (tokenError) {
-          print('❌ Error accessing Cognito tokens: $tokenError');
-          return null;
-        }
-      }
-      print('❌ User not signed in to Cognito');
-      return null;
-    } catch (e) {
-      print('❌ Error getting access token: $e');
-      return null;
+      final result = await Amplify.Auth.resetPassword(username: email);
+      return result;
+    } on AuthException catch (e) {
+      throw _handleAuthException(e);
     }
   }
 
-  /// Get current user information
-  static Future<Map<String, dynamic>?> getCurrentUser() async {
+  /// Confirm reset password
+  Future<void> confirmResetPassword({
+    required String email,
+    required String newPassword,
+    required String confirmationCode,
+  }) async {
     if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+      throw Exception('Amplify is not configured');
     }
 
     try {
-      // Check if user is signed in
-      final session = await Amplify.Auth.fetchAuthSession();
-      final cognitoSession = session as CognitoAuthSession;
-
-      if (!cognitoSession.isSignedIn) {
-        print('❌ No user currently signed in');
-        return null;
-      }
-
-      // Get current user details
-      final user = await Amplify.Auth.getCurrentUser();
-      final userAttributes = await Amplify.Auth.fetchUserAttributes();
-
-      final userAttributesMap = <String, String>{};
-      for (final attr in userAttributes) {
-        userAttributesMap[attr.userAttributeKey.key] = attr.value;
-      }
-
-      return {
-        'success': true,
-        'userId': user.userId,
-        'username': user.username,
-        'email': userAttributesMap['email'],
-        'email_verified': userAttributesMap['email_verified'] == 'true',
-        'given_name': userAttributesMap['given_name'],
-        'family_name': userAttributesMap['family_name'],
-        'phone_number': userAttributesMap['phone_number'],
-        'sub': user.userId,
-        ...userAttributesMap,
-      };
-    } catch (e) {
-      print('❌ Error getting current user: $e');
-      return null;
-    }
-  }
-
-  /// Check if user is signed in
-  static Future<bool> isSignedIn() async {
-    if (!_isConfigured) {
-      return false;
-    }
-
-    try {
-      final session = await Amplify.Auth.fetchAuthSession();
-      final cognitoSession = session as CognitoAuthSession;
-      return cognitoSession.isSignedIn;
-    } catch (e) {
-      print('❌ Error checking if user is signed in: $e');
-      return false;
+      await Amplify.Auth.confirmResetPassword(
+        username: email,
+        newPassword: newPassword,
+        confirmationCode: confirmationCode,
+      );
+    } on AuthException catch (e) {
+      throw _handleAuthException(e);
     }
   }
 
@@ -340,128 +197,138 @@ class CognitoAuthService {
     required String oldPassword,
     required String newPassword,
   }) async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
-    }
-
     try {
       await Amplify.Auth.updatePassword(
         oldPassword: oldPassword,
         newPassword: newPassword,
       );
-
       return {
         'success': true,
         'message': 'Password changed successfully',
       };
+    } on AuthException catch (e) {
+      return {
+        'success': false,
+        'message': e.message,
+      };
     } catch (e) {
       return {
         'success': false,
-        'message': e.toString(),
+        'message': 'Failed to change password: $e',
       };
     }
   }
 
-  /// Forgot password - initiate reset
+  /// Initiate forgot password flow
   static Future<Map<String, dynamic>> forgotPassword({
     required String username,
   }) async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
-    }
-
     try {
-      await Amplify.Auth.resetPassword(username: username);
-
+      final result = await Amplify.Auth.resetPassword(username: username);
       return {
         'success': true,
-        'message': 'Password reset code sent to your email',
+        'message': 'Password reset code sent',
+        'codeDeliveryDetails': {
+          'deliveryMedium':
+              result.nextStep.codeDeliveryDetails?.deliveryMedium.name,
+          'destination': result.nextStep.codeDeliveryDetails?.destination,
+        },
+      };
+    } on AuthException catch (e) {
+      return {
+        'success': false,
+        'message': e.message,
       };
     } catch (e) {
       return {
         'success': false,
-        'message': e.toString(),
+        'message': 'Failed to initiate password reset: $e',
       };
     }
   }
 
-  /// Confirm forgot password with new password
+  /// Confirm forgot password with verification code
   static Future<Map<String, dynamic>> confirmForgotPassword({
     required String username,
     required String confirmationCode,
     required String newPassword,
   }) async {
-    if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
-    }
-
     try {
       await Amplify.Auth.confirmResetPassword(
         username: username,
         newPassword: newPassword,
         confirmationCode: confirmationCode,
       );
-
       return {
         'success': true,
         'message': 'Password reset successfully',
       };
+    } on AuthException catch (e) {
+      return {
+        'success': false,
+        'message': e.message,
+      };
     } catch (e) {
       return {
         'success': false,
-        'message': e.toString(),
+        'message': 'Failed to reset password: $e',
       };
     }
   }
 
-  /// Get user attributes
-  static Future<Map<String, dynamic>?> getUserAttributes() async {
+  /// Get current user
+  Future<AuthUser?> getCurrentUser() async {
     if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+      throw Exception('Amplify is not configured');
     }
 
     try {
-      final userAttributes = await Amplify.Auth.fetchUserAttributes();
-
-      final userAttributesMap = <String, dynamic>{};
-      for (final attr in userAttributes) {
-        userAttributesMap[attr.userAttributeKey.key] = attr.value;
-      }
-
-      return userAttributesMap;
-    } catch (e) {
-      print('❌ Error getting user attributes: $e');
+      final user = await Amplify.Auth.getCurrentUser();
+      return user;
+    } on AuthException {
       return null;
     }
   }
 
-  /// Update user attributes
-  static Future<Map<String, dynamic>> updateUserAttributes(
-    Map<String, String> attributes,
-  ) async {
+  /// Get user attributes
+  Future<List<AuthUserAttribute>> getUserAttributes() async {
     if (!_isConfigured) {
-      throw Exception('CognitoAuthService not configured');
+      throw Exception('Amplify is not configured');
     }
 
     try {
-      final List<AuthUserAttribute> userAttributes = attributes.entries
-          .map((entry) => AuthUserAttribute(
-                userAttributeKey: CognitoUserAttributeKey.parse(entry.key),
-                value: entry.value,
-              ))
-          .toList();
+      final attributes = await Amplify.Auth.fetchUserAttributes();
+      return attributes;
+    } on AuthException catch (e) {
+      throw _handleAuthException(e);
+    }
+  }
 
-      await Amplify.Auth.updateUserAttributes(attributes: userAttributes);
-
-      return {
-        'success': true,
-        'message': 'User attributes updated successfully',
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': e.toString(),
-      };
+  String _handleAuthException(AuthException e) {
+    switch (e.runtimeType) {
+      case const (UsernameExistsException):
+        return 'An account with this email already exists';
+      case const (InvalidParameterException):
+        return 'Invalid parameters provided';
+      case const (InvalidPasswordException):
+        return 'Password does not meet requirements';
+      case const (CodeMismatchException):
+        return 'Invalid verification code';
+      case const (UserNotConfirmedException):
+        return 'Please verify your email address';
+      case const (UserNotFoundException):
+        return 'User not found';
+      case const (LimitExceededException):
+        return 'Too many attempts. Please try again later';
+      default:
+        // Handle specific error messages for common scenarios
+        if (e.message.contains('code') && e.message.contains('expired')) {
+          return 'Verification code has expired';
+        }
+        if (e.message.contains('Incorrect') || e.message.contains('password')) {
+          return 'Incorrect email or password';
+        }
+        return e.message;
     }
   }
 }

@@ -1,7 +1,14 @@
 {
-  "name": "order-receiver-upload-function",
+  "name": "image-upload-handler",
   "version": "1.0.0",
-  "description": "upload function for order receiver API",
-  "main": "index.js",
-  "dependencies": {}
+  "description": "Image upload handler for Order Receiver API",
+  "main": "image_upload_handler.js",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.0.0",
+    "uuid": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
 }

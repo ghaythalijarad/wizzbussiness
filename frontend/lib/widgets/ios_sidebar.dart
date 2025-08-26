@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/locale_provider.dart';
 import '../services/app_state.dart';
+import '../services/app_auth_service.dart';
+import '../screens/login_page.dart';
 import '../utils/responsive_helper.dart';
 
 class IOSSidebar extends ConsumerStatefulWidget {

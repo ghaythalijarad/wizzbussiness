@@ -1,78 +1,79 @@
 class User {
   final String id;
   final String email;
-  final String? firstName;
-  final String? lastName;
-  final String? phone;
+  final String firstName;
+  final String lastName;
+  final String? phoneNumber;
+  final String? profileImageUrl;
   final bool emailVerified;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   User({
     required this.id,
     required this.email,
-    this.firstName,
-    this.lastName,
-    this.phone,
+    required this.firstName,
+    required this.lastName,
+    this.phoneNumber,
+    this.profileImageUrl,
     this.emailVerified = false,
-    this.createdAt,
-    this.updatedAt,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
-    // Handle email_verified conversion from string to boolean
-    bool emailVerified = false;
-    final emailVerifiedValue = json['emailVerified'] ?? json['email_verified'];
-    if (emailVerifiedValue is bool) {
-      emailVerified = emailVerifiedValue;
-    } else if (emailVerifiedValue is String) {
-      emailVerified = emailVerifiedValue.toLowerCase() == 'true';
-    }
-    
     return User(
-      id: json['userId'] ?? json['user_id'] ?? json['id'] ?? json['sub'] ?? '',
+      id: json['id'] ?? json['user_id'] ?? '',
       email: json['email'] ?? '',
-      firstName: json['firstName'] ?? json['first_name'] ?? json['given_name'],
-      lastName: json['lastName'] ?? json['last_name'] ?? json['family_name'],
-      phone: json['phone'] ?? json['phoneNumber'] ?? json['phone_number'],
-      emailVerified: emailVerified,
-      createdAt: json['createdAt'] != null
-          ? DateTime.tryParse(json['createdAt'])
-          : null,
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.tryParse(json['updatedAt'])
-          : null,
+      firstName: json['firstName'] ?? json['first_name'] ?? '',
+      lastName: json['lastName'] ?? json['last_name'] ?? '',
+      phoneNumber: json['phoneNumber'] ?? json['phone_number'],
+      profileImageUrl: json['profileImageUrl'] ?? json['profile_image_url'],
+      emailVerified: json['emailVerified'] ?? json['email_verified'] ?? false,
+      createdAt:
+          DateTime.tryParse(json['createdAt'] ?? json['created_at'] ?? '') ??
+              DateTime.now(),
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] ?? json['updated_at'] ?? '') ??
+              DateTime.now(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'userId': id,
+      'id': id,
       'email': email,
       'firstName': firstName,
       'lastName': lastName,
-      'phone': phone,
-      'emailVerified': emailVerified,
-      'createdAt': createdAt?.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
+      'phoneNumber': phoneNumber,
+      'profileImageUrl': profileImageUrl,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
-  String get fullName {
-    if (firstName != null && lastName != null) {
-      return '$firstName $lastName';
-    } else if (firstName != null) {
-      return firstName!;
-    } else if (lastName != null) {
-      return lastName!;
-    } else {
-      return email;
-    }
-  }
+  String get fullName => '$firstName $lastName';
 
-  @override
-  String toString() {
-    return 'User(id: $id, email: $email, name: $fullName)';
+  User copyWith({
+    String? id,
+    String? email,
+    String? firstName,
+    String? lastName,
+    String? phoneNumber,
+    String? profileImageUrl,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return User(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
   @override
@@ -83,4 +84,9 @@ class User {
 
   @override
   int get hashCode => id.hashCode;
+
+  @override
+  String toString() {
+    return 'User(id: $id, email: $email, fullName: $fullName)';
+  }
 }

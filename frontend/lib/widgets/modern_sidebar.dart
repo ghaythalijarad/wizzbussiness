@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
-import '../providers/locale_provider.dart';
+import '../providers/locale_provider_riverpod.dart';
 import '../services/language_service.dart';
 import '../services/app_state.dart';
 

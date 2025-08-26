@@ -1,39 +1,56 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/order_service.dart';
 import '../models/order.dart';
-import 'business_provider.dart';
+import '../services/order_service.dart';
 
-final orderServiceProvider = Provider<OrderService>((ref) {
-  return OrderService();
-});
-
+// Provider for pending orders
 final pendingOrdersProvider =
-    FutureProvider.autoDispose<List<Order>>((ref) async {
-  final businessId =
-      await ref.watch(businessProvider.select((b) => b.value?.id));
-  if (businessId == null) return [];
-  final orders =
-      await ref.watch(orderServiceProvider).getMerchantOrders(businessId);
-  return orders
-      .where((order) => order.status.toString().contains('pending'))
-      .toList();
+    StateNotifierProvider<OrdersNotifier, List<Order>>((ref) {
+  return OrdersNotifier();
 });
 
+// Provider for confirmed orders
 final confirmedOrdersProvider =
-    FutureProvider.autoDispose<List<Order>>((ref) async {
-  final businessId =
-      await ref.watch(businessProvider.select((b) => b.value?.id));
-  if (businessId == null) return [];
-  final orders =
-      await ref.watch(orderServiceProvider).getMerchantOrders(businessId);
-  return orders
-      .where((order) => order.status.toString().contains('confirmed'))
-      .toList();
+    StateNotifierProvider<OrdersNotifier, List<Order>>((ref) {
+  return OrdersNotifier();
 });
 
-final allOrdersProvider = FutureProvider.autoDispose<List<Order>>((ref) async {
-  final businessId =
-      await ref.watch(businessProvider.select((b) => b.value?.id));
-  if (businessId == null) return [];
-  return ref.watch(orderServiceProvider).getMerchantOrders(businessId);
+// Provider for all orders
+final allOrdersProvider =
+    StateNotifierProvider<OrdersNotifier, List<Order>>((ref) {
+  return OrdersNotifier();
 });
+
+class OrdersNotifier extends StateNotifier<List<Order>> {
+  OrdersNotifier() : super([]);
+
+  final OrderService _orderService = OrderService();
+
+  Future<void> loadOrders(String businessId) async {
+    try {
+      final orders = await _orderService.getMerchantOrders(businessId);
+      state = orders;
+    } catch (e) {
+      // Handle error
+      print('Error loading orders: $e');
+    }
+  }
+
+  void addOrder(Order order) {
+    state = [...state, order];
+  }
+
+  void updateOrder(Order updatedOrder) {
+    state = [
+      for (final order in state)
+        if (order.id == updatedOrder.id) updatedOrder else order,
+    ];
+  }
+
+  void removeOrder(String orderId) {
+    state = state.where((order) => order.id != orderId).toList();
+  }
+
+  void clearOrders() {
+    state = [];
+  }
+}

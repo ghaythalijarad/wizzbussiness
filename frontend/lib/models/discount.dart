@@ -1,12 +1,11 @@
-/// Types of discounts available
 enum DiscountType {
   percentage,
+  fixedAmount,
   conditional,
-  freeDelivery,
   buyXGetY,
+  freeDelivery,
 }
 
-/// Applicability rules for discounts
 enum DiscountApplicability {
   allItems,
   specificItems,
@@ -14,206 +13,296 @@ enum DiscountApplicability {
   minimumOrder,
 }
 
-/// Status of a discount
 enum DiscountStatus {
   active,
   scheduled,
   expired,
-  paused,
+  inactive,
 }
 
-/// Rules for conditional discounts
 enum ConditionalDiscountRule {
   buyXGetY,
-  buyXGetYPercent,
-  tieredQuantity,
-  bundleDiscount,
+  minimumAmount,
+  firstOrder,
+  loyaltyCustomer,
 }
 
-/// Represents a discount available to a business
 class Discount {
   final String id;
-  final String title;
+  final String name;
+  final String title; // Alias for name for backward compatibility
   final String description;
   final DiscountType type;
   final double value;
   final DiscountApplicability applicability;
+  final DiscountStatus status;
+  final DateTime startDate;
+  final DateTime validFrom; // Alias for startDate
+  final DateTime endDate;
+  final DateTime validTo; // Alias for endDate
+  final double? minimumOrderAmount;
+  final int? maxUsage;
+  final int currentUsage;
   final List<String> applicableItemIds;
   final List<String> applicableCategoryIds;
-  final double minimumOrderAmount;
-  final DateTime validFrom;
-  final DateTime validTo;
-  final int? usageLimit;
-  final int usageCount;
-  final DiscountStatus status;
+  final ConditionalDiscountRule? conditionalRule;
+  final Map<String, dynamic>? conditionalRuleData;
+  final Map<String, dynamic>?
+      conditionalParameters; // Alias for conditionalRuleData
+  final String businessId;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final ConditionalDiscountRule? conditionalRule;
-  final Map<String, dynamic> conditionalParameters;
 
   Discount({
     required this.id,
-    required this.title,
+    required this.name,
+    String? title,
     required this.description,
     required this.type,
     required this.value,
     required this.applicability,
+    required this.status,
+    required this.startDate,
+    DateTime? validFrom,
+    required this.endDate,
+    DateTime? validTo,
+    this.minimumOrderAmount,
+    this.maxUsage,
+    this.currentUsage = 0,
     this.applicableItemIds = const [],
     this.applicableCategoryIds = const [],
-    this.minimumOrderAmount = 0.0,
-    required this.validFrom,
-    required this.validTo,
-    this.usageLimit,
-    this.usageCount = 0,
-    this.status = DiscountStatus.active,
+    this.conditionalRule,
+    this.conditionalRuleData,
+    Map<String, dynamic>? conditionalParameters,
+    required this.businessId,
     required this.createdAt,
     required this.updatedAt,
-    this.conditionalRule,
-    this.conditionalParameters = const {},
-  });
+  })  : title = title ?? name,
+        validFrom = validFrom ?? startDate,
+        validTo = validTo ?? endDate,
+        conditionalParameters = conditionalParameters ?? conditionalRuleData;
 
-  bool get isActive => status == DiscountStatus.active;
-
-  /// Creates a copy of this discount with modified fields
-  Discount copyWith({
-    DiscountStatus? status,
-  }) {
-    return Discount(
-      id: id,
-      title: title,
-      description: description,
-      type: type,
-      value: value,
-      applicability: applicability,
-      applicableItemIds: applicableItemIds,
-      applicableCategoryIds: applicableCategoryIds,
-      minimumOrderAmount: minimumOrderAmount,
-      validFrom: validFrom,
-      validTo: validTo,
-      usageLimit: usageLimit,
-      usageCount: usageCount,
-      status: status ?? this.status,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      conditionalRule: conditionalRule,
-      conditionalParameters: conditionalParameters,
-    );
-  }
-
-  /// Convert Discount to a JSON-serializable map
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'description': description,
-      'type': type.name,
-      'value': value,
-      'applicability': applicability.name,
-      'applicableItemIds': applicableItemIds,
-      'applicableCategoryIds': applicableCategoryIds,
-      'minimumOrderAmount': minimumOrderAmount,
-      'validFrom': validFrom.toIso8601String(),
-      'validTo': validTo.toIso8601String(),
-      'usageLimit': usageLimit,
-      'usageCount': usageCount,
-      'status': status.name,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-      'conditionalRule': conditionalRule?.name,
-      'conditionalParameters': conditionalParameters,
-    };
-  }
-
-  /// Create a Discount instance from JSON map
   factory Discount.fromJson(Map<String, dynamic> json) {
     return Discount(
-      id: json['id'] ?? json['discountId'] ?? json['discount_id'] ?? '',
-      title: json['title'] ?? '',
+      id: json['id'] ?? json['discount_id'] ?? '',
+      name: json['name'] ?? '',
       description: json['description'] ?? '',
       type: _parseDiscountType(json['type']),
-      value: (json['value'] as num?)?.toDouble() ?? 0.0,
+      value: (json['value'] ?? 0).toDouble(),
       applicability: _parseDiscountApplicability(json['applicability']),
+      status: _parseDiscountStatus(json['status']),
+      startDate:
+          DateTime.tryParse(json['startDate'] ?? json['start_date'] ?? '') ??
+              DateTime.now(),
+      endDate: DateTime.tryParse(json['endDate'] ?? json['end_date'] ?? '') ??
+          DateTime.now().add(const Duration(days: 30)),
+      minimumOrderAmount: json['minimumOrderAmount'] != null
+          ? (json['minimumOrderAmount']).toDouble()
+          : null,
+      maxUsage: json['maxUsage'] ?? json['max_usage'],
+      currentUsage: json['currentUsage'] ?? json['current_usage'] ?? 0,
       applicableItemIds: List<String>.from(
           json['applicableItemIds'] ?? json['applicable_item_ids'] ?? []),
       applicableCategoryIds: List<String>.from(json['applicableCategoryIds'] ??
           json['applicable_category_ids'] ??
           []),
-      minimumOrderAmount:
-          (json['minimumOrderAmount'] ?? json['minimum_order_amount'] as num?)
-                  ?.toDouble() ??
-              0.0,
-      validFrom: _parseDateTime(json['validFrom'] ?? json['valid_from']),
-      validTo: _parseDateTime(json['validTo'] ?? json['valid_to']),
-      usageLimit: json['usageLimit'] ?? json['usage_limit'] as int?,
-      usageCount: (json['usageCount'] ?? json['usage_count'] as int?) ?? 0,
-      status: _parseDiscountStatus(json['status']),
-      createdAt: _parseDateTime(json['createdAt'] ?? json['created_at']),
-      updatedAt: _parseDateTime(json['updatedAt'] ?? json['updated_at']),
-      conditionalRule:
-          json['conditionalRule'] != null || json['conditional_rule'] != null
-              ? ConditionalDiscountRule.values.firstWhere(
-                  (e) =>
-                      e.name ==
-                      (json['conditionalRule'] ?? json['conditional_rule']),
-                  orElse: () => ConditionalDiscountRule.buyXGetY)
-              : null,
-      conditionalParameters: Map<String, dynamic>.from(
-          json['conditionalParameters'] ??
-              json['conditional_parameters'] ??
-              {}),
+      conditionalRule: _parseConditionalRule(
+          json['conditionalRule'] ?? json['conditional_rule']),
+      conditionalRuleData:
+          json['conditionalRuleData'] ?? json['conditional_rule_data'],
+      businessId: json['businessId'] ?? json['business_id'] ?? '',
+      createdAt:
+          DateTime.tryParse(json['createdAt'] ?? json['created_at'] ?? '') ??
+              DateTime.now(),
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] ?? json['updated_at'] ?? '') ??
+              DateTime.now(),
     );
   }
 
-  static DiscountType _parseDiscountType(dynamic type) {
-    if (type == null) return DiscountType.percentage;
-    return DiscountType.values.firstWhere(
-      (e) => e.name == type.toString(),
-      orElse: () => DiscountType.percentage,
-    );
+  static DiscountType _parseDiscountType(String? type) {
+    switch (type?.toLowerCase()) {
+      case 'percentage':
+        return DiscountType.percentage;
+      case 'fixedamount':
+      case 'fixed_amount':
+        return DiscountType.fixedAmount;
+      case 'conditional':
+        return DiscountType.conditional;
+      case 'buyxgety':
+      case 'buy_x_get_y':
+        return DiscountType.buyXGetY;
+      case 'freedelivery':
+      case 'free_delivery':
+        return DiscountType.freeDelivery;
+      default:
+        return DiscountType.percentage;
+    }
   }
 
   static DiscountApplicability _parseDiscountApplicability(
-      dynamic applicability) {
-    if (applicability == null) return DiscountApplicability.allItems;
-    return DiscountApplicability.values.firstWhere(
-      (e) => e.name == applicability.toString(),
-      orElse: () => DiscountApplicability.allItems,
-    );
-  }
-
-  static DiscountStatus _parseDiscountStatus(dynamic status) {
-    if (status == null) return DiscountStatus.active;
-    return DiscountStatus.values.firstWhere(
-      (e) => e.name == status.toString(),
-      orElse: () => DiscountStatus.active,
-    );
-  }
-
-  static DateTime _parseDateTime(dynamic dateTime) {
-    if (dateTime == null) return DateTime.now();
-
-    try {
-      // Handle string dates from backend
-      if (dateTime is String) {
-        // Remove microseconds if present for compatibility
-        String dateStr = dateTime;
-        if (dateStr.contains('.') && !dateStr.endsWith('Z')) {
-          // Format like "2025-07-18T02:43:32.014670" needs to be converted
-          dateStr = dateStr.split('.')[0] + 'Z';
-        }
-        return DateTime.parse(dateStr);
-      }
-
-      // Handle DateTime objects
-      if (dateTime is DateTime) {
-        return dateTime;
-      }
-
-      // Fallback to current time
-      return DateTime.now();
-    } catch (e) {
-      print('Error parsing date: $dateTime, error: $e');
-      return DateTime.now();
+      String? applicability) {
+    switch (applicability?.toLowerCase()) {
+      case 'allitems':
+      case 'all_items':
+        return DiscountApplicability.allItems;
+      case 'specificitems':
+      case 'specific_items':
+        return DiscountApplicability.specificItems;
+      case 'specificcategories':
+      case 'specific_categories':
+        return DiscountApplicability.specificCategories;
+      case 'minimumorder':
+      case 'minimum_order':
+        return DiscountApplicability.minimumOrder;
+      default:
+        return DiscountApplicability.allItems;
     }
+  }
+
+  static DiscountStatus _parseDiscountStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return DiscountStatus.active;
+      case 'scheduled':
+        return DiscountStatus.scheduled;
+      case 'expired':
+        return DiscountStatus.expired;
+      case 'inactive':
+        return DiscountStatus.inactive;
+      default:
+        return DiscountStatus.active;
+    }
+  }
+
+  static ConditionalDiscountRule? _parseConditionalRule(String? rule) {
+    switch (rule?.toLowerCase()) {
+      case 'buyxgety':
+      case 'buy_x_get_y':
+        return ConditionalDiscountRule.buyXGetY;
+      case 'minimumamount':
+      case 'minimum_amount':
+        return ConditionalDiscountRule.minimumAmount;
+      case 'firstorder':
+      case 'first_order':
+        return ConditionalDiscountRule.firstOrder;
+      case 'loyaltycustomer':
+      case 'loyalty_customer':
+        return ConditionalDiscountRule.loyaltyCustomer;
+      default:
+        return null;
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'type': type.name,
+      'value': value,
+      'applicability': applicability.name,
+      'status': status.name,
+      'startDate': startDate.toIso8601String(),
+      'endDate': endDate.toIso8601String(),
+      'minimumOrderAmount': minimumOrderAmount,
+      'maxUsage': maxUsage,
+      'currentUsage': currentUsage,
+      'applicableItemIds': applicableItemIds,
+      'applicableCategoryIds': applicableCategoryIds,
+      'conditionalRule': conditionalRule?.name,
+      'conditionalRuleData': conditionalRuleData,
+      'businessId': businessId,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
+
+  bool get isActive {
+    final now = DateTime.now();
+    return status == DiscountStatus.active &&
+        now.isAfter(startDate) &&
+        now.isBefore(endDate) &&
+        (maxUsage == null || currentUsage < maxUsage!);
+  }
+
+  bool get isExpired {
+    return DateTime.now().isAfter(endDate) || status == DiscountStatus.expired;
+  }
+
+  double calculateDiscount(double orderAmount, {int quantity = 1}) {
+    if (!isActive) return 0.0;
+
+    switch (type) {
+      case DiscountType.percentage:
+        return (orderAmount * value / 100).clamp(0.0, orderAmount);
+      case DiscountType.fixedAmount:
+        return value.clamp(0.0, orderAmount);
+      case DiscountType.freeDelivery:
+        return 0.0; // Delivery discount handled separately
+      case DiscountType.conditional:
+      case DiscountType.buyXGetY:
+        // Complex discount calculation would go here
+        return 0.0;
+    }
+  }
+
+  Discount copyWith({
+    String? id,
+    String? name,
+    String? description,
+    DiscountType? type,
+    double? value,
+    DiscountApplicability? applicability,
+    DiscountStatus? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    double? minimumOrderAmount,
+    int? maxUsage,
+    int? currentUsage,
+    List<String>? applicableItemIds,
+    List<String>? applicableCategoryIds,
+    ConditionalDiscountRule? conditionalRule,
+    Map<String, dynamic>? conditionalRuleData,
+    String? businessId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Discount(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      type: type ?? this.type,
+      value: value ?? this.value,
+      applicability: applicability ?? this.applicability,
+      status: status ?? this.status,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      minimumOrderAmount: minimumOrderAmount ?? this.minimumOrderAmount,
+      maxUsage: maxUsage ?? this.maxUsage,
+      currentUsage: currentUsage ?? this.currentUsage,
+      applicableItemIds: applicableItemIds ?? this.applicableItemIds,
+      applicableCategoryIds:
+          applicableCategoryIds ?? this.applicableCategoryIds,
+      conditionalRule: conditionalRule ?? this.conditionalRule,
+      conditionalRuleData: conditionalRuleData ?? this.conditionalRuleData,
+      businessId: businessId ?? this.businessId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Discount && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() {
+    return 'Discount(id: $id, name: $name, type: $type, value: $value)';
   }
 }

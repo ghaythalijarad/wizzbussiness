@@ -1,49 +1,12 @@
 version = 0.1
 
-[default.global.parameters]
-stack_name = "order-receiver-optimized-dev"
-region = "us-east-1"
-confirm_changeset = false
-capabilities = "CAPABILITY_NAMED_IAM"
-image_repositories = []
-
-[default.build.parameters]
-cached = true
-parallel = true
-
 [default.deploy.parameters]
-confirm_changeset = true
-fail_on_empty_changeset = false
+stack_name = "order-receiver-regional-dev"
 resolve_s3 = true
-profile = "wizz-merchants-dev"
-
-# Development environment
-s3_prefix = "order-receiver-optimized-dev"
+s3_prefix = "order-receiver-regional-dev"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
 disable_rollback = true
-parameter_overrides = "Stage=\"dev\" CognitoUserPoolId=\"us-east-1_PHPkG78b5\" CognitoClientId=\"1tl9g7nk2k2chtj5fg960fgdth\""
+parameter_overrides = "Stage=\"dev\" CognitoUserPoolId=\"us-east-1_PHPkG78b5\" CognitoClientId=\"1tl9g7nk2k2chtj5fg960fgdth\" CacheVersion=\"v2\""
 image_repositories = []
-[dev]
-[dev.global.parameters]
-stack_name = "order-receiver-dev"
-
-[dev.deploy.parameters]
-parameter_overrides = "Stage=dev"
-s3_prefix = "order-receiver-dev"
-
-# Staging environment  
-[staging]
-[staging.global.parameters]
-stack_name = "order-receiver-staging"
-
-[staging.deploy.parameters]
-parameter_overrides = "Stage=staging"
-s3_prefix = "order-receiver-staging"
-
-# Production environment
-[prod]
-[prod.global.parameters]
-stack_name = "order-receiver-prod"
-
-[prod.deploy.parameters]
-parameter_overrides = "Stage=prod"
-s3_prefix = "order-receiver-prod"

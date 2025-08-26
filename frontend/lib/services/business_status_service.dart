@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import '../config/app_config.dart';
+import 'package:hadhir_business/config/app_config.dart';
 import 'app_auth_service.dart';
 
 /// Service for checking business online status

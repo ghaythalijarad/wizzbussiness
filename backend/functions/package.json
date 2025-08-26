@@ -1,8 +1,0 @@
-{
-    "name": "order-receiver-health-function",
-    "version": "1.0.0",
-    "description": "Health check function for order receiver API",
-    "dependencies": {
-        "aws-sdk": "^2.1692.0"
-    }
-}

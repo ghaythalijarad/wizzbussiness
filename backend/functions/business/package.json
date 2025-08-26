@@ -1,7 +1,0 @@
-{
-  "name": "order-receiver-business-function",
-  "version": "1.0.0",
-  "description": "business function for order receiver API",
-  "main": "index.js",
-  "dependencies": {}
-}

@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Business Manager'**
+  /// **'WIZZ'**
   String get appTitle;
 
   /// No description provided for @welcome.
@@ -122,17 +122,377 @@ abstract class AppLocalizations {
   /// **'Sign In'**
   String get signIn;
 
+  /// No description provided for @signUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Up'**
+  String get signUp;
+
+  /// No description provided for @reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get reset;
+
+  /// No description provided for @resetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get resetPassword;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get createAccount;
+
+  /// No description provided for @createBusinessAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Business Account'**
+  String get createBusinessAccount;
+
   /// No description provided for @email.
   ///
   /// In en, this message translates to:
   /// **'Email'**
   String get email;
 
+  /// No description provided for @emailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Address'**
+  String get emailAddress;
+
   /// No description provided for @password.
   ///
   /// In en, this message translates to:
   /// **'Password'**
   String get password;
+
+  /// No description provided for @confirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmPassword;
+
+  /// No description provided for @fullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullName;
+
+  /// No description provided for @businessName.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Name'**
+  String get businessName;
+
+  /// No description provided for @businessType.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Type'**
+  String get businessType;
+
+  /// No description provided for @businessPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Photo'**
+  String get businessPhoto;
+
+  /// No description provided for @country.
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get country;
+
+  /// No description provided for @city.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get city;
+
+  /// No description provided for @neighborhood.
+  ///
+  /// In en, this message translates to:
+  /// **'Neighborhood'**
+  String get neighborhood;
+
+  /// No description provided for @streetName.
+  ///
+  /// In en, this message translates to:
+  /// **'Street Name'**
+  String get streetName;
+
+  /// No description provided for @healthCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Certificate'**
+  String get healthCertificate;
+
+  /// No description provided for @additionalDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional Documents'**
+  String get additionalDocuments;
+
+  /// No description provided for @personalInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInformation;
+
+  /// No description provided for @businessInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Information'**
+  String get businessInformation;
+
+  /// No description provided for @businessAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Address'**
+  String get businessAddress;
+
+  /// No description provided for @requiredDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Required Documents'**
+  String get requiredDocuments;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back'**
+  String get welcomeBack;
+
+  /// No description provided for @signInToYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to your account'**
+  String get signInToYourAccount;
+
+  /// No description provided for @registerYourBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Register Your Business'**
+  String get registerYourBusiness;
+
+  /// No description provided for @checkYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your email'**
+  String get checkYourEmail;
+
+  /// No description provided for @sendResetLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reset link'**
+  String get sendResetLink;
+
+  /// No description provided for @backToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to login'**
+  String get backToLogin;
+
+  /// No description provided for @resendEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend email'**
+  String get resendEmail;
+
+  /// No description provided for @createBusinessAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Business Account'**
+  String get createBusinessAccountButton;
+
+  /// No description provided for @enterYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email'**
+  String get enterYourEmail;
+
+  /// No description provided for @enterYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password'**
+  String get enterYourPassword;
+
+  /// No description provided for @createAStrongPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a strong password'**
+  String get createAStrongPassword;
+
+  /// No description provided for @confirmYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your password'**
+  String get confirmYourPassword;
+
+  /// No description provided for @enterYourFullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your full name'**
+  String get enterYourFullName;
+
+  /// No description provided for @enterYourBusinessName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your business name'**
+  String get enterYourBusinessName;
+
+  /// No description provided for @selectYourBusinessType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your business type'**
+  String get selectYourBusinessType;
+
+  /// No description provided for @uploadBusinessPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a photo of your business'**
+  String get uploadBusinessPhoto;
+
+  /// No description provided for @enterYourCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your city'**
+  String get enterYourCity;
+
+  /// No description provided for @enterYourNeighborhood.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your neighborhood'**
+  String get enterYourNeighborhood;
+
+  /// No description provided for @enterYourStreetName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your street name'**
+  String get enterYourStreetName;
+
+  /// No description provided for @uploadHealthCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload your health certificate'**
+  String get uploadHealthCertificate;
+
+  /// No description provided for @uploadAdditionalDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload any additional business documents'**
+  String get uploadAdditionalDocuments;
+
+  /// No description provided for @confirmYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Your Account'**
+  String get confirmYourAccount;
+
+  /// No description provided for @confirmationCodeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve sent a 6-digit confirmation code to:'**
+  String get confirmationCodeSent;
+
+  /// No description provided for @confirmationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation Code'**
+  String get confirmationCode;
+
+  /// No description provided for @confirmationCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'123456'**
+  String get confirmationCodeHint;
+
+  /// No description provided for @confirmAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Account'**
+  String get confirmAccount;
+
+  /// No description provided for @resendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Code'**
+  String get resendCode;
+
+  /// No description provided for @resendCodeIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Code in {seconds}s'**
+  String resendCodeIn(Object seconds);
+
+  /// No description provided for @backToSignUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Sign Up'**
+  String get backToSignUp;
+
+  /// No description provided for @confirmationCodeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation code is required'**
+  String get confirmationCodeRequired;
+
+  /// No description provided for @confirmationCodeLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Code must be 6 digits'**
+  String get confirmationCodeLength;
+
+  /// No description provided for @confirmationCodeResent.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation code resent to {email}'**
+  String confirmationCodeResent(Object email);
+
+  /// No description provided for @invalidConfirmationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid confirmation code. Please try again.'**
+  String get invalidConfirmationCode;
+
+  /// No description provided for @accountConfirmedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Account confirmed successfully!'**
+  String get accountConfirmedSuccess;
+
+  /// No description provided for @enterRegisteredEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your registered email'**
+  String get enterRegisteredEmail;
+
+  /// No description provided for @resetPasswordDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email address and we\'ll send you a link to reset your password.'**
+  String get resetPasswordDescription;
+
+  /// No description provided for @emailSentDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve sent a password reset link to your email address. Please check your inbox and follow the instructions.'**
+  String get emailSentDescription;
+
+  /// No description provided for @accountReviewNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Your business information will be reviewed before activation.'**
+  String get accountReviewNotice;
+
+  /// No description provided for @termsAndConditionsNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'By creating an account, you agree to our Terms of Service and Privacy Policy.'**
+  String get termsAndConditionsNotice;
 
   /// No description provided for @register.
   ///
@@ -235,18 +595,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Verify Your Email'**
   String get verifyYourEmail;
-
-  /// No description provided for @welcomeBack.
-  ///
-  /// In en, this message translates to:
-  /// **'Welcome Back'**
-  String get welcomeBack;
-
-  /// No description provided for @signInToYourAccount.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in to your account'**
-  String get signInToYourAccount;
 
   /// No description provided for @pleaseEnterYourEmail.
   ///
@@ -391,30 +739,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Email Verification Required'**
   String get emailVerificationTitle;
-
-  /// No description provided for @demoStore.
-  ///
-  /// In en, this message translates to:
-  /// **'Demo Store'**
-  String get demoStore;
-
-  /// No description provided for @demoPharmacy.
-  ///
-  /// In en, this message translates to:
-  /// **'Demo Pharmacy'**
-  String get demoPharmacy;
-
-  /// No description provided for @demoRestaurant.
-  ///
-  /// In en, this message translates to:
-  /// **'Demo Restaurant'**
-  String get demoRestaurant;
-
-  /// No description provided for @demoKitchen.
-  ///
-  /// In en, this message translates to:
-  /// **'Demo Kitchen'**
-  String get demoKitchen;
 
   /// No description provided for @orders.
   ///
@@ -722,12 +1046,6 @@ abstract class AppLocalizations {
   /// **'Logout'**
   String get logout;
 
-  /// No description provided for @businessName.
-  ///
-  /// In en, this message translates to:
-  /// **'Business Name'**
-  String get businessName;
-
   /// No description provided for @ownerName.
   ///
   /// In en, this message translates to:
@@ -757,18 +1075,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change Password'**
   String get changePassword;
-
-  /// No description provided for @personalInformation.
-  ///
-  /// In en, this message translates to:
-  /// **'Personal Information'**
-  String get personalInformation;
-
-  /// No description provided for @businessInformation.
-  ///
-  /// In en, this message translates to:
-  /// **'Business Information'**
-  String get businessInformation;
 
   /// No description provided for @accountStatus.
   ///
@@ -2150,12 +2456,6 @@ abstract class AppLocalizations {
   /// **'Business Registration'**
   String get businessRegistration;
 
-  /// No description provided for @registerYourBusiness.
-  ///
-  /// In en, this message translates to:
-  /// **'Register Your Business'**
-  String get registerYourBusiness;
-
   /// No description provided for @welcomeToHadhir.
   ///
   /// In en, this message translates to:
@@ -2192,12 +2492,6 @@ abstract class AppLocalizations {
   /// **'Business and Owner Information'**
   String get businessAndOwnerInformation;
 
-  /// No description provided for @businessType.
-  ///
-  /// In en, this message translates to:
-  /// **'Business Type'**
-  String get businessType;
-
   /// No description provided for @selectBusinessType.
   ///
   /// In en, this message translates to:
@@ -2215,12 +2509,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter owner name'**
   String get pleaseEnterOwnerName;
-
-  /// No description provided for @emailAddress.
-  ///
-  /// In en, this message translates to:
-  /// **'Email Address'**
-  String get emailAddress;
 
   /// No description provided for @firstName.
   ///
@@ -2270,23 +2558,11 @@ abstract class AppLocalizations {
   /// **'Please enter your business name'**
   String get pleaseEnterYourBusinessName;
 
-  /// No description provided for @businessAddress.
-  ///
-  /// In en, this message translates to:
-  /// **'Business Address'**
-  String get businessAddress;
-
   /// No description provided for @streetAddress.
   ///
   /// In en, this message translates to:
   /// **'Street Address'**
   String get streetAddress;
-
-  /// No description provided for @city.
-  ///
-  /// In en, this message translates to:
-  /// **'City'**
-  String get city;
 
   /// No description provided for @state.
   ///
@@ -2299,12 +2575,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'ZIP/Postal Code'**
   String get zipCode;
-
-  /// No description provided for @confirmPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm Password'**
-  String get confirmPassword;
 
   /// No description provided for @passwordRequired.
   ///
@@ -3280,12 +3550,6 @@ abstract class AppLocalizations {
   /// **'Tap to select file'**
   String get tapToSelectFile;
 
-  /// No description provided for @businessPhoto.
-  ///
-  /// In en, this message translates to:
-  /// **'Business Photo'**
-  String get businessPhoto;
-
   /// No description provided for @requiredPleaseAddAPhoto.
   ///
   /// In en, this message translates to:
@@ -3634,12 +3898,6 @@ abstract class AppLocalizations {
   /// **'Owner Identity'**
   String get ownerIdentity;
 
-  /// No description provided for @healthCertificate.
-  ///
-  /// In en, this message translates to:
-  /// **'Health Certificate'**
-  String get healthCertificate;
-
   /// No description provided for @ownerPhoto.
   ///
   /// In en, this message translates to:
@@ -3670,23 +3928,11 @@ abstract class AppLocalizations {
   /// **'Account Information'**
   String get accountInformation;
 
-  /// No description provided for @enterYourEmail.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your email'**
-  String get enterYourEmail;
-
   /// No description provided for @pleaseEnterAValidEmail.
   ///
   /// In en, this message translates to:
   /// **'Please enter a valid email'**
   String get pleaseEnterAValidEmail;
-
-  /// No description provided for @enterYourPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your password'**
-  String get enterYourPassword;
 
   /// No description provided for @passwordMustBeAtLeast8Chars.
   ///
@@ -3699,12 +3945,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Re-enter your password'**
   String get reEnterYourPassword;
-
-  /// No description provided for @enterYourBusinessName.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your business name'**
-  String get enterYourBusinessName;
 
   /// No description provided for @enterOwnerName.
   ///
@@ -3765,12 +4005,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add a photo to showcase your business'**
   String get addAPhotoToShowcaseYourBusiness;
-
-  /// No description provided for @enterYourCity.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your city'**
-  String get enterYourCity;
 
   /// No description provided for @pleaseEnterYourCity.
   ///
@@ -3898,12 +4132,6 @@ abstract class AppLocalizations {
   /// **'Complete Registration'**
   String get completeRegistration;
 
-  /// No description provided for @createAccount.
-  ///
-  /// In en, this message translates to:
-  /// **'Create Account'**
-  String get createAccount;
-
   /// No description provided for @none.
   ///
   /// In en, this message translates to:
@@ -3994,29 +4222,11 @@ abstract class AppLocalizations {
   /// **'Upload your identity document'**
   String get uploadIdentityDocument;
 
-  /// No description provided for @uploadHealthCertificate.
-  ///
-  /// In en, this message translates to:
-  /// **'Upload your health certificate'**
-  String get uploadHealthCertificate;
-
   /// No description provided for @uploadOwnerPhoto.
   ///
   /// In en, this message translates to:
   /// **'Upload a photo of the owner'**
   String get uploadOwnerPhoto;
-
-  /// No description provided for @uploadBusinessPhoto.
-  ///
-  /// In en, this message translates to:
-  /// **'Upload a photo of your business'**
-  String get uploadBusinessPhoto;
-
-  /// No description provided for @country.
-  ///
-  /// In en, this message translates to:
-  /// **'Country'**
-  String get country;
 
   /// No description provided for @enterCountry.
   ///
@@ -4311,6 +4521,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No apps found'**
   String get noAppsFound;
+
+  /// No description provided for @businessDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Details'**
+  String get businessDetails;
+
+  /// No description provided for @manageYourBusinessProfileAndInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your business profile and information'**
+  String get manageYourBusinessProfileAndInformation;
+
+  /// No description provided for @manageYourPersonalInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your personal information'**
+  String get manageYourPersonalInformation;
+
+  /// No description provided for @updateYourPasswordAndSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your password and security'**
+  String get updateYourPasswordAndSecurity;
+
+  /// No description provided for @configurePointOfSaleIntegration.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure point of sale integration'**
+  String get configurePointOfSaleIntegration;
+
+  /// No description provided for @soundNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound Notifications'**
+  String get soundNotifications;
+
+  /// No description provided for @configureSoundAlertsForNewOrdersAndUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure sound alerts for new orders and updates'**
+  String get configureSoundAlertsForNewOrdersAndUpdates;
+
+  /// No description provided for @manageNotificationPreferencesAndDeliveryMethods.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage notification preferences and delivery methods'**
+  String get manageNotificationPreferencesAndDeliveryMethods;
+
+  /// No description provided for @manageBusinessLocationAndGpsCoordinates.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage business location and GPS coordinates'**
+  String get manageBusinessLocationAndGpsCoordinates;
+
+  /// No description provided for @setUpOpeningAndClosingHoursForYourBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up opening and closing hours for your business'**
+  String get setUpOpeningAndClosingHoursForYourBusiness;
+
+  /// No description provided for @discountManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount Management'**
+  String get discountManagement;
+
+  /// No description provided for @createAndManageYourDiscounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Create and manage your discounts'**
+  String get createAndManageYourDiscounts;
+
+  /// No description provided for @reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get reviews;
+
+  /// No description provided for @joinThousandsOfBusinessOwners.
+  ///
+  /// In en, this message translates to:
+  /// **'Join thousands of business owners who trust our platform to manage their orders and grow their business.'**
+  String get joinThousandsOfBusinessOwners;
+
+  /// No description provided for @startBusinessRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Business Registration'**
+  String get startBusinessRegistration;
+
+  /// No description provided for @completeBusinessRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Business Registration'**
+  String get completeBusinessRegistration;
+
+  /// No description provided for @setUpYourBusinessProfileWithAllNecessaryInformationAndDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up your business profile with all necessary information and documents'**
+  String get setUpYourBusinessProfileWithAllNecessaryInformationAndDocuments;
+
+  /// No description provided for @secureAndVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure & Verified'**
+  String get secureAndVerified;
+
+  /// No description provided for @yourBusinessWillBeVerifiedBeforeActivationForSecurityAndTrust.
+  ///
+  /// In en, this message translates to:
+  /// **'Your business will be verified before activation for security and trust'**
+  String get yourBusinessWillBeVerifiedBeforeActivationForSecurityAndTrust;
+
+  /// No description provided for @fullDashboardAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Dashboard Access'**
+  String get fullDashboardAccess;
+
+  /// No description provided for @manageOrdersProductsAnalyticsAndBusinessSettingsInOnePlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage orders, products, analytics, and business settings in one place'**
+  String get manageOrdersProductsAnalyticsAndBusinessSettingsInOnePlace;
+
+  /// No description provided for @byCreatingAnAccountYouAgreeToOurTermsOfServiceAndPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'By creating an account, you agree to our Terms of Service and Privacy Policy. Your business information will be reviewed before activation.'**
+  String get byCreatingAnAccountYouAgreeToOurTermsOfServiceAndPrivacyPolicy;
 }
 
 class _AppLocalizationsDelegate

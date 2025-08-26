@@ -1,68 +1,38 @@
-import 'dart:async';
-
-/// Service to manage order timers for tracking order processing time
 class OrderTimerService {
-  static final Map<String, DateTime> _orderStartTimes = {};
-  static const int maxProcessingTimeMinutes = 30; // 30 minutes max processing time
+  static final Map<String, DateTime> _orderTimers = {};
+  static const int autoRejectTimeMinutes = 30;
 
-  /// Initialize timer for a new order
   static void startTimer(String orderId) {
-    _orderStartTimes[orderId] = DateTime.now();
+    _orderTimers[orderId] = DateTime.now();
   }
 
-  /// Get remaining seconds for an order (returns 0 if expired or not found)
+  static void stopTimer(String orderId) {
+    _orderTimers.remove(orderId);
+  }
+
   static int getRemainingSeconds(String orderId) {
-    final startTime = _orderStartTimes[orderId];
-    if (startTime == null) {
-      return 0;
-    }
+    final startTime = _orderTimers[orderId];
+    if (startTime == null) return 0;
 
     final elapsed = DateTime.now().difference(startTime);
-    final maxDuration = Duration(minutes: maxProcessingTimeMinutes);
-    final remaining = maxDuration - elapsed;
+    final totalSeconds = autoRejectTimeMinutes * 60;
+    final remainingSeconds = totalSeconds - elapsed.inSeconds;
 
-    return remaining.inSeconds > 0 ? remaining.inSeconds : 0;
+    return remainingSeconds > 0 ? remainingSeconds : 0;
   }
 
-  /// Get elapsed time for an order in seconds
-  static int getElapsedSeconds(String orderId) {
-    final startTime = _orderStartTimes[orderId];
-    if (startTime == null) {
-      return 0;
-    }
-
-    return DateTime.now().difference(startTime).inSeconds;
+  static bool shouldAutoReject(String orderId) {
+    return getRemainingSeconds(orderId) <= 0;
   }
 
-  /// Remove timer for completed/cancelled orders
-  static void removeTimer(String orderId) {
-    _orderStartTimes.remove(orderId);
-  }
-
-  /// Clear all timers
-  static void clearAllTimers() {
-    _orderStartTimes.clear();
-  }
-
-  /// Check if an order timer exists
-  static bool hasTimer(String orderId) {
-    return _orderStartTimes.containsKey(orderId);
-  }
-
-  /// Get formatted remaining time string (MM:SS format)
-  static String getFormattedRemainingTime(String orderId) {
+  static String formatRemainingTime(String orderId) {
     final remainingSeconds = getRemainingSeconds(orderId);
-    if (remainingSeconds <= 0) {
-      return "00:00";
-    }
-
     final minutes = remainingSeconds ~/ 60;
     final seconds = remainingSeconds % 60;
-    return "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
-  /// Check if an order has expired its processing time
-  static bool isOrderExpired(String orderId) {
-    return getRemainingSeconds(orderId) <= 0;
+  static void clearAllTimers() {
+    _orderTimers.clear();
   }
 }

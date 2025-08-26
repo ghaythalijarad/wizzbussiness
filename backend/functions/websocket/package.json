@@ -1,7 +1,0 @@
-{
-  "name": "order-receiver-websocket-function",
-  "version": "1.0.0",
-  "description": "websocket function for order receiver API",
-  "main": "index.js",
-  "dependencies": {}
-}

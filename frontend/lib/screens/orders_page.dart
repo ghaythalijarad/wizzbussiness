@@ -292,6 +292,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
         return 'ontheway';
       case OrderStatus.delivered:
         return 'delivered';
+      case OrderStatus.completed:
+        return 'completed';
       case OrderStatus.cancelled:
         return 'cancelled';
       case OrderStatus.returned:
@@ -919,7 +921,6 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
         final order = orders[index];
         return OrderCard(
           order: order,
-          onOrderUpdated: _handleOrderUpdate,
         );
       },
     );
@@ -941,7 +942,6 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
         final order = orders[index];
         return OrderCard(
           order: order,
-          onOrderUpdated: _handleOrderUpdate,
         );
       },
     );

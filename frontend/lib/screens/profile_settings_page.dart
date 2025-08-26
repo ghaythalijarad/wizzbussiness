@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import './account_settings_page.dart';
-import './pos_settings_page.dart';
-import './change_password_screen.dart';
-import './other_settings_page.dart';
+import './business_details_screen.dart';
 import './discount_management_page.dart';
+import './change_password_screen.dart';
+import './pos_settings_page.dart';
 import './sound_notification_settings_page.dart';
 import './notification_settings_page.dart';
+import './other_settings_page.dart';
+import './working_hours_settings_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../models/business.dart';
 import '../models/order.dart';
 import '../services/app_auth_service.dart';
+import '../services/app_state.dart';
 import '../screens/login_page.dart';
-import './working_hours_settings_screen.dart';
 import '../providers/session_provider.dart';
 import '../providers/business_provider.dart';
 
@@ -35,8 +37,6 @@ class ProfileSettingsPage extends ConsumerStatefulWidget {
 }
 
 class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
-  Map<String, dynamic>? _userData;
-
   @override
   void initState() {
     super.initState();
@@ -48,17 +48,12 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       // Load user data from AppAuthService
       final userResponse = await AppAuthService.getCurrentUser();
       if (userResponse != null && userResponse['success'] == true) {
-        if (mounted) {
-          setState(() {
-            _userData = userResponse;
-          });
-        }
+        // User data loaded successfully
+        debugPrint('User data loaded successfully');
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _userData = null;
-        });
+        debugPrint('Failed to load user data: $e');
       }
     }
   }
@@ -87,7 +82,30 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
 
   Widget _buildUserProfileHeader() {
     final loc = AppLocalizations.of(context)!;
-    final business = widget.business;
+    // Use enhanced business provider for more comprehensive business data
+    return Consumer(
+      builder: (context, ref, child) {
+        final enhancedBusinessAsync = ref.watch(enhancedBusinessProvider);
+        final business = widget.business; // fallback to passed business
+
+        return enhancedBusinessAsync.when(
+          data: (enhancedBusiness) {
+            // Use enhanced business data if available, otherwise fallback
+            final displayBusiness = enhancedBusiness ?? business;
+            return _buildBusinessProfileCard(displayBusiness, loc);
+          },
+          loading: () => _buildBusinessProfileCard(business, loc),
+          error: (error, stack) {
+            // Log error and fallback to original business data
+            debugPrint('Enhanced business data fetch failed: $error');
+            return _buildBusinessProfileCard(business, loc);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildBusinessProfileCard(Business business, AppLocalizations loc) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -139,6 +157,20 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                         ),
                       ),
                     ),
+                    // Display enhanced business location if available
+                    if (business.address != null &&
+                        business.address!.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        business.address!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white70,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -315,7 +347,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                 ),
               ),
               Text(
-                '$totalReviews reviews',
+                '$totalReviews ${loc.reviews}',
                 style: const TextStyle(
                   fontSize: 10,
                   color: Colors.white60,
@@ -479,16 +511,56 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
     );
 
     if (confirmed == true) {
-      await AppAuthService.signOut();
-      // Clear all providers
-      ref.invalidate(sessionProvider);
-      ref.invalidate(businessProvider);
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-            builder: (context) => const LoginPage()),
-        (route) => false,
-      );
+      try {
+        // Show loading indicator
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
+                ),
+                const SizedBox(width: 12),
+                Text(loc.signOut),
+              ],
+            ),
+            backgroundColor: Colors.blue,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+
+        // Call AppAuthService.signOut() to handle backend authentication cleanup
+        await AppAuthService.signOut();
+        
+        // Clear all Riverpod providers to reset cached state
+        ref.invalidate(sessionProvider);
+        ref.invalidate(businessProvider);
+        
+        // Clear app state (online status, etc.)
+        final appState = AppState();
+        appState.logout();
+
+        if (mounted) {
+          // Navigate to login page and clear navigation stack
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+            (route) => false,
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error during logout: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -514,9 +586,25 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
 
               // Settings Cards with Modern Design
               _buildModernSettingsCard(
+                icon: Icons.business_rounded,
+                title: loc.businessDetails,
+                subtitle: loc.manageYourBusinessProfileAndInformation,
+                color: const Color(0xFF00C1E8),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          BusinessDetailsScreen(business: widget.business),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildModernSettingsCard(
                 icon: Icons.account_circle_rounded,
                 title: loc.accountSettings,
-                subtitle: 'Manage your personal information',
+                subtitle: loc.manageYourPersonalInformation,
                 color: const Color(0xFF3399FF),
                 onTap: () {
                   Navigator.push(
@@ -532,7 +620,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
               _buildModernSettingsCard(
                 icon: Icons.lock_rounded,
                 title: loc.changePassword,
-                subtitle: 'Update your password and security',
+                subtitle: loc.updateYourPasswordAndSecurity,
                 color: const Color(0xFF00C1E8),
                 onTap: () {
                   Navigator.push(
@@ -547,7 +635,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
               _buildModernSettingsCard(
                 icon: Icons.point_of_sale_rounded,
                 title: loc.posSettings,
-                subtitle: 'Configure point of sale integration',
+                subtitle: loc.configurePointOfSaleIntegration,
                 color: const Color(0xFF00D4FF),
                 onTap: () {
                   Navigator.push(
@@ -562,8 +650,8 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
               const SizedBox(height: 16),
               _buildModernSettingsCard(
                 icon: Icons.volume_up_rounded,
-                title: 'Sound Notifications',
-                subtitle: 'Configure sound alerts for new orders and updates',
+                title: loc.soundNotifications,
+                subtitle: loc.configureSoundAlertsForNewOrdersAndUpdates,
                 color: const Color(0xFF9C27B0),
                 onTap: () {
                   Navigator.push(
@@ -579,8 +667,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
               _buildModernSettingsCard(
                 icon: Icons.notifications_rounded,
                 title: loc.notifications,
-                subtitle:
-                    'Manage notification preferences and delivery methods',
+                subtitle: loc.manageNotificationPreferencesAndDeliveryMethods,
                 color: const Color(0xFFFF5722),
                 onTap: () {
                   Navigator.push(
@@ -595,7 +682,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
               _buildModernSettingsCard(
                 icon: Icons.location_on_rounded,
                 title: AppLocalizations.of(context)!.locationSettings,
-                subtitle: 'Manage business location and GPS coordinates',
+                subtitle: loc.manageBusinessLocationAndGpsCoordinates,
                 color: const Color(0xFF4CAF50),
                 onTap: () {
                   Navigator.push(
@@ -611,7 +698,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
               _buildModernSettingsCard(
                 icon: Icons.access_time_rounded,
                 title: AppLocalizations.of(context)!.workingHoursSettings,
-                subtitle: 'Set up opening and closing hours for your business',
+                subtitle: loc.setUpOpeningAndClosingHoursForYourBusiness,
                 color: const Color(0xFF2196F3),
                 onTap: () {
                   Navigator.push(
@@ -626,8 +713,8 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
               const SizedBox(height: 16),
               _buildModernSettingsCard(
                 icon: Icons.local_offer_rounded,
-                title: 'Discount Management',
-                subtitle: 'Create and manage your discounts',
+                title: loc.discountManagement,
+                subtitle: loc.createAndManageYourDiscounts,
                 color: const Color(0xFFFF9800),
                 onTap: () {
                   Navigator.push(

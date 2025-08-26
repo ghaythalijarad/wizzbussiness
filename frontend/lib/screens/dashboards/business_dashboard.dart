@@ -15,7 +15,6 @@ import '../../providers/session_provider.dart';
 import '../../providers/business_provider.dart';
 import '../../widgets/modern_navigation_rail.dart';
 import '../../widgets/modern_sidebar.dart';
-import '../../components/simple_sidebar.dart';
 import '../../utils/responsive_helper.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -206,7 +205,7 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
       case 0:
         return OrdersPage(businessId: business.id);
       case 1:
-        return ProductsManagementScreen(business: business);
+        return const ProductsManagementScreen();
       case 2:
         return AnalyticsPage(
           business: business,
@@ -340,7 +339,7 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
           ),
         ],
       ),
-      endDrawer: SimpleSidebar(
+      endDrawer: ModernSidebar(
         isOnline: _isOnline,
         onToggleStatus: _toggleOnlineStatus,
         onNavigate: _onNavigate,

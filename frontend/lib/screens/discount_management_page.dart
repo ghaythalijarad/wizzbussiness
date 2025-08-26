@@ -683,14 +683,14 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     // Buy X Get Y specific variables
     final buyXQuantityController = TextEditingController(
         text:
-            discount?.conditionalParameters['buyQuantity']?.toString() ?? '1');
+            discount?.conditionalParameters?['buyQuantity']?.toString() ?? '1');
     final getYQuantityController = TextEditingController(
         text:
-            discount?.conditionalParameters['getQuantity']?.toString() ?? '1');
+            discount?.conditionalParameters?['getQuantity']?.toString() ?? '1');
     var selectedBuyItemId =
-        discount?.conditionalParameters['buyItemId'] as String?;
+        discount?.conditionalParameters?['buyItemId'] as String?;
     var selectedGetItemId =
-        discount?.conditionalParameters['getItemId'] as String?;
+        discount?.conditionalParameters?['getItemId'] as String?;
 
     var startDate = discount?.validFrom ?? DateTime.now();
     var endDate =
@@ -800,6 +800,9 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                     case DiscountType.percentage:
                                       label = AppLocalizations.of(context)!
                                           .percentage;
+                                      break;
+                                    case DiscountType.fixedAmount:
+                                      label = 'Fixed Amount';
                                       break;
                                     case DiscountType.conditional:
                                       label = AppLocalizations.of(context)!
@@ -1657,7 +1660,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                   final newDiscount = Discount(
                     id: discount?.id ??
                         DateTime.now().millisecondsSinceEpoch.toString(),
-                    title: titleController.text,
+                    name: titleController.text,
                     description: '', // Description field removed from creation
                     type: discountType,
                     value: double.parse(valueController.text),
@@ -1666,9 +1669,12 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                     applicableCategoryIds: selectedCategoryIds,
                     minimumOrderAmount:
                         double.tryParse(minOrderController.text) ?? 0.0,
+                    startDate: startDate,
+                    endDate: endDate,
                     validFrom: startDate,
                     validTo: endDate,
-                    createdAt: DateTime.now(),
+                    businessId: widget.business.id,
+                    createdAt: discount?.createdAt ?? DateTime.now(),
                     updatedAt: DateTime.now(),
                     status: DiscountStatus.active,
                     conditionalRule: conditionalRule,
@@ -1786,7 +1792,13 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       final category = _categories.firstWhere(
         (cat) => cat.id == product.categoryId,
         orElse: () => ProductCategory(
-            id: '', name: 'Unknown', businessType: '', sortOrder: 0),
+          id: '',
+          name: 'Unknown',
+          businessType: '',
+          sortOrder: 0,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
       );
 
       allItems.add({
@@ -2002,7 +2014,13 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       final category = _categories.firstWhere(
         (cat) => cat.id == product.categoryId,
         orElse: () => ProductCategory(
-            id: '', name: 'Unknown', businessType: '', sortOrder: 0),
+          id: '',
+          name: 'Unknown',
+          businessType: '',
+          sortOrder: 0,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
       );
 
       allItems.add({
@@ -2185,13 +2203,13 @@ class DiscountCard extends StatelessWidget {
                               : '${AppLocalizations.of(context)!.conditional} ${AppLocalizations.of(context)!.discount}',
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
-                    if (discount.minimumOrderAmount > 0) ...[
+                    if ((discount.minimumOrderAmount ?? 0) > 0) ...[
                       const SizedBox(width: 16),
                       Icon(Icons.shopping_cart,
                           color: Colors.grey.shade500, size: 16),
                       const SizedBox(width: 8),
                       Text(
-                          'Min: \$${discount.minimumOrderAmount.toStringAsFixed(2)}'),
+                          'Min: \$${(discount.minimumOrderAmount ?? 0).toStringAsFixed(2)}'),
                     ],
                   ],
                 ),

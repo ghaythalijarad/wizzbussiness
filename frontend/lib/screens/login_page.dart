@@ -108,7 +108,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 navigator.pushReplacement(
                   MaterialPageRoute(
                     builder: (context) => MerchantStatusScreen(
-                      business: business,
+                      status: business.status,
                     ),
                   ),
                 );
@@ -140,31 +140,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           }
         } else if (mounted) {
           debugPrint('❌ Login failed: ${response.message}');
-          // Provide user-friendly message for invalid credentials
-          String errorMsg;
-          final responseMessage = response.message.toLowerCase();
-
-          if (responseMessage.contains('password') ||
-              responseMessage.contains('email') ||
-              responseMessage.contains('incorrect') ||
-              responseMessage.contains('invalid') ||
-              responseMessage.contains('unauthorized') ||
-              responseMessage.contains('authentication') ||
-              responseMessage.contains('credentials') ||
-              responseMessage.contains('not found') ||
-              responseMessage.contains('401')) {
-            errorMsg = loc.errorInvalidCredentials;
-          } else if (responseMessage.contains('network') ||
-              responseMessage.contains('connection')) {
-            errorMsg =
-                'Network error. Please check your internet connection and try again.';
-          } else if (responseMessage.contains('server') ||
-              responseMessage.contains('500')) {
-            errorMsg = 'Server error. Please try again later.';
-          } else {
-            errorMsg = loc
-                .errorInvalidCredentials; // Default to credential error for security
-          }
+          // Enhanced user-friendly error categorization
+          String errorMsg = _categorizeLoginError(response.message, loc);
+          
+          debugPrint('📝 Categorized error message: $errorMsg');
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -197,6 +176,67 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
+  /// Categorizes login errors into user-friendly messages
+  String _categorizeLoginError(String errorMessage, AppLocalizations loc) {
+    final message = errorMessage.toLowerCase();
+
+    // Authentication/Credential Errors (most common)
+    if (message.contains('password') ||
+        message.contains('email') ||
+        message.contains('incorrect') ||
+        message.contains('invalid') ||
+        message.contains('unauthorized') ||
+        message.contains('authentication') ||
+        message.contains('credentials') ||
+        message.contains('not found') ||
+        message.contains('user not found') ||
+        message.contains('wrong') ||
+        message.contains('401')) {
+      return loc.errorInvalidCredentials;
+    }
+
+    // Account Status Errors
+    if (message.contains('not confirmed') ||
+        message.contains('unconfirmed') ||
+        message.contains('verify') ||
+        message.contains('verification')) {
+      return 'Your account is not verified. Please check your email for the verification code.';
+    }
+
+    if (message.contains('disabled') ||
+        message.contains('suspended') ||
+        message.contains('banned')) {
+      return 'Your account has been disabled. Please contact support for assistance.';
+    }
+
+    // Rate Limiting
+    if (message.contains('too many') ||
+        message.contains('rate limit') ||
+        message.contains('attempts') ||
+        message.contains('429')) {
+      return 'Too many login attempts. Please wait a few minutes and try again.';
+    }
+
+    // Network Errors
+    if (message.contains('network') ||
+        message.contains('connection') ||
+        message.contains('timeout') ||
+        message.contains('unreachable')) {
+      return 'Network error. Please check your internet connection and try again.';
+    }
+
+    // Server Errors
+    if (message.contains('server') ||
+        message.contains('500') ||
+        message.contains('503') ||
+        message.contains('maintenance')) {
+      return 'Server is temporarily unavailable. Please try again later.';
+    }
+
+    // Default to credential error for security (don't reveal system details)
+    return loc.errorInvalidCredentials;
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -215,7 +255,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         foregroundColor: isTabletOrDesktop ? Colors.black87 : null,
         actions: [
           LanguageSwitcher(
-            showAsIcon: true,
+            showText: false,
           ),
         ],
       ),

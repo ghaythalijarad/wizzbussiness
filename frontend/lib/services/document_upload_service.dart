@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:uuid/uuid.dart';
-import '../config/app_config.dart';
+import 'package:hadhir_business/config/app_config.dart';
 
 class DocumentUploadService {
   static String get baseUrl => AppConfig.baseUrl;
@@ -40,47 +39,42 @@ class DocumentUploadService {
       // Read document file as bytes
       final documentBytes = await documentFile.readAsBytes();
 
-      // Determine file extension and MIME type
+      // Convert to base64
+      final base64Document = base64Encode(documentBytes);
+
+      // Determine file extension from original file
       final originalPath = documentFile.path.toLowerCase();
       String fileExtension = 'jpg';
-      String mimeType = 'image/jpeg';
 
       if (originalPath.endsWith('.png')) {
         fileExtension = 'png';
-        mimeType = 'image/png';
       } else if (originalPath.endsWith('.pdf')) {
         fileExtension = 'pdf';
-        mimeType = 'application/pdf';
       } else if (originalPath.endsWith('.jpg') ||
           originalPath.endsWith('.jpeg')) {
         fileExtension = 'jpg';
-        mimeType = 'image/jpeg';
       }
 
       final fileName = '${documentType}_${uuid.v4()}.$fileExtension';
 
-      // Create multipart request to document upload endpoint
-      final request = http.MultipartRequest(
-        'POST',
+      // Create JSON request body (same format as ImageUploadService)
+      final requestBody = {
+        'image': base64Document,
+        'filename': fileName,
+      };
+
+      // Create headers with document type
+      final headers = {
+        'Content-Type': 'application/json',
+        'x-upload-type': documentType,
+      };
+
+      // Make HTTP POST request with JSON body
+      final response = await http.post(
         Uri.parse('$baseUrl/upload/$documentType'),
+        headers: headers,
+        body: json.encode(requestBody),
       );
-
-      // Add file to request with proper MIME type
-      request.files.add(
-        http.MultipartFile.fromBytes(
-          'image', // Use 'image' field name for consistency with backend
-          documentBytes,
-          filename: fileName,
-          contentType: MediaType.parse(mimeType),
-        ),
-      );
-
-      // Add document type header
-      request.headers['x-upload-type'] = documentType;
-
-      // Send request
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
 
       print('Document upload response status: ${response.statusCode}');
       print('Document upload response body: ${response.body}');

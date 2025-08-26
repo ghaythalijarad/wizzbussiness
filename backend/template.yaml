@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Order Receiver API - Serverless Application Model Template
+Description: Order Receiver API - Serverless Application Model Template v2.3
 
 Parameters:
   Stage:
@@ -77,7 +77,7 @@ Resources:
                 x-amazon-apigateway-authorizer:
                   type: cognito_user_pools
                   providerARNs:
-                    - arn:aws:cognito-idp:us-east-1:${AWS::AccountId}:userpool/us-east-1_PHPkG78b5
+                    - arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}
           paths:
             # Auth endpoints (public)
             /auth/signin:
@@ -116,6 +116,239 @@ Resources:
             /auth/health:
               get:
                 security: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${UnifiedAuthFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            /auth/refresh:
+              post:
+                security: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${UnifiedAuthFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            /auth/register-with-business:
+              post:
+                security: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${UnifiedAuthFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            /auth/confirm:
+              post:
+                security: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${UnifiedAuthFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            /auth/check-email:
+              post:
+                security: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${UnifiedAuthFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            /auth/resend-code:
+              post:
+                security: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${UnifiedAuthFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            /auth/track-login:
+              post:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${UnifiedAuthFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            /auth/track-logout:
+              post:
+                security:
+                  - CognitoAuthorizer: []
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST
@@ -248,18 +481,14 @@ Resources:
                         method.response.header.Access-Control-Allow-Origin: "'*'"
                         method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
                         method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
-            # Products endpoints (protected)
+            # Products endpoints (internal auth)
             /products:
               get:
-                security:
-                  - CognitoAuthorizer: []
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST
                   uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${ProductManagementFunction.Arn}/invocations
               post:
-                security:
-                  - CognitoAuthorizer: []
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST
@@ -291,15 +520,101 @@ Resources:
                         method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
                         method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
             
-            # Merchant Order Management endpoints (protected)
-            /merchant/orders/{businessId}:
+            # NEW: Product search endpoint (internal auth)
+            /products/search:
+              get:
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${ProductManagementFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+
+            # NEW: Product by ID endpoints (internal auth)
+            /products/{productId}:
+              get:
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${ProductManagementFunction.Arn}/invocations
+              put:
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${ProductManagementFunction.Arn}/invocations
+              delete:
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${ProductManagementFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
+            /businesses/{businessId}/profile:
               get:
                 security:
                   - CognitoAuthorizer: []
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST
-                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${OrderHandlerFunction.Arn}/invocations
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${BusinessProfileFunction.Arn}/invocations
+              put:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${BusinessProfileFunction.Arn}/invocations
               options:
                 security: []
                 responses:
@@ -327,14 +642,14 @@ Resources:
                         method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
                         method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
             
-            /businesses/{businessId}/orders:
+            /business/details:
               get:
                 security:
                   - CognitoAuthorizer: []
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST
-                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${OrderHandlerFunction.Arn}/invocations
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${BusinessDetailsFunction.Arn}/invocations
               options:
                 security: []
                 responses:
@@ -362,14 +677,13 @@ Resources:
                         method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
                         method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
             
-            /merchant/order/{orderId}/confirm:
-              put:
-                security:
-                  - CognitoAuthorizer: []
+            # Upload endpoints (internal auth)
+            /upload/product-image:
+              post:
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST
-                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${OrderHandlerFunction.Arn}/invocations
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${ImageUploadFunction.Arn}/invocations
               options:
                 security: []
                 responses:
@@ -397,49 +711,12 @@ Resources:
                         method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
                         method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
             
-            /merchant/order/{orderId}/reject:
-              put:
-                security:
-                  - CognitoAuthorizer: []
+            /upload/business-photo:
+              post:
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST
-                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${OrderHandlerFunction.Arn}/invocations
-              options:
-                security: []
-                responses:
-                  '200':
-                    description: CORS preflight response
-                    headers:
-                      Access-Control-Allow-Origin:
-                        schema:
-                          type: string
-                      Access-Control-Allow-Methods:
-                        schema:
-                          type: string
-                      Access-Control-Allow-Headers:
-                        schema:
-                          type: string
-                x-amazon-apigateway-integration:
-                  type: mock
-                  requestTemplates:
-                    application/json: '{"statusCode": 200}'
-                  responses:
-                    default:
-                      statusCode: "200"
-                      responseParameters:
-                        method.response.header.Access-Control-Allow-Origin: "'*'"
-                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
-                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
-            
-            /merchant/order/{orderId}/status:
-              put:
-                security:
-                  - CognitoAuthorizer: []
-                x-amazon-apigateway-integration:
-                  type: aws_proxy
-                  httpMethod: POST
-                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${OrderHandlerFunction.Arn}/invocations
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${ImageUploadFunction.Arn}/invocations
               options:
                 security: []
                 responses:
@@ -484,10 +761,26 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RegionalRestApi}/*/*"
 
-  OrderHandlerFunctionPermission:
+  ImageUploadFunctionPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref OrderHandlerFunction
+      FunctionName: !Ref ImageUploadFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RegionalRestApi}/*/*"
+
+  BusinessProfileFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref BusinessProfileFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RegionalRestApi}/*/*"
+
+  BusinessDetailsFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref BusinessDetailsFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RegionalRestApi}/*/*"
@@ -514,6 +807,8 @@ Resources:
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Users/index/*"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/wizzgo-dev-wss-onconnect"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/wizzgo-dev-wss-onconnect/index/*"
             - Effect: Allow
               Action:
                 - cognito-idp:AdminCreateUser
@@ -534,6 +829,13 @@ Resources:
       FunctionName: !Sub 'order-receiver-regional-${Stage}-product-management-v4-sam'
       CodeUri: functions/products/
       Handler: product_management_handler.handler
+      Environment:
+        Variables:
+          PRODUCTS_TABLE: WhizzMerchants_Products
+          CATEGORIES_TABLE: WhizzMerchants_Categories
+          BUSINESSES_TABLE: WhizzMerchants_Businesses
+          DYNAMODB_REGION: !Ref AWS::Region
+          COGNITO_REGION: !Ref AWS::Region
       Policies:
         - Version: "2012-10-17"
           Statement:
@@ -559,12 +861,31 @@ Resources:
                 - cognito-idp:GetUser
               Resource: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
 
-  OrderHandlerFunction:
+  ImageUploadFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub 'order-receiver-regional-${Stage}-order-handler-v4'
-      CodeUri: functions/orders/
-      Handler: merchant_order_handler.handler
+      FunctionName: !Sub 'order-receiver-regional-${Stage}-image-upload-v1-sam'
+      CodeUri: functions/upload/
+      Handler: image_upload_handler.handler
+      Environment:
+        Variables:
+          BUSINESS_PHOTOS_BUCKET: order-receiver-business-photos-dev-1755170214
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+                - s3:PutObjectAcl
+                - s3:GetObject
+              Resource: !Sub "arn:aws:s3:::order-receiver-business-photos-dev-1755170214/*"
+
+  BusinessProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'order-receiver-regional-${Stage}-business-profile-v4-sam'
+      CodeUri: functions/business/
+      Handler: business_profile_handler.handler
       Policies:
         - Version: "2012-10-17"
           Statement:
@@ -577,28 +898,38 @@ Resources:
                 - dynamodb:Query
                 - dynamodb:Scan
               Resource: 
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Orders"
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Orders/index/*"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses/index/*"
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_TimeoutLogs"
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_TimeoutLogs/index/*"
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-dev"
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-dev/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Users"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Users/index/*"
             - Effect: Allow
               Action:
                 - cognito-idp:GetUser
               Resource: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
+
+  BusinessDetailsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'order-receiver-regional-${Stage}-business-details-v1-sam'
+      CodeUri: functions/business/
+      Handler: business_details_handler.handler
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
             - Effect: Allow
               Action:
-                - sns:Publish
+                - dynamodb:GetItem
+                - dynamodb:Query
+                - dynamodb:Scan
               Resource: 
-                - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:placeholder-fcm"
-                - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:placeholder-apns"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Users"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Users/index/*"
             - Effect: Allow
               Action:
-                - execute-api:ManageConnections
-              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/@connections/*"
+                - cognito-idp:GetUser
+              Resource: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
 
 Outputs:
   ApiGatewayEndpoint:

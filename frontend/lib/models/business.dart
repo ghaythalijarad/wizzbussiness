@@ -1,145 +1,98 @@
-// Business model implementation
+import 'package:flutter/foundation.dart';
 
-import 'business_type.dart';
-import 'discount.dart';
-import 'offer.dart';
-import 'order_item.dart';
+enum BusinessType { restaurant, cloudKitchen, pharmacy, store }
 
 class Business {
-  final String id;
+  String id;
   String name;
   String email;
-  String? ownerName;
   String? phone;
+  String? ownerName;
+  BusinessType businessType;
   String? address;
   double? latitude;
   double? longitude;
   String? description;
   String? website;
-  String? businessPhotoUrl; // Added business photo URL field
-  final String status; // Add status field
-  final List<Offer> offers;
-  final Map<String, String> businessHours;
-  final Map<String, dynamic> settings;
-  final BusinessType businessType;
+  String? businessPhotoUrl;
+  String status;
+  DateTime? createdAt;
+  DateTime? updatedAt;
 
   Business({
     required this.id,
     required this.name,
-    this.email = '',
-    this.ownerName,
+    required this.email,
     this.phone,
+    this.ownerName,
+    required this.businessType,
     this.address,
     this.latitude,
     this.longitude,
     this.description,
     this.website,
-    this.businessPhotoUrl, // Added business photo URL parameter
-    required this.status, // Add to constructor
-    required this.offers,
-    required this.businessHours,
-    required this.settings,
-    required this.businessType,
+    this.businessPhotoUrl,
+    this.status = 'pending',
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Business.fromJson(Map<String, dynamic> json) {
-    // Helper to safely extract address components
-    dynamic addressData = json['address'];
-    String street = '';
-    double? lat, lon;
-
-    if (addressData is Map<String, dynamic>) {
-      street = addressData['street'] ?? '';
-      lat = (addressData['latitude'] as num?)?.toDouble();
-      lon = (addressData['longitude'] as num?)?.toDouble();
-    } else if (addressData is String) {
-      street = addressData;
-    }
-
-    // Debug logging for business ID extraction
-    print('Business.fromJson: Full JSON data: $json');
-    final businessId = json['businessId'] ?? json['id'] ?? json['business_id'];
-    print('Business.fromJson: Extracted business ID: $businessId');
-
-    // Validate business ID
-    if (businessId == null || businessId.toString().isEmpty) {
-      print('Business.fromJson: WARNING - No valid business ID found in JSON');
-      print('Business.fromJson: Available keys: ${json.keys.toList()}');
-      throw Exception(
-          'Invalid business data: Missing business ID. Available keys: ${json.keys.toList()}');
-    }
-
     return Business(
-      id: businessId.toString(),
-      name: json['businessName'] ??
-          json['name'] ??
-          json['business_name'] ??
-          'Unknown Business',
+      id: json['businessId'] ?? json['id'] ?? '',
+      name: json['businessName'] ?? json['name'] ?? '',
       email: json['email'] ?? '',
+      phone: json['phoneNumber'] ?? json['phone'] ?? json['phone_number'],
       ownerName: json['ownerName'] ?? json['owner_name'],
-      phone: json['phone_number'] ?? json['phone'],
-      address: street,
-      latitude: lat,
-      longitude: lon,
+      businessType: _parseBusinessType(
+          json['businessType'] ?? json['business_type'] ?? 'restaurant'),
+      address: json['address'],
+      latitude: json['latitude']?.toDouble(),
+      longitude: json['longitude']?.toDouble(),
       description: json['description'],
       website: json['website'],
-      businessPhotoUrl: json['businessPhotoUrl'] ??
-          json['business_photo_url'], // Added business photo URL parsing
-      status: json['status'] ?? 'pending', // Parse status, default to pending
-      offers: (json['offers'] as List<dynamic>?)
-              ?.map((offerJson) => Offer.fromJson(offerJson))
-              .toList() ??
-          [],
-      businessHours: Map<String, String>.from(json['businessHours'] ?? {}),
-      settings: Map<String, dynamic>.from(json['settings'] ?? {}),
-      businessType: _getBusinessTypeFromString(
-          json['businessType'] ?? json['business_type']),
+      businessPhotoUrl: json['businessPhotoUrl'] ?? json['business_photo_url'],
+      status: json['status'] ?? 'pending',
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      updatedAt:
+          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
     );
   }
 
-  static BusinessType _getBusinessTypeFromString(String? businessTypeString) {
-    switch (businessTypeString?.toLowerCase().replaceAll(' ', '')) {
+  static BusinessType _parseBusinessType(String type) {
+    switch (type.toLowerCase()) {
       case 'restaurant':
-      case 'kitchen':
-        return BusinessType.kitchen;
+        return BusinessType.restaurant;
       case 'cloudkitchen':
-        return BusinessType.cloudkitchen;
-      case 'store':
-        return BusinessType.store;
+      case 'cloud_kitchen':
+        return BusinessType.cloudKitchen;
       case 'pharmacy':
         return BusinessType.pharmacy;
-      case 'caffe':
-      case 'cafe':
-        return BusinessType.caffe;
+      case 'store':
+        return BusinessType.store;
       default:
-        return BusinessType.kitchen; // Default fallback
+        return BusinessType.restaurant;
     }
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'businessId': id,
-      'name': name,
       'businessName': name,
       'email': email,
+      'phoneNumber': phone,
       'ownerName': ownerName,
-      'owner_name': ownerName,
-      'phone': phone,
-      'phone_number': phone,
+      'businessType': businessType.name,
       'address': address,
       'latitude': latitude,
       'longitude': longitude,
       'description': description,
       'website': website,
       'businessPhotoUrl': businessPhotoUrl,
-      'business_photo_url': businessPhotoUrl,
       'status': status,
-      'offers': offers.map((o) => o.toJson()).toList(),
-      'businessHours': businessHours,
-      'settings': settings,
-      'businessType': businessType.toString().split('.').last,
-      'business_type': businessType.toString().split('.').last,
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 
@@ -153,7 +106,7 @@ class Business {
     String? email,
     String? description,
     String? website,
-    String? businessPhotoUrl, // Added business photo URL parameter
+    String? businessPhotoUrl,
   }) {
     if (name != null) this.name = name;
     if (ownerName != null) this.ownerName = ownerName;
@@ -164,37 +117,59 @@ class Business {
     if (email != null) this.email = email;
     if (description != null) this.description = description;
     if (website != null) this.website = website;
-    if (businessPhotoUrl != null)
-      this.businessPhotoUrl =
-          businessPhotoUrl; // Added business photo URL update
+    if (businessPhotoUrl != null) this.businessPhotoUrl = businessPhotoUrl;
+    updatedAt = DateTime.now();
   }
 
-  void updateSettings(String category, String key, dynamic value) {
-    // Implement settings update logic
+  Business copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? phone,
+    String? ownerName,
+    BusinessType? businessType,
+    String? address,
+    double? latitude,
+    double? longitude,
+    String? description,
+    String? website,
+    String? businessPhotoUrl,
+    String? status,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Business(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      ownerName: ownerName ?? this.ownerName,
+      businessType: businessType ?? this.businessType,
+      address: address ?? this.address,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      description: description ?? this.description,
+      website: website ?? this.website,
+      businessPhotoUrl: businessPhotoUrl ?? this.businessPhotoUrl,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
-  void updateBusinessHours(String day, String hours) {
-    // Implement business hours update logic
+  @override
+  String toString() {
+    return 'Business(id: $id, name: $name, email: $email, businessType: $businessType)';
   }
 
-  List<Discount> get discounts {
-    // Implement discounts retrieval logic
-    return [];
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Business && other.id == id;
   }
 
-  void addDiscount(Discount discount) {
-    // Implement add discount logic
-  }
-
-  void updateDiscount(Discount discount) {
-    // Implement update discount logic
-  }
-
-  void removeDiscount(String discountId) {
-    // Implement remove discount logic
-  }
-
-  double calculateOrderDiscount(double orderTotal, List<OrderItem> items) {
-    return 0.0;
+  @override
+  int get hashCode {
+    return id.hashCode;
   }
 }

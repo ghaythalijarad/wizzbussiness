@@ -189,12 +189,24 @@ class SessionManager extends ChangeNotifier {
     }
   }
 
+  /// Static method to clear session manager instance (avoids circular dependency)
+  static Future<void> clearInstance() async {
+    try {
+      final instance = SessionManager._instance;
+      await instance._clearSession();
+    } catch (e) {
+      debugPrint('Error clearing SessionManager instance: $e');
+    }
+  }
+
   /// Handle sign-out
   Future<void> onSignOut() async {
     try {
-      // Call auth service sign out
-      await AppAuthService.signOut();
-    } finally {
+      // Clear session data - don't call AppAuthService.signOut() to avoid circular dependency
+      await _clearSession();
+    } catch (e) {
+      debugPrint('Error during SessionManager sign out: $e');
+      // Force clear anyway
       await _clearSession();
     }
   }
@@ -206,12 +218,18 @@ class SessionManager extends ChangeNotifier {
       _currentUser = null;
       _accessToken = null;
       _lastSessionCheck = null;
+      
+      // Cancel session validation timer
+      _sessionValidationTimer?.cancel();
 
-      // Clear stored data
+      // Clear stored data - comprehensive cleanup
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('access_token');
+      await prefs.remove('id_token');
+      await prefs.remove('refresh_token');
       await prefs.remove('user_data');
       await prefs.remove('last_activity');
+      await prefs.remove('current_business_id');
 
       notifyListeners();
     } catch (e) {

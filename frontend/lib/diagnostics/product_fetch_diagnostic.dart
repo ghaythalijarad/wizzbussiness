@@ -16,7 +16,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/app_auth_service.dart';
 import '../services/product_service.dart';
-import '../services/api_service.dart';
 
 const _email = 'g87_a@yahoo.com';
 const _password = 'Gha@551987';
@@ -76,8 +75,9 @@ class _ProductFetchDiagnosticAppState extends State<ProductFetchDiagnosticApp> {
           await AppAuthService.signIn(email: _email, password: _password);
       _append(
           '🔐 Sign-in attempt complete success=${signIn.success} msg=${signIn.message}');
-      final authState = await ApiService.debugAuthState();
-      _append('🔎 Auth state: $authState');
+      _append('🔎 Auth state: Checking authentication...');
+      final isSignedIn = await AppAuthService.isSignedIn();
+      _append('🔎 Auth state signed in: $isSignedIn');
       if (!signIn.success) {
         _append('❌ Sign-in failed: ${signIn.message}');
         setState(() => _loading = false);

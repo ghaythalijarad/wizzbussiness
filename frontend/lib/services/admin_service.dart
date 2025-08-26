@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/business.dart';
-import '../config/app_config.dart';
+import 'package:hadhir_business/config/app_config.dart';
 
 class AdminService {
   final String _apiUrl = AppConfig.baseUrl;

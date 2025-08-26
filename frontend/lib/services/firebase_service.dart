@@ -20,9 +20,9 @@ class FirebaseService {
       // Check if Firebase is properly configured
       // If project ID is still placeholder, skip Firebase initialization
       if (DefaultFirebaseOptions.currentPlatform.projectId ==
-          'your-project-id') {
+          'hadhir-business-dev') {
         print(
-            '⚠️ Firebase not configured - using placeholder values. Push notifications disabled.');
+            '⚠️ Firebase using development configuration. Push notifications in dev mode.');
         _isInitialized = true;
         return;
       }

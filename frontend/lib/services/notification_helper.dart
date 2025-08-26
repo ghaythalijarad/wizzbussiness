@@ -1,57 +1,119 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class NotificationHelper {
-  static final FlutterLocalNotificationsPlugin _plugin =
+  static final FlutterLocalNotificationsPlugin
+      _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
-    'orders_channel',
-    'Order Notifications',
-    description: 'This channel is used for order notifications.',
-    importance: Importance.max,
-  );
+  static final AudioPlayer _audioPlayer = AudioPlayer();
 
-  /// Initialize the local notifications plugin
   static Future<void> initialize() async {
-    final androidSettings =
+    const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    final iosSettings = DarwinInitializationSettings();
-    final initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
-    await _plugin.initialize(initSettings);
 
-    // Create Android notification channel
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(_channel);
+    const DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings(
+      requestSoundPermission: true,
+      requestBadgePermission: true,
+      requestAlertPermission: true,
+    );
+
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
+
+    await _flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: _onNotificationTapped,
+    );
   }
 
-  /// Show a notification with given title and body
-  static Future<void> showNotification({
+  static void _onNotificationTapped(NotificationResponse response) {
+    // Handle notification tap
+    print('Notification tapped: ${response.payload}');
+  }
+
+  static Future<void> showOrderNotification({
+    required int id,
     required String title,
     required String body,
+    String? payload,
+    bool playSound = true,
   }) async {
-    final androidDetails = AndroidNotificationDetails(
-      _channel.id,
-      _channel.name,
-      channelDescription: _channel.description,
+    const AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      'order_channel',
+      'Order Notifications',
+      channelDescription: 'Notifications for new orders',
       importance: Importance.max,
       priority: Priority.high,
-      playSound: true,
-    );
-    const iosDetails = DarwinNotificationDetails();
-    final platformDetails = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
+      showWhen: false,
     );
 
-    await _plugin.show(
-      0,
+    const DarwinNotificationDetails iOSNotificationDetails =
+        DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidNotificationDetails,
+      iOS: iOSNotificationDetails,
+    );
+
+    await _flutterLocalNotificationsPlugin.show(
+      id,
       title,
       body,
-      platformDetails,
+      notificationDetails,
+      payload: payload,
     );
+
+    if (playSound) {
+      await _playNotificationSound();
+    }
+  }
+
+  static Future<void> showNotification({
+    required int id,
+    required String title,
+    required String body,
+    String? payload,
+    bool playSound = true,
+  }) async {
+    await showOrderNotification(
+      id: id,
+      title: title,
+      body: body,
+      payload: payload,
+      playSound: playSound,
+    );
+  }
+
+  static Future<void> _playNotificationSound() async {
+    try {
+      await _audioPlayer.play(AssetSource('sounds/notification.mp3'));
+    } catch (e) {
+      print('Error playing notification sound: $e');
+    }
+  }
+
+  static Future<void> cancelNotification(int id) async {
+    await _flutterLocalNotificationsPlugin.cancel(id);
+  }
+
+  static Future<void> cancelAllNotifications() async {
+    await _flutterLocalNotificationsPlugin.cancelAll();
+  }
+
+  static Future<bool> requestPermissions() async {
+    final bool? result = await _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+    return result ?? false;
   }
 }

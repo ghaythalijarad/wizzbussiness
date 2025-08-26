@@ -5,61 +5,112 @@ import 'session_provider.dart';
 
 final businessProvider = FutureProvider<Business?>((ref) async {
   final session = ref.watch(sessionProvider);
-  final apiService = ApiService();
-
-  print('🏢 BusinessProvider: session.isAuthenticated = ${session.isAuthenticated}');
-  print('🏢 BusinessProvider: session.businessId = ${session.businessId}');
-
-  if (session.isAuthenticated) {
-    try {
-      print('🏢 BusinessProvider: Fetching user businesses...');
-      final businesses = await apiService.getUserBusinesses();
-      print('🏢 BusinessProvider: Got ${businesses.length} businesses');
-      
-      // Debug: Print the structure of the first business
-      if (businesses.isNotEmpty) {
-        print('🏢 BusinessProvider: First business keys: ${businesses.first.keys.toList()}');
-        print('🏢 BusinessProvider: First business data: ${businesses.first}');
-      }
-      
-      if (businesses.isNotEmpty) {
-        // If we have a specific businessId in session, try to find that business
-        if (session.businessId != null) {
-          print('🏢 BusinessProvider: Looking for businessId ${session.businessId}');
-          
-          // Find the matching business
-          Map<String, dynamic>? businessData;
-          try {
-            businessData = businesses.firstWhere(
-              (b) => b['businessId'] == session.businessId,
-            );
-            print('🏢 BusinessProvider: Found matching business ${businessData['businessName']}');
-          } catch (e) {
-            print('🏢 BusinessProvider: No matching business found, using first business');
-            businessData = businesses.first;
-          }
-          
-          final business = Business.fromJson(businessData);
-          print('🏢 BusinessProvider: Created business object - ID: ${business.id}, Name: ${business.name}');
-          return business;
-        } else {
-          print('🏢 BusinessProvider: No specific businessId, using first business');
-          // No specific businessId, use the first business
-          final businessData = businesses.first;
-          final business = Business.fromJson(businessData);
-          print('🏢 BusinessProvider: Created business object - ID: ${business.id}, Name: ${business.name}');
-          return business;
-        }
-      } else {
-        print('🏢 BusinessProvider: No businesses found for user');
-      }
-    } catch (e) {
-      print('❌ BusinessProvider: Error fetching business details: $e');
-      // Don't clear session on error, just return null
-      return null;
-    }
-  } else {
-    print('🏢 BusinessProvider: User not authenticated');
+  
+  if (!session.isAuthenticated || session.businessId == null) {
+    return null;
   }
-  return null;
+
+  try {
+    final apiService = ApiService();
+    final businesses = await apiService.getUserBusinesses();
+    
+    if (businesses.isNotEmpty) {
+      // Find the business that matches the session business ID
+      final businessData = businesses.firstWhere(
+        (business) =>
+            business['businessId'] == session.businessId ||
+            business['id'] == session.businessId,
+        orElse: () => businesses.first,
+      );
+
+      return Business.fromJson(businessData);
+    }
+    
+    return null;
+  } catch (e) {
+    throw Exception('Failed to load business: $e');
+  }
 });
+
+// Enhanced business provider with complete details from DynamoDB
+final enhancedBusinessProvider = FutureProvider<Business?>((ref) async {
+  final session = ref.watch(sessionProvider);
+
+  if (!session.isAuthenticated) {
+    return null;
+  }
+
+  try {
+    final apiService = ApiService();
+    final response = await apiService.getBusinessDetails();
+
+    if (response['success'] == true && response['business'] != null) {
+      return Business.fromJson(response['business']);
+    }
+
+    return null;
+  } catch (e) {
+    // Fallback to the original business provider if enhanced fails
+    print('Enhanced business fetch failed, falling back to original: $e');
+    return ref.watch(businessProvider).when(
+          data: (business) => business,
+          loading: () => null,
+          error: (error, stack) => null,
+        );
+  }
+});
+
+// Provider for refreshing business data
+final businessRefreshProvider = Provider<void Function()>((ref) {
+  return () {
+    ref.invalidate(businessProvider);
+    ref.invalidate(enhancedBusinessProvider);
+  };
+});
+
+// Provider for updating business profile
+final businessUpdateProvider =
+    StateNotifierProvider<BusinessUpdateNotifier, AsyncValue<void>>((ref) {
+  return BusinessUpdateNotifier(ref);
+});
+
+class BusinessUpdateNotifier extends StateNotifier<AsyncValue<void>> {
+  final Ref ref;
+
+  BusinessUpdateNotifier(this.ref) : super(const AsyncValue.data(null));
+
+  Future<void> updateBusinessProfile(
+      String businessId, Map<String, dynamic> updateData) async {
+    state = const AsyncValue.loading();
+
+    try {
+      final apiService = ApiService();
+      await apiService.updateBusinessProfile(businessId, updateData);
+
+      // Refresh the business provider to get updated data
+      ref.invalidate(businessProvider);
+      ref.invalidate(enhancedBusinessProvider);
+
+      state = const AsyncValue.data(null);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+
+  Future<void> updateBusinessPhoto(String businessId, String photoUrl) async {
+    state = const AsyncValue.loading();
+
+    try {
+      final apiService = ApiService();
+      await apiService.updateBusinessPhoto(businessId, photoUrl);
+
+      // Refresh the business provider to get updated data
+      ref.invalidate(businessProvider);
+      ref.invalidate(enhancedBusinessProvider);
+
+      state = const AsyncValue.data(null);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+}

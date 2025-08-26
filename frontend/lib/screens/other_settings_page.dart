@@ -1,441 +1,471 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../l10n/app_localizations.dart';
-import '../providers/app_auth_provider.dart';
-import '../services/api_service.dart';
-import '../services/app_auth_service.dart';
-import '../widgets/location_settings_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/business.dart';
-import '../screens/login_page.dart';
+import '../services/api_service.dart';
+import '../l10n/app_localizations.dart';
 
-class OtherSettingsPage extends StatefulWidget {
-  final Business? business;
-  const OtherSettingsPage({Key? key, this.business}) : super(key: key);
+class OtherSettingsPage extends ConsumerStatefulWidget {
+  final Business business;
+
+  const OtherSettingsPage({Key? key, required this.business}) : super(key: key);
 
   @override
-  _OtherSettingsPageState createState() => _OtherSettingsPageState();
+  ConsumerState<OtherSettingsPage> createState() => _OtherSettingsPageState();
 }
 
-class _OtherSettingsPageState extends State<OtherSettingsPage> {
-  double? _latitude;
-  double? _longitude;
-  String? _address;
+class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _addressController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _districtController = TextEditingController();
+  final _countryController = TextEditingController();
+  final _streetController = TextEditingController();
+  final _latitudeController = TextEditingController();
+  final _longitudeController = TextEditingController();
+
   bool _isLoading = false;
-  bool _isLoadingSettings = true;
-  bool _isInitializing = true;
-  String? _errorMessage;
+  bool _enableDelivery = true;
+  bool _enablePickup = true;
+  double _deliveryRadius = 5.0;
+  double _minimumOrderAmount = 10.0;
+  double _deliveryFee = 2.50;
 
   @override
   void initState() {
     super.initState();
-    _validateAuthenticationAndInitialize();
+    _loadLocationSettings();
   }
 
-  Future<void> _validateAuthenticationAndInitialize() async {
-    print('🔐 Starting validation for OtherSettingsPage...');
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
+  @override
+  void dispose() {
+    _addressController.dispose();
+    _cityController.dispose();
+    _districtController.dispose();
+    _countryController.dispose();
+    _streetController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
+    super.dispose();
+  }
 
-      final appAuthProvider =
-          Provider.of<AppAuthProvider>(context, listen: false);
+  Future<void> _loadLocationSettings() async {
+    setState(() {
+      _isLoading = true;
+    });
 
+    try {
+      // Load business data
+      final business = widget.business;
+      _addressController.text = business.address ?? '';
+      _cityController.text = business.address ?? '';
+      _districtController.text = '';
+      _countryController.text = 'Iraq';
+      _streetController.text = '';
+      _latitudeController.text = business.latitude?.toString() ?? '';
+      _longitudeController.text = business.longitude?.toString() ?? '';
+
+      // Try to load additional location settings from API
+      final apiService = ApiService();
       try {
-        print('🤔 Checking authentication status...');
-        final isValid = await appAuthProvider.validateAuthentication();
-        print('✅ Authentication status valid: $isValid');
-
-        if (isValid) {
-          if (mounted) {
-            print(
-                '🚀 Authentication successful, proceeding to load settings...');
-            setState(() {
-              _isInitializing = false;
-            });
-            await _loadBusinessLocationSettings();
-          }
-        } else {
-          print('🚨 Authentication failed, showing dialog.');
-          _showAuthenticationRequiredDialog();
+        final settings =
+            await apiService.getBusinessLocationSettings(business.id);
+        if (mounted) {
+          setState(() {
+            _enableDelivery = settings['enableDelivery'] ?? true;
+            _enablePickup = settings['enablePickup'] ?? true;
+            _deliveryRadius = (settings['deliveryRadius'] ?? 5.0).toDouble();
+            _minimumOrderAmount =
+                (settings['minimumOrderAmount'] ?? 10.0).toDouble();
+            _deliveryFee = (settings['deliveryFee'] ?? 2.50).toDouble();
+          });
         }
       } catch (e) {
-        print('❌ Authentication validation failed with error: $e');
-        _showAuthenticationRequiredDialog();
-      }
-    });
-  }
-
-  void _showAuthenticationRequiredDialog() {
-    if (!mounted) return;
-    final loc = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text('Authentication Required'),
-        content: Text('Please sign in to access location settings.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Close the dialog
-              Navigator.of(context, rootNavigator: true).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => const LoginPage(),
-                ),
-              );
-            },
-            style: TextButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(loc.signIn),
-          ),
-        ],
-        actionsAlignment: MainAxisAlignment.center,
-      ),
-    );
-  }
-
-  Future<void> _loadBusinessLocationSettings() async {
-    print('🗺️ Loading business location settings...');
-    final loc = AppLocalizations.of(context)!;
-    setState(() {
-      _isLoadingSettings = true;
-      _errorMessage = null;
-    });
-    try {
-      if (widget.business != null) {
-        // Load settings from passed Business object
-        setState(() {
-          _latitude = widget.business!.latitude;
-          _longitude = widget.business!.longitude;
-          _address = widget.business!.address;
-          _isLoadingSettings = false;
-        });
-        print('✅ Location settings loaded from Business object');
-      } else {
-        // Fall back to retrieving via getUserBusinesses
-        final apiService = ApiService();
-        final businesses = await apiService.getUserBusinesses();
-        if (businesses.isNotEmpty) {
-          final businessData = businesses.first;
-          setState(() {
-            _latitude = businessData['latitude'] as double?;
-            _longitude = businessData['longitude'] as double?;
-            _address = businessData['address'] as String?;
-            _isLoadingSettings = false;
-          });
-          print('✅ Location settings loaded via getUserBusinesses fallback');
-        } else {
-          setState(() {
-            _errorMessage = loc.noBusinessFoundForUser;
-            _isLoadingSettings = false;
-          });
-        }
+        // If location settings don't exist, use defaults
+        debugPrint('No existing location settings found, using defaults');
       }
     } catch (e) {
-      print('❌ Error loading location settings: $e');
-      setState(() {
-        _errorMessage = '${loc.failedToSaveLocation}: $e';
-        _isLoadingSettings = false;
-      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load location settings: $e'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  Future<void> _saveBusinessLocation(
-      double? latitude, double? longitude, String? address) async {
-    final loc = AppLocalizations.of(context)!;
-    setState(() => _isLoading = true);
+  Future<void> _saveLocationSettings() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       final apiService = ApiService();
-      // Get business ID
-      String businessId;
-      if (widget.business != null) {
-        businessId = widget.business!.id;
-      } else {
-        final businesses = await apiService.getUserBusinesses();
-        if (businesses.isEmpty) {
-          throw Exception(loc.noBusinessFoundForUser);
-        }
-        businessId = businesses.first['businessId'] ??
-            businesses.first['id'] ??
-            businesses.first['business_id'];
-      }
-      // Prepare location settings
-      final locationSettings = {
-        'latitude': latitude,
-        'longitude': longitude,
-        'address': address,
-        'updated_at': DateTime.now().toIso8601String(),
+      final settings = {
+        'address': _addressController.text,
+        'city': _cityController.text,
+        'district': _districtController.text,
+        'country': _countryController.text,
+        'street': _streetController.text,
+        'latitude': double.tryParse(_latitudeController.text),
+        'longitude': double.tryParse(_longitudeController.text),
+        'enableDelivery': _enableDelivery,
+        'enablePickup': _enablePickup,
+        'deliveryRadius': _deliveryRadius,
+        'minimumOrderAmount': _minimumOrderAmount,
+        'deliveryFee': _deliveryFee,
       };
-      // Save to business settings table via existing POS settings endpoint
-      // (we'll reuse the infrastructure for business settings)
+
       await apiService.updateBusinessLocationSettings(
-          businessId, locationSettings);
-      setState(() {
-        _latitude = latitude;
-        _longitude = longitude;
-        _address = address;
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(loc.locationSaved),
-          backgroundColor: Colors.green,
-        ),
-      );
+          widget.business.id, settings);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location settings saved successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${loc.failedToSaveLocation}: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save location settings: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  void _getCurrentLocation() async {
+    // TODO: Implement location fetching using location services
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Getting current location...'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    // For now, set sample coordinates for Baghdad
+    setState(() {
+      _latitudeController.text = '33.3152';
+      _longitudeController.text = '44.3661';
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    if (_isInitializing) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(loc.businessLocation),
-          backgroundColor: Theme.of(context).primaryColor,
-          foregroundColor: Colors.white,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop(),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              foregroundColor: Colors.white,
-              shape: const RoundedRectangleBorder(),
-              elevation: 0,
-              padding: const EdgeInsets.all(12),
-            ),
-          ),
-        ),
-        body: Center(
-          child: CircularProgressIndicator(
-            color: Theme.of(context).primaryColor,
-          ),
-        ),
-      );
-    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.businessLocation),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 2,
-        shadowColor: Theme.of(context).primaryColor.withOpacity(0.3),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            foregroundColor: Colors.white,
-            shape: const RoundedRectangleBorder(),
-            elevation: 0,
-            padding: const EdgeInsets.all(12),
-          ),
-        ),
+        title: Text(loc.locationSettings),
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await AppAuthService.signOut();
-              Navigator.of(context, rootNavigator: true).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => const LoginPage(),
-                ),
-              );
-            },
+            icon: const Icon(Icons.save),
+            onPressed: _isLoading ? null : _saveLocationSettings,
           ),
         ],
       ),
-      body: _isLoadingSettings
-          ? Center(
-              child: CircularProgressIndicator(
-                color: Theme.of(context).primaryColor,
-              ),
-            )
-          : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        size: 64,
-                        color: Colors.red,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        _errorMessage!,
-                        style: const TextStyle(fontSize: 16),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: _loadBusinessLocationSettings,
-                        icon: const Icon(Icons.refresh),
-                        label: Text(loc.retry),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Description Section
-                      Card(
-                        elevation: 2,
-                        margin: const EdgeInsets.only(bottom: 20),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.location_on,
-                                    color: Theme.of(context).primaryColor,
-                                    size: 24,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Business Address Section
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.location_on,
+                                    color: Theme.of(context).primaryColor),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'Business Address',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    loc.businessLocation,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).primaryColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                loc.businessLocationDescription,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade700,
-                                  height: 1.4,
                                 ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _addressController,
+                              decoration: const InputDecoration(
+                                labelText: 'Street Address',
+                                hintText: 'Enter your business address',
+                                prefixIcon: Icon(Icons.home),
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      // Location Information Section
-                      Card(
-                        elevation: 2,
-                        margin: const EdgeInsets.only(bottom: 20),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.info_outline,
-                                    color: Theme.of(context).primaryColor,
-                                    size: 20,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your business address';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _cityController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'City',
+                                      prefixIcon: Icon(Icons.location_city),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'City required';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    loc.locationInformation,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Theme.of(context).primaryColor,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _districtController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'District',
+                                      prefixIcon: Icon(Icons.map),
                                     ),
                                   ),
-                                ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _countryController,
+                              decoration: const InputDecoration(
+                                labelText: 'Country',
+                                prefixIcon: Icon(Icons.public),
                               ),
-                              const SizedBox(height: 12),
-                              _buildInfoItem(
-                                Icons.visibility,
-                                loc.customerVisibility,
-                                loc.customerVisibilityDescription,
-                              ),
-                              const SizedBox(height: 12),
-                              _buildInfoItem(
-                                Icons.delivery_dining,
-                                loc.deliveryOptimization,
-                                loc.deliveryOptimizationDescription,
-                              ),
-                              const SizedBox(height: 12),
-                              _buildInfoItem(
-                                Icons.security,
-                                loc.privacyAndSecurity,
-                                loc.privacyAndSecurityDescription,
-                              ),
-                            ],
-                          ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter country';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
                         ),
                       ),
-                      // Location Settings Widget
-                      LocationSettingsWidget(
-                        initialLatitude: _latitude,
-                        initialLongitude: _longitude,
-                        initialAddress: _address,
-                        onLocationChanged: _saveBusinessLocation,
-                        isLoading: _isLoading,
-                      ),
-                    ],
-                  ),
-                ),
-    );
-  }
+                    ),
+                    const SizedBox(height: 16),
 
-  Widget _buildInfoItem(IconData icon, String title, String description) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(
-          icon,
-          size: 16,
-          color: Colors.grey.shade600,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                    // GPS Coordinates Section
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.gps_fixed,
+                                    color: Theme.of(context).primaryColor),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'GPS Coordinates',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _latitudeController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Latitude',
+                                      hintText: '33.3152',
+                                      prefixIcon: Icon(Icons.navigation),
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _longitudeController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Longitude',
+                                      hintText: '44.3661',
+                                      prefixIcon: Icon(Icons.navigation),
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _getCurrentLocation,
+                                icon: const Icon(Icons.my_location),
+                                label: const Text('Get Current Location'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Service Options Section
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.delivery_dining,
+                                    color: Theme.of(context).primaryColor),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'Service Options',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            SwitchListTile(
+                              title: const Text('Enable Delivery'),
+                              subtitle: const Text(
+                                  'Offer delivery service to customers'),
+                              value: _enableDelivery,
+                              onChanged: (value) {
+                                setState(() {
+                                  _enableDelivery = value;
+                                });
+                              },
+                            ),
+                            SwitchListTile(
+                              title: const Text('Enable Pickup'),
+                              subtitle: const Text(
+                                  'Allow customers to pick up orders'),
+                              value: _enablePickup,
+                              onChanged: (value) {
+                                setState(() {
+                                  _enablePickup = value;
+                                });
+                              },
+                            ),
+
+                            if (_enableDelivery) ...[
+                              const SizedBox(height: 16),
+
+                              // Delivery Radius
+                              Text(
+                                'Delivery Radius: ${_deliveryRadius.toStringAsFixed(1)} km',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              Slider(
+                                value: _deliveryRadius,
+                                min: 1.0,
+                                max: 50.0,
+                                divisions: 49,
+                                label:
+                                    '${_deliveryRadius.toStringAsFixed(1)} km',
+                                onChanged: (value) {
+                                  setState(() {
+                                    _deliveryRadius = value;
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Minimum Order Amount
+                              TextFormField(
+                                initialValue: _minimumOrderAmount.toString(),
+                                decoration: const InputDecoration(
+                                  labelText: 'Minimum Order Amount',
+                                  prefixIcon: Icon(Icons.attach_money),
+                                  suffixText: 'IQD',
+                                ),
+                                keyboardType: TextInputType.number,
+                                onChanged: (value) {
+                                  _minimumOrderAmount =
+                                      double.tryParse(value) ?? 10.0;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Delivery Fee
+                              TextFormField(
+                                initialValue: _deliveryFee.toString(),
+                                decoration: const InputDecoration(
+                                  labelText: 'Delivery Fee',
+                                  prefixIcon: Icon(Icons.local_shipping),
+                                  suffixText: 'IQD',
+                                ),
+                                keyboardType: TextInputType.number,
+                                onChanged: (value) {
+                                  _deliveryFee = double.tryParse(value) ?? 2.50;
+                                },
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Save Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isLoading ? null : _saveLocationSettings,
+                        icon: const Icon(Icons.save),
+                        label: const Text('Save Location Settings'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+            ),
     );
   }
 }

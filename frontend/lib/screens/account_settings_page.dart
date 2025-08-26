@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'dart:ui' as ui;
-import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:ui' as ui;
+import 'package:intl/intl.dart';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
+import '../services/api_service.dart';
 import '../services/image_upload_service.dart';
-import '../screens/login_page.dart';
-import '../providers/session_provider.dart';
 import '../providers/business_provider.dart';
+import '../providers/session_provider.dart';
+import 'login_page.dart';
 
 class AccountSettingsPage extends ConsumerStatefulWidget {
   final Business business;
@@ -18,7 +19,8 @@ class AccountSettingsPage extends ConsumerStatefulWidget {
       : super(key: key);
 
   @override
-  _AccountSettingsPageState createState() => _AccountSettingsPageState();
+  ConsumerState<AccountSettingsPage> createState() =>
+      _AccountSettingsPageState();
 }
 
 class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
@@ -28,9 +30,8 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
   File? _image;
   final ImagePicker _picker = ImagePicker();
 
-  Map<String, dynamic>? _userData;
-  bool _isInitializing = true;
-  bool _isUploadingImage = false;
+  bool _isEditing = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -49,11 +50,6 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
       _showAuthenticationRequiredDialog();
       return;
     }
-
-    // If all checks pass, proceed with initialization
-    setState(() {
-      _isInitializing = false;
-    });
 
     // Load user data after authentication is verified
     _loadUserData();
@@ -158,7 +154,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     if (_image == null) return;
 
     setState(() {
-      _isUploadingImage = true;
+      _isSaving = true;
     });
 
     try {
@@ -170,7 +166,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         // Update the business object with the new photo URL
         setState(() {
           widget.business.businessPhotoUrl = newImageUrl;
-          _isUploadingImage = false;
+          _isSaving = false;
         });
 
         if (mounted) {
@@ -184,7 +180,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         }
       } else {
         setState(() {
-          _isUploadingImage = false;
+          _isSaving = false;
           _image = null; // Clear the selected image on failure
         });
 
@@ -200,7 +196,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
       }
     } catch (e) {
       setState(() {
-        _isUploadingImage = false;
+        _isSaving = false;
         _image = null; // Clear the selected image on error
       });
 
@@ -213,6 +209,104 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           ),
         );
       }
+    }
+  }
+
+  // Add save business profile method
+  Future<void> _saveBusinessProfile() async {
+    if (_isSaving) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final session = ref.read(sessionProvider);
+      if (!session.isAuthenticated) {
+        _showAuthenticationRequiredDialog();
+        return;
+      }
+
+      final businessAsyncValue = ref.read(businessProvider);
+      final business = businessAsyncValue.value;
+
+      if (business == null) {
+        throw Exception('No business found');
+      }
+
+      final apiService = ApiService();
+
+      // Prepare update data
+      final updateData = {
+        'businessName': _businessNameController.text.trim(),
+        'ownerName': _ownerNameController.text.trim(),
+        'address': _addressController.text.trim(),
+      };
+
+      // Update business profile via API
+      await apiService.updateBusinessProfile(business.id, updateData);
+
+      // Update the business object locally
+      business.updateProfile(
+        name: _businessNameController.text.trim(),
+        ownerName: _ownerNameController.text.trim(),
+        address: _addressController.text.trim(),
+      );
+
+      // Refresh business provider to reflect changes
+      ref.invalidate(businessProvider);
+
+      setState(() {
+        _isEditing = false;
+        _isSaving = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Business profile updated successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isSaving = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update profile: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  // Toggle edit mode
+  void _toggleEditMode() {
+    setState(() {
+      _isEditing = !_isEditing;
+    });
+  }
+
+  // Cancel edit mode
+  void _cancelEdit() {
+    setState(() {
+      _isEditing = false;
+    });
+
+    // Reset controllers to original values
+    final businessAsyncValue = ref.read(businessProvider);
+    final business = businessAsyncValue.value;
+    if (business != null) {
+      _businessNameController.text = business.name;
+      _ownerNameController.text = business.ownerName ?? '';
+      _addressController.text = _formatAddress(business.address);
     }
   }
 
@@ -329,29 +423,6 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isInitializing) {
-      return Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF00D4FF),
-                Color(0xFF3399FF),
-              ],
-            ),
-          ),
-          child: const Center(
-            child: CircularProgressIndicator(
-              color: Colors.white,
-              strokeWidth: 3,
-            ),
-          ),
-        ),
-      );
-    }
-
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final businessAsyncValue = ref.watch(businessProvider);
@@ -361,36 +432,150 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         title: Text(l10n.accountSettings),
         backgroundColor: const Color(0xFF00C1E8),
         foregroundColor: Colors.white,
+        actions: [
+          if (!_isEditing)
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: _toggleEditMode,
+            ),
+          if (_isEditing) ...[
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: _cancelEdit,
+            ),
+            IconButton(
+              icon: _isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.check),
+              onPressed: _isSaving ? null : _saveBusinessProfile,
+            ),
+          ],
+        ],
       ),
       backgroundColor: Colors.grey[50],
-      body: businessAsyncValue.when(
-        loading: () => _buildLoadingState(),
-        error: (error, stack) => _buildErrorStateWithMessage(l10n, theme, error.toString()),
-        data: (business) {
-          if (business == null) {
-            return _buildErrorStateWithMessage(l10n, theme, 'No business found for this account');
-          }
+      floatingActionButton: businessAsyncValue.maybeWhen(
+        data: (business) => business != null
+            ? FloatingActionButton(
+                onPressed: _pickImage,
+                backgroundColor: const Color(0xFF00C1E8),
+                child: const Icon(Icons.camera_alt, color: Colors.white),
+              )
+            : null,
+        orElse: () => null,
+      ),
+      body: Consumer(
+        builder: (context, ref, child) {
+          // Watch both providers: enhanced for richer data, regular as fallback
+          final enhancedBusinessAsync = ref.watch(enhancedBusinessProvider);
+          final businessAsyncValue = ref.watch(businessProvider);
 
-          // Update controllers with fresh business data
-          if (_businessNameController.text != business.name) {
-            _businessNameController.text = business.name;
-          }
-          if (_ownerNameController.text != (business.ownerName ?? '')) {
-            _ownerNameController.text = business.ownerName ?? '';
-          }
-          if (_addressController.text != _formatAddress(business.address)) {
-            _addressController.text = _formatAddress(business.address);
-          }
+          return enhancedBusinessAsync.when(
+            data: (enhancedBusiness) {
+              // Use enhanced business data if available
+              final business = enhancedBusiness ?? businessAsyncValue.value;
+              if (business == null) {
+                return _buildErrorStateWithMessage(
+                    l10n, theme, 'No business found for this account');
+              }
 
-          return CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: _buildAccountContentWithBusiness(l10n, theme, business),
-                ),
-              ),
-            ],
+              // Update controllers with fresh business data
+              if (_businessNameController.text != business.name) {
+                _businessNameController.text = business.name;
+              }
+              if (_ownerNameController.text != (business.ownerName ?? '')) {
+                _ownerNameController.text = business.ownerName ?? '';
+              }
+              if (_addressController.text != _formatAddress(business.address)) {
+                _addressController.text = _formatAddress(business.address);
+              }
+
+              return CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: _buildAccountContentWithBusiness(
+                          l10n, theme, business),
+                    ),
+                  ),
+                ],
+              );
+            },
+            loading: () {
+              // Show loading state, but also try to show basic data if available
+              return businessAsyncValue.when(
+                data: (business) {
+                  if (business != null) {
+                    // Show basic business data while enhanced data loads
+                    return CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              children: [
+                                _buildLoadingState(),
+                                const SizedBox(height: 16),
+                                _buildAccountContentWithBusiness(
+                                    l10n, theme, business),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  return _buildLoadingState();
+                },
+                loading: () => _buildLoadingState(),
+                error: (error, stack) =>
+                    _buildErrorStateWithMessage(l10n, theme, error.toString()),
+              );
+            },
+            error: (error, stack) {
+              // Log error and fallback to regular business provider
+              debugPrint('Enhanced business data fetch failed: $error');
+              return businessAsyncValue.when(
+                loading: () => _buildLoadingState(),
+                error: (error, stack) =>
+                    _buildErrorStateWithMessage(l10n, theme, error.toString()),
+                data: (business) {
+                  if (business == null) {
+                    return _buildErrorStateWithMessage(
+                        l10n, theme, 'No business found for this account');
+                  }
+
+                  // Update controllers with fresh business data
+                  if (_businessNameController.text != business.name) {
+                    _businessNameController.text = business.name;
+                  }
+                  if (_ownerNameController.text != (business.ownerName ?? '')) {
+                    _ownerNameController.text = business.ownerName ?? '';
+                  }
+                  if (_addressController.text !=
+                      _formatAddress(business.address)) {
+                    _addressController.text = _formatAddress(business.address);
+                  }
+
+                  return CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: _buildAccountContentWithBusiness(
+                              l10n, theme, business),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
           );
         },
       ),
@@ -618,7 +803,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -653,9 +838,9 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -682,37 +867,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     );
   }
 
-  Widget _buildPersonalInfoCard(AppLocalizations l10n, ThemeData theme) {
-    return Card(
-      elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.05),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            _buildInfoRow(
-              l10n.ownerName,
-              _userData?['owner_name'] ?? '',
-              Icons.person_outline_rounded,
-            ),
-            const Divider(height: 24),
-            _buildInfoRow(
-              l10n.email,
-              _userData?['email'] ?? '',
-              Icons.email_outlined,
-            ),
-            const Divider(height: 24),
-            _buildInfoRow(
-              l10n.phoneNumber,
-              _userData?['phone_number'] ?? 'Not provided',
-              Icons.phone_outlined,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildPersonalInfoCardWithBusiness(AppLocalizations l10n, ThemeData theme, Business business) {
     return _buildModernCard([
@@ -748,40 +903,54 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     ]);
   }
 
-  Widget _buildBusinessInfoCard(AppLocalizations l10n, ThemeData theme) {
-    return Card(
-      elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.05),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            _buildInfoRow(
-              l10n.businessName,
-              _userData?['business_name'] ?? '',
-              Icons.store_outlined,
-            ),
-            const Divider(height: 24),
-            _buildInfoRow(
-              l10n.businessType,
-              _userData?['business_type'] ?? 'Not specified',
-              Icons.category_outlined,
-            ),
-            const Divider(height: 24),
-            _buildInfoRow(
-              'Address',
-              _formatAddress(_userData?['address']),
-              Icons.location_on_outlined,
-              isMultiline: true,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildBusinessInfoCardWithBusiness(AppLocalizations l10n, ThemeData theme, Business business) {
+
+  Widget _buildBusinessInfoCardWithBusiness(
+      AppLocalizations l10n, ThemeData theme, Business business) {
+    if (_isEditing) {
+      return _buildModernCard([
+        _buildEditableField(
+          l10n.businessName,
+          _businessNameController,
+          Icons.business,
+        ),
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 16),
+          height: 1,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.transparent,
+                Colors.grey.shade300,
+                Colors.transparent,
+              ],
+            ),
+          ),
+        ),
+        _buildInfoRow(
+            l10n.businessType, business.businessType.name, Icons.category),
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 16),
+          height: 1,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.transparent,
+                Colors.grey.shade300,
+                Colors.transparent,
+              ],
+            ),
+          ),
+        ),
+        _buildEditableField(
+          l10n.addressLabel,
+          _addressController,
+          Icons.location_on,
+          maxLines: 3,
+        ),
+      ]);
+    }
+    
     return _buildModernCard([
       _buildInfoRow(l10n.businessName, business.name, Icons.business),
       Container(
@@ -815,57 +984,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     ]);
   }
 
-  Widget _buildAccountStatusCard(AppLocalizations l10n, ThemeData theme) {
-    final createdAt = _userData?['created_at'];
-    final registrationDate = _formatDate(createdAt);
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatusChip(
-                  'Active',
-                  true,
-                  Colors.green,
-                  Icons.check_circle_rounded,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildStatusChip(
-                  'Verified',
-                  true,
-                  const Color(0xFF3399FF),
-                  Icons.verified_rounded,
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 32),
-          _buildModernInfoTile(
-            l10n.registrationDate,
-            registrationDate.isNotEmpty ? registrationDate : 'Not available',
-            Icons.calendar_today_rounded,
-            Colors.orange,
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildAccountStatusCardWithBusiness(AppLocalizations l10n, ThemeData theme, Business business) {
     return _buildModernCard([
@@ -1050,10 +1169,10 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: Colors.white.withOpacity(0.2),
         shape: BoxShape.circle,
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
+          color: Colors.white.withOpacity(0.3),
           width: 2,
         ),
       ),
@@ -1091,7 +1210,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: Colors.white.withOpacity(0.2),
         shape: BoxShape.circle,
       ),
       child: const Icon(
@@ -1153,6 +1272,75 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildEditableField(
+      String label, TextEditingController controller, IconData icon,
+      {int? maxLines}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3399FF).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF3399FF).withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              icon,
+              color: const Color(0xFF3399FF),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: controller,
+                  maxLines: maxLines ?? 1,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Color(0xFF3399FF)),
+                    ),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  style: TextStyle(
+                    color: Colors.grey[900],
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,27 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../l10n/app_localizations.dart';
-import '../services/simple_notification_service.dart';
-
-class NotificationSettingsPage extends StatefulWidget {
-  const NotificationSettingsPage({super.key});
+class NotificationSettingsPage extends ConsumerStatefulWidget {
+  const NotificationSettingsPage({Key? key}) : super(key: key);
 
   @override
-  State<NotificationSettingsPage> createState() =>
+  ConsumerState<NotificationSettingsPage> createState() =>
       _NotificationSettingsPageState();
 }
 
-class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
-  bool _useSimpleNotifications = false;
-  bool _isLoading = false;
-  String? _currentBusinessId;
-  String? _authToken;
-
-  // Simple notification settings
-  Duration _pollingInterval = const Duration(seconds: 30);
-  bool _showLocalNotifications = true;
-  bool _playNotificationSounds = true;
+class _NotificationSettingsPageState
+    extends ConsumerState<NotificationSettingsPage> {
+  bool _pushNotifications = true;
+  bool _emailNotifications = true;
+  bool _smsNotifications = false;
+  bool _newOrderNotifications = true;
+  bool _orderStatusNotifications = true;
+  bool _paymentNotifications = true;
+  bool _systemNotifications = true;
+  bool _marketingNotifications = false;
+  bool _weeklyReports = true;
+  bool _monthlyReports = true;
+  
+  // Quiet Hours Settings
+  bool _enableQuietHours = false;
+  TimeOfDay _quietHoursStart = const TimeOfDay(hour: 22, minute: 0);
+  TimeOfDay _quietHoursEnd = const TimeOfDay(hour: 8, minute: 0);
 
   @override
   void initState() {
@@ -30,324 +35,390 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   }
 
   Future<void> _loadSettings() async {
-    setState(() => _isLoading = true);
-
     try {
       final prefs = await SharedPreferences.getInstance();
-      _useSimpleNotifications =
-          prefs.getBool('use_simple_notifications') ?? false;
-      _showLocalNotifications =
-          prefs.getBool('show_local_notifications') ?? true;
-      _playNotificationSounds =
-          prefs.getBool('play_notification_sounds') ?? true;
-
-      // Load polling interval (in seconds)
-      final pollingSeconds = prefs.getInt('polling_interval_seconds') ?? 30;
-      _pollingInterval = Duration(seconds: pollingSeconds);
-
-      // Load current business context
-      _currentBusinessId = prefs.getString('current_business_id');
-      _authToken = prefs.getString('access_token');
-
-      setState(() {});
+      setState(() {
+        _pushNotifications = prefs.getBool('notif_push') ?? true;
+        _emailNotifications = prefs.getBool('notif_email') ?? true;
+        _smsNotifications = prefs.getBool('notif_sms') ?? false;
+        _newOrderNotifications = prefs.getBool('notif_new_order') ?? true;
+        _orderStatusNotifications = prefs.getBool('notif_order_status') ?? true;
+        _paymentNotifications = prefs.getBool('notif_payment') ?? true;
+        _systemNotifications = prefs.getBool('notif_system') ?? true;
+        _marketingNotifications = prefs.getBool('notif_marketing') ?? false;
+        _weeklyReports = prefs.getBool('notif_weekly_reports') ?? true;
+        _monthlyReports = prefs.getBool('notif_monthly_reports') ?? true;
+        _enableQuietHours = prefs.getBool('notif_quiet_hours') ?? false;
+      });
     } catch (e) {
-      _showError('Failed to load notification settings: $e');
-    } finally {
-      setState(() => _isLoading = false);
+      debugPrint('Error loading notification settings: $e');
     }
   }
 
   Future<void> _saveSettings() async {
-    setState(() => _isLoading = true);
-
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('use_simple_notifications', _useSimpleNotifications);
-      await prefs.setBool('show_local_notifications', _showLocalNotifications);
-      await prefs.setBool('play_notification_sounds', _playNotificationSounds);
-      await prefs.setInt(
-          'polling_interval_seconds', _pollingInterval.inSeconds);
+      await prefs.setBool('notif_push', _pushNotifications);
+      await prefs.setBool('notif_email', _emailNotifications);
+      await prefs.setBool('notif_sms', _smsNotifications);
+      await prefs.setBool('notif_new_order', _newOrderNotifications);
+      await prefs.setBool('notif_order_status', _orderStatusNotifications);
+      await prefs.setBool('notif_payment', _paymentNotifications);
+      await prefs.setBool('notif_system', _systemNotifications);
+      await prefs.setBool('notif_marketing', _marketingNotifications);
+      await prefs.setBool('notif_weekly_reports', _weeklyReports);
+      await prefs.setBool('notif_monthly_reports', _monthlyReports);
+      await prefs.setBool('notif_quiet_hours', _enableQuietHours);
 
-      // Apply the notification system change
-      await _applyNotificationSystemChange();
-
-      _showSuccess('Notification settings saved successfully!');
-    } catch (e) {
-      _showError('Failed to save notification settings: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _applyNotificationSystemChange() async {
-    if (_currentBusinessId == null || _authToken == null) return;
-
-    if (_useSimpleNotifications) {
-      // Switch to simple notifications
-      // Note: NotificationService disposal should be handled by the provider
-      SimpleNotificationService().startPolling();
-      SimpleNotificationService().setPollingInterval(_pollingInterval);
-    } else {
-      // Switch to complex notifications
-      SimpleNotificationService().stopPolling();
-      // Note: NotificationService connection should be handled by the provider
-    }
-  }
-
-  Future<void> _testNotification() async {
-    setState(() => _isLoading = true);
-
-    try {
-      if (_useSimpleNotifications) {
-        SimpleNotificationService().sendTestNotification();
-      } else {
-        // Note: NotificationService should be accessed via provider
-        // await NotificationService().sendTestNotification();
-        _showError('Complex notifications require provider setup');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Notification settings saved successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
-
-      _showSuccess('Test notification sent!');
     } catch (e) {
-      _showError('Failed to send test notification: $e');
-    } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save settings: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
+  Future<void> _selectTime(bool isStartTime) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: isStartTime ? _quietHoursStart : _quietHoursEnd,
     );
+    
+    if (picked != null) {
+      setState(() {
+        if (isStartTime) {
+          _quietHoursStart = picked;
+        } else {
+          _quietHoursEnd = picked;
+        }
+      });
+    }
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
+  String _formatTime(TimeOfDay time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
   }
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.notifications),
+        title: const Text('Notifications'),
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
-            onPressed: _isLoading ? null : _saveSettings,
+            onPressed: _saveSettings,
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          // Delivery Methods
+          Card(
+            child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Notification System Selection
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Notification System',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Simple Notifications
-                          RadioListTile<bool>(
-                            title: const Text(
-                                'Simple Notifications (Cloud-Friendly)'),
-                            subtitle: const Text(
-                              'HTTP polling-based notifications. More reliable on cloud platforms. '
-                              'Uses less resources but may have slight delays.',
-                            ),
-                            value: true,
-                            groupValue: _useSimpleNotifications,
-                            onChanged: (value) {
-                              setState(() => _useSimpleNotifications = value!);
-                            },
-                          ),
-
-                          // Complex Notifications
-                          RadioListTile<bool>(
-                            title: const Text(
-                                'Real-time Notifications (WebSocket)'),
-                            subtitle: const Text(
-                              'WebSocket-based real-time notifications. Instant delivery but may have '
-                              'connection issues on some cloud platforms.',
-                            ),
-                            value: false,
-                            groupValue: _useSimpleNotifications,
-                            onChanged: (value) {
-                              setState(() => _useSimpleNotifications = value!);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Simple Notification Settings
-                  if (_useSimpleNotifications) ...[
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Simple Notification Settings',
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Polling Interval
-                            Row(
-                              children: [
-                                const Icon(Icons.timer),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Polling Interval: ${_pollingInterval.inSeconds} seconds',
-                                    style:
-                                        Theme.of(context).textTheme.bodyLarge,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            Slider(
-                              value: _pollingInterval.inSeconds.toDouble(),
-                              min: 10,
-                              max: 300,
-                              divisions: 29,
-                              label: '${_pollingInterval.inSeconds}s',
-                              onChanged: (value) {
-                                setState(() {
-                                  _pollingInterval =
-                                      Duration(seconds: value.toInt());
-                                });
-                              },
-                            ),
-
-                            Text(
-                              'Lower values provide faster updates but use more battery and data.',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            // Local Notifications Toggle
-                            SwitchListTile(
-                              title: Text(loc.showLocalNotifications),
-                              subtitle:
-                                  Text(loc.showLocalNotificationsDescription),
-                              value: _showLocalNotifications,
-                              onChanged: (value) {
-                                setState(() => _showLocalNotifications = value);
-                              },
-                            ),
-
-                            // Notification Sounds Toggle
-                            SwitchListTile(
-                              title: Text(loc.playNotificationSounds),
-                              subtitle:
-                                  Text(loc.playNotificationSoundsDescription),
-                              value: _playNotificationSounds,
-                              onChanged: (value) {
-                                setState(() => _playNotificationSounds = value);
-                              },
-                            ),
-                          ],
+                  Row(
+                    children: [
+                      Icon(Icons.send, color: Theme.of(context).primaryColor),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Delivery Methods',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  ],
-
-                  const SizedBox(height: 16),
-
-                  // Test Notification Button
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            loc.testNotifications,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: _isLoading ? null : _testNotification,
-                            icon: const Icon(Icons.notification_add),
-                            label: Text(loc.sendTestNotification),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            loc.testNotificationDescription,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
+                    ],
                   ),
-
                   const SizedBox(height: 16),
-
-                  // Information Card
-                  Card(
-                    color: Colors.blue.shade50,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.info, color: Colors.blue.shade700),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Deployment Information',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      color: Colors.blue.shade700,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '• Simple Notifications are recommended for cloud deployment\n'
-                            '• WebSocket notifications work better on dedicated servers\n'
-                            '• You can switch between systems anytime\n'
-                            '• Changes take effect immediately after saving',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
+                  SwitchListTile(
+                    title: const Text('Push Notifications'),
+                    subtitle:
+                        const Text('Receive notifications on your device'),
+                    value: _pushNotifications,
+                    onChanged: (value) {
+                      setState(() {
+                        _pushNotifications = value;
+                      });
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('Email Notifications'),
+                    subtitle: const Text('Receive notifications via email'),
+                    value: _emailNotifications,
+                    onChanged: (value) {
+                      setState(() {
+                        _emailNotifications = value;
+                      });
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('SMS Notifications'),
+                    subtitle: const Text(
+                        'Receive notifications via SMS (charges may apply)'),
+                    value: _smsNotifications,
+                    onChanged: (value) {
+                      setState(() {
+                        _smsNotifications = value;
+                      });
+                    },
                   ),
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+
+          // Order Notifications
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.shopping_cart,
+                          color: Theme.of(context).primaryColor),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Order Notifications',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('New Orders'),
+                    subtitle: const Text('Get notified when new orders arrive'),
+                    value: _newOrderNotifications,
+                    onChanged: (value) {
+                      setState(() {
+                        _newOrderNotifications = value;
+                      });
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('Order Status Updates'),
+                    subtitle:
+                        const Text('Get notified when order status changes'),
+                    value: _orderStatusNotifications,
+                    onChanged: (value) {
+                      setState(() {
+                        _orderStatusNotifications = value;
+                      });
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('Payment Notifications'),
+                    subtitle: const Text('Get notified about payment updates'),
+                    value: _paymentNotifications,
+                    onChanged: (value) {
+                      setState(() {
+                        _paymentNotifications = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // System & Marketing
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.info, color: Theme.of(context).primaryColor),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'System & Marketing',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('System Notifications'),
+                    subtitle: const Text('Important system updates and alerts'),
+                    value: _systemNotifications,
+                    onChanged: (value) {
+                      setState(() {
+                        _systemNotifications = value;
+                      });
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('Marketing Notifications'),
+                    subtitle: const Text('Promotions and marketing updates'),
+                    value: _marketingNotifications,
+                    onChanged: (value) {
+                      setState(() {
+                        _marketingNotifications = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Reports
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.assessment,
+                          color: Theme.of(context).primaryColor),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Reports',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('Weekly Reports'),
+                    subtitle: const Text(
+                        'Receive weekly business performance reports'),
+                    value: _weeklyReports,
+                    onChanged: (value) {
+                      setState(() {
+                        _weeklyReports = value;
+                      });
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('Monthly Reports'),
+                    subtitle: const Text('Receive monthly business analytics'),
+                    value: _monthlyReports,
+                    onChanged: (value) {
+                      setState(() {
+                        _monthlyReports = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Quiet Hours
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.bedtime,
+                          color: Theme.of(context).primaryColor),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Quiet Hours',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('Enable Quiet Hours'),
+                    subtitle:
+                        const Text('Reduce notifications during quiet hours'),
+                    value: _enableQuietHours,
+                    onChanged: (value) {
+                      setState(() {
+                        _enableQuietHours = value;
+                      });
+                    },
+                  ),
+                  if (_enableQuietHours) ...[
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ListTile(
+                            title: const Text('Start Time'),
+                            subtitle: Text(_formatTime(_quietHoursStart)),
+                            trailing: const Icon(Icons.access_time),
+                            onTap: () => _selectTime(true),
+                          ),
+                        ),
+                        Expanded(
+                          child: ListTile(
+                            title: const Text('End Time'),
+                            subtitle: Text(_formatTime(_quietHoursEnd)),
+                            trailing: const Icon(Icons.access_time),
+                            onTap: () => _selectTime(false),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // Save Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _saveSettings,
+              icon: const Icon(Icons.save),
+              label: const Text('Save Settings'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

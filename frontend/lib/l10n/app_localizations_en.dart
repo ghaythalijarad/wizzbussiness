@@ -2433,4 +2433,30 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get byCreatingAnAccountYouAgreeToOurTermsOfServiceAndPrivacyPolicy =>
       'By creating an account, you agree to our Terms of Service and Privacy Policy. Your business information will be reviewed before activation.';
+
+  @override
+  String get businessDocuments => 'Business Documents';
+
+  @override
+  String get uploadOptionalDocumentsToVerifyBusiness =>
+      'Upload optional documents to verify your business';
+
+  @override
+  String get uploadBusinessLicenseDocument =>
+      'Upload your business license document';
+
+  @override
+  String get uploadOwnerIdentificationDocument =>
+      'Upload owner identification document';
+
+  @override
+  String get uploadHealthCertificateIfApplicable =>
+      'Upload health certificate if applicable';
+
+  @override
+  String get uploadPhotoOfBusinessOwner =>
+      'Upload a photo of the business owner';
+
+  @override
+  String get previous => 'Previous';
 }

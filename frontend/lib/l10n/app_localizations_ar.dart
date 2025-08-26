@@ -2425,4 +2425,27 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get byCreatingAnAccountYouAgreeToOurTermsOfServiceAndPrivacyPolicy =>
       'من خلال إنشاء حساب، فإنك توافق على شروط الخدمة وسياسة الخصوصية الخاصة بنا. سيتم مراجعة معلومات نشاطك التجاري قبل التفعيل.';
+
+  @override
+  String get businessDocuments => 'مستندات النشاط التجاري';
+
+  @override
+  String get uploadOptionalDocumentsToVerifyBusiness =>
+      'ارفع المستندات الاختيارية للتحقق من نشاطك التجاري';
+
+  @override
+  String get uploadBusinessLicenseDocument => 'ارفع مستند رخصة نشاطك التجاري';
+
+  @override
+  String get uploadOwnerIdentificationDocument => 'ارفع مستند هوية المالك';
+
+  @override
+  String get uploadHealthCertificateIfApplicable =>
+      'ارفع الشهادة الصحية إذا كانت مطلوبة';
+
+  @override
+  String get uploadPhotoOfBusinessOwner => 'ارفع صورة مالك النشاط التجاري';
+
+  @override
+  String get previous => 'السابق';
 }

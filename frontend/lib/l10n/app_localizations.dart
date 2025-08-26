@@ -4653,6 +4653,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'By creating an account, you agree to our Terms of Service and Privacy Policy. Your business information will be reviewed before activation.'**
   String get byCreatingAnAccountYouAgreeToOurTermsOfServiceAndPrivacyPolicy;
+
+  /// No description provided for @businessDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Documents'**
+  String get businessDocuments;
+
+  /// No description provided for @uploadOptionalDocumentsToVerifyBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload optional documents to verify your business'**
+  String get uploadOptionalDocumentsToVerifyBusiness;
+
+  /// No description provided for @uploadBusinessLicenseDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload your business license document'**
+  String get uploadBusinessLicenseDocument;
+
+  /// No description provided for @uploadOwnerIdentificationDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload owner identification document'**
+  String get uploadOwnerIdentificationDocument;
+
+  /// No description provided for @uploadHealthCertificateIfApplicable.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload health certificate if applicable'**
+  String get uploadHealthCertificateIfApplicable;
+
+  /// No description provided for @uploadPhotoOfBusinessOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a photo of the business owner'**
+  String get uploadPhotoOfBusinessOwner;
+
+  /// No description provided for @previous.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get previous;
 }
 
 class _AppLocalizationsDelegate

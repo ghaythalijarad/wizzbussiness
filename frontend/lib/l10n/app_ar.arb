@@ -944,5 +944,12 @@
   "yourBusinessWillBeVerifiedBeforeActivationForSecurityAndTrust": "سيتم التحقق من نشاطك التجاري قبل التفعيل للأمان والثقة",
   "fullDashboardAccess": "الوصول الكامل للوحة التحكم",
   "manageOrdersProductsAnalyticsAndBusinessSettingsInOnePlace": "إدارة الطلبات والمنتجات والتحليلات وإعدادات النشاط التجاري في مكان واحد",
-  "byCreatingAnAccountYouAgreeToOurTermsOfServiceAndPrivacyPolicy": "من خلال إنشاء حساب، فإنك توافق على شروط الخدمة وسياسة الخصوصية الخاصة بنا. سيتم مراجعة معلومات نشاطك التجاري قبل التفعيل."
+  "byCreatingAnAccountYouAgreeToOurTermsOfServiceAndPrivacyPolicy": "من خلال إنشاء حساب، فإنك توافق على شروط الخدمة وسياسة الخصوصية الخاصة بنا. سيتم مراجعة معلومات نشاطك التجاري قبل التفعيل.",
+  "businessDocuments": "مستندات النشاط التجاري",
+  "uploadOptionalDocumentsToVerifyBusiness": "ارفع المستندات الاختيارية للتحقق من نشاطك التجاري",
+  "uploadBusinessLicenseDocument": "ارفع مستند رخصة نشاطك التجاري",
+  "uploadOwnerIdentificationDocument": "ارفع مستند هوية المالك",
+  "uploadHealthCertificateIfApplicable": "ارفع الشهادة الصحية إذا كانت مطلوبة",
+  "uploadPhotoOfBusinessOwner": "ارفع صورة مالك النشاط التجاري",
+  "previous": "السابق"
 }

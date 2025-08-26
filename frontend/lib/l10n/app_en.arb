@@ -1025,5 +1025,12 @@
   "yourBusinessWillBeVerifiedBeforeActivationForSecurityAndTrust": "Your business will be verified before activation for security and trust",
   "fullDashboardAccess": "Full Dashboard Access",
   "manageOrdersProductsAnalyticsAndBusinessSettingsInOnePlace": "Manage orders, products, analytics, and business settings in one place",
-  "byCreatingAnAccountYouAgreeToOurTermsOfServiceAndPrivacyPolicy": "By creating an account, you agree to our Terms of Service and Privacy Policy. Your business information will be reviewed before activation."
+  "byCreatingAnAccountYouAgreeToOurTermsOfServiceAndPrivacyPolicy": "By creating an account, you agree to our Terms of Service and Privacy Policy. Your business information will be reviewed before activation.",
+  "businessDocuments": "Business Documents",
+  "uploadOptionalDocumentsToVerifyBusiness": "Upload optional documents to verify your business",
+  "uploadBusinessLicenseDocument": "Upload your business license document",
+  "uploadOwnerIdentificationDocument": "Upload owner identification document",
+  "uploadHealthCertificateIfApplicable": "Upload health certificate if applicable",
+  "uploadPhotoOfBusinessOwner": "Upload a photo of the business owner",
+  "previous": "Previous"
 }

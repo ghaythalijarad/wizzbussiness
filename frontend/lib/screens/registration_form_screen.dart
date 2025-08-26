@@ -530,7 +530,7 @@ class _RegistrationFormScreenState
         children: [
           // Header
           Text(
-            'Business Documents',
+            loc.businessDocuments,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF2E7D32),
@@ -539,7 +539,7 @@ class _RegistrationFormScreenState
           ),
           const SizedBox(height: 8),
           Text(
-            'Upload optional documents to verify your business',
+            loc.uploadOptionalDocumentsToVerifyBusiness,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[600],
                 ),
@@ -549,8 +549,8 @@ class _RegistrationFormScreenState
 
           // Optional Documents
           _buildDocumentUploadCard(
-            title: 'Business License',
-            subtitle: 'Upload your business license document',
+            title: loc.businessLicense,
+            subtitle: loc.uploadBusinessLicenseDocument,
             icon: Icons.description_outlined,
             file: _licenseFile,
             onTap: () => _pickDocument('license'),
@@ -558,8 +558,8 @@ class _RegistrationFormScreenState
           const SizedBox(height: 16),
 
           _buildDocumentUploadCard(
-            title: 'Owner Identity',
-            subtitle: 'Upload owner identification document',
+            title: loc.ownerIdentity,
+            subtitle: loc.uploadOwnerIdentificationDocument,
             icon: Icons.badge_outlined,
             file: _identityFile,
             onTap: () => _pickDocument('identity'),
@@ -568,7 +568,7 @@ class _RegistrationFormScreenState
 
           _buildDocumentUploadCard(
             title: loc.healthCertificate,
-            subtitle: 'Upload health certificate if applicable',
+            subtitle: loc.uploadHealthCertificateIfApplicable,
             icon: Icons.health_and_safety_outlined,
             file: _healthCertificateFile,
             onTap: () => _pickDocument('health'),
@@ -576,8 +576,8 @@ class _RegistrationFormScreenState
           const SizedBox(height: 16),
 
           _buildDocumentUploadCard(
-            title: 'Owner Photo',
-            subtitle: 'Upload a photo of the business owner',
+            title: loc.ownerPhoto,
+            subtitle: loc.uploadPhotoOfBusinessOwner,
             icon: Icons.person_outlined,
             file: _ownerPhotoFile,
             onTap: () => _pickDocument('owner'),
@@ -594,13 +594,13 @@ class _RegistrationFormScreenState
               Expanded(
                 child: OutlinedButton(
                   onPressed: _previousPage,
-                  child: const Text('Previous'),
+                  child: Text(loc.previous),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: WizzBusinessButton(
-                  text: 'Register',
+                  text: loc.register,
                   isLoading: _isLoading,
                   onPressed: _agreedToTerms ? _register : null,
                 ),

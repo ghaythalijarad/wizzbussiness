@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
+import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
+import '../services/image_upload_service.dart';
+import '../screens/login_page.dart';
 import '../providers/session_provider.dart';
 import '../providers/business_provider.dart';
-import '../screens/signin_screen.dart';
 
 class AccountSettingsPage extends ConsumerStatefulWidget {
   final Business business;
@@ -20,8 +25,12 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
   late TextEditingController _businessNameController;
   late TextEditingController _ownerNameController;
   late TextEditingController _addressController;
+  File? _image;
+  final ImagePicker _picker = ImagePicker();
 
+  Map<String, dynamic>? _userData;
   bool _isInitializing = true;
+  bool _isUploadingImage = false;
 
   @override
   void initState() {
@@ -37,13 +46,8 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
   Future<void> _validateAuthenticationAndInitialize() async {
     final session = ref.read(sessionProvider);
     if (!session.isAuthenticated) {
-      // Re-check in case tokens were restored later
-      await ref.read(sessionProvider.notifier).checkAuthStatus();
-      final refreshed = ref.read(sessionProvider);
-      if (!refreshed.isAuthenticated) {
-        _showAuthenticationRequiredDialog();
-        return;
-      }
+      _showAuthenticationRequiredDialog();
+      return;
     }
 
     // If all checks pass, proceed with initialization
@@ -53,6 +57,163 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
 
     // Load user data after authentication is verified
     _loadUserData();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Choose from Gallery'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _pickImageFromGallery();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_camera),
+                  title: const Text('Take Photo'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _pickImageFromCamera();
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error picking image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 95,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+        await _uploadBusinessPhoto();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    try {
+      final pickedFile = await _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 95,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+        await _uploadBusinessPhoto();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error taking photo: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadBusinessPhoto() async {
+    if (_image == null) return;
+
+    setState(() {
+      _isUploadingImage = true;
+    });
+
+    try {
+      final result = await ImageUploadService.uploadBusinessPhoto(_image!);
+
+      if (result['success']) {
+        final newImageUrl = result['imageUrl'];
+
+        // Update the business object with the new photo URL
+        setState(() {
+          widget.business.businessPhotoUrl = newImageUrl;
+          _isUploadingImage = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Business photo updated successfully!'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _isUploadingImage = false;
+          _image = null; // Clear the selected image on failure
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to upload photo: ${result['message']}'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isUploadingImage = false;
+        _image = null; // Clear the selected image on error
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error uploading photo: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   void _showAuthenticationRequiredDialog() {
@@ -78,7 +239,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         content: Text(
           'Please sign in to access account settings',
           style: TextStyle(
-            color: const Color(0xFF001133).withAlpha(179),
+            color: const Color(0xFF001133).withOpacity(0.7),
           ),
           textAlign: TextAlign.center,
         ),
@@ -104,9 +265,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
   void _navigateToLogin() {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
-        builder: (context) => const SignInScreen(
-          noticeMessage: 'Please sign in to access account settings',
-        ),
+        builder: (context) => const LoginPage(),
       ),
       (route) => false,
     );
@@ -206,22 +365,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
       backgroundColor: Colors.grey[50],
       body: businessAsyncValue.when(
         loading: () => _buildLoadingState(),
-        error: (error, stack) {
-          final msg = error.toString();
-          // Detect auth-related errors and prompt sign-in
-          if (msg.contains('Missing or invalid authorization header') ||
-              msg.contains('401') ||
-              msg.contains('Invalid or expired access token') ||
-              msg.contains('No access token')) {
-            // Show dialog and a lightweight placeholder behind it
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) _showAuthenticationRequiredDialog();
-            });
-            return _buildErrorStateWithMessage(
-                l10n, theme, 'Authentication required.');
-          }
-          return _buildErrorStateWithMessage(l10n, theme, msg);
-        },
+        error: (error, stack) => _buildErrorStateWithMessage(l10n, theme, error.toString()),
         data: (business) {
           if (business == null) {
             return _buildErrorStateWithMessage(l10n, theme, 'No business found for this account');
@@ -273,7 +417,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF3399FF).withAlpha(25),
+              color: const Color(0xFF3399FF).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const CircularProgressIndicator(
@@ -304,7 +448,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(10),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -315,7 +459,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.red.withAlpha(25),
+              color: Colors.red.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -405,7 +549,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF3399FF).withAlpha(25),
+            color: const Color(0xFF3399FF).withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -443,7 +587,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3399FF).withAlpha(77),
+            color: const Color(0xFF3399FF).withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -474,7 +618,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(51),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -509,9 +653,9 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(51),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withAlpha(77)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -534,6 +678,38 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPersonalInfoCard(AppLocalizations l10n, ThemeData theme) {
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.05),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            _buildInfoRow(
+              l10n.ownerName,
+              _userData?['owner_name'] ?? '',
+              Icons.person_outline_rounded,
+            ),
+            const Divider(height: 24),
+            _buildInfoRow(
+              l10n.email,
+              _userData?['email'] ?? '',
+              Icons.email_outlined,
+            ),
+            const Divider(height: 24),
+            _buildInfoRow(
+              l10n.phoneNumber,
+              _userData?['phone_number'] ?? 'Not provided',
+              Icons.phone_outlined,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -572,6 +748,39 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     ]);
   }
 
+  Widget _buildBusinessInfoCard(AppLocalizations l10n, ThemeData theme) {
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.05),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            _buildInfoRow(
+              l10n.businessName,
+              _userData?['business_name'] ?? '',
+              Icons.store_outlined,
+            ),
+            const Divider(height: 24),
+            _buildInfoRow(
+              l10n.businessType,
+              _userData?['business_type'] ?? 'Not specified',
+              Icons.category_outlined,
+            ),
+            const Divider(height: 24),
+            _buildInfoRow(
+              'Address',
+              _formatAddress(_userData?['address']),
+              Icons.location_on_outlined,
+              isMultiline: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildBusinessInfoCardWithBusiness(AppLocalizations l10n, ThemeData theme, Business business) {
     return _buildModernCard([
       _buildInfoRow(l10n.businessName, business.name, Icons.business),
@@ -606,6 +815,58 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     ]);
   }
 
+  Widget _buildAccountStatusCard(AppLocalizations l10n, ThemeData theme) {
+    final createdAt = _userData?['created_at'];
+    final registrationDate = _formatDate(createdAt);
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatusChip(
+                  'Active',
+                  true,
+                  Colors.green,
+                  Icons.check_circle_rounded,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildStatusChip(
+                  'Verified',
+                  true,
+                  const Color(0xFF3399FF),
+                  Icons.verified_rounded,
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 32),
+          _buildModernInfoTile(
+            l10n.registrationDate,
+            registrationDate.isNotEmpty ? registrationDate : 'Not available',
+            Icons.calendar_today_rounded,
+            Colors.orange,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAccountStatusCardWithBusiness(AppLocalizations l10n, ThemeData theme, Business business) {
     return _buildModernCard([
       Row(
@@ -615,9 +876,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
             l10n.active,
             business.status == 'approved',
             Icons.check_circle,
-            business.status == 'approved'
-                ? Colors.green
-                : Theme.of(context).colorScheme.error,
+            business.status == 'approved' ? Colors.green : Colors.orange,
           ),
           _buildStatusIndicator(
             l10n.verified,
@@ -628,6 +887,105 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         ],
       ),
     ]);
+  }
+
+  Widget _buildModernInfoTile(
+    String label,
+    String value,
+    IconData icon,
+    Color iconColor, {
+    bool isLtr = false,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            color: iconColor,
+            size: 24,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+                textDirection: isLtr ? ui.TextDirection.ltr : null,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusChip(
+      String label, bool isActive, Color color, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: isActive ? color.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color:
+              isActive ? color.withOpacity(0.3) : Colors.grey.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            color: isActive ? color : Colors.grey,
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: isActive ? color : Colors.grey,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(String? dateString) {
+    if (dateString == null) {
+      return '';
+    }
+    try {
+      final dateTime = DateTime.parse(dateString);
+      return DateFormat.yMMMd().format(dateTime);
+    } catch (e) {
+      return dateString;
+    }
   }
 
   Widget _buildInfoRow(String label, String value, IconData icon,
@@ -641,10 +999,10 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF3399FF).withAlpha(25),
+              color: const Color(0xFF3399FF).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF3399FF).withAlpha(51),
+                color: const Color(0xFF3399FF).withOpacity(0.2),
                 width: 1,
               ),
             ),
@@ -692,10 +1050,10 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(51),
+        color: Colors.white.withValues(alpha: 0.2),
         shape: BoxShape.circle,
         border: Border.all(
-          color: Colors.white.withAlpha(77),
+          color: Colors.white.withValues(alpha: 0.3),
           width: 2,
         ),
       ),
@@ -733,7 +1091,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(51),
+        color: Colors.white.withValues(alpha: 0.2),
         shape: BoxShape.circle,
       ),
       child: const Icon(
@@ -747,7 +1105,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
   Widget _buildModernCard(List<Widget> children) {
     return Card(
       elevation: 8,
-      shadowColor: Colors.black.withAlpha(38),
+      shadowColor: Colors.black.withOpacity(0.15),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: Colors.white,
       child: Container(

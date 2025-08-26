@@ -215,13 +215,9 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  color: Colors.orange.shade50,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withOpacity(0.3)),
+                  border: Border.all(color: Colors.orange.shade200),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,7 +226,7 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
                       children: [
                         Icon(
                           Icons.location_off,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: Colors.orange.shade600,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -238,7 +234,7 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
                           localizations.noLocationSet,
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: Colors.orange.shade700,
                           ),
                         ),
                       ],

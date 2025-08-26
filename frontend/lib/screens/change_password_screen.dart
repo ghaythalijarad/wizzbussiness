@@ -100,11 +100,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 // Current Password
                 WizzBusinessTextFormField(
                   controller: _currentPasswordController,
-                  labelText: l10n.password,
+                  labelText: 'Current Password',
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return l10n.pleaseEnterYourPassword;
+                      return 'Please enter your current password';
                     }
                     return null;
                   },
@@ -114,21 +114,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 // New Password
                 WizzBusinessTextFormField(
                   controller: _newPasswordController,
-                  labelText: l10n.changePassword,
+                  labelText: 'New Password',
                   obscureText: true,
                   validator: (value) {
-                    final pwd = (value ?? '');
-                    if (pwd.isEmpty) {
-                      return l10n.passwordRequired;
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a new password';
                     }
-                    final lengthOk = pwd.length >= 8;
-                    final hasLower = RegExp(r'(?=.*[a-z])').hasMatch(pwd);
-                    final hasUpper = RegExp(r'(?=.*[A-Z])').hasMatch(pwd);
-                    final hasNumber = RegExp(r'(?=.*\d)').hasMatch(pwd);
-                    final hasSpecial = RegExp(r'(?=.*[!@#\$%^&*(),.?":{}|<>])').hasMatch(pwd);
-                    final valid = lengthOk && hasLower && hasUpper && hasNumber && hasSpecial;
-                    if (!valid) {
-                      return '${l10n.passwordRequirementsTitle}\n${l10n.passwordRequirementsBullets}';
+                    if (value.length < 6) {
+                      return 'Password must be at least 6 characters';
                     }
                     return null;
                   },
@@ -138,14 +131,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 // Confirm New Password
                 WizzBusinessTextFormField(
                   controller: _confirmPasswordController,
-                  labelText: l10n.confirmPassword,
+                  labelText: 'Confirm New Password',
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return l10n.confirmPasswordRequired;
+                      return 'Please confirm your new password';
                     }
                     if (value != _newPasswordController.text) {
-                      return l10n.passwordsDoNotMatch;
+                      return 'Passwords do not match';
                     }
                     return null;
                   },

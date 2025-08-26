@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/app_auth_provider.dart';
@@ -7,8 +6,7 @@ import '../services/api_service.dart';
 import '../services/app_auth_service.dart';
 import '../widgets/location_settings_widget.dart';
 import '../models/business.dart';
-import '../screens/signin_screen.dart';
-import '../theme/cravevolt_theme.dart';
+import '../screens/login_page.dart';
 
 class OtherSettingsPage extends StatefulWidget {
   final Business? business;
@@ -73,31 +71,21 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: CraveVoltColors.surface,
-        title: Text(
-          'Authentication Required',
-          style: TextStyle(color: CraveVoltColors.textPrimary),
-        ),
-        content: Text(
-          'Please sign in to access location settings.',
-          style: TextStyle(color: CraveVoltColors.textSecondary),
-        ),
+        title: Text('Authentication Required'),
+        content: Text('Please sign in to access location settings.'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); // Close the dialog
               Navigator.of(context, rootNavigator: true).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => const SignInScreen(
-                    noticeMessage:
-                        'Please sign in to access location settings.',
-                  ),
+                  builder: (context) => const LoginPage(),
                 ),
               );
             },
             style: TextButton.styleFrom(
-              backgroundColor: CraveVoltColors.neonLime,
-              foregroundColor: CraveVoltColors.background,
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -196,8 +184,7 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(loc.locationSaved),
-          backgroundColor: CraveVoltColors.neonLime,
-          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
@@ -205,8 +192,7 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${loc.failedToSaveLocation}: $e'),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
         ),
       );
     }
@@ -217,21 +203,16 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
     final loc = AppLocalizations.of(context)!;
     if (_isInitializing) {
       return Scaffold(
-        backgroundColor: CraveVoltColors.background,
         appBar: AppBar(
           title: Text(loc.businessLocation),
-          backgroundColor: CraveVoltColors.surface,
-          foregroundColor: CraveVoltColors.textPrimary,
-          systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: CraveVoltColors.surface,
-            statusBarIconBrightness: Brightness.light,
-          ),
+          backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Colors.white,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).pop(),
             style: IconButton.styleFrom(
               backgroundColor: Colors.transparent,
-              foregroundColor: CraveVoltColors.textPrimary,
+              foregroundColor: Colors.white,
               shape: const RoundedRectangleBorder(),
               elevation: 0,
               padding: const EdgeInsets.all(12),
@@ -240,30 +221,24 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
         ),
         body: Center(
           child: CircularProgressIndicator(
-            color: CraveVoltColors.neonLime,
-            backgroundColor: CraveVoltColors.background,
+            color: Theme.of(context).primaryColor,
           ),
         ),
       );
     }
     return Scaffold(
-      backgroundColor: CraveVoltColors.background,
       appBar: AppBar(
         title: Text(loc.businessLocation),
-        backgroundColor: CraveVoltColors.surface,
-        foregroundColor: CraveVoltColors.textPrimary,
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
         elevation: 2,
-        shadowColor: CraveVoltColors.neonLime.withOpacity(0.1),
-        systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: CraveVoltColors.surface,
-          statusBarIconBrightness: Brightness.light,
-        ),
+        shadowColor: Theme.of(context).primaryColor.withOpacity(0.3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
           style: IconButton.styleFrom(
             backgroundColor: Colors.transparent,
-            foregroundColor: CraveVoltColors.textPrimary,
+            foregroundColor: Colors.white,
             shape: const RoundedRectangleBorder(),
             elevation: 0,
             padding: const EdgeInsets.all(12),
@@ -276,10 +251,7 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
               await AppAuthService.signOut();
               Navigator.of(context, rootNavigator: true).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => const SignInScreen(
-                    noticeMessage:
-                        'You have been signed out. Please sign in again.',
-                  ),
+                  builder: (context) => const LoginPage(),
                 ),
               );
             },
@@ -289,8 +261,7 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
       body: _isLoadingSettings
           ? Center(
               child: CircularProgressIndicator(
-                color: CraveVoltColors.neonLime,
-                backgroundColor: CraveVoltColors.background,
+                color: Theme.of(context).primaryColor,
               ),
             )
           : _errorMessage != null
@@ -298,18 +269,15 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.error_outline,
                         size: 64,
-                        color: Colors.red.shade400,
+                        color: Colors.red,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         _errorMessage!,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: CraveVoltColors.textSecondary,
-                        ),
+                        style: const TextStyle(fontSize: 16),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
@@ -318,8 +286,8 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                         icon: const Icon(Icons.refresh),
                         label: Text(loc.retry),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: CraveVoltColors.neonLime,
-                          foregroundColor: CraveVoltColors.background,
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 24, vertical: 12),
                         ),
@@ -334,16 +302,8 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                     children: [
                       // Description Section
                       Card(
-                        color: CraveVoltColors.surface,
                         elevation: 2,
                         margin: const EdgeInsets.only(bottom: 20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: CraveVoltColors.neonLime.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
@@ -351,31 +311,18 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                             children: [
                               Row(
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: CraveVoltColors.neonLime
-                                          .withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: CraveVoltColors.neonLime
-                                            .withOpacity(0.3),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Icon(
-                                      Icons.location_on,
-                                      color: CraveVoltColors.neonLime,
-                                      size: 24,
-                                    ),
+                                  Icon(
+                                    Icons.location_on,
+                                    color: Theme.of(context).primaryColor,
+                                    size: 24,
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: 8),
                                   Text(
                                     loc.businessLocation,
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: CraveVoltColors.textPrimary,
+                                      color: Theme.of(context).primaryColor,
                                     ),
                                   ),
                                 ],
@@ -385,7 +332,7 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                                 loc.businessLocationDescription,
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: CraveVoltColors.textSecondary,
+                                  color: Colors.grey.shade700,
                                   height: 1.4,
                                 ),
                               ),
@@ -395,16 +342,8 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                       ),
                       // Location Information Section
                       Card(
-                        color: CraveVoltColors.surface,
                         elevation: 2,
                         margin: const EdgeInsets.only(bottom: 20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: CraveVoltColors.neonLime.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
@@ -412,36 +351,23 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                             children: [
                               Row(
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: CraveVoltColors.neonLime
-                                          .withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(
-                                        color: CraveVoltColors.neonLime
-                                            .withOpacity(0.3),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Icon(
-                                      Icons.info_outline,
-                                      color: CraveVoltColors.neonLime,
-                                      size: 20,
-                                    ),
+                                  Icon(
+                                    Icons.info_outline,
+                                    color: Theme.of(context).primaryColor,
+                                    size: 20,
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 8),
                                   Text(
                                     loc.locationInformation,
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: CraveVoltColors.textPrimary,
+                                      color: Theme.of(context).primaryColor,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 12),
                               _buildInfoItem(
                                 Icons.visibility,
                                 loc.customerVisibility,
@@ -481,29 +407,21 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: CraveVoltColors.neonLime.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Icon(
-            icon,
-            size: 16,
-            color: CraveVoltColors.neonLime,
-          ),
+        Icon(
+          icon,
+          size: 16,
+          color: Colors.grey.shade600,
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: CraveVoltColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
@@ -511,8 +429,7 @@ class _OtherSettingsPageState extends State<OtherSettingsPage> {
                 description,
                 style: TextStyle(
                   fontSize: 12,
-                  color: CraveVoltColors.textSecondary,
-                  height: 1.3,
+                  color: Colors.grey.shade600,
                 ),
               ),
             ],

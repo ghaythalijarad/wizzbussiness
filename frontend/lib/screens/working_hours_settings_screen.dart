@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import '../models/business.dart';
-import '../theme/cravevolt_theme.dart';
 
 class WorkingHoursSettingsScreen extends StatefulWidget {
   final Business? business;
@@ -152,16 +150,14 @@ class _WorkingHoursSettingsScreenState
       if (result['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(AppLocalizations.of(context)!.workingHoursSaved),
-          backgroundColor: CraveVoltColors.success,
-          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.green,
         ));
       } else {
         errorMsg =
             'Failed to save working hours: ${result['message'] ?? 'Unknown error'}';
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(errorMsg!),
-          backgroundColor: CraveVoltColors.error,
-          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
         ));
       }
     } catch (e) {
@@ -169,8 +165,7 @@ class _WorkingHoursSettingsScreenState
       errorMsg = 'Failed to save working hours: $e';
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Error: $e'),
-        backgroundColor: CraveVoltColors.error,
-        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.red,
       ));
     }
     setState(() {
@@ -200,45 +195,23 @@ class _WorkingHoursSettingsScreenState
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: CraveVoltColors.background,
       appBar: AppBar(
         title: Text(l10n.workingHoursSettings),
-        backgroundColor: CraveVoltColors.surface,
-        foregroundColor: CraveVoltColors.textPrimary,
-        systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: CraveVoltColors.surface,
-          statusBarIconBrightness: Brightness.light,
-        ),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: CraveVoltColors.neonLime,
-                backgroundColor: CraveVoltColors.background,
-              ),
-            )
+          ? Center(child: CircularProgressIndicator())
           : errorMsg != null
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 64,
-                        color: CraveVoltColors.error,
-                      ),
+                      Icon(Icons.error_outline, size: 64, color: Colors.red),
                       SizedBox(height: 16),
-                      Text(
-                        errorMsg!,
-                        style: TextStyle(color: CraveVoltColors.error),
-                      ),
+                      Text(errorMsg!, style: TextStyle(color: Colors.red)),
                       SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadWorkingHours,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: CraveVoltColors.neonLime,
-                          foregroundColor: CraveVoltColors.background,
-                        ),
                         child: Text(l10n.retry),
                       ),
                     ],
@@ -255,55 +228,24 @@ class _WorkingHoursSettingsScreenState
                           String localizedDay = getLocalizedDayName(day);
 
                           return Card(
-                            color: CraveVoltColors.surface,
                             margin: EdgeInsets.only(bottom: 12),
                             elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(
-                                color:
-                                    CraveVoltColors.neonLime.withOpacity(0.3),
-                                width: 1,
-                              ),
-                            ),
                             child: Padding(
                               padding: const EdgeInsets.all(16.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          color: CraveVoltColors.neonLime
-                                              .withOpacity(0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: CraveVoltColors.neonLime
-                                                .withOpacity(0.3),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          Icons.schedule,
-                                          color: CraveVoltColors.neonLime,
-                                          size: 18,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        localizedDay,
-                                        style: TextStyle(
+                                  Text(
+                                    localizedDay,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: CraveVoltColors.textPrimary,
+                                          color: Theme.of(context).primaryColor,
                                         ),
-                                      ),
-                                    ],
                                   ),
-                                  SizedBox(height: 16),
+                                  SizedBox(height: 12),
                                   Row(
                                     children: [
                                       Expanded(
@@ -313,11 +255,12 @@ class _WorkingHoursSettingsScreenState
                                           children: [
                                             Text(
                                               l10n.openingTime,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                color: CraveVoltColors
-                                                    .textSecondary,
-                                              ),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                             ),
                                             SizedBox(height: 4),
                                             Text(
@@ -327,9 +270,8 @@ class _WorkingHoursSettingsScreenState
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 color: openingHours[day] != null
-                                                    ? CraveVoltColors
-                                                        .textPrimary
-                                                    : CraveVoltColors.textMuted,
+                                                    ? Colors.black87
+                                                    : Colors.grey[600],
                                               ),
                                             ),
                                           ],
@@ -342,13 +284,8 @@ class _WorkingHoursSettingsScreenState
                                         label: Text(l10n.setOpeningTime),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor:
-                                              CraveVoltColors.neonLime,
-                                          foregroundColor:
-                                              CraveVoltColors.background,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
+                                              Theme.of(context).primaryColor,
+                                          foregroundColor: Colors.white,
                                         ),
                                       ),
                                     ],
@@ -363,11 +300,12 @@ class _WorkingHoursSettingsScreenState
                                           children: [
                                             Text(
                                               l10n.closingTime,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                color: CraveVoltColors
-                                                    .textSecondary,
-                                              ),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                             ),
                                             SizedBox(height: 4),
                                             Text(
@@ -377,9 +315,8 @@ class _WorkingHoursSettingsScreenState
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 color: closingHours[day] != null
-                                                    ? CraveVoltColors
-                                                        .textPrimary
-                                                    : CraveVoltColors.textMuted,
+                                                    ? Colors.black87
+                                                    : Colors.grey[600],
                                               ),
                                             ),
                                           ],
@@ -392,18 +329,8 @@ class _WorkingHoursSettingsScreenState
                                         label: Text(l10n.setClosingTime),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor:
-                                              CraveVoltColors.surface,
-                                          foregroundColor:
-                                              CraveVoltColors.textPrimary,
-                                          side: BorderSide(
-                                            color: CraveVoltColors.neonLime
-                                                .withOpacity(0.5),
-                                            width: 1,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
+                                              Theme.of(context).primaryColor,
+                                          foregroundColor: Colors.white,
                                         ),
                                       ),
                                     ],
@@ -417,15 +344,6 @@ class _WorkingHoursSettingsScreenState
                     ),
                     Container(
                       padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: CraveVoltColors.surface,
-                        border: Border(
-                          top: BorderSide(
-                            color: CraveVoltColors.neonLime.withOpacity(0.2),
-                            width: 1,
-                          ),
-                        ),
-                      ),
                       child: SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
@@ -437,8 +355,8 @@ class _WorkingHoursSettingsScreenState
                                 fontSize: 16, fontWeight: FontWeight.w600),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: CraveVoltColors.neonLime,
-                            foregroundColor: CraveVoltColors.background,
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
                             padding: EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),

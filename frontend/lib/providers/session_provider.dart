@@ -1,4 +1,5 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/business.dart';
 import '../services/api_service.dart';
@@ -28,75 +29,33 @@ class SessionNotifier extends StateNotifier<Session> {
   }
 
   Future<void> checkAuthStatus() async {
-    print('🔍 SessionProvider: Checking authentication status...');
     bool signedIn = await AppAuthService.isSignedIn();
-    print('🔍 SessionProvider: isSignedIn result: $signedIn');
-    
     if (signedIn) {
       try {
-        print('🔍 SessionProvider: User signed in, fetching businesses...');
-        // Add a small delay to ensure tokens are ready
-        await Future.delayed(const Duration(milliseconds: 50));
-        
         final list = await ApiService().getUserBusinesses();
-        print(
-            '🔍 SessionProvider: getUserBusinesses returned ${list.length} businesses');
-        
         if (list.isNotEmpty) {
           final business = Business.fromJson(list.first);
           setSession(business.id);
-          print(
-              '✅ SessionProvider: Session validated with business ${business.id}');
         } else {
           // User is signed in but has no business.
           // Don't clear session if they're actually signed in - this could be a temporary API issue
-          print(
-              '⚠️ SessionProvider: User signed in but no businesses found - keeping session active');
-          // Keep the session authenticated even without business data
-          if (state.businessId != null) {
-            // If we already have a businessId, keep it
-            print('🔄 SessionProvider: Maintaining existing session state');
-          } else {
-            // Set authenticated state without businessId
-            state = Session(businessId: null, isAuthenticated: true);
-          }
+          print('User is signed in but no businesses found - keeping session active for now');
         }
       } catch (e) {
-        print('❌ SessionProvider: Error fetching user businesses: $e');
-        print('❌ SessionProvider: Error type: ${e.runtimeType}');
-        print(
-            '❌ SessionProvider: Error string contains 401: ${e.toString().contains('401')}');
-
-        // Be more conservative about clearing session - only clear on definitive auth errors
-        // and avoid clearing immediately after login attempts
-        if (e.toString().contains('401') ||
-            e.toString().contains('Invalid or expired access token') ||
-            e.toString().contains('Missing or invalid authorization header')) {
-          print(
-              '🧹 SessionProvider: Authentication error detected - clearing session');
+        print('Error fetching user businesses: $e');
+        // Don't immediately clear session on API errors - could be temporary
+        // Only clear if it's an authentication error (401)
+        if (e.toString().contains('401') || e.toString().contains('Invalid or expired access token')) {
+          print('Authentication error detected - clearing session');
           try {
             await Amplify.Auth.signOut();
-          } catch (signOutError) {
-            print(
-                '⚠️ SessionProvider: Error during Amplify signOut: $signOutError');
-          }
+          } catch (_) {}
           clearSession();
         } else {
-          print(
-              'ℹ️ SessionProvider: API error but keeping session - may be temporary issue');
-          // For non-authentication errors, keep the session active
-          // If we already have a session, maintain it
-          if (state.businessId != null) {
-            print(
-                '🔄 SessionProvider: Maintaining existing authenticated session despite API error');
-          } else {
-            // Set authenticated state without businessId for now
-            state = Session(businessId: null, isAuthenticated: true);
-          }
+          print('API error but keeping session - user may still be authenticated');
         }
       }
     } else {
-      print('❌ SessionProvider: User not signed in, clearing session');
       clearSession();
     }
   }

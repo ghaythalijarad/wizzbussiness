@@ -44,7 +44,6 @@ class WizzBusinessTextFormField extends StatelessWidget {
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w400,
-        color: Colors.black87, // Explicit dark text color
       ),
       decoration: InputDecoration(
         labelText: labelText,

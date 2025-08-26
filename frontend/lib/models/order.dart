@@ -1,10 +1,7 @@
 // Models for orders in Hadhir Business app
 
-import 'package:flutter/material.dart';
-
 import 'order_item.dart';
 import 'delivery_address.dart';
-import '../l10n/app_localizations.dart';
 
 enum OrderStatus {
   pending,
@@ -61,55 +58,6 @@ class Order {
     this.estimatedPreparationTimeMinutes,
     this.estimatedCompletionTime,
   });
-
-  Duration get timeSinceCreation => DateTime.now().difference(createdAt);
-
-  OrderTimeoutStatus get timeoutStatus {
-    if (status != OrderStatus.pending) {
-      return OrderTimeoutStatus.notApplicable;
-    }
-    final secondsSinceCreation = timeSinceCreation.inSeconds;
-    if (secondsSinceCreation >= TimeoutConfig.autoRejectSeconds) {
-      return OrderTimeoutStatus.autoReject;
-    }
-    if (secondsSinceCreation >= TimeoutConfig.urgentAlertSeconds) {
-      return OrderTimeoutStatus.urgentAlert;
-    }
-    if (secondsSinceCreation >= TimeoutConfig.firstAlertSeconds) {
-      return OrderTimeoutStatus.firstAlert;
-    }
-    return OrderTimeoutStatus.normal;
-  }
-
-  String getTimeoutMessage(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-    final secondsRemaining =
-        TimeoutConfig.autoRejectSeconds - timeSinceCreation.inSeconds;
-
-    String formatRemainingTime(int totalSeconds) {
-      if (totalSeconds < 0) {
-        totalSeconds = 0;
-      }
-      final duration = Duration(seconds: totalSeconds);
-      final minutes = duration.inMinutes;
-      final seconds = duration.inSeconds.remainder(60);
-      // Return in format "Xm Ys"
-      return "${minutes}m ${seconds}s";
-    }
-
-    final formattedTime = formatRemainingTime(secondsRemaining);
-
-    switch (timeoutStatus) {
-      case OrderTimeoutStatus.firstAlert:
-        return loc.timeoutFirstAlert(formattedTime);
-      case OrderTimeoutStatus.urgentAlert:
-        return loc.timeoutUrgentAlert(formattedTime);
-      case OrderTimeoutStatus.autoReject:
-        return loc.timeoutAutoReject;
-      default:
-        return '';
-    }
-  }
 
   /// Create an Order from JSON response from backend
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -275,6 +223,74 @@ class Order {
       return false;
     }
     return DateTime.now().isAfter(getEstimatedCompletionTime());
+  }
+
+  /// Get the timeout status based on how long the order has been pending
+  OrderTimeoutStatus getTimeoutStatus() {
+    // Only apply timeout logic to pending orders
+    if (status != OrderStatus.pending) {
+      return OrderTimeoutStatus.notApplicable;
+    }
+
+    final secondsElapsed = DateTime.now().difference(createdAt).inSeconds;
+
+    if (secondsElapsed >= TimeoutConfig.autoRejectSeconds) {
+      return OrderTimeoutStatus.autoReject;
+    } else if (secondsElapsed >= TimeoutConfig.urgentAlertSeconds) {
+      return OrderTimeoutStatus.urgentAlert;
+    } else if (secondsElapsed >= TimeoutConfig.firstAlertSeconds) {
+      return OrderTimeoutStatus.firstAlert;
+    } else {
+      return OrderTimeoutStatus.normal;
+    }
+  }
+
+  /// Get remaining seconds until next timeout threshold
+  int getRemainingSecondsToTimeout() {
+    if (status != OrderStatus.pending) {
+      return 0;
+    }
+
+    final secondsElapsed = DateTime.now().difference(createdAt).inSeconds;
+    final currentStatus = getTimeoutStatus();
+
+    switch (currentStatus) {
+      case OrderTimeoutStatus.normal:
+        return TimeoutConfig.firstAlertSeconds - secondsElapsed;
+      case OrderTimeoutStatus.firstAlert:
+        return TimeoutConfig.urgentAlertSeconds - secondsElapsed;
+      case OrderTimeoutStatus.urgentAlert:
+        return TimeoutConfig.autoRejectSeconds - secondsElapsed;
+      case OrderTimeoutStatus.autoReject:
+      case OrderTimeoutStatus.notApplicable:
+        return 0;
+    }
+  }
+
+  /// Check if this order should be auto-rejected due to timeout
+  bool shouldAutoReject() {
+    return status == OrderStatus.pending &&
+        getTimeoutStatus() == OrderTimeoutStatus.autoReject;
+  }
+
+  /// Get human-readable timeout message
+  String getTimeoutMessage() {
+    final timeoutStatus = getTimeoutStatus();
+    final remainingSeconds = getRemainingSecondsToTimeout();
+    final remainingMinutes = (remainingSeconds / 60).ceil();
+
+    switch (timeoutStatus) {
+      case OrderTimeoutStatus.normal:
+        return '';
+      case OrderTimeoutStatus.firstAlert:
+        return 'Please respond in $remainingMinutes minute${remainingMinutes != 1 ? 's' : ''}';
+      case OrderTimeoutStatus.urgentAlert:
+        return 'URGENT: Respond in $remainingMinutes minute${remainingMinutes != 1 ? 's' : ''} or order will be auto-rejected';
+      case OrderTimeoutStatus.autoReject:
+        return 'Order timeout - Auto-rejecting';
+      case OrderTimeoutStatus.notApplicable:
+        return '';
+    }
   }
 
   /// Get a user-friendly display order number

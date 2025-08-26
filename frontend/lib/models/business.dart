@@ -111,14 +111,6 @@ class Business {
       case 'caffe':
       case 'cafe':
         return BusinessType.caffe;
-      case 'bakery':
-        return BusinessType.bakery;
-      case 'herbalspices':
-        return BusinessType.herbalspices;
-      case 'cosmetics':
-        return BusinessType.cosmetics;
-      case 'betshop':
-        return BusinessType.betshop;
       default:
         return BusinessType.kitchen; // Default fallback
     }

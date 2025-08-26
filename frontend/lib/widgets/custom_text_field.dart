@@ -61,12 +61,7 @@ class CustomTextField extends StatelessWidget {
       textAlign: textAlign,
       textDirection: textDirection,
       inputFormatters: inputFormatters,
-      style: style ??
-          const TextStyle(
-            color: Colors.black87,
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-          ),
+      style: style,
     );
   }
 }

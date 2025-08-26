@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/product.dart';
 import '../models/business.dart';
 import '../services/product_service.dart';
+import '../widgets/wizz_business_button.dart';
 import 'add_product_screen.dart';
 import 'edit_product_screen.dart';
 import '../providers/product_provider.dart';
@@ -129,10 +130,9 @@ class _ProductsManagementScreenState
   }
 
   void _navigateToAddProductScreen() async {
-    final businessType = _getBusinessTypeString(widget.business.businessType);
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (context) => AddProductScreen(businessType: businessType),
+        builder: (context) => const AddProductScreen(),
       ),
     );
 
@@ -142,12 +142,10 @@ class _ProductsManagementScreenState
   }
 
   void _navigateToEditProductScreen(Product product) async {
-    final businessType = _getBusinessTypeString(widget.business.businessType);
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (context) => EditProductScreen(
           product: product,
-          businessType: businessType,
         ),
       ),
     );
@@ -196,12 +194,9 @@ class _ProductsManagementScreenState
               );
               return;
             }
-            final businessType =
-                _getBusinessTypeString(widget.business.businessType);
             final result = await Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) =>
-                    AddProductScreen(businessType: businessType),
+                builder: (context) => AddProductScreen(),
               ),
             );
             if (result == true) {
@@ -222,48 +217,25 @@ class _ProductsManagementScreenState
 
   Widget _buildErrorWidget(String error) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Failed to Load Products',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.red,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              error,
-              style: const TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                ref.invalidate(productsProvider);
-                final businessType =
-                    _getBusinessTypeString(widget.business.businessType);
-                ref.invalidate(categoriesProvider(businessType));
-              },
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            error,
+            style: const TextStyle(color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          WizzBusinessButton(
+            onPressed: () {
+              ref.invalidate(productsProvider);
+              final businessType =
+                  _getBusinessTypeString(widget.business.businessType);
+              ref.invalidate(categoriesProvider(businessType));
+            },
+            text: 'Retry',
+          ),
+        ],
       ),
     );
   }
@@ -441,13 +413,10 @@ class _ProductsManagementScreenState
                 IconButton(
                   icon: const Icon(Icons.edit, color: Colors.orange),
                   onPressed: () async {
-                    final businessType =
-                        _getBusinessTypeString(widget.business.businessType);
                     final result = await Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => EditProductScreen(
                           product: product,
-                          businessType: businessType,
                         ),
                       ),
                     );
@@ -505,5 +474,4 @@ class _ProductsManagementScreenState
       ),
     );
   }
-
 }

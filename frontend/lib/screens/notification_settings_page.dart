@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/simple_notification_service.dart';
-import '../theme/cravevolt_theme.dart';
 
 class NotificationSettingsPage extends StatefulWidget {
   const NotificationSettingsPage({super.key});
@@ -118,15 +117,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   void _showSuccess(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(color: CraveVoltColors.background),
-        ),
-        backgroundColor: CraveVoltColors.neonLime,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        content: Text(message),
+        backgroundColor: Colors.green,
       ),
     );
   }
@@ -134,15 +126,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(color: Colors.white),
-        ),
+        content: Text(message),
         backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
       ),
     );
   }
@@ -154,8 +139,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.notifications),
-        backgroundColor: CraveVoltColors.surface,
-        foregroundColor: CraveVoltColors.textPrimary,
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -163,16 +146,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           ),
         ],
       ),
-      backgroundColor: CraveVoltColors.background,
       body: _isLoading
-          ? Container(
-              color: CraveVoltColors.background,
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: CraveVoltColors.neonLime,
-                ),
-              ),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -180,14 +155,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 children: [
                   // Notification System Selection
                   Card(
-                    color: CraveVoltColors.surface,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: CraveVoltColors.neonLime.withOpacity(0.2),
-                        width: 1,
-                      ),
-                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -195,30 +162,20 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                         children: [
                           Text(
                             'Notification System',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: CraveVoltColors.textPrimary,
-                            ),
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
                           const SizedBox(height: 16),
 
                           // Simple Notifications
                           RadioListTile<bool>(
-                            title: Text(
-                              'Simple Notifications (Cloud-Friendly)',
-                              style:
-                                  TextStyle(color: CraveVoltColors.textPrimary),
-                            ),
-                            subtitle: Text(
+                            title: const Text(
+                                'Simple Notifications (Cloud-Friendly)'),
+                            subtitle: const Text(
                               'HTTP polling-based notifications. More reliable on cloud platforms. '
                               'Uses less resources but may have slight delays.',
-                              style: TextStyle(
-                                  color: CraveVoltColors.textSecondary),
                             ),
                             value: true,
                             groupValue: _useSimpleNotifications,
-                            activeColor: CraveVoltColors.neonLime,
                             onChanged: (value) {
                               setState(() => _useSimpleNotifications = value!);
                             },
@@ -226,20 +183,14 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
                           // Complex Notifications
                           RadioListTile<bool>(
-                            title: Text(
-                              'Real-time Notifications (WebSocket)',
-                              style:
-                                  TextStyle(color: CraveVoltColors.textPrimary),
-                            ),
-                            subtitle: Text(
+                            title: const Text(
+                                'Real-time Notifications (WebSocket)'),
+                            subtitle: const Text(
                               'WebSocket-based real-time notifications. Instant delivery but may have '
                               'connection issues on some cloud platforms.',
-                              style: TextStyle(
-                                  color: CraveVoltColors.textSecondary),
                             ),
                             value: false,
                             groupValue: _useSimpleNotifications,
-                            activeColor: CraveVoltColors.neonLime,
                             onChanged: (value) {
                               setState(() => _useSimpleNotifications = value!);
                             },
@@ -254,14 +205,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   // Simple Notification Settings
                   if (_useSimpleNotifications) ...[
                     Card(
-                      color: CraveVoltColors.surface,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(
-                          color: CraveVoltColors.neonLime.withOpacity(0.2),
-                          width: 1,
-                        ),
-                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -269,25 +212,20 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                           children: [
                             Text(
                               'Simple Notification Settings',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: CraveVoltColors.textPrimary,
-                              ),
+                              style: Theme.of(context).textTheme.titleLarge,
                             ),
                             const SizedBox(height: 16),
 
                             // Polling Interval
                             Row(
                               children: [
-                                Icon(Icons.timer,
-                                    color: CraveVoltColors.neonLime),
+                                const Icon(Icons.timer),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     'Polling Interval: ${_pollingInterval.inSeconds} seconds',
-                                    style: TextStyle(
-                                        color: CraveVoltColors.textPrimary),
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
                                   ),
                                 ),
                               ],
@@ -299,9 +237,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                               max: 300,
                               divisions: 29,
                               label: '${_pollingInterval.inSeconds}s',
-                              activeColor: CraveVoltColors.neonLime,
-                              inactiveColor: CraveVoltColors.textSecondary
-                                  .withOpacity(0.3),
                               onChanged: (value) {
                                 setState(() {
                                   _pollingInterval =
@@ -312,26 +247,17 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
                             Text(
                               'Lower values provide faster updates but use more battery and data.',
-                              style: TextStyle(
-                                  color: CraveVoltColors.textSecondary),
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
 
                             const SizedBox(height: 16),
 
                             // Local Notifications Toggle
                             SwitchListTile(
-                              title: Text(
-                                loc.showLocalNotifications,
-                                style: TextStyle(
-                                    color: CraveVoltColors.textPrimary),
-                              ),
-                              subtitle: Text(
-                                loc.showLocalNotificationsDescription,
-                                style: TextStyle(
-                                    color: CraveVoltColors.textSecondary),
-                              ),
+                              title: Text(loc.showLocalNotifications),
+                              subtitle:
+                                  Text(loc.showLocalNotificationsDescription),
                               value: _showLocalNotifications,
-                              activeColor: CraveVoltColors.neonLime,
                               onChanged: (value) {
                                 setState(() => _showLocalNotifications = value);
                               },
@@ -339,18 +265,10 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
                             // Notification Sounds Toggle
                             SwitchListTile(
-                              title: Text(
-                                loc.playNotificationSounds,
-                                style: TextStyle(
-                                    color: CraveVoltColors.textPrimary),
-                              ),
-                              subtitle: Text(
-                                loc.playNotificationSoundsDescription,
-                                style: TextStyle(
-                                    color: CraveVoltColors.textSecondary),
-                              ),
+                              title: Text(loc.playNotificationSounds),
+                              subtitle:
+                                  Text(loc.playNotificationSoundsDescription),
                               value: _playNotificationSounds,
-                              activeColor: CraveVoltColors.neonLime,
                               onChanged: (value) {
                                 setState(() => _playNotificationSounds = value);
                               },
@@ -365,14 +283,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
                   // Test Notification Button
                   Card(
-                    color: CraveVoltColors.surface,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: CraveVoltColors.neonLime.withOpacity(0.2),
-                        width: 1,
-                      ),
-                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -380,31 +290,18 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                         children: [
                           Text(
                             loc.testNotifications,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: CraveVoltColors.textPrimary,
-                            ),
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton.icon(
                             onPressed: _isLoading ? null : _testNotification,
                             icon: const Icon(Icons.notification_add),
                             label: Text(loc.sendTestNotification),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: CraveVoltColors.neonLime,
-                              foregroundColor: CraveVoltColors.background,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
-                            ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             loc.testNotificationDescription,
-                            style:
-                                TextStyle(color: CraveVoltColors.textSecondary),
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
                       ),
@@ -415,14 +312,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
                   // Information Card
                   Card(
-                    color: CraveVoltColors.neonLime.withOpacity(0.1),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: CraveVoltColors.neonLime.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
+                    color: Colors.blue.shade50,
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(

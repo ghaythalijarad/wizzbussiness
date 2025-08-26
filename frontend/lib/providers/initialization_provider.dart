@@ -2,7 +2,6 @@ import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/app_config.dart';
@@ -38,12 +37,6 @@ final amplifyConfigurationProvider = FutureProvider<void>((ref) async {
   // Wait for Firebase to initialize first, if needed for dependencies.
   await ref.watch(firebaseInitializationProvider.future);
 
-  // Skip Amplify configuration on web platform to avoid platform-specific errors
-  if (kIsWeb) {
-    print('🌐 Running on web - skipping Amplify configuration');
-    return;
-  }
-
   // If Amplify is already configured, don't re-configure.
   if (Amplify.isConfigured) {
     return;
@@ -63,7 +56,7 @@ final amplifyConfigurationProvider = FutureProvider<void>((ref) async {
             "CognitoUserPool": {
               "Default": {
                 "PoolId": "${AppConfig.cognitoUserPoolId}",
-                "AppClientId": "${AppConfig.appClientId}",
+                "AppClientId": "${AppConfig.cognitoUserPoolClientId}",
                 "Region": "${AppConfig.cognitoRegion}"
               }
             }

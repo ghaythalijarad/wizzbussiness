@@ -43,8 +43,7 @@ class _MerchantOnlineStatusScreenState
 
   Future<void> _checkCurrentStatus() async {
     try {
-      final isOnline =
-          await _statusService.isAcceptingOrders(widget.businessId);
+      final isOnline = await _statusService.isBusinessOnline(widget.businessId);
       if (mounted) {
         setState(() {
           _isOnline = isOnline;
@@ -72,9 +71,9 @@ class _MerchantOnlineStatusScreenState
         // Go offline - disconnect WebSocket
         await _realtimeService.disconnect();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('🔴 You are now offline'),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: Colors.orange,
           ),
         );
       } else {
@@ -130,17 +129,12 @@ class _MerchantOnlineStatusScreenState
                     ? Colors.grey.shade300
                     : (_isOnline
                         ? Colors.green.shade100
-                        : Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withOpacity(0.15)),
+                        : Colors.orange.shade100),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: _isLoading
                       ? Colors.grey
-                      : (_isOnline
-                          ? Colors.green
-                          : Theme.of(context).colorScheme.primary),
+                      : (_isOnline ? Colors.green : Colors.orange),
                   width: 4,
                 ),
               ),
@@ -150,9 +144,7 @@ class _MerchantOnlineStatusScreenState
                     : Icon(
                         _isOnline ? Icons.wifi : Icons.wifi_off,
                         size: 48,
-                        color: _isOnline
-                            ? Colors.green
-                            : Theme.of(context).colorScheme.primary,
+                        color: _isOnline ? Colors.green : Colors.orange,
                       ),
               ),
             ),
@@ -169,9 +161,7 @@ class _MerchantOnlineStatusScreenState
                 fontWeight: FontWeight.bold,
                 color: _isLoading
                     ? Colors.grey
-                    : (_isOnline
-                        ? Colors.green
-                        : Theme.of(context).colorScheme.primary),
+                    : (_isOnline ? Colors.green : Colors.orange),
               ),
             ),
 
@@ -201,9 +191,7 @@ class _MerchantOnlineStatusScreenState
                 onPressed:
                     _isLoading || _isToggling ? null : _toggleOnlineStatus,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isOnline
-                      ? Theme.of(context).colorScheme.error
-                      : Colors.green,
+                  backgroundColor: _isOnline ? Colors.orange : Colors.green,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

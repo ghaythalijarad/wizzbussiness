@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../l10n/app_localizations.dart';
 import '../services/sound_notification_settings.dart';
 import '../services/audio_notification_service.dart';
-import '../theme/cravevolt_theme.dart';
 
 class SoundNotificationSettingsPage extends StatefulWidget {
   const SoundNotificationSettingsPage({super.key});
@@ -96,15 +96,9 @@ class _SoundNotificationSettingsPageState
   void _showSuccess(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(color: CraveVoltColors.background),
-        ),
-        backgroundColor: CraveVoltColors.neonLime,
+        content: Text(message),
+        backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
       ),
     );
   }
@@ -112,30 +106,22 @@ class _SoundNotificationSettingsPageState
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(color: Colors.white),
-        ),
+        content: Text(message),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sound Notifications'),
-        backgroundColor: CraveVoltColors.surface,
-        foregroundColor: CraveVoltColors.textPrimary,
-        systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-        ),
+        backgroundColor: const Color(0xFF00C1E8),
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -144,9 +130,9 @@ class _SoundNotificationSettingsPageState
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: CraveVoltColors.neonLime,
-          unselectedLabelColor: CraveVoltColors.textSecondary,
-          indicatorColor: CraveVoltColors.neonLime,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
           tabs: const [
             Tab(icon: Icon(Icons.volume_up), text: 'General'),
             Tab(icon: Icon(Icons.tune), text: 'Sounds'),
@@ -155,24 +141,14 @@ class _SoundNotificationSettingsPageState
         ),
       ),
       body: _isLoading
-          ? Container(
-              color: CraveVoltColors.background,
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: CraveVoltColors.neonLime,
-                ),
-              ),
-            )
-          : Container(
-              color: CraveVoltColors.background,
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildGeneralTab(),
-                  _buildSoundsTab(),
-                  _buildAboutTab(),
-                ],
-              ),
+          ? const Center(child: CircularProgressIndicator())
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _buildGeneralTab(),
+                _buildSoundsTab(),
+                _buildAboutTab(),
+              ],
             ),
     );
   }
@@ -192,16 +168,10 @@ class _SoundNotificationSettingsPageState
                 icon: Icons.volume_up,
                 children: [
                   SwitchListTile(
-                    title: Text(
-                      'Enable Sound Notifications',
-                      style: TextStyle(color: CraveVoltColors.textPrimary),
-                    ),
-                    subtitle: Text(
-                      'Turn all notification sounds on or off',
-                      style: TextStyle(color: CraveVoltColors.textSecondary),
-                    ),
+                    title: const Text('Enable Sound Notifications'),
+                    subtitle:
+                        const Text('Turn all notification sounds on or off'),
                     value: _settings.soundEnabled,
-                    activeColor: CraveVoltColors.neonLime,
                     onChanged: (value) {
                       _settings.setSoundEnabled(value);
                       if (value) {
@@ -212,9 +182,7 @@ class _SoundNotificationSettingsPageState
                       _settings.soundEnabled
                           ? Icons.volume_up
                           : Icons.volume_off,
-                      color: _settings.soundEnabled
-                          ? CraveVoltColors.neonLime
-                          : CraveVoltColors.textSecondary,
+                      color: _settings.soundEnabled ? Colors.blue : Colors.grey,
                     ),
                   ),
                   const Divider(),
@@ -320,7 +288,7 @@ class _SoundNotificationSettingsPageState
                 title: 'Order Update Sound',
                 description: 'Plays when order status changes',
                 icon: Icons.update,
-                color: Theme.of(context).colorScheme.primary,
+                color: Colors.orange,
                 soundType: 'order_update',
                 isEnabled: _settings.orderUpdateSoundEnabled,
                 onToggle: (value) =>
@@ -429,15 +397,8 @@ class _SoundNotificationSettingsPageState
     required List<Widget> children,
   }) {
     return Card(
-      color: CraveVoltColors.surface,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: CraveVoltColors.neonLime.withOpacity(0.2),
-          width: 1,
-        ),
-      ),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -445,24 +406,13 @@ class _SoundNotificationSettingsPageState
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: CraveVoltColors.neonLime.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: CraveVoltColors.neonLime,
-                  ),
-                ),
-                const SizedBox(width: 12),
+                Icon(icon, color: const Color(0xFF00C1E8)),
+                const SizedBox(width: 8),
                 Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: CraveVoltColors.textPrimary,
                   ),
                 ),
               ],
@@ -481,8 +431,7 @@ class _SoundNotificationSettingsPageState
       children: [
         Row(
           children: [
-            Icon(Icons.volume_down,
-                size: 20, color: CraveVoltColors.textSecondary),
+            const Icon(Icons.volume_down, size: 20),
             Expanded(
               child: Slider(
                 value: _settings.volume,
@@ -490,9 +439,6 @@ class _SoundNotificationSettingsPageState
                 max: 1.0,
                 divisions: 10,
                 label: '${(_settings.volume * 100).round()}%',
-                activeColor: CraveVoltColors.neonLime,
-                inactiveColor: CraveVoltColors.textSecondary.withOpacity(0.3),
-                thumbColor: CraveVoltColors.neonLime,
                 onChanged: _settings.soundEnabled
                     ? (value) {
                         _settings.setVolume(value);
@@ -501,12 +447,12 @@ class _SoundNotificationSettingsPageState
                     : null,
               ),
             ),
-            Icon(Icons.volume_up, size: 20, color: CraveVoltColors.neonLime),
+            const Icon(Icons.volume_up, size: 20),
           ],
         ),
         Text(
           'Volume: ${(_settings.volume * 100).round()}%',
-          style: TextStyle(fontSize: 12, color: CraveVoltColors.textSecondary),
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
       ],
     );
@@ -557,21 +503,11 @@ class _SoundNotificationSettingsPageState
     Function(bool) onChanged,
   ) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: value ? CraveVoltColors.neonLime : CraveVoltColors.textSecondary,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(color: CraveVoltColors.textPrimary),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(color: CraveVoltColors.textSecondary),
-      ),
+      leading: Icon(icon, color: value ? const Color(0xFF00C1E8) : Colors.grey),
+      title: Text(title),
+      subtitle: Text(subtitle),
       trailing: Switch(
         value: value && _settings.soundEnabled,
-        activeColor: CraveVoltColors.neonLime,
         onChanged: _settings.soundEnabled
             ? (newValue) {
                 onChanged(newValue);
@@ -593,15 +529,8 @@ class _SoundNotificationSettingsPageState
     required Function(bool) onToggle,
   }) {
     return Card(
-      color: CraveVoltColors.surface,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: CraveVoltColors.neonLime.withOpacity(0.2),
-          width: 1,
-        ),
-      ),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -624,17 +553,16 @@ class _SoundNotificationSettingsPageState
                     children: [
                       Text(
                         title,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: CraveVoltColors.textPrimary,
                         ),
                       ),
                       Text(
                         description,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: CraveVoltColors.textSecondary,
+                          color: Colors.grey,
                         ),
                       ),
                     ],
@@ -642,7 +570,6 @@ class _SoundNotificationSettingsPageState
                 ),
                 Switch(
                   value: isEnabled && _settings.soundEnabled,
-                  activeColor: CraveVoltColors.neonLime,
                   onChanged: _settings.soundEnabled
                       ? (value) {
                           onToggle(value);
@@ -662,23 +589,16 @@ class _SoundNotificationSettingsPageState
                             ? () => _testSound(soundType)
                             : null,
                     icon: _isTesting
-                        ? SizedBox(
+                        ? const SizedBox(
                             width: 16,
                             height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.play_arrow),
                     label: Text(_isTesting ? 'Playing...' : 'Test Sound'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: color,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
                     ),
                   ),
                 ),
@@ -741,7 +661,7 @@ class _SoundNotificationSettingsPageState
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+          Icon(icon, size: 18, color: Colors.orange),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

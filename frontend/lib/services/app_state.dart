@@ -37,51 +37,40 @@ class AppState with ChangeNotifier {
     }
   }
 
-  /// Update business accepting orders status via API
-  Future<void> updateBusinessAcceptingOrdersStatus(
+  /// Update business online status via API
+  Future<void> updateBusinessOnlineStatus(
     String businessId,
     String userId,
     bool isOnline,
   ) async {
     try {
-      debugPrint(
-          '🔄 AppState: Updating business accepting orders status to ${isOnline ? 'ONLINE' : 'OFFLINE'}');
-      await _apiService.updateBusinessAcceptingOrdersStatus(
-          businessId, userId, isOnline);
-      debugPrint(
-          '✅ AppState: Successfully updated business accepting orders status');
-    } on BusinessStatusBlockedException catch (e) {
-      debugPrint('⛔ AppState: Online status blocked: ${e.code} - ${e.message}');
-      // Do not change local _isOnline here; propagate for UI to handle (e.g., show connect prompt)
-      rethrow;
+      debugPrint('🔄 AppState: Updating business online status to ${isOnline ? 'ONLINE' : 'OFFLINE'}');
+      await _apiService.updateBusinessOnlineStatus(businessId, userId, isOnline);
+      debugPrint('✅ AppState: Successfully updated business online status');
     } catch (e) {
-      debugPrint(
-          '❌ AppState: Failed to update business accepting orders status: $e');
+      debugPrint('❌ AppState: Failed to update business online status: $e');
       rethrow;
     }
   }
 
-  /// Get business accepting orders status from API
-  Future<bool> getBusinessAcceptingOrdersStatus(String businessId) async {
+  /// Get business online status from API
+  Future<bool> getBusinessOnlineStatus(String businessId) async {
     try {
-      debugPrint('🔄 AppState: Getting business accepting orders status');
-      final response =
-          await _apiService.getBusinessAcceptingOrdersStatus(businessId);
+      debugPrint('🔄 AppState: Getting business online status');
+      final response = await _apiService.getBusinessOnlineStatus(businessId);
       final isOnline = response['isOnline'] ?? false;
-      debugPrint(
-          '✅ AppState: Retrieved business accepting orders status: ${isOnline ? 'ONLINE' : 'OFFLINE'}');
+      debugPrint('✅ AppState: Retrieved business online status: ${isOnline ? 'ONLINE' : 'OFFLINE'}');
       return isOnline;
     } catch (e) {
-      debugPrint(
-          '❌ AppState: Failed to get business accepting orders status: $e');
+      debugPrint('❌ AppState: Failed to get business online status: $e');
       return false; // Default to offline if we can't determine status
     }
   }
 
-  /// Load business accepting orders status from API and update local state
+  /// Load business online status from API and update local state
   Future<void> loadOnlineStatusFromAPI(String businessId) async {
     try {
-      final apiStatus = await getBusinessAcceptingOrdersStatus(businessId);
+      final apiStatus = await getBusinessOnlineStatus(businessId);
       _isOnline = apiStatus;
       await _savePersistedStatus(_isOnline);
       notifyListeners();

@@ -79,7 +79,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                       return l10n.verificationCodeRequired;
                     }
                     if (value!.length != 6) {
-                      return l10n.verificationCodeMustBe6Digits;
+                      return 'Verification code must be 6 digits';
                     }
                     return null;
                   },
@@ -156,7 +156,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     return Column(
       children: [
         Text(
-          l10n.didntReceiveCode,
+          "Didn't receive the code?",
           style: TextStyle(
             color: Colors.grey[600],
             fontSize: 14,
@@ -175,7 +175,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   ),
                 )
               : Text(
-                  l10n.resendVerificationCode,
+                  'Resend Code',
                   style: TextStyle(
                     color: Theme.of(context).primaryColor,
                     fontWeight: FontWeight.w600,
@@ -199,7 +199,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           );
         },
         child: Text(
-          l10n.back,
+          'Back to Login',
           style: TextStyle(
             color: Theme.of(context).primaryColor,
             fontWeight: FontWeight.w600,
@@ -216,7 +216,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           _showEmailChangeDialog(l10n);
         },
         child: Text(
-          l10n.wrongEmailChangeIt,
+          'Wrong email? Change it',
           style: TextStyle(
             color: Colors.grey[600],
             fontSize: 14,
@@ -282,14 +282,10 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               );
           }
         } else {
-          // Original flow - navigate to sign in with a friendly prompt
+          // Original flow - navigate to sign in
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(
-              builder: (context) => const SignInScreen(
-                noticeMessage: 'Account verified. Please sign in to continue.',
-              ),
-            ),
+            MaterialPageRoute(builder: (context) => const SignInScreen()),
             (route) => false,
           );
         }
@@ -297,17 +293,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         _showErrorSnackBar(result.message ?? 'Verification failed');
       }
     } catch (e) {
-      // Show specific error message from backend
-      final errorMessage = e.toString();
-      if (errorMessage.contains('Invalid verification code')) {
-        _showErrorSnackBar(
-            'Invalid verification code. Please check and try again.');
-      } else if (errorMessage.contains('expired')) {
-        _showErrorSnackBar(
-            'Verification code has expired. Please request a new one.');
-      } else {
-        _showErrorSnackBar(errorMessage.replaceFirst('Exception: ', ''));
-      }
+      _showErrorSnackBar(l10n.verificationFailed);
     } finally {
       setState(() {
         _isLoading = false;
@@ -322,28 +308,14 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     });
 
     try {
-      await AppAuthService.resendRegistrationCode(email: widget.email);
-      _showSuccessSnackBar(l10n.verificationCodeSentToEmail);
+      await AppAuthService.resendSignUpCode(username: widget.email);
+      _showSuccessSnackBar('Verification code resent successfully');
     } catch (e) {
-      // If backend throws with a message, surface it
-      final msg = e.toString();
-      if (msg.contains('already verified') || msg.contains('409')) {
-        _showErrorSnackBar(l10n.accountAlreadyVerifiedPleaseSignIn);
-      } else if (msg.contains('Too many attempts') || msg.contains('429')) {
-        _showErrorSnackBar(l10n.tooManyAttemptsPleaseWait);
-      } else if (msg.contains('No account') || msg.contains('404')) {
-        _showErrorSnackBar(l10n.noAccountFoundForThisEmail);
-      } else {
-        _showErrorSnackBar(l10n.failedToResendCode);
-      }
+      _showErrorSnackBar(l10n.failedToResendCode);
     } finally {
-      // Add small cooldown to avoid rapid-fire resends
-      await Future.delayed(const Duration(seconds: 2));
-      if (mounted) {
-        setState(() {
-          _isResending = false;
-        });
-      }
+      setState(() {
+        _isResending = false;
+      });
     }
   }
 
@@ -351,12 +323,13 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.changeEmailAddressTitle),
-        content: Text(l10n.changeEmailAddressMessage),
+        title: Text('Change Email Address'),
+        content: Text(
+            'Are you sure you want to change your email address? This will take you back to the sign-up screen.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -368,7 +341,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 (route) => false,
               );
             },
-            child: Text(l10n.confirm),
+            child: const Text('Confirm'),
           ),
         ],
       ),

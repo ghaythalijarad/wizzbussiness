@@ -428,195 +428,357 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     final businessAsyncValue = ref.watch(businessProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.accountSettings),
-        backgroundColor: const Color(0xFF00C1E8),
-        foregroundColor: Colors.white,
-        actions: [
-          if (!_isEditing)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: _toggleEditMode,
-            ),
-          if (_isEditing) ...[
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: _cancelEdit,
-            ),
-            IconButton(
-              icon: _isSaving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(Icons.check),
-              onPressed: _isSaving ? null : _saveBusinessProfile,
-            ),
-          ],
-        ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF32CD32).withOpacity(0.05), // Lime Green
+              const Color(0xFFFFD300).withOpacity(0.03), // Gold
+              Colors.white,
+            ],
+            stops: const [0.0, 0.3, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Modern Material 3 App Bar
+              _buildModernAppBar(context, l10n),
+
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header Section
+                      _buildHeaderSection(l10n),
+                      const SizedBox(height: 32),
+
+                      // Main Content
+                      Consumer(
+                        builder: (context, ref, child) {
+                          // Watch both providers: enhanced for richer data, regular as fallback
+                          final enhancedBusinessAsync =
+                              ref.watch(enhancedBusinessProvider);
+                          final businessAsyncValue =
+                              ref.watch(businessProvider);
+
+                          return enhancedBusinessAsync.when(
+                            data: (enhancedBusiness) {
+                              // Use enhanced business data if available
+                              final business =
+                                  enhancedBusiness ?? businessAsyncValue.value;
+                              if (business == null) {
+                                return _buildErrorStateWithMessage(l10n, theme,
+                                    'No business found for this account');
+                              }
+
+                              // Update controllers with fresh business data
+                              if (_businessNameController.text !=
+                                  business.name) {
+                                _businessNameController.text = business.name;
+                              }
+                              if (_ownerNameController.text !=
+                                  (business.ownerName ?? '')) {
+                                _ownerNameController.text =
+                                    business.ownerName ?? '';
+                              }
+                              if (_addressController.text !=
+                                  _formatAddress(business.address)) {
+                                _addressController.text =
+                                    _formatAddress(business.address);
+                              }
+
+                              return _buildAccountContentWithBusiness(
+                                  l10n, theme, business);
+                            },
+                            loading: () => _buildLoadingState(),
+                            error: (error, stack) =>
+                                _buildErrorStateWithMessage(l10n, theme,
+                                    'Error loading account: $error'),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      backgroundColor: Colors.grey[50],
       floatingActionButton: businessAsyncValue.maybeWhen(
         data: (business) => business != null
-            ? FloatingActionButton(
-                onPressed: _pickImage,
-                backgroundColor: const Color(0xFF00C1E8),
-                child: const Icon(Icons.camera_alt, color: Colors.white),
+            ? Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFFFFD300),
+                      Color(0xFFC7A600)
+                    ], // Gold gradient
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD300).withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: FloatingActionButton(
+                  onPressed: _pickImage,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  child: const Icon(Icons.camera_alt, color: Colors.black87),
+                ),
               )
             : null,
         orElse: () => null,
       ),
-      body: Consumer(
-        builder: (context, ref, child) {
-          // Watch both providers: enhanced for richer data, regular as fallback
-          final enhancedBusinessAsync = ref.watch(enhancedBusinessProvider);
-          final businessAsyncValue = ref.watch(businessProvider);
+    );
+  }
 
-          return enhancedBusinessAsync.when(
-            data: (enhancedBusiness) {
-              // Use enhanced business data if available
-              final business = enhancedBusiness ?? businessAsyncValue.value;
-              if (business == null) {
-                return _buildErrorStateWithMessage(
-                    l10n, theme, 'No business found for this account');
-              }
-
-              // Update controllers with fresh business data
-              if (_businessNameController.text != business.name) {
-                _businessNameController.text = business.name;
-              }
-              if (_ownerNameController.text != (business.ownerName ?? '')) {
-                _ownerNameController.text = business.ownerName ?? '';
-              }
-              if (_addressController.text != _formatAddress(business.address)) {
-                _addressController.text = _formatAddress(business.address);
-              }
-
-              return CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: _buildAccountContentWithBusiness(
-                          l10n, theme, business),
-                    ),
+  // Modern Material 3 App Bar
+  Widget _buildModernAppBar(BuildContext context, AppLocalizations loc) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF32CD32), // Lime Green
+            const Color(0xFF228B22), // Darker Lime Green
+          ],
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF32CD32).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  loc.accountSettings,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Manage your account details',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Edit/Save actions
+          if (!_isEditing)
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFFFD300), // Gold
+                    const Color(0xFFC7A600), // Darker Gold
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD300).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
                 ],
-              );
-            },
-            loading: () {
-              // Show loading state, but also try to show basic data if available
-              return businessAsyncValue.when(
-                data: (business) {
-                  if (business != null) {
-                    // Show basic business data while enhanced data loads
-                    return CustomScrollView(
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              children: [
-                                _buildLoadingState(),
-                                const SizedBox(height: 16),
-                                _buildAccountContentWithBusiness(
-                                    l10n, theme, business),
-                              ],
-                            ),
-                          ),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.edit, color: Colors.black87),
+                onPressed: _toggleEditMode,
+              ),
+            ),
+          if (_isEditing) ...[
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: _cancelEdit,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFFFD300), // Gold
+                    const Color(0xFFC7A600), // Darker Gold
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD300).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: _isSaving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.black87),
                         ),
-                      ],
-                    );
-                  }
-                  return _buildLoadingState();
-                },
-                loading: () => _buildLoadingState(),
-                error: (error, stack) =>
-                    _buildErrorStateWithMessage(l10n, theme, error.toString()),
-              );
-            },
-            error: (error, stack) {
-              // Log error and fallback to regular business provider
-              debugPrint('Enhanced business data fetch failed: $error');
-              return businessAsyncValue.when(
-                loading: () => _buildLoadingState(),
-                error: (error, stack) =>
-                    _buildErrorStateWithMessage(l10n, theme, error.toString()),
-                data: (business) {
-                  if (business == null) {
-                    return _buildErrorStateWithMessage(
-                        l10n, theme, 'No business found for this account');
-                  }
+                      )
+                    : const Icon(Icons.check, color: Colors.black87),
+                onPressed: _isSaving ? null : _saveBusinessProfile,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 
-                  // Update controllers with fresh business data
-                  if (_businessNameController.text != business.name) {
-                    _businessNameController.text = business.name;
-                  }
-                  if (_ownerNameController.text != (business.ownerName ?? '')) {
-                    _ownerNameController.text = business.ownerName ?? '';
-                  }
-                  if (_addressController.text !=
-                      _formatAddress(business.address)) {
-                    _addressController.text = _formatAddress(business.address);
-                  }
-
-                  return CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: _buildAccountContentWithBusiness(
-                              l10n, theme, business),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          );
-        },
+  // Header Section
+  Widget _buildHeaderSection(AppLocalizations loc) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            const Color(0xFF32CD32).withOpacity(0.02),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFF32CD32).withOpacity(0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF32CD32), Color(0xFF228B22)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.account_circle,
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Account Details',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1C1C1C),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Manage your business profile, personal information, and account settings.',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildLoadingState() {
-    return Container(
-      margin: const EdgeInsets.all(24),
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: const Color(0xFF3399FF).withOpacity(0.1),
-              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF32CD32).withOpacity(0.1),
+                  const Color(0xFFFFD300).withOpacity(0.1),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(24),
             ),
-            child: const CircularProgressIndicator(
-              color: Color(0xFF3399FF),
+            child: CircularProgressIndicator(
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF32CD32)),
               strokeWidth: 3,
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Loading your account information...',
+          Text(
+            'Loading account information...',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              color: Colors.grey[600],
             ),
           ),
         ],
@@ -732,24 +894,26 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFF3399FF).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFFD300), Color(0xFFC7A600)], // Gold gradient
+            ),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             icon,
-            color: const Color(0xFF3399FF),
-            size: 20,
+            color: Colors.black87,
+            size: 24,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 16),
         Text(
           title,
           style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1C1C1C),
           ),
         ),
       ],
@@ -765,14 +929,14 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF00D4FF),
-            Color(0xFF3399FF),
+            Color(0xFF32CD32), // Lime Green
+            Color(0xFF228B22), // Darker Lime Green
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3399FF).withOpacity(0.3),
+            color: const Color(0xFF32CD32).withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -803,7 +967,12 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFFFD300),
+                            Color(0xFFC7A600)
+                          ], // Gold gradient
+                        ),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -811,7 +980,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: Colors.black87,
                           letterSpacing: 1,
                         ),
                       ),

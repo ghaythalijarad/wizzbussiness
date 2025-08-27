@@ -159,28 +159,49 @@ exports.handler = async (event) => {
  */
 async function verifyBusinessAccess(userId, businessId) {
   try {
+    console.log(`🔍 DEBUG: Verifying business access`);
+    console.log(`   📊 BUSINESSES_TABLE: ${BUSINESSES_TABLE}`);
+    console.log(`   👤 User ID: ${userId}`);
+    console.log(`   🏢 Business ID: ${businessId}`);
+
     const params = {
       TableName: BUSINESSES_TABLE,
       Key: { businessId: businessId }
     };
+    console.log(`   🔑 Query params:`, JSON.stringify(params, null, 2));
 
     const result = await dynamodb.send(new GetCommand(params));
+    console.log(`   📋 Query result:`, result.Item ? 'FOUND' : 'NOT FOUND');
     
     if (!result.Item) {
-      console.log(`❌ Business ${businessId} not found`);
+      console.log(`❌ Business ${businessId} not found in table ${BUSINESSES_TABLE}`);
+      console.log(`   📊 Available fields: none (business not found)`);
       return false;
     }
 
-    // Check if user is the owner or has access (same logic as business_profile_handler)
+    // Log all available fields in the business record
     const business = result.Item;
+    console.log(`✅ Business found! Available fields:`, Object.keys(business));
+    console.log(`   🔑 ownerId: "${business.ownerId}"`);
+    console.log(`   🔑 cognitoUserId: "${business.cognitoUserId}"`);
+    console.log(`   🔑 owner_id: "${business.owner_id}"`);
+    console.log(`   🔑 cognito_user_id: "${business.cognito_user_id}"`);
+    console.log(`   🔑 admin_users: ${JSON.stringify(business.admin_users)}`);
+    console.log(`   🔑 staff_users: ${JSON.stringify(business.staff_users)}`);
+
+    // Check if user is the owner or has access (same logic as business_profile_handler)
     const hasAccess = business.ownerId === userId ||
                       business.cognitoUserId === userId ||
                       business.admin_users?.includes(userId) ||
                       business.staff_users?.includes(userId);
 
-    console.log(`🔐 Business access check for ${userId}: ${hasAccess}`);
-    console.log(`🏢 Business ownerId: ${business.ownerId}`);
-    console.log(`🏢 Business cognitoUserId: ${business.cognitoUserId}`);
+    console.log(`🎯 Access check results:`);
+    console.log(`   business.ownerId === userId: ${business.ownerId} === ${userId} = ${business.ownerId === userId}`);
+    console.log(`   business.cognitoUserId === userId: ${business.cognitoUserId} === ${userId} = ${business.cognitoUserId === userId}`);
+    console.log(`   admin_users includes userId: ${business.admin_users?.includes(userId) || false}`);
+    console.log(`   staff_users includes userId: ${business.staff_users?.includes(userId) || false}`);
+    console.log(`🔐 Final access result: ${hasAccess}`);
+
     return hasAccess;
   } catch (error) {
     console.error('❌ Error verifying business access:', error);
@@ -286,7 +307,8 @@ async function handleUpdateLocationSettings(businessId, requestBody) {
       };
     }
 
-    const settings = JSON.parse(requestBody);
+    // requestBody is already parsed by the main handler, no need to JSON.parse again
+    const settings = requestBody;
     console.log('📍 Updating location settings:', settings);
 
     // Validate location data

@@ -25,12 +25,20 @@ final businessProvider = FutureProvider<Business?>((ref) async {
     if (session.businessData != null) {
       debugPrint('🏢 BusinessProvider: Found stored business data in session');
       debugPrint('🏢 BusinessProvider: Business data keys: ${session.businessData!.keys}');
+      debugPrint(
+          '🏢 BusinessProvider: RAW Business data: ${session.businessData!}');
       
       try {
         final business = Business.fromJson(session.businessData!);
         debugPrint('🏢 BusinessProvider: Created business from stored data');
         debugPrint('🏢 BusinessProvider: Business name: ${business.name}');
         debugPrint('🏢 BusinessProvider: Business status: ${business.status}');
+        debugPrint('🏢 BusinessProvider: Business city: ${business.city}');
+        debugPrint(
+            '🏢 BusinessProvider: Business district: ${business.district}');
+        debugPrint('🏢 BusinessProvider: Business street: ${business.street}');
+        debugPrint(
+            '🏢 BusinessProvider: Business country: ${business.country}');
         debugPrint('🏢 BusinessProvider: === BUSINESS FETCH COMPLETED (STORED DATA) ===');
         return business;
       } catch (e) {

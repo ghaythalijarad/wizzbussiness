@@ -52,6 +52,17 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
       _latitude = business.latitude;
       _longitude = business.longitude;
 
+      debugPrint('🔍 DEBUGGING BUSINESS OBJECT DATA:');
+      debugPrint('  Business ID: ${business.id}');
+      debugPrint('  Business Name: ${business.name}');
+      debugPrint('  Raw Business City: "${business.city}"');
+      debugPrint('  Raw Business District: "${business.district}"');
+      debugPrint('  Raw Business Street: "${business.street}"');
+      debugPrint('  Raw Business Country: "${business.country}"');
+      debugPrint('  Raw Business Address: "${business.address}"');
+      debugPrint('  Business Latitude: ${business.latitude}');
+      debugPrint('  Business Longitude: ${business.longitude}');
+
       // Extract data directly from business properties - no parsing needed!
       String city = business.city ?? '';
       String district = business.district ?? '';
@@ -76,12 +87,12 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
         _address = mainAddress.isNotEmpty ? mainAddress : null;
       });
 
-      debugPrint('Location data loaded from Business model:');
-      debugPrint('  City: $city');
-      debugPrint('  District: $district');
-      debugPrint('  Street: $street');
-      debugPrint('  Country: $country');
-      debugPrint('  Full Address: $mainAddress');
+      debugPrint('🎯 FORM FIELD VALUES AFTER BUSINESS MODEL EXTRACTION:');
+      debugPrint('  City Controller: "${_cityController.text}"');
+      debugPrint('  District Controller: "${_districtController.text}"');
+      debugPrint('  Street Controller: "${_streetController.text}"');
+      debugPrint('  Country Controller: "${_countryController.text}"');
+      debugPrint('  Address Variable: "$_address"');
       debugPrint('  Coordinates: $_latitude, $_longitude');
 
       // Try to load additional location settings from API
@@ -121,6 +132,7 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
         debugPrint('No additional location settings found: $e');
       }
     } catch (e) {
+      debugPrint('❌ Error in _loadLocationSettings: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -350,152 +362,586 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.locationSettings),
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _isLoading ? null : _saveLocationSettings,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF32CD32).withOpacity(0.05), // Lime Green
+              const Color(0xFFFFD300).withOpacity(0.03), // Gold
+              Colors.white,
+            ],
+            stops: const [0.0, 0.3, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Modern Material 3 App Bar
+              _buildModernAppBar(context, loc),
+
+              // Content
+              Expanded(
+                child: _isLoading
+                    ? _buildLoadingState()
+                    : SingleChildScrollView(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Header Section
+                              _buildHeaderSection(loc),
+                              const SizedBox(height: 32),
+                              
+                              // Business Address Section
+                              _buildAddressSection(loc, colorScheme),
+                              const SizedBox(height: 24),
+
+                              // GPS Location Section
+                              _buildGPSSection(colorScheme),
+                              const SizedBox(height: 32),
+
+                              // Save Button
+                              _buildSaveButton(loc),
+                            ],
+                          ),
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernAppBar(BuildContext context, AppLocalizations loc) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF32CD32), // Lime Green
+            const Color(0xFF228B22), // Darker Lime Green
+          ],
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF32CD32).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Business Address Section
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.location_on,
-                                    color: Theme.of(context).primaryColor),
-                                const SizedBox(width: 12),
-                                const Text(
-                                  'Business Address',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            
-                            // Address Components Section
-                            const Text(
-                              'Address Components',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _cityController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'City',
-                                      prefixIcon: Icon(Icons.location_city),
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'City required';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _districtController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'District',
-                                      prefixIcon: Icon(Icons.map),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _countryController,
-                              decoration: const InputDecoration(
-                                labelText: 'Country',
-                                prefixIcon: Icon(Icons.public),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter country';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            // Street Name Field (for mapping)
-                            TextFormField(
-                              controller: _streetController,
-                              decoration: const InputDecoration(
-                                labelText: 'Street Name',
-                                hintText: 'Enter specific street name for mapping',
-                                prefixIcon: Icon(Icons.streetview),
-                                helperText: 'Street name used for location mapping and delivery',
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Street name is required for mapping';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+      child: Row(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  loc.locationSettings,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Configure your business location',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFFFFD300), // Gold
+                  const Color(0xFFC7A600), // Darker Gold
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD300).withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.save, color: Colors.black87),
+              onPressed: _isLoading ? null : _saveLocationSettings,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                    // GPS Location Section using LocationSettingsWidget
-                    LocationSettingsWidget(
-                      initialLatitude: _latitude,
-                      initialLongitude: _longitude,
-                      initialAddress: _address,
-                      onLocationChanged: _onLocationChanged,
-                      isLoading: _isLoading,
-                    ),
-                    const SizedBox(height: 32),
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF32CD32).withOpacity(0.1),
+                  const Color(0xFFFFD300).withOpacity(0.1),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: CircularProgressIndicator(
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF32CD32)),
+              strokeWidth: 3,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Loading location settings...',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                    // Save Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isLoading ? null : _saveLocationSettings,
-                        icon: const Icon(Icons.save),
-                        label: const Text('Save Location Settings'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
-                    ),
-                  ],
+  Widget _buildHeaderSection(AppLocalizations loc) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            const Color(0xFF32CD32).withOpacity(0.02),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFF32CD32).withOpacity(0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF32CD32), Color(0xFF228B22)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.location_on,
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Business Location',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1C1C1C),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Set your business location to help customers find you and improve delivery accuracy.',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddressSection(AppLocalizations loc, ColorScheme colorScheme) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFFFD300).withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFD300), Color(0xFFC7A600)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.business,
+                  color: Colors.black87,
+                  size: 24,
                 ),
               ),
+              const SizedBox(width: 16),
+              const Text(
+                'Business Address',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1C1C1C),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Address form fields in Material 3 style
+          Row(
+            children: [
+              Expanded(
+                child: _buildModernTextField(
+                  controller: _cityController,
+                  label: 'City',
+                  icon: Icons.location_city,
+                  color: const Color(0xFF32CD32),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'City required';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildModernTextField(
+                  controller: _districtController,
+                  label: 'District',
+                  icon: Icons.map,
+                  color: const Color(0xFFFFD300),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          _buildModernTextField(
+            controller: _countryController,
+            label: 'Country',
+            icon: Icons.public,
+            color: const Color(0xFF32CD32),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter country';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 20),
+
+          _buildModernTextField(
+            controller: _streetController,
+            label: 'Street Name',
+            icon: Icons.streetview,
+            color: const Color(0xFFFFD300),
+            helperText: 'Street name used for location mapping and delivery',
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Street name is required for mapping';
+              }
+              return null;
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required Color color,
+    String? helperText,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF1C1C1C),
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        helperText: helperText,
+        prefixIcon: Container(
+          margin: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            color: color,
+            size: 24,
+          ),
+        ),
+        filled: true,
+        fillColor: color.withOpacity(0.03),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: color.withOpacity(0.2)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: color.withOpacity(0.2)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: color, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+        ),
+        labelStyle: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w500,
+        ),
+        helperStyle: TextStyle(
+          color: Colors.grey[600],
+          fontSize: 12,
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      ),
+    );
+  }
+
+  Widget _buildGPSSection(ColorScheme colorScheme) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFF32CD32).withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF32CD32).withOpacity(0.1),
+                  const Color(0xFFFFD300).withOpacity(0.05),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
             ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF32CD32), Color(0xFF228B22)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.gps_fixed,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Text(
+                    'GPS Location',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1C1C1C),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: LocationSettingsWidget(
+              initialLatitude: _latitude,
+              initialLongitude: _longitude,
+              initialAddress: _address,
+              onLocationChanged: _onLocationChanged,
+              isLoading: _isLoading,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSaveButton(AppLocalizations loc) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF32CD32), // Lime Green
+            const Color(0xFF228B22), // Darker Lime Green
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF32CD32).withOpacity(0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _isLoading ? null : _saveLocationSettings,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_isLoading) ...[
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ] else ...[
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD300), // Gold accent
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.save,
+                      color: Colors.black87,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Text(
+                  _isLoading ? 'Saving...' : 'Save Location Settings',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -452,7 +452,7 @@ class AppAuthService {
       }
 
       if (idToken != null && idToken.isNotEmpty) {
-        await prefs.setString('id_token', idToken);
+        await TokenManager.setIdToken(idToken); // Now using TokenManager for ID token too
       }
 
       if (refreshToken != null && refreshToken.isNotEmpty) {

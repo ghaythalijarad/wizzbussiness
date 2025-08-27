@@ -448,92 +448,271 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
   @override
   Widget build(BuildContext context) {
     if (_isInitializing) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
+      return Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF32CD32).withOpacity(0.05), // Lime Green
+                const Color(0xFFFFD300).withOpacity(0.03), // Gold
+                Colors.white,
+              ],
+              stops: const [0.0, 0.3, 1.0],
+            ),
+          ),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF32CD32).withOpacity(0.1),
+                    const Color(0xFFFFD300).withOpacity(0.1),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: CircularProgressIndicator(
+                valueColor:
+                    const AlwaysStoppedAnimation<Color>(Color(0xFF32CD32)),
+                strokeWidth: 3,
+              ),
+            ),
+          ),
         ),
       );
     }
 
     return Scaffold(
-      body: Stack(
-        children: [
-          Column(
+      backgroundColor: Colors.grey.shade50,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF32CD32).withOpacity(0.05), // Lime Green
+              const Color(0xFFFFD300).withOpacity(0.03), // Gold
+              Colors.white,
+            ],
+            stops: const [0.0, 0.3, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
             children: [
-              // Filter chips
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 3,
-                      offset: const Offset(0, 1),
+              Column(
+                children: [
+                  // Modern Material 3 App Bar with gradient
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFF32CD32), // Lime Green
+                          const Color(0xFF228B22), // Darker Lime Green
+                        ],
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(32),
+                        bottomRight: Radius.circular(32),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF32CD32).withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildFilterChip(
-                          AppLocalizations.of(context)!.allDiscounts, 'all'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip(
-                          AppLocalizations.of(context)!.activeDiscounts,
-                          'active'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip(
-                          AppLocalizations.of(context)!.scheduledDiscounts,
-                          'scheduled'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip(
-                          AppLocalizations.of(context)!.expiredDiscounts,
-                          'expired'),
-                    ],
+                    child: Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back_ios_new,
+                                color: Colors.white),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                AppLocalizations.of(context)!
+                                    .discountManagement,
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Create and manage your discounts',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white.withOpacity(0.9),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Filter chips with Material 3 design
+                  Container(
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: const Color(0xFF32CD32).withOpacity(0.2),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildFilterChip(
+                              AppLocalizations.of(context)!.allDiscounts,
+                              'all'),
+                          const SizedBox(width: 12),
+                          _buildFilterChip(
+                              AppLocalizations.of(context)!.activeDiscounts,
+                              'active'),
+                          const SizedBox(width: 12),
+                          _buildFilterChip(
+                              AppLocalizations.of(context)!.scheduledDiscounts,
+                              'scheduled'),
+                          const SizedBox(width: 12),
+                          _buildFilterChip(
+                              AppLocalizations.of(context)!.expiredDiscounts,
+                              'expired'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Discounts list
+                  Expanded(
+                    child: _filteredDiscounts.isEmpty
+                        ? _buildEmptyState()
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: _filteredDiscounts.length,
+                            itemBuilder: (context, index) {
+                              final discount = _filteredDiscounts[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: DiscountCard(
+                                  discount: discount,
+                                  onEdit: () =>
+                                      _showEditDiscountDialog(discount),
+                                  onDelete: () =>
+                                      _showDeleteConfirmationDialog(discount),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+              // Loading overlay
+              if (_isLoading)
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF32CD32).withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: CircularProgressIndicator(
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFF32CD32)),
+                        strokeWidth: 3,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              // Discounts list
-              Expanded(
-                child: _filteredDiscounts.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _filteredDiscounts.length,
-                        itemBuilder: (context, index) {
-                          final discount = _filteredDiscounts[index];
-                          return DiscountCard(
-                            discount: discount,
-                            onEdit: () => _showEditDiscountDialog(discount),
-                            onDelete: () =>
-                                _showDeleteConfirmationDialog(discount),
-                          );
-                        },
-                      ),
-              ),
             ],
           ),
-          // Loading overlay
-          if (_isLoading)
-            Container(
-              color: Colors.black.withOpacity(0.3),
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFF00C1E8),
-                ),
-              ),
-            ),
-        ],
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateDiscountDialog(),
-        icon: const Icon(Icons.add),
-        label: Text(AppLocalizations.of(context)!.createDiscount),
-        backgroundColor: const Color(0xFF00c1e8),
-        foregroundColor: Colors.white,
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFF32CD32), // Lime Green
+              const Color(0xFF228B22), // Darker Lime Green
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF32CD32).withOpacity(0.4),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () => _showCreateDiscountDialog(),
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          icon: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFD300), // Gold accent
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.add,
+              color: Colors.black87,
+              size: 18,
+            ),
+          ),
+          label: Text(
+            AppLocalizations.of(context)!.createDiscount,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -541,39 +720,66 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
   Widget _buildFilterChip(String label, String value) {
     final isSelected = _selectedFilter == value;
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       child: Material(
-        elevation: isSelected ? 2 : 0.5,
-        borderRadius: BorderRadius.circular(16),
+        elevation: isSelected ? 4 : 0,
+        borderRadius: BorderRadius.circular(20),
         color: isSelected
             ? const Color(0xFF32CD32)
-            : const Color(0xFF001133).withOpacity(0.05),
+            : Colors.transparent,
         shadowColor: isSelected
-            ? const Color(0xFF32CD32).withOpacity(0.3)
-            : const Color(0xFF001133).withOpacity(0.1),
+            ? const Color(0xFF32CD32).withOpacity(0.4)
+            : Colors.transparent,
         child: InkWell(
           onTap: () => setState(() => _selectedFilter = value),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isSelected
-                    ? const Color(0xFFFFD300)
-                    : const Color(0xFFFFD300).withOpacity(0.3),
-                width: 1,
+                    ? Colors.transparent
+                    : const Color(0xFF32CD32).withOpacity(0.3),
+                width: 2,
               ),
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [
+                        const Color(0xFF32CD32),
+                        const Color(0xFF228B22),
+                      ],
+                    )
+                  : null,
             ),
-            child: Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFF32CD32),
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                fontSize: 13,
-                letterSpacing: 0.2,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isSelected)
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD300),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      Icons.check,
+                      size: 12,
+                      color: Colors.black87,
+                    ),
+                  ),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFF32CD32),
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                    fontSize: 14,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -583,30 +789,132 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
 
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.local_offer_outlined,
-            size: 64,
-            color: const Color(0xFF001133).withOpacity(0.4),
+      child: Container(
+        margin: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(40),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white,
+              const Color(0xFF32CD32).withOpacity(0.02),
+              const Color(0xFFFFD300).withOpacity(0.02),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            AppLocalizations.of(context)!.noDiscountsCreated,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: const Color(0xFF001133).withOpacity(0.7),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(
+            color: const Color(0xFF32CD32).withOpacity(0.2),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF32CD32).withOpacity(0.1),
+                    const Color(0xFFFFD300).withOpacity(0.1),
+                  ],
                 ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.createYourFirstDiscount,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF001133).withOpacity(0.5),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Icon(
+                Icons.local_offer_outlined,
+                size: 64,
+                color: const Color(0xFF32CD32),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              AppLocalizations.of(context)!.noDiscountsCreated,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1C1C1C),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              AppLocalizations.of(context)!.createYourFirstDiscount,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF32CD32),
+                    const Color(0xFF228B22),
+                  ],
                 ),
-          ),
-        ],
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF32CD32).withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _showCreateDiscountDialog(),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFD300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.add,
+                            color: Colors.black87,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          AppLocalizations.of(context)!.createDiscount,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -625,34 +933,121 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: const Color(0xFF001133).withOpacity(0.1)),
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: Colors.red.withOpacity(0.2), width: 2),
         ),
-        title: Text(
-          AppLocalizations.of(context)!.deleteDiscount,
-          style: TextStyle(color: const Color(0xFF001133)),
+        title: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.red.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.delete_forever,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                AppLocalizations.of(context)!.deleteDiscount,
+                style: const TextStyle(
+                  color: Color(0xFF1C1C1C),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
-        content: Text(
-          AppLocalizations.of(context)!.areYouSureYouWantToDeleteThisDiscount,
-          style: TextStyle(color: const Color(0xFF001133).withOpacity(0.7)),
+        content: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Text(
+            AppLocalizations.of(context)!.areYouSureYouWantToDeleteThisDiscount,
+            style: TextStyle(
+              color: Colors.grey.shade700,
+              fontSize: 16,
+              height: 1.5,
+            ),
+          ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF001133).withOpacity(0.7),
+          Container(
+            margin: const EdgeInsets.all(8),
+            child: TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey.shade600,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey.shade300, width: 1),
+                ),
+              ),
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
             ),
-            child: Text(AppLocalizations.of(context)!.cancel),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.red.shade400,
+                  Colors.red.shade600,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
               await _deleteDiscount(discount.id);
             },
             style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.delete, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    AppLocalizations.of(context)!.delete,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -702,14 +1097,48 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         return AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: const Color(0xFF001133).withOpacity(0.1)),
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(
+                color: const Color(0xFF32CD32).withOpacity(0.2), width: 2),
           ),
-          title: Text(
-            isEditing
-                ? AppLocalizations.of(context)!.editDiscount
-                : AppLocalizations.of(context)!.createDiscount,
-            style: TextStyle(color: const Color(0xFF001133)),
+          title: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF32CD32).withOpacity(0.1),
+                  const Color(0xFFFFD300).withOpacity(0.1),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF32CD32),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isEditing ? Icons.edit : Icons.add,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  isEditing
+                      ? AppLocalizations.of(context)!.editDiscount
+                      : AppLocalizations.of(context)!.createDiscount,
+                  style: const TextStyle(
+                    color: Color(0xFF1C1C1C),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
           content: Container(
             width: ResponsiveHelper.isDesktop(context)
@@ -733,26 +1162,41 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                           decoration: InputDecoration(
                             labelText: AppLocalizations.of(context)!.title,
                             labelStyle: TextStyle(
-                              color: const Color(0xFF00c1e8),
-                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF32CD32),
+                              fontWeight: FontWeight.w600,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide(
-                                color: Colors.grey.shade300,
+                                color: const Color(0xFF32CD32).withOpacity(0.3),
+                                width: 2,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFF00c1e8),
+                                color: Color(0xFF32CD32),
+                                width: 2,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                color: const Color(0xFF32CD32).withOpacity(0.3),
                                 width: 2,
                               ),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
+                              horizontal: 20,
                               vertical: 16,
                             ),
+                            filled: true,
+                            fillColor:
+                                const Color(0xFF32CD32).withOpacity(0.05),
+                          ),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -773,25 +1217,37 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                   labelText: AppLocalizations.of(context)!
                                       .discountType,
                                   labelStyle: TextStyle(
-                                    color: const Color(0xFF00c1e8),
-                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFF32CD32),
+                                    fontWeight: FontWeight.w600,
                                   ),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(16),
                                     borderSide: BorderSide(
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFF00c1e8),
+                                      color: const Color(0xFF32CD32)
+                                          .withOpacity(0.3),
                                       width: 2,
                                     ),
                                   ),
-                                  isDense: true,
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF32CD32),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: BorderSide(
+                                      color: const Color(0xFF32CD32)
+                                          .withOpacity(0.3),
+                                      width: 2,
+                                    ),
+                                  ),
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 16),
+                                      horizontal: 20, vertical: 16),
+                                  filled: true,
+                                  fillColor:
+                                      const Color(0xFF32CD32).withOpacity(0.05),
                                 ),
                                 isExpanded: true,
                                 items: DiscountType.values.map((type) {
@@ -1585,12 +2041,48 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(AppLocalizations.of(context)!.cancel),
+            Container(
+              margin: const EdgeInsets.all(8),
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.grey.shade600,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.shade300, width: 1),
+                  ),
+                ),
+                child: Text(
+                  AppLocalizations.of(context)!.cancel,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
             ),
-            ElevatedButton(
-              onPressed: () async {
+            Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF32CD32),
+                    const Color(0xFF228B22),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF32CD32).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   // Check for conflicting discounts
                   if ((applicability == DiscountApplicability.specificItems &&
@@ -1710,25 +2202,43 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00c1e8),
+                  backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
+                  elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 16,
-                ),
-                elevation: 2,
-                shadowColor: const Color(0xFF00c1e8).withOpacity(0.3),
+                  ),
               ),
-              child: Text(
-                isEditing
-                    ? AppLocalizations.of(context)!.saveChanges
-                    : AppLocalizations.of(context)!.create,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        isEditing ? Icons.save : Icons.add,
+                        color: Colors.black87,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      isEditing
+                          ? AppLocalizations.of(context)!.saveChanges
+                          : AppLocalizations.of(context)!.create,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -2129,16 +2639,30 @@ class DiscountCard extends StatelessWidget {
     final statusText = getStatusText(context, discount);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            const Color(0xFF32CD32).withOpacity(0.02),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: statusColor.withOpacity(0.3),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: statusColor.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -2146,102 +2670,256 @@ class DiscountCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onEdit,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(24),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: Text(
-                        discount.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            discount.title,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              color: Color(0xFF1C1C1C),
+                            ),
+                          ),
+                          if (discount.description.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              discount.description,
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 14,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    // Replace placeholder for status text container
+                    const SizedBox(width: 16),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                          horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        statusText,
-                        style: TextStyle(
-                          color: statusColor,
-                          fontWeight: FontWeight.w500,
+                        gradient: LinearGradient(
+                          colors: [
+                            statusColor.withOpacity(0.1),
+                            statusColor.withOpacity(0.05),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: statusColor.withOpacity(0.3),
+                          width: 1,
                         ),
                       ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: statusColor,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            statusText,
+                            style: TextStyle(
+                              color: statusColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                if (discount.description.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    discount.description,
-                    style: TextStyle(color: Colors.grey.shade600),
+                const SizedBox(height: 20),
+
+                // Discount details section
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF32CD32).withOpacity(0.05),
+                        const Color(0xFFFFD300).withOpacity(0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFF32CD32).withOpacity(0.2),
+                      width: 1,
+                    ),
                   ),
-                ],
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(Icons.local_offer,
-                        color: const Color(0xFF00c1e8), size: 16),
-                    const SizedBox(width: 8),
-                    Text(
-                      discount.type == DiscountType.percentage
-                          ? '${discount.value}% ${AppLocalizations.of(context)!.off}'
-                          : discount.type == DiscountType.freeDelivery
-                              ? AppLocalizations.of(context)!.freeDelivery
-                              : '${AppLocalizations.of(context)!.conditional} ${AppLocalizations.of(context)!.discount}',
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                    if ((discount.minimumOrderAmount ?? 0) > 0) ...[
-                      const SizedBox(width: 16),
-                      Icon(Icons.shopping_cart,
-                          color: Colors.grey.shade500, size: 16),
-                      const SizedBox(width: 8),
-                      Text(
-                          'Min: \$${(discount.minimumOrderAmount ?? 0).toStringAsFixed(2)}'),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF32CD32),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.local_offer,
+                                color: Colors.white, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              discount.type == DiscountType.percentage
+                                  ? '${discount.value}% ${AppLocalizations.of(context)!.off}'
+                                  : discount.type == DiscountType.freeDelivery
+                                      ? AppLocalizations.of(context)!
+                                          .freeDelivery
+                                      : '${AppLocalizations.of(context)!.conditional} ${AppLocalizations.of(context)!.discount}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Color(0xFF1C1C1C),
+                              ),
+                            ),
+                          ),
+                          if ((discount.minimumOrderAmount ?? 0) > 0) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD300).withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.shopping_cart,
+                                      color: const Color(0xFFFFD300), size: 16),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Min: \$${(discount.minimumOrderAmount ?? 0).toStringAsFixed(2)}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Icon(Icons.category,
+                              color: Colors.grey.shade600, size: 18),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              getLocalizedApplicabilityText(context, discount),
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Icon(Icons.date_range,
+                              color: Colors.grey.shade600, size: 18),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Valid: ${discount.validFrom.day}/${discount.validFrom.month}/${discount.validFrom.year} - ${discount.validTo.day}/${discount.validTo.month}/${discount.validTo.year}',
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.category, color: Colors.grey.shade500, size: 16),
-                    const SizedBox(width: 8),
-                    Text(getLocalizedApplicabilityText(context, discount)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.date_range,
-                        color: Colors.grey.shade500, size: 16),
-                    const SizedBox(width: 8),
-                    Text(
-                        'Valid: ${discount.validFrom.day}/${discount.validFrom.month}/${discount.validFrom.year} - ${discount.validTo.day}/${discount.validTo.month}/${discount.validTo.year}'),
-                  ],
-                ),
-                const SizedBox(height: 12),
+
+                const SizedBox(height: 20),
+
+                // Action buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Color(0xFF00c1e8)),
-                      onPressed: onEdit,
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF32CD32),
+                            const Color(0xFF228B22),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF32CD32).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFD300),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Icon(Icons.edit,
+                              color: Colors.black87, size: 16),
+                        ),
+                        onPressed: onEdit,
+                      ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: onDelete,
+                    const SizedBox(width: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.red.shade400,
+                            Colors.red.shade600,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.delete,
+                            color: Colors.white, size: 20),
+                        onPressed: onDelete,
+                      ),
                     ),
                   ],
                 ),
@@ -2285,13 +2963,13 @@ String getApplicabilityText(Discount discount) {
 Color getStatusColor(Discount discount) {
   switch (discount.status) {
     case DiscountStatus.active:
-      return Colors.green;
+      return const Color(0xFF32CD32); // Lime Green for active
     case DiscountStatus.scheduled:
-      return Colors.orange;
+      return const Color(0xFFFFD300); // Gold for scheduled
     case DiscountStatus.expired:
-      return Colors.red;
+      return Colors.red.shade400; // Red for expired
     default:
-      return Colors.grey;
+      return Colors.grey.shade500; // Grey for inactive
   }
 }
 

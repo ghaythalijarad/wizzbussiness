@@ -1,0 +1,23 @@
+#!/bin/bash
+
+echo "🧪 TESTING ID TOKEN PRIORITY IN FLUTTER APP"
+echo "============================================"
+
+echo "This test will:"
+echo "1. Clear existing tokens"
+echo "2. Sign in to get both access and ID tokens"
+echo "3. Test location settings with ID token priority"
+echo ""
+echo "Please run this in the Flutter app console:"
+echo ""
+echo "1. In the Flutter app, go to Settings"
+echo "2. Sign out completely"
+echo "3. Sign in again"
+echo "4. Try to update location settings"
+echo "5. Check the console logs for token usage"
+echo ""
+echo "Look for these log messages:"
+echo "🎫 [TokenManager] Using ID token for authorization"
+echo "🔑 [TokenManager] Falling back to access token for authorization"
+echo ""
+echo "The fix is working if you see the ID token message!"

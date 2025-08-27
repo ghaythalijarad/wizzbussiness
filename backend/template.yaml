@@ -78,7 +78,7 @@ Resources:
                 x-amazon-apigateway-authorizer:
                   type: cognito_user_pools
                   providerARNs:
-                    - arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}
+                    - !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
           paths:
             # Auth endpoints (public)
             /auth/signin:
@@ -645,11 +645,15 @@ Resources:
             
             /businesses/{businessId}/location-settings:
               get:
+                security:
+                  - CognitoAuthorizer: []
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST
                   uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${LocationSettingsFunction.Arn}/invocations
               put:
+                security:
+                  - CognitoAuthorizer: []
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST
@@ -683,11 +687,15 @@ Resources:
             
             /businesses/{businessId}/working-hours:
               get:
+                security:
+                  - CognitoAuthorizer: []
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST
                   uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${LocationSettingsFunction.Arn}/invocations
               put:
+                security:
+                  - CognitoAuthorizer: []
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST

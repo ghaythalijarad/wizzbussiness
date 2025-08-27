@@ -44,7 +44,7 @@ class Business {
   });
 
   factory Business.fromJson(Map<String, dynamic> json) {
-    // Parse address components
+    // Parse address components from the address field (fallback)
     final addressData = _parseAddressComponents(json['address']);
     
     return Business(
@@ -55,11 +55,14 @@ class Business {
       ownerName: json['ownerName'] ?? json['owner_name'],
       businessType: _parseBusinessType(
           json['businessType'] ?? json['business_type'] ?? 'restaurant'),
-      address: addressData['fullAddress'],
-      city: addressData['city'],
-      district: addressData['district'],
-      street: addressData['street'],
-      country: addressData['country'],
+      address: json['address'] is String
+          ? json['address']
+          : addressData['fullAddress'],
+      // Prioritize individual fields from JSON, fallback to parsed address components
+      city: json['city'] ?? addressData['city'],
+      district: json['district'] ?? addressData['district'],
+      street: json['street'] ?? addressData['street'],
+      country: json['country'] ?? addressData['country'],
       latitude: json['latitude']?.toDouble(),
       longitude: json['longitude']?.toDouble(),
       description: json['description'],
@@ -100,9 +103,27 @@ class Business {
     
     if (address == null) return result;
     
-    // If it's already a string, return it as full address
+    // If it's already a string, parse it intelligently
     if (address is String) {
       result['fullAddress'] = address;
+      
+      // Try to parse individual components from the string
+      // Common format: "Street, District, City, Country"
+      final parts = address.split(',').map((part) => part.trim()).toList();
+
+      if (parts.length >= 1) {
+        result['street'] = parts[0].isNotEmpty ? parts[0] : null;
+      }
+      if (parts.length >= 2) {
+        result['district'] = parts[1].isNotEmpty ? parts[1] : null;
+      }
+      if (parts.length >= 3) {
+        result['city'] = parts[2].isNotEmpty ? parts[2] : null;
+      }
+      if (parts.length >= 4) {
+        result['country'] = parts[3].isNotEmpty ? parts[3] : null;
+      }
+      
       return result;
     }
     

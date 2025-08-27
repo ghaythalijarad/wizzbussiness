@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import '../services/cognito_auth_service.dart' as cognito;
@@ -116,6 +117,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
     }
+  }
+
+  /// Manually set authentication state (used when login is handled externally)
+  void setAuthenticatedState({AuthUser? user}) {
+    debugPrint('🔐 AuthNotifier: setAuthenticatedState() called');
+    debugPrint('🔐 AuthNotifier: Current state before: ${state.status}');
+    state = state.copyWith(
+      status: AuthStatus.authenticated,
+      currentUser: user,
+      isLoading: false,
+      errorMessage: null,
+    );
+    debugPrint('🔐 AuthNotifier: New state after: ${state.status}');
+    debugPrint('🔐 AuthNotifier: setAuthenticatedState() completed');
   }
 
   Future<bool> resetPassword({required String email}) async {

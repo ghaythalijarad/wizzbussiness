@@ -17,7 +17,7 @@ Parameters:
     Description: Cognito App Client ID
   CacheVersion:
     Type: String
-    Default: "v2"
+    Default: "v3"
     Description: Cache busting version
 
 Globals:
@@ -39,7 +39,8 @@ Globals:
         POS_LOGS_TABLE: WhizzMerchants_PosLogs
         BUSINESS_PHOTOS_BUCKET: order-receiver-business-photos-dev-1755170214
         ORDERS_TABLE: WhizzMerchants_Orders
-        WEBSOCKET_CONNECTIONS_TABLE: order-receiver-websocket-connections-dev
+        WEBSOCKET_CONNECTIONS_TABLE: WizzUser_websocket_connections_dev
+        WEBSOCKET_SUBSCRIPTIONS_TABLE: WizzUser_websocket_subscriptions_dev
         TIMEOUT_LOGS_TABLE: WhizzMerchants_TimeoutLogs
         COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
         COGNITO_CLIENT_ID: !Ref CognitoClientId
@@ -65,7 +66,7 @@ Resources:
           openapi: 3.0.1
           info:
             title: Order Receiver API
-            description: Regional API Gateway with AWS Lambda integrations
+            description: Regional API Gateway with AWS Lambda integrations (Fixed Cognito Auth)
             version: "1.0"
           components:
             securitySchemes:
@@ -642,6 +643,82 @@ Resources:
                         method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
                         method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
             
+            /businesses/{businessId}/location-settings:
+              get:
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${LocationSettingsFunction.Arn}/invocations
+              put:
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${LocationSettingsFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
+            /businesses/{businessId}/working-hours:
+              get:
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${LocationSettingsFunction.Arn}/invocations
+              put:
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${LocationSettingsFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
             /business/details:
               get:
                 security:
@@ -680,8 +757,7 @@ Resources:
             # Upload endpoints (internal auth)
             /upload/product-image:
               post:
-                security:
-                  - CognitoAuthorizer: []
+                security: []
                 x-amazon-apigateway-integration:
                   type: aws_proxy
                   httpMethod: POST
@@ -883,6 +959,197 @@ Resources:
                         method.response.header.Access-Control-Allow-Origin: "'*'"
                         method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
                         method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
+            # WebSocket Management endpoints
+            /websocket/virtual-connection:
+              post:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${WebSocketConnectionManagerFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
+            /websocket/business-connections:
+              get:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${WebSocketConnectionManagerFunction.Arn}/invocations
+              delete:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${WebSocketConnectionManagerFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
+            /websocket/business-status:
+              get:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${WebSocketConnectionManagerFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
+            # Business Status Management endpoints
+            /businesses/{businessId}/status:
+              get:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${BusinessOnlineStatusFunction.Arn}/invocations
+              put:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${BusinessOnlineStatusFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+            
+            /businesses/{businessId}/heartbeat:
+              post:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${BusinessOnlineStatusFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
 
   # Explicit Lambda permissions to break circular dependency
   UnifiedAuthFunctionPermission:
@@ -925,6 +1192,30 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RegionalRestApi}/*/*"
 
+  LocationSettingsFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref LocationSettingsFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RegionalRestApi}/*/*"
+
+  WebSocketConnectionManagerFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref WebSocketConnectionManagerFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RegionalRestApi}/*/*"
+
+  BusinessOnlineStatusFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref BusinessOnlineStatusFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RegionalRestApi}/*/*"
+
   UnifiedAuthFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -947,8 +1238,10 @@ Resources:
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Users/index/*"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses/index/*"
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/wizzgo-dev-wss-onconnect"
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/wizzgo-dev-wss-onconnect/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WizzUser_websocket_connections_dev"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WizzUser_websocket_connections_dev/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WizzUser_websocket_subscriptions_dev"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WizzUser_websocket_subscriptions_dev/index/*"
             - Effect: Allow
               Action:
                 - cognito-idp:AdminCreateUser
@@ -1071,9 +1364,277 @@ Resources:
                 - cognito-idp:GetUser
               Resource: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
 
+  LocationSettingsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'order-receiver-regional-${Stage}-location-settings-v1-sam'
+      CodeUri: functions/business/
+      Handler: location_settings_handler.handler
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource: 
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Users"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Users/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_BusinessWorkingHours"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_BusinessWorkingHours/index/*"
+            - Effect: Allow
+              Action:
+                - cognito-idp:GetUser
+              Resource: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
+
+  # WebSocket Management Functions
+  WebSocketHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'order-receiver-websocket-${Stage}-handler-v1-sam'
+      CodeUri: functions/websocket/
+      Handler: websocket_handler.handler
+      Environment:
+        Variables:
+          WEBSOCKET_ENDPOINT: !Sub "https://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}"
+          MERCHANT_ENDPOINTS_TABLE: !Sub 'wizzgo-${Stage}-merchant-endpoints'
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource: 
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-${Stage}"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-${Stage}/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/wizzgo-${Stage}-merchant-endpoints"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/wizzgo-${Stage}-merchant-endpoints/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses/index/*"
+            - Effect: Allow
+              Action:
+                - execute-api:ManageConnections
+              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*"
+
+  WebSocketConnectionManagerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'order-receiver-websocket-${Stage}-connection-manager-v1-sam'
+      CodeUri: functions/websocket/
+      Handler: websocket_connection_manager.handler
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource: 
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-${Stage}"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-${Stage}/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses/index/*"
+
+  BusinessOnlineStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'order-receiver-business-${Stage}-status-v1-sam'
+      CodeUri: functions/business/
+      Handler: business_online_status_handler.handler
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource: 
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-${Stage}"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-${Stage}/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses/index/*"
+            - Effect: Allow
+              Action:
+                - cognito-idp:GetUser
+              Resource: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
+
+  # WebSocket API
+  WebSocketApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub 'order-receiver-websocket-api-${Stage}'
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: "$request.body.action"
+
+  WebSocketConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $connect
+      Target: !Sub 'integrations/${WebSocketConnectIntegration}'
+
+  WebSocketDisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $disconnect
+      Target: !Sub 'integrations/${WebSocketDisconnectIntegration}'
+
+  WebSocketDefaultRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $default
+      Target: !Sub 'integrations/${WebSocketDefaultIntegration}'
+
+  WebSocketConnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebSocketHandlerFunction.Arn}/invocations'
+
+  WebSocketDisconnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebSocketHandlerFunction.Arn}/invocations'
+
+  WebSocketDefaultIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebSocketHandlerFunction.Arn}/invocations'
+
+  WebSocketDeployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - WebSocketConnectRoute
+      - WebSocketDisconnectRoute
+      - WebSocketDefaultRoute
+    Properties:
+      ApiId: !Ref WebSocketApi
+
+  WebSocketStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: !Ref Stage
+      ApiId: !Ref WebSocketApi
+      DeploymentId: !Ref WebSocketDeployment
+
+  WebSocketConnectPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref WebSocketHandlerFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*'
+
+  # WebSocket Connections Table
+  WebSocketConnectionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'order-receiver-websocket-connections-${Stage}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      Tags:
+        - Key: Environment
+          Value: !Ref Stage
+        - Key: Service
+          Value: OrderReceiver
+        - Key: Purpose
+          Value: websocket-connections
+
+  # DynamoDB Tables
+  BusinessWorkingHoursTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: WhizzMerchants_BusinessWorkingHours
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: businessId
+          AttributeType: S
+        - AttributeName: weekday
+          AttributeType: S
+      KeySchema:
+        - AttributeName: businessId
+          KeyType: HASH
+        - AttributeName: weekday
+          KeyType: RANGE
+      Tags:
+        - Key: Environment
+          Value: !Ref Stage
+        - Key: Service
+          Value: WhizzMerchants
+        - Key: Purpose
+          Value: business-working-hours
+
 Outputs:
   ApiGatewayEndpoint:
     Description: "API Gateway endpoint URL"
     Value: !Sub "https://${RegionalRestApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
     Export:
       Name: !Sub "${AWS::StackName}-ApiEndpoint"
+  
+  WebSocketUrl:
+    Description: "WebSocket API Gateway URL"
+    Value: !Sub "wss://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}"
+    Export:
+      Name: !Sub "${AWS::StackName}-WebSocketUrl"
+  
+  WebSocketConnectionsTable:
+    Description: "WebSocket Connections Table Name"
+    Value: !Ref WebSocketConnectionsTable
+    Export:
+      Name: !Sub "${AWS::StackName}-WebSocketConnectionsTable"
+  
+  BusinessWorkingHoursTableName:
+    Description: "Business Working Hours Table Name"
+    Value: !Ref BusinessWorkingHoursTable
+    Export:
+      Name: !Sub "${AWS::StackName}-BusinessWorkingHoursTable"

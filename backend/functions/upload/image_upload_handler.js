@@ -53,6 +53,11 @@ function isRegistrationUpload(event) {
     return registrationHeader === 'true';
 }
 
+// Helper function to check if this is a product image upload (no auth needed)
+function isProductImageUpload(event) {
+    return event.path && event.path.includes('/upload/product-image');
+}
+
 // Helper function to upload image to S3
 const uploadToS3 = async (imageBuffer, key, contentType = 'image/jpeg') => {
     const bucketName = process.env.BUSINESS_PHOTOS_BUCKET || 'order-receiver-business-photos-dev-1755170214';
@@ -113,13 +118,14 @@ exports.handler = async (event) => {
         return createResponse(204, {});
     }
 
-    // Authenticate user using bearer token (unless it's a registration upload)
+    // Authenticate user using bearer token (unless it's a registration upload or product image upload)
     const isRegUpload = isRegistrationUpload(event);
+    const isProductUpload = isProductImageUpload(event);
     let userInfo = null;
-    let userEmail = 'registration-user';
-    let userId = 'registration';
+    let userEmail = 'anonymous-user';
+    let userId = 'anonymous';
 
-    if (!isRegUpload) {
+    if (!isRegUpload && !isProductUpload) {
         userInfo = await getUserFromToken(event);
         if (!userInfo) {
             console.log('❌ Authentication failed');
@@ -130,8 +136,14 @@ exports.handler = async (event) => {
         }
         userEmail = userInfo.email;
         userId = userInfo.userId;
-    } else {
+    } else if (isRegUpload) {
         console.log('🔓 Registration upload detected - bypassing authentication');
+        userEmail = 'registration-user';
+        userId = 'registration';
+    } else if (isProductUpload) {
+        console.log('🔓 Product image upload detected - bypassing authentication');
+        userEmail = 'product-user';
+        userId = 'product';
     }
 
     // Handle Base64 encoded request body

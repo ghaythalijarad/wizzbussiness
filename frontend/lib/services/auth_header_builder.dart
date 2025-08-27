@@ -1,26 +1,23 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/token_manager.dart';
 
 /// Central helper to construct Authorization headers using the raw access token
 /// stored in SharedPreferences. Adds temporary integrity logging.
 class AuthHeaderBuilder {
   static Future<Map<String, String>> build() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
+    final token = await TokenManager.getAccessToken();
     if (token == null || token.isEmpty) {
       throw Exception('Missing access token');
     }
 
-    // Clean the token to prevent encoding issues
-    final cleanToken = token.trim().replaceAll('\n', '').replaceAll('\r', '');
-
-    final masked = cleanToken.length > 12
-        ? '${cleanToken.substring(0, 6)}...${cleanToken.substring(cleanToken.length - 6)} (len=${cleanToken.length})'
-        : 'len=${cleanToken.length}';
+    // TokenManager already sanitizes the token, so we can use it directly
+    final masked = token.length > 12
+        ? '${token.substring(0, 6)}...${token.substring(token.length - 6)} (len=${token.length})'
+        : 'len=${token.length}';
     // ignore: avoid_print
-    print('🔐 AuthHeaderBuilder using token $masked');
+    print('🔐 AuthHeaderBuilder using sanitized token $masked');
 
     // Ensure Bearer token format is exact
-    final authValue = 'Bearer $cleanToken';
+    final authValue = 'Bearer $token';
 
     return {
       'Content-Type': 'application/json',
@@ -30,38 +27,30 @@ class AuthHeaderBuilder {
 
   /// Alternative header format for products API that has parsing issues
   static Future<Map<String, String>> buildAlternative() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
+    final token = await TokenManager.getAccessToken();
     if (token == null || token.isEmpty) {
       throw Exception('Missing access token');
     }
 
-    // Clean the token to prevent encoding issues
-    final cleanToken = token.trim().replaceAll('\n', '').replaceAll('\r', '');
-
     print('🔐 AuthHeaderBuilder using alternative format');
     return {
       'Content-Type': 'application/json',
-      'Access-Token': cleanToken,
+      'Access-Token': token,
     };
   }
 
   /// Try multiple header formats until one works
   static Future<Map<String, String>> buildWithFallback() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
+    final token = await TokenManager.getAccessToken();
     if (token == null || token.isEmpty) {
       throw Exception('Missing access token');
     }
 
-    // Clean the token to prevent encoding issues
-    final cleanToken = token.trim().replaceAll('\n', '').replaceAll('\r', '');
-
     // Start with standard Bearer format
     return {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $cleanToken',
-      'Access-Token': cleanToken, // Include both for maximum compatibility
+      'Authorization': 'Bearer $token',
+      'Access-Token': token, // Include both for maximum compatibility
     };
   }
 }

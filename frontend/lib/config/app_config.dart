@@ -22,12 +22,10 @@ class AppConfig {
   // Backward compatibility - some services use baseUrl
   static String get baseUrl => apiUrl;
   
-  // WebSocket URL derived from API URL
+  // WebSocket URL - Using deployed WebSocket API Gateway endpoint
   static String get webSocketUrl {
-    // Convert HTTPS REST API URL to WSS WebSocket URL
-    return apiUrl
-        .replaceFirst('https://', 'wss://')
-        .replaceFirst('/dev', '/dev/websocket');
+    return const String.fromEnvironment('WEBSOCKET_URL',
+        defaultValue: 'wss://pyc140yn0h.execute-api.us-east-1.amazonaws.com/dev');
   }
   
   // Development flags

@@ -18,7 +18,6 @@ class WorkingHoursSettingsScreen extends ConsumerStatefulWidget {
 class _WorkingHoursSettingsScreenState
     extends ConsumerState<WorkingHoursSettingsScreen> {
   bool _isLoading = false;
-  bool _is24Hours = false;
 
   final Map<String, Map<String, dynamic>> _workingHours = {
     'monday': {'isOpen': true, 'openTime': '09:00', 'closeTime': '21:00'},
@@ -68,7 +67,6 @@ class _WorkingHoursSettingsScreenState
       if (mounted && hours['workingHours'] != null) {
         setState(() {
           final loadedHours = hours['workingHours'];
-          _is24Hours = hours['is24Hours'] ?? false;
 
           for (String day in _daysOrder) {
             if (loadedHours[day] != null) {
@@ -104,7 +102,6 @@ class _WorkingHoursSettingsScreenState
       final apiService = ApiService();
       final data = {
         'workingHours': _workingHours,
-        'is24Hours': _is24Hours,
       };
 
       await apiService.updateBusinessWorkingHours(widget.business.id, data);
@@ -199,11 +196,171 @@ class _WorkingHoursSettingsScreenState
 
     setState(() {
       for (String day in _daysOrder) {
-        if (day != 'sunday') {
-          _workingHours[day] = Map<String, dynamic>.from(hours);
-        }
+        _workingHours[day] = Map<String, dynamic>.from(hours);
       }
     });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Applied $schedule hours to all days'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Widget _buildDayCard(String day) {
+    final dayData = _workingHours[day]!;
+    
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _dayNames[day]!,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Switch(
+                  value: dayData['isOpen'],
+                  onChanged: (value) {
+                    setState(() {
+                      _workingHours[day]!['isOpen'] = value;
+                    });
+                  },
+                ),
+                PopupMenuButton<String>(
+                  icon: Icon(Icons.more_vert, color: Colors.grey.shade600),
+                  onSelected: (value) {
+                    if (value == 'copy') {
+                      _copyToAllDays(day);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'copy',
+                      child: Row(
+                        children: [
+                          Icon(Icons.copy, size: 18),
+                          SizedBox(width: 8),
+                          Text('Copy to all days'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            
+            if (dayData['isOpen']) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _selectTime(day, true),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.schedule, size: 18),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Opens',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                                Text(
+                                  dayData['openTime'],
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _selectTime(day, false),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.schedule, size: 18),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Closes',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                                Text(
+                                  dayData['closeTime'],
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ] else ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'Closed',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -225,7 +382,7 @@ class _WorkingHoursSettingsScreenState
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // Quick Actions
+                // Quick Presets Section
                 Container(
                   padding: const EdgeInsets.all(16),
                   color: Theme.of(context).primaryColor.withOpacity(0.1),
@@ -238,218 +395,45 @@ class _WorkingHoursSettingsScreenState
                               color: Theme.of(context).primaryColor),
                           const SizedBox(width: 8),
                           const Text(
-                            'Quick Setup',
+                            'Quick Presets',
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
                       const SizedBox(height: 12),
-
-                      // 24 Hours Toggle
-                      SwitchListTile(
-                        title: const Text('Open 24 Hours'),
-                        subtitle: const Text('Business is always open'),
-                        value: _is24Hours,
-                        onChanged: (value) {
-                          setState(() {
-                            _is24Hours = value;
-                          });
-                        },
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          OutlinedButton(
+                            onPressed: () => _setCommonSchedule('regular'),
+                            child: const Text('9AM-5PM'),
+                          ),
+                          OutlinedButton(
+                            onPressed: () => _setCommonSchedule('restaurant'),
+                            child: const Text('11AM-11PM'),
+                          ),
+                          OutlinedButton(
+                            onPressed: () => _setCommonSchedule('retail'),
+                            child: const Text('10AM-10PM'),
+                          ),
+                        ],
                       ),
-
-                      if (!_is24Hours) ...[
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            OutlinedButton(
-                              onPressed: () => _setCommonSchedule('regular'),
-                              child: const Text('9AM-5PM'),
-                            ),
-                            OutlinedButton(
-                              onPressed: () => _setCommonSchedule('restaurant'),
-                              child: const Text('11AM-11PM'),
-                            ),
-                            OutlinedButton(
-                              onPressed: () => _setCommonSchedule('retail'),
-                              child: const Text('10AM-10PM'),
-                            ),
-                          ],
-                        ),
-                      ],
                     ],
                   ),
                 ),
 
                 // Working Hours List
-                if (!_is24Hours)
-                  Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _daysOrder.length,
-                      itemBuilder: (context, index) {
-                        final day = _daysOrder[index];
-                        final dayData = _workingHours[day]!;
-
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        _dayNames[day]!,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    Switch(
-                                      value: dayData['isOpen'],
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _workingHours[day]!['isOpen'] = value;
-                                        });
-                                      },
-                                    ),
-                                    PopupMenuButton<String>(
-                                      icon: const Icon(Icons.more_vert),
-                                      onSelected: (value) {
-                                        if (value == 'copy') {
-                                          _copyToAllDays(day);
-                                        }
-                                      },
-                                      itemBuilder: (context) => [
-                                        const PopupMenuItem(
-                                          value: 'copy',
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.copy),
-                                              SizedBox(width: 8),
-                                              Text('Copy to all days'),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                
-                                if (dayData['isOpen']) ...[
-                                  const SizedBox(height: 16),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: GestureDetector(
-                                          onTap: () => _selectTime(day, true),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 12),
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  color: Theme.of(context)
-                                                      .primaryColor
-                                                      .withOpacity(0.3)),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                const Icon(Icons.schedule,
-                                                    size: 20),
-                                                const SizedBox(width: 8),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    const Text(
-                                                      'Opens',
-                                                      style: TextStyle(
-                                                          fontSize: 12),
-                                                    ),
-                                                    Text(
-                                                      dayData['openTime'],
-                                                      style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: GestureDetector(
-                                          onTap: () => _selectTime(day, false),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 12),
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  color: Theme.of(context)
-                                                      .primaryColor
-                                                      .withOpacity(0.3)),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                const Icon(Icons.schedule,
-                                                    size: 20),
-                                                const SizedBox(width: 8),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    const Text(
-                                                      'Closes',
-                                                      style: TextStyle(
-                                                          fontSize: 12),
-                                                    ),
-                                                    Text(
-                                                      dayData['closeTime'],
-                                                      style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ] else ...[
-                                  const SizedBox(height: 16),
-                                  const Text(
-                                    'Closed',
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _daysOrder.length,
+                    itemBuilder: (context, index) {
+                      final day = _daysOrder[index];
+                      return _buildDayCard(day);
+                    },
                   ),
+                ),
 
                 // Save Button
                 Padding(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/business.dart';
 import '../services/api_service.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/location_settings_widget.dart';
 
 class OtherSettingsPage extends ConsumerStatefulWidget {
   final Business business;
@@ -15,20 +16,15 @@ class OtherSettingsPage extends ConsumerStatefulWidget {
 
 class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
   final _formKey = GlobalKey<FormState>();
-  final _addressController = TextEditingController();
   final _cityController = TextEditingController();
   final _districtController = TextEditingController();
   final _countryController = TextEditingController();
   final _streetController = TextEditingController();
-  final _latitudeController = TextEditingController();
-  final _longitudeController = TextEditingController();
 
   bool _isLoading = false;
-  bool _enableDelivery = true;
-  bool _enablePickup = true;
-  double _deliveryRadius = 5.0;
-  double _minimumOrderAmount = 10.0;
-  double _deliveryFee = 2.50;
+  double? _latitude;
+  double? _longitude;
+  String? _address;
 
   @override
   void initState() {
@@ -38,13 +34,10 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
 
   @override
   void dispose() {
-    _addressController.dispose();
     _cityController.dispose();
     _districtController.dispose();
     _countryController.dispose();
     _streetController.dispose();
-    _latitudeController.dispose();
-    _longitudeController.dispose();
     super.dispose();
   }
 
@@ -56,32 +49,76 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
     try {
       // Load business data
       final business = widget.business;
-      _addressController.text = business.address ?? '';
-      _cityController.text = business.address ?? '';
-      _districtController.text = '';
-      _countryController.text = 'Iraq';
-      _streetController.text = '';
-      _latitudeController.text = business.latitude?.toString() ?? '';
-      _longitudeController.text = business.longitude?.toString() ?? '';
+      _latitude = business.latitude;
+      _longitude = business.longitude;
+
+      // Extract data directly from business properties - no parsing needed!
+      String city = business.city ?? '';
+      String district = business.district ?? '';
+      String street = business.street ?? '';
+      String country = business.country ?? 'Iraq';
+      String mainAddress = business.address ?? '';
+
+      // If we don't have a full address but have components, build it
+      if (mainAddress.isEmpty && (city.isNotEmpty || district.isNotEmpty || street.isNotEmpty)) {
+        final addressParts = [street, district, city, country]
+            .where((part) => part.isNotEmpty)
+            .toList();
+        mainAddress = addressParts.join(', ');
+      }
+
+      // Set the form fields with extracted data
+      setState(() {
+        _cityController.text = city;
+        _districtController.text = district;
+        _streetController.text = street;
+        _countryController.text = country;
+        _address = mainAddress.isNotEmpty ? mainAddress : null;
+      });
+
+      debugPrint('Location data loaded from Business model:');
+      debugPrint('  City: $city');
+      debugPrint('  District: $district');
+      debugPrint('  Street: $street');
+      debugPrint('  Country: $country');
+      debugPrint('  Full Address: $mainAddress');
+      debugPrint('  Coordinates: $_latitude, $_longitude');
 
       // Try to load additional location settings from API
       final apiService = ApiService();
       try {
-        final settings =
-            await apiService.getBusinessLocationSettings(business.id);
-        if (mounted) {
+        final settings = await apiService.getBusinessLocationSettings(business.id);
+        if (mounted && settings['settings'] != null) {
+          final locationData = settings['settings'];
+          
           setState(() {
-            _enableDelivery = settings['enableDelivery'] ?? true;
-            _enablePickup = settings['enablePickup'] ?? true;
-            _deliveryRadius = (settings['deliveryRadius'] ?? 5.0).toDouble();
-            _minimumOrderAmount =
-                (settings['minimumOrderAmount'] ?? 10.0).toDouble();
-            _deliveryFee = (settings['deliveryFee'] ?? 2.50).toDouble();
+            // Update GPS coordinates from location settings
+            _latitude = locationData['latitude']?.toDouble() ?? _latitude;
+            _longitude = locationData['longitude']?.toDouble() ?? _longitude;
+            
+            // Override with API data if available and more specific
+            if (locationData['city']?.toString().isNotEmpty == true) {
+              _cityController.text = locationData['city'].toString();
+            }
+            if (locationData['district']?.toString().isNotEmpty == true) {
+              _districtController.text = locationData['district'].toString();
+            }
+            if (locationData['street']?.toString().isNotEmpty == true) {
+              _streetController.text = locationData['street'].toString();
+            }
+            if (locationData['country']?.toString().isNotEmpty == true) {
+              _countryController.text = locationData['country'].toString();
+            }
+            
+            // Update the address variable for LocationSettingsWidget based on API data
+            if (locationData['address']?.toString().isNotEmpty == true) {
+              _address = locationData['address'].toString();
+            }
           });
         }
       } catch (e) {
-        // If location settings don't exist, use defaults
-        debugPrint('No existing location settings found, using defaults');
+        // If location settings don't exist, continue with business data
+        debugPrint('No additional location settings found: $e');
       }
     } catch (e) {
       if (mounted) {
@@ -112,20 +149,52 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
 
     try {
       final apiService = ApiService();
+      
+      // Create comprehensive location settings object
       final settings = {
-        'address': _addressController.text,
-        'city': _cityController.text,
-        'district': _districtController.text,
-        'country': _countryController.text,
-        'street': _streetController.text,
-        'latitude': double.tryParse(_latitudeController.text),
-        'longitude': double.tryParse(_longitudeController.text),
-        'enableDelivery': _enableDelivery,
-        'enablePickup': _enablePickup,
-        'deliveryRadius': _deliveryRadius,
-        'minimumOrderAmount': _minimumOrderAmount,
-        'deliveryFee': _deliveryFee,
+        // Individual address components for mapping
+        'city': _cityController.text.trim(),
+        'district': _districtController.text.trim(),
+        'country': _countryController.text.trim(),
+        'street': _streetController.text.trim(),
+        
+        // GPS coordinates
+        'latitude': _latitude,
+        'longitude': _longitude,
+        
+        // Build address string for backward compatibility
+        'address': _buildAddressString(),
+        
+        // Additional metadata
+        'updated_at': DateTime.now().toIso8601String(),
+        
+        // Also include the DynamoDB format for backward compatibility
+        'address_components': {
+          'city': {'S': _cityController.text.trim()},
+          'district': {'S': _districtController.text.trim()},
+          'country': {'S': _countryController.text.trim()},
+          'street': {'S': _streetController.text.trim()},
+        },
       };
+
+      // Remove empty fields to keep the data clean
+      settings.removeWhere((key, value) => 
+        value == null || (value is String && value.isEmpty));
+
+      // Also remove empty nested components
+      if (settings['address_components'] != null) {
+        final components = settings['address_components'] as Map<String, dynamic>;
+        components.removeWhere((key, value) {
+          if (value is Map<String, dynamic> && value['S'] is String) {
+            return (value['S'] as String).isEmpty;
+          }
+          return false;
+        });
+        
+        if (components.isEmpty) {
+          settings.remove('address_components');
+        }
+      }
 
       await apiService.updateBusinessLocationSettings(
           widget.business.id, settings);
@@ -155,21 +224,127 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
       }
     }
   }
+  
+  /// Build a readable address string from individual components
+  String _buildAddressString() {
+    // Build from components
+    final parts = <String>[];
+    
+    if (_streetController.text.trim().isNotEmpty) {
+      parts.add(_streetController.text.trim());
+    }
+    if (_districtController.text.trim().isNotEmpty) {
+      parts.add(_districtController.text.trim());
+    }
+    if (_cityController.text.trim().isNotEmpty) {
+      parts.add(_cityController.text.trim());
+    }
+    if (_countryController.text.trim().isNotEmpty) {
+      parts.add(_countryController.text.trim());
+    }
+    
+    return parts.join(', ');
+  }
 
-  void _getCurrentLocation() async {
-    // TODO: Implement location fetching using location services
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Getting current location...'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-
-    // For now, set sample coordinates for Baghdad
+  void _onLocationChanged(double? latitude, double? longitude, String? address) {
     setState(() {
-      _latitudeController.text = '33.3152';
-      _longitudeController.text = '44.3661';
+      _latitude = latitude;
+      _longitude = longitude;
+      _address = address;
     });
+    
+    // If we got a new address from GPS, try to parse it and update form fields
+    if (address != null && address.isNotEmpty && 
+        address != 'Address not available (stub implementation)' &&
+        address != 'Address not available') {
+      
+      final addressParts = _parseAddress(address);
+      
+      setState(() {
+        // Only update fields that are currently empty to avoid overwriting user input
+        if (_cityController.text.isEmpty && addressParts['city'] != null) {
+          _cityController.text = addressParts['city']!;
+        }
+        
+        if (_districtController.text.isEmpty && addressParts['district'] != null) {
+          _districtController.text = addressParts['district']!;
+        }
+        
+        if (_streetController.text.isEmpty && addressParts['street'] != null) {
+          _streetController.text = addressParts['street']!;
+        }
+        
+        if (_countryController.text == 'Iraq' && addressParts['country'] != null) {
+          _countryController.text = addressParts['country']!;
+        }
+      });
+    }
+  }
+
+  /// Simple address parsing to extract components
+  Map<String, String?> _parseAddress(String address) {
+    final Map<String, String?> components = {
+      'street': null,
+      'city': null,
+      'district': null,
+      'country': null,
+    };
+    
+    if (address.isEmpty) return components;
+    
+    // Split address by common separators
+    final parts = address.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    
+    if (parts.isNotEmpty) {
+      // First part is usually street address
+      components['street'] = parts[0];
+      
+      // Look for common Iraqi city names
+      for (final part in parts) {
+        final lowerPart = part.toLowerCase();
+        if (_isKnownCity(lowerPart)) {
+          components['city'] = part;
+          break;
+        }
+      }
+      
+      // If more than one part, use last part as country (if it looks like a country)
+      if (parts.length > 1) {
+        final lastPart = parts.last.toLowerCase();
+        if (_isKnownCountry(lastPart)) {
+          components['country'] = parts.last;
+        }
+      }
+      
+      // Try to identify district (usually middle parts that aren't city or country)
+      for (final part in parts) {
+        if (part != components['street'] && 
+            part != components['city'] && 
+            part != components['country']) {
+          components['district'] = part;
+          break;
+        }
+      }
+    }
+    
+    return components;
+  }
+  
+  /// Check if a string contains a known city name
+  bool _isKnownCity(String text) {
+    final knownCities = [
+      'baghdad', 'basra', 'mosul', 'erbil', 'najaf', 'karbala', 
+      'kirkuk', 'sulaymaniyah', 'ramadi', 'fallujah', 'tikrit',
+      'amarah', 'nasiriyah', 'kut', 'hilla', 'diwaniyah',
+      'samarra', 'duhok', 'zakho', 'halabja'
+    ];
+    return knownCities.any((city) => text.contains(city));
+  }
+  
+  /// Check if a string contains a known country name
+  bool _isKnownCountry(String text) {
+    final knownCountries = ['iraq', 'iraqi', 'kurdistan'];
+    return knownCountries.any((country) => text.contains(country));
   }
 
   @override
@@ -217,22 +392,18 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _addressController,
-                              decoration: const InputDecoration(
-                                labelText: 'Street Address',
-                                hintText: 'Enter your business address',
-                                prefixIcon: Icon(Icons.home),
+                            const SizedBox(height: 20),
+                            
+                            // Address Components Section
+                            const Text(
+                              'Address Components',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey,
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your business address';
-                                }
-                                return null;
-                              },
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
                             Row(
                               children: [
                                 Expanded(
@@ -276,69 +447,22 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
                                 return null;
                               },
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // GPS Coordinates Section
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.gps_fixed,
-                                    color: Theme.of(context).primaryColor),
-                                const SizedBox(width: 12),
-                                const Text(
-                                  'GPS Coordinates',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
                             const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _latitudeController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Latitude',
-                                      hintText: '33.3152',
-                                      prefixIcon: Icon(Icons.navigation),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _longitudeController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Longitude',
-                                      hintText: '44.3661',
-                                      prefixIcon: Icon(Icons.navigation),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton.icon(
-                                onPressed: _getCurrentLocation,
-                                icon: const Icon(Icons.my_location),
-                                label: const Text('Get Current Location'),
+                            // Street Name Field (for mapping)
+                            TextFormField(
+                              controller: _streetController,
+                              decoration: const InputDecoration(
+                                labelText: 'Street Name',
+                                hintText: 'Enter specific street name for mapping',
+                                prefixIcon: Icon(Icons.streetview),
+                                helperText: 'Street name used for location mapping and delivery',
                               ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Street name is required for mapping';
+                                }
+                                return null;
+                              },
                             ),
                           ],
                         ),
@@ -346,107 +470,13 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Service Options Section
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.delivery_dining,
-                                    color: Theme.of(context).primaryColor),
-                                const SizedBox(width: 12),
-                                const Text(
-                                  'Service Options',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            SwitchListTile(
-                              title: const Text('Enable Delivery'),
-                              subtitle: const Text(
-                                  'Offer delivery service to customers'),
-                              value: _enableDelivery,
-                              onChanged: (value) {
-                                setState(() {
-                                  _enableDelivery = value;
-                                });
-                              },
-                            ),
-                            SwitchListTile(
-                              title: const Text('Enable Pickup'),
-                              subtitle: const Text(
-                                  'Allow customers to pick up orders'),
-                              value: _enablePickup,
-                              onChanged: (value) {
-                                setState(() {
-                                  _enablePickup = value;
-                                });
-                              },
-                            ),
-
-                            if (_enableDelivery) ...[
-                              const SizedBox(height: 16),
-
-                              // Delivery Radius
-                              Text(
-                                'Delivery Radius: ${_deliveryRadius.toStringAsFixed(1)} km',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              Slider(
-                                value: _deliveryRadius,
-                                min: 1.0,
-                                max: 50.0,
-                                divisions: 49,
-                                label:
-                                    '${_deliveryRadius.toStringAsFixed(1)} km',
-                                onChanged: (value) {
-                                  setState(() {
-                                    _deliveryRadius = value;
-                                  });
-                                },
-                              ),
-                              const SizedBox(height: 16),
-
-                              // Minimum Order Amount
-                              TextFormField(
-                                initialValue: _minimumOrderAmount.toString(),
-                                decoration: const InputDecoration(
-                                  labelText: 'Minimum Order Amount',
-                                  prefixIcon: Icon(Icons.attach_money),
-                                  suffixText: 'IQD',
-                                ),
-                                keyboardType: TextInputType.number,
-                                onChanged: (value) {
-                                  _minimumOrderAmount =
-                                      double.tryParse(value) ?? 10.0;
-                                },
-                              ),
-                              const SizedBox(height: 16),
-
-                              // Delivery Fee
-                              TextFormField(
-                                initialValue: _deliveryFee.toString(),
-                                decoration: const InputDecoration(
-                                  labelText: 'Delivery Fee',
-                                  prefixIcon: Icon(Icons.local_shipping),
-                                  suffixText: 'IQD',
-                                ),
-                                keyboardType: TextInputType.number,
-                                onChanged: (value) {
-                                  _deliveryFee = double.tryParse(value) ?? 2.50;
-                                },
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
+                    // GPS Location Section using LocationSettingsWidget
+                    LocationSettingsWidget(
+                      initialLatitude: _latitude,
+                      initialLongitude: _longitude,
+                      initialAddress: _address,
+                      onLocationChanged: _onLocationChanged,
+                      isLoading: _isLoading,
                     ),
                     const SizedBox(height: 32),
 

@@ -1,0 +1,31 @@
+{
+  "FunctionName": "order-receiver-websocket-dev-handler-v2-sam",
+  "Environment": {
+    "Variables": {
+      "LAMBDA_CONFIG_VERSION": "2025-08-15T10:00:00Z",
+      "BUSINESS_WORKING_HOURS_TABLE": "WhizzMerchants_BusinessWorkingHours",
+      "MERCHANT_ENDPOINTS_TABLE": "wizzgo-dev-merchant-endpoints",
+      "WEBSOCKET_CONNECTIONS_TABLE": "WizzUser_websocket_connections_dev",
+      "WEBSOCKET_SUBSCRIPTIONS_TABLE": "WizzUser_websocket_subscriptions_dev",
+      "BUSINESS_SUBCATEGORIES_TABLE": "WhizzMerchants_BusinessSubcategories",
+      "USERS_TABLE": "WhizzMerchants_Users",
+      "CATEGORIES_TABLE": "WhizzMerchants_Categories",
+      "ENVIRONMENT": "dev",
+      "SNS_APNS_ARN": "arn:aws:sns:us-east-1:031857856164:placeholder-apns",
+      "COGNITO_USER_POOL_ID": "us-east-1_PHPkG78b5",
+      "DYNAMODB_REGION": "us-east-1",
+      "BUSINESS_SETTINGS_TABLE": "WhizzMerchants_BusinessSettings",
+      "BUSINESSES_TABLE": "WhizzMerchants_Businesses",
+      "BUSINESS_PHOTOS_BUCKET": "order-receiver-business-photos-dev-1755170214",
+      "DISCOUNTS_TABLE": "WhizzMerchants_Discounts",
+      "ORDERS_TABLE": "WhizzMerchants_Orders",
+      "PRODUCTS_TABLE": "WhizzMerchants_Products",
+      "TIMEOUT_LOGS_TABLE": "WhizzMerchants_TimeoutLogs",
+      "COGNITO_REGION": "us-east-1",
+      "COGNITO_CLIENT_ID": "1tl9g7nk2k2chtj5fg960fgdth",
+      "POS_LOGS_TABLE": "WhizzMerchants_PosLogs",
+      "SNS_FCM_ARN": "arn:aws:sns:us-east-1:031857856164:placeholder-fcm",
+      "WEBSOCKET_ENDPOINT": "https://pyc140yn0h.execute-api.us-east-1.amazonaws.com/dev"
+    }
+  }
+}

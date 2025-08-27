@@ -10,7 +10,7 @@ check_login_entries() {
     
     # Scan for items with PK starting with LOGIN#
     local result=$(AWS_PROFILE=wizz-merchants-dev aws dynamodb scan \
-        --table-name wizzgo-dev-wss-onconnect \
+        --table-name WizzUser_websocket_connections_dev \
         --filter-expression "begins_with(PK, :loginPrefix)" \
         --expression-attribute-values '{":loginPrefix":{"S":"LOGIN#"}}' \
         --select "ALL_ATTRIBUTES" 2>/dev/null)

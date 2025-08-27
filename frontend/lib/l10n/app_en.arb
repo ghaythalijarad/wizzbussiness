@@ -1032,5 +1032,29 @@
   "uploadOwnerIdentificationDocument": "Upload owner identification document",
   "uploadHealthCertificateIfApplicable": "Upload health certificate if applicable",
   "uploadPhotoOfBusinessOwner": "Upload a photo of the business owner",
-  "previous": "Previous"
+  "previous": "Previous",
+
+  "merchantStatusApplicationApproved": "Application Approved!",
+  "merchantStatusApplicationUnderReview": "Application Under Review",
+  "merchantStatusApplicationRejected": "Application Rejected",
+  "merchantStatusAccountSuspended": "Account Suspended",
+  "merchantStatusApplicationStatus": "Application Status",
+
+  "merchantStatusApprovedMessage": "Congratulations! Your merchant application has been approved. You can now start receiving orders.",
+  "merchantStatusPendingMessage": "Thank you for submitting your application. We are currently reviewing your information and will notify you once the process is complete.",
+  "merchantStatusRejectedMessage": "Unfortunately, your application has been rejected. Please review the requirements and consider reapplying.",
+  "merchantStatusSuspendedMessage": "Your merchant account has been suspended. Please contact our support team for more information.",
+  "merchantStatusDefaultMessage": "Please contact support for more information about your application status.",
+
+  "merchantStatusWhatHappensNext": "What happens next?",
+  "merchantStatusWhatHappensNextDescription": "Our team will review your application within 1-2 business days. We may contact you if additional information is needed.",
+  "merchantStatusWhyRejected": "Why was my application rejected?",
+  "merchantStatusWhyRejectedDescription": "Common reasons include incomplete documentation, business verification issues, or policy violations. Contact support for details.",
+  "merchantStatusAccountSuspendedInfo": "Account Suspended",
+  "merchantStatusAccountSuspendedDescription": "Your account has been temporarily suspended. This may be due to policy violations or security concerns. Contact support for assistance.",
+
+  "merchantStatusReapply": "Reapply",
+  "merchantStatusContactSupport": "Contact Support",
+  "merchantStatusBackToLogin": "Back to Login",
+  "merchantStatusSupportFeatureComingSoon": "Support contact feature coming soon!"
 }

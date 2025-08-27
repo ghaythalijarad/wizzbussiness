@@ -10,6 +10,7 @@ import '../providers/session_provider.dart';
 import '../providers/business_provider.dart';
 import '../config/app_config.dart';
 import './realtime_order_service.dart';
+import '../utils/token_manager.dart';
 
 class AppAuthService {
   static bool _isInitialized = false;
@@ -148,14 +149,16 @@ class AppAuthService {
           }
         }
 
-        // Update session provider
+        // Update session provider with business data
         if (apiResponse['businesses'] != null &&
             apiResponse['businesses'].isNotEmpty) {
-          final businessId = apiResponse['businesses'][0]['businessId'];
+          final businessData = Map<String, dynamic>.from(apiResponse['businesses'][0]);
+          final businessId = businessData['businessId'];
           final userId =
               apiResponse['user']?['userId'] ?? apiResponse['user']?['sub'];
           
-          _container?.read(sessionProvider.notifier).setSession(businessId);
+          // Store the business data in session so the business provider can access it
+          _container?.read(sessionProvider.notifier).setSessionWithBusinessData(businessId, businessData);
           
           // Add lightweight login tracking for business user
           await _trackBusinessLogin(businessId, userId, email);
@@ -168,6 +171,7 @@ class AppAuthService {
           businesses:
               List<Map<String, dynamic>>.from(apiResponse['businesses'] ?? []),
           data: authData,
+          accountStatus: apiResponse['accountStatus'],
         );
       } else {
         return SignInResult(
@@ -176,6 +180,7 @@ class AppAuthService {
           user: null,
           businesses: [],
           data: null,
+          accountStatus: apiResponse['accountStatus'],
         );
       }
     } catch (e) {
@@ -185,6 +190,7 @@ class AppAuthService {
         user: null,
         businesses: [],
         data: null,
+        accountStatus: null,
       );
     }
   }
@@ -393,9 +399,8 @@ class AppAuthService {
           final tokens = session.userPoolTokensResult.value;
           final freshToken = tokens.accessToken.raw;
 
-          // Update SharedPreferences
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('access_token', freshToken);
+          // Update SharedPreferences using TokenManager
+          await TokenManager.setAccessToken(freshToken);
 
           return freshToken;
         }
@@ -404,18 +409,16 @@ class AppAuthService {
       }
     }
     
-    // Fallback to stored token
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('access_token');
+    // Fallback to stored token using TokenManager
+    return await TokenManager.getAccessToken();
   }
 
   static Future<bool> isSignedIn() async {
     await initialize();
 
-    // Check stored tokens first
+    // Check stored tokens first using TokenManager
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final accessToken = prefs.getString('access_token');
+      final accessToken = await TokenManager.getAccessToken();
 
       if (accessToken != null && accessToken.isNotEmpty) {
         return true;
@@ -445,7 +448,7 @@ class AppAuthService {
       final refreshToken = authResult['refreshToken'] as String?;
 
       if (accessToken != null && accessToken.isNotEmpty) {
-        await prefs.setString('access_token', accessToken);
+        await TokenManager.setAccessToken(accessToken);
       }
 
       if (idToken != null && idToken.isNotEmpty) {
@@ -462,8 +465,8 @@ class AppAuthService {
 
   static Future<void> _clearStoredTokens() async {
     try {
+      await TokenManager.clearAccessToken();
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('access_token');
       await prefs.remove('id_token');
       await prefs.remove('refresh_token');
       _container?.read(sessionProvider.notifier).clearSession();
@@ -725,6 +728,7 @@ class SignInResult {
   final Map<String, dynamic>? user;
   final List<Map<String, dynamic>> businesses;
   final Map<String, dynamic>? data;
+  final String? accountStatus;
 
   SignInResult({
     required this.success,
@@ -732,6 +736,7 @@ class SignInResult {
     this.user,
     required this.businesses,
     this.data,
+    this.accountStatus,
   });
 }
 

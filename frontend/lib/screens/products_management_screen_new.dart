@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/product.dart';
 import '../models/business.dart';
-import '../providers/product_provider.dart';
+import '../providers/product_provider_riverpod.dart';
 import 'add_product_screen.dart';
 import 'edit_product_screen.dart';
 
-class ProductsManagementScreen extends ConsumerStatefulWidget {
+class ProductsManagementScreenNew extends ConsumerStatefulWidget {
   final Business business;
 
-  const ProductsManagementScreen({
+  const ProductsManagementScreenNew({
     super.key,
     required this.business,
   });
 
   @override
-  State<ProductsManagementScreen> createState() =>
-      _ProductsManagementScreenState();
+  ConsumerState<ProductsManagementScreenNew> createState() =>
+      _ProductsManagementScreenNewState();
 }
 
-class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
+class _ProductsManagementScreenNewState extends ConsumerState<ProductsManagementScreenNew> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -37,36 +37,35 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
 
   void _loadInitialData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final productProvider = Provider.of<ProductProvider>(context, listen: false);
-      productProvider.loadProducts();
-      productProvider.loadCategories();
+      ref.read(productProviderRiverpod.notifier).loadProducts();
+      // Convert BusinessType enum to string
+      final businessTypeString = widget.business.businessType.toString().split('.').last;
+      ref.read(productProviderRiverpod.notifier).loadCategories(businessTypeString);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ProductProvider>(
-      builder: (context, productProvider, child) {
-        return Scaffold(
-          body: Column(
-            children: [
-              _buildSearchField(),
-              Expanded(
-                child: productProvider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : productProvider.error != null
-                        ? _buildErrorWidget(productProvider.error!)
-                        : _buildProductList(productProvider.products),
-              ),
-            ],
+    final productState = ref.watch(productProviderRiverpod);
+    
+    return Scaffold(
+      body: Column(
+        children: [
+          _buildSearchField(),
+          Expanded(
+            child: productState.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : productState.errorMessage != null
+                    ? _buildErrorWidget(productState.errorMessage!)
+                    : _buildProductList(productState.products),
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () => _navigateToAddProduct(),
-            backgroundColor: Theme.of(context).primaryColor,
-            child: const Icon(Icons.add, color: Colors.white),
-          ),
-        );
-      },
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _navigateToAddProduct(),
+        backgroundColor: Theme.of(context).primaryColor,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
     );
   }
 
@@ -321,10 +320,10 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
   }
 
   void _deleteProduct(Product product) async {
-    final productProvider = Provider.of<ProductProvider>(context, listen: false);
-    final success = await productProvider.deleteProduct(product.id);
+    final success = await ref.read(productProviderRiverpod.notifier).deleteProduct(product.id);
     
     if (mounted) {
+      final state = ref.read(productProviderRiverpod);
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -335,7 +334,7 @@ class _ProductsManagementScreenState extends State<ProductsManagementScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to delete product: ${productProvider.error ?? 'Unknown error'}'),
+            content: Text('Failed to delete product: ${state.errorMessage ?? 'Unknown error'}'),
             backgroundColor: Colors.red,
           ),
         );

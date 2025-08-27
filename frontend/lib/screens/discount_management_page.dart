@@ -547,10 +547,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         elevation: isSelected ? 2 : 0.5,
         borderRadius: BorderRadius.circular(16),
         color: isSelected
-            ? const Color(0xFF00C1E8)
+            ? const Color(0xFF32CD32)
             : const Color(0xFF001133).withOpacity(0.05),
         shadowColor: isSelected
-            ? const Color(0xFF00C1E8).withOpacity(0.3)
+            ? const Color(0xFF32CD32).withOpacity(0.3)
             : const Color(0xFF001133).withOpacity(0.1),
         child: InkWell(
           onTap: () => setState(() => _selectedFilter = value),
@@ -561,15 +561,15 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected
-                    ? const Color(0xFF00C1E8)
-                    : const Color(0xFF001133).withOpacity(0.3),
+                    ? const Color(0xFFFFD300)
+                    : const Color(0xFFFFD300).withOpacity(0.3),
                 width: 1,
               ),
             ),
             child: Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFF001133),
+                color: isSelected ? Colors.white : const Color(0xFF32CD32),
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 fontSize: 13,
                 letterSpacing: 0.2,

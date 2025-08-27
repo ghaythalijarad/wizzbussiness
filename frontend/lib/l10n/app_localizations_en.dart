@@ -2459,4 +2459,73 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get previous => 'Previous';
+
+  @override
+  String get merchantStatusApplicationApproved => 'Application Approved!';
+
+  @override
+  String get merchantStatusApplicationUnderReview => 'Application Under Review';
+
+  @override
+  String get merchantStatusApplicationRejected => 'Application Rejected';
+
+  @override
+  String get merchantStatusAccountSuspended => 'Account Suspended';
+
+  @override
+  String get merchantStatusApplicationStatus => 'Application Status';
+
+  @override
+  String get merchantStatusApprovedMessage =>
+      'Congratulations! Your merchant application has been approved. You can now start receiving orders.';
+
+  @override
+  String get merchantStatusPendingMessage =>
+      'Thank you for submitting your application. We are currently reviewing your information and will notify you once the process is complete.';
+
+  @override
+  String get merchantStatusRejectedMessage =>
+      'Unfortunately, your application has been rejected. Please review the requirements and consider reapplying.';
+
+  @override
+  String get merchantStatusSuspendedMessage =>
+      'Your merchant account has been suspended. Please contact our support team for more information.';
+
+  @override
+  String get merchantStatusDefaultMessage =>
+      'Please contact support for more information about your application status.';
+
+  @override
+  String get merchantStatusWhatHappensNext => 'What happens next?';
+
+  @override
+  String get merchantStatusWhatHappensNextDescription =>
+      'Our team will review your application within 1-2 business days. We may contact you if additional information is needed.';
+
+  @override
+  String get merchantStatusWhyRejected => 'Why was my application rejected?';
+
+  @override
+  String get merchantStatusWhyRejectedDescription =>
+      'Common reasons include incomplete documentation, business verification issues, or policy violations. Contact support for details.';
+
+  @override
+  String get merchantStatusAccountSuspendedInfo => 'Account Suspended';
+
+  @override
+  String get merchantStatusAccountSuspendedDescription =>
+      'Your account has been temporarily suspended. This may be due to policy violations or security concerns. Contact support for assistance.';
+
+  @override
+  String get merchantStatusReapply => 'Reapply';
+
+  @override
+  String get merchantStatusContactSupport => 'Contact Support';
+
+  @override
+  String get merchantStatusBackToLogin => 'Back to Login';
+
+  @override
+  String get merchantStatusSupportFeatureComingSoon =>
+      'Support contact feature coming soon!';
 }

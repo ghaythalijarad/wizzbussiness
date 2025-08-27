@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../registration_form_screen.dart';
+import '../merchant_status_screen.dart';
 import '../../l10n/app_localizations.dart';
 import '../../providers/language_provider_riverpod.dart';
 import '../../providers/auth_provider_riverpod.dart';
+import '../../providers/session_provider.dart';
+import '../../providers/business_provider.dart';
 import '../../services/app_auth_service.dart';
+import '../../models/business.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -619,25 +623,47 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
             ],
           ),
           backgroundColor: Theme.of(context).colorScheme.primary,
-          duration: const Duration(seconds: 10), // Reduced from 30 to 10 seconds
+          duration: const Duration(seconds: 10),
         ),
       );
       
       try {
-        final authNotifier = ref.read(authProviderRiverpod.notifier);
-        
-        await authNotifier.signIn(
+        debugPrint('🔐 AuthScreen: Starting login for: $email');
+
+        // Use AppAuthService for consistent authentication and token storage
+        final response = await AppAuthService.signIn(
           email: email,
           password: password,
         );
-        
-        final authState = ref.read(authProviderRiverpod);
-        
+
+        debugPrint('📡 AuthScreen: Login response received: ${response.success}');
+
         if (mounted) {
           // Hide loading snackbar immediately
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           
-          if (authState.isAuthenticated) {
+          if (response.success) {
+            debugPrint('✅ AuthScreen: Login successful, updating auth state');
+
+            // CRITICAL: Update auth provider to reflect authenticated state
+            ref.read(authProviderRiverpod.notifier).setAuthenticatedState();
+            
+            // CRITICAL: Store business session with full business data to avoid API call
+            if (response.businesses.isNotEmpty) {
+              final business = response.businesses.first;
+              final businessId = business['businessId'];
+              if (businessId != null) {
+                debugPrint('📦 AuthScreen: Storing business data in session: $businessId');
+                debugPrint('📦 AuthScreen: Business data keys: ${business.keys}');
+                
+                // Use setSessionWithBusinessData to store complete business info
+                ref.read(sessionProvider.notifier).setSessionWithBusinessData(businessId, business);
+                
+                // Invalidate business provider to trigger refresh
+                ref.invalidate(businessProvider);
+              }
+            }
+            
             // Success - show brief success message
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -646,12 +672,48 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
                 duration: const Duration(seconds: 2),
               ),
             );
-            // Navigation will be handled automatically by the main app based on auth state
+            
+            debugPrint('✅ AuthScreen: Auth state updated, AuthWrapper will handle authorization routing');
           } else {
-            // Show error message
+            debugPrint('❌ AuthScreen: Login failed: ${response.message}');
+            
+            // Check if this is a pending status case
+            if (response.accountStatus == 'pending') {
+              debugPrint('⏸️ AuthScreen: Account pending - navigating to status screen');
+              
+              // Create a mock business object for the status screen
+              final Business mockBusiness = Business(
+                id: 'pending_business',
+                name: 'Pending Business',
+                email: email,
+                status: 'pending',
+                businessType: BusinessType.restaurant,
+                address: '',
+                phone: '',
+                city: '',
+                district: '',
+                country: '',
+                createdAt: DateTime.now(),
+                updatedAt: DateTime.now(),
+              );
+              
+              // Navigate to MerchantStatusScreen
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => MerchantStatusScreen(
+                    status: 'pending',
+                    business: mockBusiness,
+                  ),
+                ),
+                (route) => false,
+              );
+              return;
+            }
+            
+            // Show error message for other cases
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(authState.errorMessage ?? 'Failed to sign in'),
+                content: Text(response.message.isNotEmpty ? response.message : 'Failed to sign in'),
                 backgroundColor: Theme.of(context).colorScheme.error,
                 duration: const Duration(seconds: 4),
               ),
@@ -659,6 +721,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
           }
         }
       } catch (e) {
+        debugPrint('💥 AuthScreen: Login error: $e');
         if (mounted) {
           // Hide loading snackbar
           ScaffoldMessenger.of(context).hideCurrentSnackBar();

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../models/business.dart';
+import '../l10n/app_localizations.dart';
+import 'auth/auth_screen.dart';
 
 class MerchantStatusScreen extends StatelessWidget {
   final String status;
@@ -42,7 +44,7 @@ class MerchantStatusScreen extends StatelessWidget {
 
               // Status Title
               Text(
-                _getStatusTitle(),
+                _getStatusTitle(context),
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
@@ -53,7 +55,7 @@ class MerchantStatusScreen extends StatelessWidget {
 
               // Status Message
               Text(
-                message ?? _getDefaultMessage(),
+                message ?? _getDefaultMessage(context),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -64,16 +66,18 @@ class MerchantStatusScreen extends StatelessWidget {
               // Action Buttons
               if (status == 'pending') ...[
                 _buildInfoCard(
-                  'What happens next?',
-                  'Our team will review your application within 1-2 business days. We may contact you if additional information is needed.',
+                  context,
+                  AppLocalizations.of(context)!.merchantStatusWhatHappensNext,
+                  AppLocalizations.of(context)!.merchantStatusWhatHappensNextDescription,
                   Icons.info_outline,
                   Colors.blue,
                 ),
                 const SizedBox(height: 24),
               ] else if (status == 'rejected') ...[
                 _buildInfoCard(
-                  'Why was my application rejected?',
-                  'Common reasons include incomplete documentation, business verification issues, or policy violations. Contact support for details.',
+                  context,
+                  AppLocalizations.of(context)!.merchantStatusWhyRejected,
+                  AppLocalizations.of(context)!.merchantStatusWhyRejectedDescription,
                   Icons.help_outline,
                   Colors.orange,
                 ),
@@ -91,9 +95,9 @@ class MerchantStatusScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Reapply',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context)!.merchantStatusReapply,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -103,8 +107,9 @@ class MerchantStatusScreen extends StatelessWidget {
                 const SizedBox(height: 16),
               ] else if (status == 'suspended') ...[
                 _buildInfoCard(
-                  'Account Suspended',
-                  'Your account has been temporarily suspended. This may be due to policy violations or security concerns. Contact support for assistance.',
+                  context,
+                  AppLocalizations.of(context)!.merchantStatusAccountSuspendedInfo,
+                  AppLocalizations.of(context)!.merchantStatusAccountSuspendedDescription,
                   Icons.warning_outlined,
                   Colors.orange,
                 ),
@@ -124,9 +129,9 @@ class MerchantStatusScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Contact Support',
-                    style: TextStyle(
+                  child: Text(
+                    AppLocalizations.of(context)!.merchantStatusContactSupport,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -137,13 +142,13 @@ class MerchantStatusScreen extends StatelessWidget {
 
               // Back to Login
               TextButton(
-                onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/login',
+                onPressed: () => Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const AuthScreen()),
                   (route) => false,
                 ),
-                child: const Text(
-                  'Back to Login',
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context)!.merchantStatusBackToLogin,
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                   ),
                 ),
@@ -156,7 +161,7 @@ class MerchantStatusScreen extends StatelessWidget {
   }
 
   Widget _buildInfoCard(
-      String title, String description, IconData icon, Color color) {
+      BuildContext context, String title, String description, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -228,33 +233,35 @@ class MerchantStatusScreen extends StatelessWidget {
     }
   }
 
-  String _getStatusTitle() {
+  String _getStatusTitle(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status.toLowerCase()) {
       case 'approved':
-        return 'Application Approved!';
+        return l10n.merchantStatusApplicationApproved;
       case 'pending':
-        return 'Application Under Review';
+        return l10n.merchantStatusApplicationUnderReview;
       case 'rejected':
-        return 'Application Rejected';
+        return l10n.merchantStatusApplicationRejected;
       case 'suspended':
-        return 'Account Suspended';
+        return l10n.merchantStatusAccountSuspended;
       default:
-        return 'Application Status';
+        return l10n.merchantStatusApplicationStatus;
     }
   }
 
-  String _getDefaultMessage() {
+  String _getDefaultMessage(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status.toLowerCase()) {
       case 'approved':
-        return 'Congratulations! Your merchant application has been approved. You can now start receiving orders.';
+        return l10n.merchantStatusApprovedMessage;
       case 'pending':
-        return 'Thank you for submitting your application. We are currently reviewing your information and will notify you once the process is complete.';
+        return l10n.merchantStatusPendingMessage;
       case 'rejected':
-        return 'Unfortunately, your application has been rejected. Please review the requirements and consider reapplying.';
+        return l10n.merchantStatusRejectedMessage;
       case 'suspended':
-        return 'Your merchant account has been suspended. Please contact our support team for more information.';
+        return l10n.merchantStatusSuspendedMessage;
       default:
-        return 'Please contact support for more information about your application status.';
+        return l10n.merchantStatusDefaultMessage;
     }
   }
 
@@ -266,8 +273,8 @@ class MerchantStatusScreen extends StatelessWidget {
     // TODO: Implement contact support functionality
     // This could open email client, phone dialer, or in-app chat
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Support contact feature coming soon!'),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.merchantStatusSupportFeatureComingSoon),
       ),
     );
   }

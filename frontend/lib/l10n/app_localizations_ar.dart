@@ -2448,4 +2448,73 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get previous => 'السابق';
+
+  @override
+  String get merchantStatusApplicationApproved => 'تم قبول الطلب!';
+
+  @override
+  String get merchantStatusApplicationUnderReview => 'الطلب قيد المراجعة';
+
+  @override
+  String get merchantStatusApplicationRejected => 'تم رفض الطلب';
+
+  @override
+  String get merchantStatusAccountSuspended => 'تم تعليق الحساب';
+
+  @override
+  String get merchantStatusApplicationStatus => 'حالة الطلب';
+
+  @override
+  String get merchantStatusApprovedMessage =>
+      'تهانينا! تم قبول طلب التاجر الخاص بك. يمكنك الآن البدء في استقبال الطلبات.';
+
+  @override
+  String get merchantStatusPendingMessage =>
+      'شكراً لك على تقديم طلبك. نحن نراجع معلوماتك حالياً وسنخبرك بمجرد اكتمال العملية.';
+
+  @override
+  String get merchantStatusRejectedMessage =>
+      'للأسف، تم رفض طلبك. يرجى مراجعة المتطلبات والنظر في إعادة التقديم.';
+
+  @override
+  String get merchantStatusSuspendedMessage =>
+      'تم تعليق حساب التاجر الخاص بك. يرجى الاتصال بفريق الدعم للحصول على مزيد من المعلومات.';
+
+  @override
+  String get merchantStatusDefaultMessage =>
+      'يرجى الاتصال بالدعم للحصول على مزيد من المعلومات حول حالة طلبك.';
+
+  @override
+  String get merchantStatusWhatHappensNext => 'ما الذي سيحدث بعد ذلك؟';
+
+  @override
+  String get merchantStatusWhatHappensNextDescription =>
+      'سيقوم فريقنا بمراجعة طلبك خلال 1-2 يوم عمل. قد نتصل بك إذا كانت هناك حاجة لمعلومات إضافية.';
+
+  @override
+  String get merchantStatusWhyRejected => 'لماذا تم رفض طلبي؟';
+
+  @override
+  String get merchantStatusWhyRejectedDescription =>
+      'الأسباب الشائعة تشمل الوثائق غير المكتملة، أو مشاكل في التحقق من النشاط التجاري، أو انتهاكات السياسة. اتصل بالدعم للحصول على التفاصيل.';
+
+  @override
+  String get merchantStatusAccountSuspendedInfo => 'تم تعليق الحساب';
+
+  @override
+  String get merchantStatusAccountSuspendedDescription =>
+      'تم تعليق حسابك مؤقتاً. قد يكون هذا بسبب انتهاكات السياسة أو مخاوف أمنية. اتصل بالدعم للحصول على المساعدة.';
+
+  @override
+  String get merchantStatusReapply => 'إعادة التقديم';
+
+  @override
+  String get merchantStatusContactSupport => 'اتصل بالدعم';
+
+  @override
+  String get merchantStatusBackToLogin => 'العودة لتسجيل الدخول';
+
+  @override
+  String get merchantStatusSupportFeatureComingSoon =>
+      'ميزة الاتصال بالدعم قريباً!';
 }

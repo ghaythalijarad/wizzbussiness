@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'app_auth_service.dart';
+import '../utils/token_manager.dart';
 
 /// Professional session management service for handling user authentication state
 /// and preventing sign-in conflicts when users are already authenticated
@@ -130,9 +131,9 @@ class SessionManager extends ChangeNotifier {
       _isAuthenticated = true;
       _lastSessionCheck = DateTime.now();
 
-      // Store session data
+      // Store session data using TokenManager
+      await TokenManager.setAccessToken(accessToken);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('access_token', accessToken);
       await prefs.setString(
           'user_data', user.toString()); // In real app, use JSON
       await _updateLastActivity();
@@ -159,9 +160,9 @@ class SessionManager extends ChangeNotifier {
       _isAuthenticated = true;
       _lastSessionCheck = DateTime.now();
 
-      // Store tokens in SharedPreferences
+      // Store tokens in SharedPreferences using TokenManager
+      await TokenManager.setAccessToken(_accessToken!);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('access_token', _accessToken!);
       await prefs.setString('id_token', idToken);
       await prefs.setString('refresh_token', refreshToken);
 
@@ -222,9 +223,9 @@ class SessionManager extends ChangeNotifier {
       // Cancel session validation timer
       _sessionValidationTimer?.cancel();
 
-      // Clear stored data - comprehensive cleanup
+      // Clear stored data - comprehensive cleanup using TokenManager
+      await TokenManager.clearAccessToken();
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('access_token');
       await prefs.remove('id_token');
       await prefs.remove('refresh_token');
       await prefs.remove('user_data');

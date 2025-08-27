@@ -1,0 +1,33 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:Query",
+                "dynamodb:Scan"
+            ],
+            "Resource": [
+                "arn:aws:dynamodb:us-east-1:031857856164:table/WizzUser_websocket_connections_dev",
+                "arn:aws:dynamodb:us-east-1:031857856164:table/WizzUser_websocket_connections_dev/index/*",
+                "arn:aws:dynamodb:us-east-1:031857856164:table/WizzUser_websocket_subscriptions_dev",
+                "arn:aws:dynamodb:us-east-1:031857856164:table/WizzUser_websocket_subscriptions_dev/index/*",
+                "arn:aws:dynamodb:us-east-1:031857856164:table/wizzgo-dev-merchant-endpoints",
+                "arn:aws:dynamodb:us-east-1:031857856164:table/wizzgo-dev-merchant-endpoints/index/*",
+                "arn:aws:dynamodb:us-east-1:031857856164:table/WhizzMerchants_Businesses",
+                "arn:aws:dynamodb:us-east-1:031857856164:table/WhizzMerchants_Businesses/index/*"
+            ],
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "execute-api:ManageConnections"
+            ],
+            "Resource": "arn:aws:execute-api:us-east-1:031857856164:pyc140yn0h/*",
+            "Effect": "Allow"
+        }
+    ]
+}

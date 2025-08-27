@@ -1,5 +1,7 @@
 import 'dart:math' as math;
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
 
 /// Main location service that delegates to platform-specific implementations
 class LocationService {
@@ -7,6 +9,11 @@ class LocationService {
 
   /// Check if location services are supported on this platform
   static bool get isSupported => _isSupported;
+
+  /// Check if we're running on iOS simulator
+  static bool get _isIOSSimulator {
+    return !kIsWeb && Platform.isIOS && (kDebugMode || kProfileMode);
+  }
 
   /// Check if location permission is granted
   static Future<bool> hasPermission() async {
@@ -16,9 +23,10 @@ class LocationService {
     }
     
     try {
-      // In a real implementation, you would use geolocator or similar package
       debugPrint('📍 LocationService: Checking location permission');
-      return false; // Placeholder
+      LocationPermission permission = await Geolocator.checkPermission();
+      return permission == LocationPermission.always ||
+             permission == LocationPermission.whileInUse;
     } catch (e) {
       debugPrint('📍 LocationService: Error checking permission: $e');
       return false;
@@ -33,8 +41,40 @@ class LocationService {
     }
     
     try {
-      debugPrint('📍 LocationService: Requesting location permission');
-      return false; // Placeholder
+      debugPrint('📍 LocationService: Requesting location permission - START');
+      
+      // First check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      debugPrint('📍 LocationService: Service enabled in requestPermission: $serviceEnabled');
+      if (!serviceEnabled) {
+        debugPrint('📍 LocationService: Location services are disabled - cannot request permission');
+        return false;
+      }
+      
+      LocationPermission permission = await Geolocator.checkPermission();
+      debugPrint('📍 LocationService: Initial permission status: $permission');
+      
+      if (permission == LocationPermission.denied) {
+        debugPrint('📍 LocationService: Permission denied, requesting now...');
+        permission = await Geolocator.requestPermission();
+        debugPrint('📍 LocationService: Permission after request: $permission');
+        if (permission == LocationPermission.denied) {
+          debugPrint('📍 LocationService: Location permission denied by user');
+          return false;
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint('📍 LocationService: Location permission permanently denied - opening app settings');
+        bool opened = await Geolocator.openAppSettings();
+        debugPrint('📍 LocationService: App settings opened: $opened');
+        return false;
+      }
+      
+      bool hasPermission = permission == LocationPermission.always ||
+                          permission == LocationPermission.whileInUse;
+      debugPrint('📍 LocationService: Final permission result: $hasPermission');
+      return hasPermission;
     } catch (e) {
       debugPrint('📍 LocationService: Error requesting permission: $e');
       return false;
@@ -51,10 +91,54 @@ class LocationService {
       };
     }
     
+    // Handle iOS Simulator case - it often has issues with real GPS
+    if (_isIOSSimulator) {
+      debugPrint('📍 LocationService: Running on iOS simulator, using mock location');
+      return {
+        'latitude': 24.7136,  // Riyadh coordinates
+        'longitude': 46.6753,
+      };
+    }
+    
     try {
-      debugPrint('📍 LocationService: Getting current location');
-      // In a real implementation, you would use geolocator
-      return null; // Placeholder
+      debugPrint('📍 LocationService: Getting current location - START');
+      
+      // Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      debugPrint('📍 LocationService: Service enabled check result: $serviceEnabled');
+      if (!serviceEnabled) {
+        debugPrint('📍 LocationService: Location services are disabled - opening location settings');
+        // Try to open location settings
+        bool opened = await Geolocator.openLocationSettings();
+        debugPrint('📍 LocationService: Location settings opened: $opened');
+        return null;
+      }
+      
+      // Check current permission status
+      LocationPermission permission = await Geolocator.checkPermission();
+      debugPrint('📍 LocationService: Current permission status: $permission');
+      
+      // Check and request permission
+      bool hasPermission = await requestPermission();
+      debugPrint('📍 LocationService: Permission request result: $hasPermission');
+      if (!hasPermission) {
+        debugPrint('📍 LocationService: No location permission after request');
+        return null;
+      }
+      
+      debugPrint('📍 LocationService: About to get current position');
+      // Get current position
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 15),
+      );
+      
+      debugPrint('📍 LocationService: Got location - Lat: ${position.latitude}, Lng: ${position.longitude}');
+      
+      return {
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+      };
     } catch (e) {
       debugPrint('📍 LocationService: Error getting location: $e');
       return null;
@@ -70,7 +154,7 @@ class LocationService {
     
     try {
       debugPrint('📍 LocationService: Checking if location service is enabled');
-      return false; // Placeholder
+      return await Geolocator.isLocationServiceEnabled();
     } catch (e) {
       debugPrint('📍 LocationService: Error checking service status: $e');
       return false;

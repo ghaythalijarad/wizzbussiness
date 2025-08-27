@@ -159,8 +159,8 @@ module.exports.handler = async (event) => {
                         { Name: 'family_name', Value: lastName },
                         { Name: 'name', Value: `${firstName} ${lastName}` }, // Add formatted name
                         { Name: 'phone_number', Value: formattedPhoneNumber },
-                    ],
-                    MessageAction: 'SUPPRESS' // Don't send welcome email, we'll handle verification ourselves
+                    ]
+                    // Removed MessageAction: 'SUPPRESS' to allow Cognito to send verification emails automatically
                 };
 
                 const signUpCommand = new SignUpCommand(signUpParams);
@@ -445,6 +445,18 @@ module.exports.handler = async (event) => {
                                 country: business.country
                             }));
                             console.log(`✅ Found ${businesses.length} businesses for user: ${email}`);
+                            
+                            // Check if any business has pending status
+                            const hasPendingBusiness = businesses.some(business => business.status === 'pending');
+                            if (hasPendingBusiness) {
+                                console.log(`⚠️ User ${email} has pending business status - blocking login`);
+                                return createResponse(200, {
+                                    success: false,
+                                    message: 'Your account is currently under review. Please wait for approval before accessing your account.',
+                                    accountStatus: 'pending',
+                                    businesses: businesses
+                                });
+                            }
                         } else {
                             console.log(`⚠️ No businesses found for user: ${email}`);
                             // Create a fallback business entry if none exists
@@ -526,7 +538,7 @@ module.exports.handler = async (event) => {
             }
         }
 
-        // Handle login tracking in WebSocket connections table
+        // Handle login tracking using WebSocket service
         if (path === '/auth/track-login' && httpMethod === 'POST') {
             const body = JSON.parse(event.body || '{}');
             const { businessId, userId, email } = body;
@@ -539,40 +551,17 @@ module.exports.handler = async (event) => {
             }
 
             try {
-                // Create a simple login tracking entry (not a real WebSocket connection)
-                const loginTrackingId = `LOGIN_${businessId}_${userId}_${Date.now()}`;
-                const currentTime = new Date().toISOString();
-                const ttl = Math.floor(Date.now() / 1000) + 3600; // 1 hour TTL
+                // Use WebSocket service for professional login tracking
+                const WebSocketService = require('../websocket/websocket_service');
+                
+                const result = await WebSocketService.handleUserLogin(businessId, userId, email);
 
-                const loginItem = {
-                    PK: `LOGIN#${loginTrackingId}`,
-                    SK: `LOGIN#${loginTrackingId}`,
-                    connectionId: loginTrackingId,
-                    businessId: businessId,
-                    userId: userId,
-                    entityType: 'business',
-                    connectedAt: currentTime,
-                    ttl: ttl,
-                    isActive: true,
-                    isLoginTracking: true, // Special flag to distinguish from real WebSocket connections
-                    lastActivity: currentTime,
-                    GSI1PK: `BUSINESS#${businessId}`,
-                    GSI1SK: `LOGIN#${loginTrackingId}`
-                };
-
-                const putCommand = new PutCommand({
-                    TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE || 'wizzgo-dev-wss-onconnect',
-                    Item: loginItem
-                });
-
-                await dynamodb.send(putCommand);
-
-                console.log(`✅ Login tracking created for business: ${businessId}, user: ${userId}`);
+                console.log(`✅ Professional login tracking created for business: ${businessId}, user: ${userId}, email: ${email}`);
 
                 return createResponse(200, {
                     success: true,
                     message: 'Login tracking created successfully',
-                    trackingId: loginTrackingId
+                    ...result
                 });
 
             } catch (error) {
@@ -585,7 +574,7 @@ module.exports.handler = async (event) => {
             }
         }
 
-        // Handle logout tracking removal
+        // Handle logout tracking using WebSocket service
         if (path === '/auth/track-logout' && httpMethod === 'POST') {
             const body = JSON.parse(event.body || '{}');
             const { businessId, userId } = body;
@@ -598,54 +587,131 @@ module.exports.handler = async (event) => {
             }
 
             try {
-                // Query and remove all login tracking entries for this business/user
-                const queryCommand = new QueryCommand({
-                    TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE || 'wizzgo-dev-wss-onconnect',
-                    IndexName: 'GSI1',
-                    KeyConditionExpression: 'GSI1PK = :businessPK',
-                    FilterExpression: 'userId = :userId AND isLoginTracking = :isTracking',
-                    ExpressionAttributeValues: {
-                        ':businessPK': `BUSINESS#${businessId}`,
-                        ':userId': userId,
-                        ':isTracking': true
-                    }
-                });
+                // Use local WebSocket service for professional logout handling
+                const WebSocketService = require('./websocket_service');
+                
+                const result = await WebSocketService.handleUserLogout(businessId, userId);
 
-                const queryResult = await dynamodb.send(queryCommand);
-                let deletedCount = 0;
-
-                // Delete each login tracking entry
-                for (const item of queryResult.Items || []) {
-                    try {
-                        const deleteCommand = new DeleteCommand({
-                            TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE || 'wizzgo-dev-wss-onconnect',
-                            Key: {
-                                PK: item.PK,
-                                SK: item.SK
-                            }
-                        });
-                        await dynamodb.send(deleteCommand);
-                        deletedCount++;
-                    } catch (deleteError) {
-                        console.error('Error deleting login tracking:', item.PK, deleteError);
-                    }
-                }
-
-                console.log(`✅ Removed ${deletedCount} login tracking entries for business: ${businessId}, user: ${userId}`);
+                console.log(`✅ Professional logout tracking processed for business: ${businessId}, user: ${userId}`);
 
                 return createResponse(200, {
                     success: true,
-                    message: `Successfully removed ${deletedCount} login tracking entries`,
-                    businessId: businessId,
-                    deletedCount: deletedCount
+                    message: `Successfully processed logout tracking`,
+                    ...result
                 });
 
             } catch (error) {
-                console.error('Error removing login tracking:', error);
+                console.error('Error processing logout tracking:', error);
                 return createResponse(500, {
                     success: false,
-                    message: 'Failed to remove login tracking',
+                    message: 'Failed to process logout tracking',
                     error: error.message
+                });
+            }
+        }
+
+        // Handle getting user businesses (used by business provider)
+        if (path === '/auth/user-businesses' && httpMethod === 'GET') {
+            console.log('🏢 Getting user businesses from access token...');
+            
+            const authHeader = event.headers?.Authorization || event.headers?.authorization;
+            
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                return createResponse(401, {
+                    success: false,
+                    message: 'Authorization header is missing or invalid'
+                });
+            }
+
+            const accessToken = authHeader.replace('Bearer ', '');
+
+            try {
+                // Verify the access token and get user info
+                const getUserCommand = new GetUserCommand({ AccessToken: accessToken });
+                const userResponse = await cognitoClient.send(getUserCommand);
+                
+                const email = userResponse.UserAttributes.find(attr => attr.Name === 'email')?.Value;
+                const userId = userResponse.UserAttributes.find(attr => attr.Name === 'sub')?.Value || userResponse.Username;
+                const firstName = userResponse.UserAttributes.find(attr => attr.Name === 'given_name')?.Value;
+                const lastName = userResponse.UserAttributes.find(attr => attr.Name === 'family_name')?.Value;
+
+                console.log(`🔐 Authenticated user: ${email} (${userId})`);
+
+                // Query businesses for this user
+                let businesses = [];
+                try {
+                    // Try to get businesses from DynamoDB (same logic as signin)
+                    const businessQueryCommand = new QueryCommand({
+                        TableName: process.env.BUSINESSES_TABLE || 'wizzgo-dev-businesses',
+                        IndexName: 'GSI1',
+                        KeyConditionExpression: 'GSI1PK = :userPK',
+                        ExpressionAttributeValues: {
+                            ':userPK': `USER#${userId}`
+                        }
+                    });
+
+                    const businessResult = await dynamoClient.send(businessQueryCommand);
+                    
+                    if (businessResult.Items && businessResult.Items.length > 0) {
+                        businesses = businessResult.Items.map(item => ({
+                            businessId: item.businessId,
+                            businessName: item.businessName || item.name || `Business for ${firstName} ${lastName}`,
+                            email: item.email || email,
+                            ownerId: item.ownerId || userId,
+                            cognitoUserId: item.cognitoUserId || userId,
+                            status: item.status || 'pending',
+                            businessType: item.businessType || 'restaurant',
+                            address: item.address || 'Default Address',
+                            phoneNumber: item.phoneNumber || '+1234567890'
+                        }));
+                    } else {
+                        // Create a fallback business entry if none found
+                        businesses = [{
+                            businessId: `business_${userId}`,
+                            businessName: `Business for ${firstName} ${lastName}`,
+                            email: email,
+                            ownerId: userId,
+                            cognitoUserId: userId,
+                            status: 'pending',
+                            businessType: 'restaurant',
+                            address: 'Default Address',
+                            phoneNumber: '+1234567890'
+                        }];
+                    }
+                } catch (businessError) {
+                    console.error('Error querying businesses:', businessError);
+                    // Create a fallback business entry if query fails
+                    businesses = [{
+                        businessId: `business_${userId}`,
+                        businessName: `Business for ${firstName} ${lastName}`,
+                        email: email,
+                        ownerId: userId,
+                        cognitoUserId: userId,
+                        status: 'pending',
+                        businessType: 'restaurant',
+                        address: 'Default Address',
+                        phoneNumber: '+1234567890'
+                    }];
+                }
+
+                console.log(`✅ Found ${businesses.length} businesses for user ${email}`);
+
+                return createResponse(200, businesses);
+
+            } catch (cognitoError) {
+                console.error('Error verifying access token:', cognitoError);
+                
+                if (cognitoError.name === 'NotAuthorizedException') {
+                    return createResponse(401, {
+                        success: false,
+                        message: 'Invalid or expired access token'
+                    });
+                }
+                
+                return createResponse(500, {
+                    success: false,
+                    message: 'Authentication service error',
+                    error: cognitoError.message
                 });
             }
         }

@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class TokenManager {
   static const String _accessTokenKey = 'access_token';
 
-  /// COMPREHENSIVE token sanitization for storage - fix "Invalid key=value pair" errors
+  /// ENHANCED token sanitization for storage - fix "Invalid key=value pair" errors
   static String _sanitizeTokenForStorage(String token) {
     print(
         '🧹 [TokenManager] Sanitizing token for storage (length: ${token.length})');
@@ -11,15 +11,31 @@ class TokenManager {
     // Start with the raw token
     String cleaned = token.trim();
 
-    // Log original token issues
+    // EMERGENCY CORRUPTION DETECTION - log details for debugging
     final hasNewlines = cleaned.contains('\n') || cleaned.contains('\r');
     final hasCyrillic = RegExp(r'[\u0400-\u04FF]').hasMatch(cleaned);
     final hasSpaces = cleaned.contains(' ');
-    if (hasNewlines || hasCyrillic || hasSpaces) {
-      print('🚨 [TokenManager] Token corruption detected:');
+    final hasSlash = cleaned.contains('/');
+    final hasEquals = cleaned.contains('=');
+    final hasPipe = cleaned.contains('|');
+    final hasCorruptionMarkers = cleaned.startsWith('=') || cleaned.contains('|=');
+    
+    if (hasNewlines || hasCyrillic || hasSpaces || hasCorruptionMarkers) {
+      print('🚨 [TokenManager] SEVERE TOKEN CORRUPTION DETECTED:');
       print('   - Has newlines: $hasNewlines');
       print('   - Has Cyrillic: $hasCyrillic');
       print('   - Has spaces: $hasSpaces');
+      print('   - Has forward slash: $hasSlash');
+      print('   - Has equals signs: $hasEquals');
+      print('   - Has pipe chars: $hasPipe');
+      print('   - Has corruption markers: $hasCorruptionMarkers');
+      print('   - Preview: ${cleaned.substring(0, cleaned.length > 50 ? 50 : cleaned.length)}');
+      
+      // For severely corrupted tokens, reject completely
+      if (hasCorruptionMarkers || hasPipe || (hasEquals && !_isValidJwtFormat(cleaned))) {
+        print('❌ [TokenManager] Token too corrupted, rejecting completely');
+        return '';
+      }
     }
 
     // STEP 1: Remove ALL non-printable ASCII characters
@@ -31,28 +47,42 @@ class TokenManager {
     // STEP 3: Remove ALL whitespace characters
     cleaned = cleaned.replaceAll(RegExp(r'\s'), '');
 
-    // STEP 4: Remove specific problematic characters
+    // STEP 4: Remove specific problematic characters that break HTTP headers
     cleaned = cleaned.replaceAll('\r', '');
     cleaned = cleaned.replaceAll('\n', '');
     cleaned = cleaned.replaceAll('\t', '');
     cleaned = cleaned.replaceAll("'", '');
     cleaned = cleaned.replaceAll('"', '');
+    cleaned = cleaned.replaceAll('|', ''); // Pipe characters break headers
 
     // STEP 5: Remove Bearer prefix if mistakenly included
     if (cleaned.toLowerCase().startsWith('bearer')) {
       cleaned = cleaned.substring(6);
     }
 
-    // STEP 6: Keep ONLY valid JWT characters: A-Z, a-z, 0-9, -, _, and .
-    cleaned = cleaned.replaceAll(RegExp(r'[^A-Za-z0-9\-_.]'), '');
-
-    // Validate JWT format after cleaning
-    if (cleaned.isNotEmpty && !_isValidJwtFormat(cleaned)) {
-      print(
-          '⚠️ [TokenManager] Token does not match JWT format after sanitization');
+    // STEP 6: Remove leading equals signs that break key=value parsing
+    while (cleaned.startsWith('=')) {
+      cleaned = cleaned.substring(1);
     }
 
-    print('🧹 [TokenManager] Token sanitized (new length: ${cleaned.length})');
+    // STEP 7: Keep ONLY valid JWT characters: A-Z, a-z, 0-9, -, _, and .
+    // Note: JWT tokens use base64url encoding, which uses A-Za-z0-9-_ (no + or /)
+    cleaned = cleaned.replaceAll(RegExp(r'[^A-Za-z0-9\-_.]'), '');
+
+    // STEP 8: Validate JWT format after cleaning
+    if (cleaned.isNotEmpty && !_isValidJwtFormat(cleaned)) {
+      print(
+          '⚠️ [TokenManager] Token does not match JWT format after sanitization, rejecting');
+      return '';
+    }
+
+    // STEP 9: Final length check
+    if (cleaned.length < 100) {
+      print('⚠️ [TokenManager] Token too short after cleaning, likely corrupted');
+      return '';
+    }
+
+    print('🧹 [TokenManager] Token sanitized successfully (new length: ${cleaned.length})');
     return cleaned;
   }
 

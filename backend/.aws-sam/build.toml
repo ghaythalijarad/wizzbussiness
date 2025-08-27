@@ -25,7 +25,7 @@ architecture = "x86_64"
 handler = "business_profile_handler.handler"
 manifest_hash = ""
 packagetype = "Zip"
-functions = ["BusinessProfileFunction", "BusinessDetailsFunction"]
+functions = ["BusinessProfileFunction", "BusinessDetailsFunction", "LocationSettingsFunction", "BusinessOnlineStatusFunction"]
 
 [function_build_definitions.351d6174-6ad7-4650-8611-4c976a72bb87]
 codeuri = "/Users/ghaythallaheebi/order-receiver-app-2/backend/functions/upload"
@@ -35,5 +35,14 @@ handler = "image_upload_handler.handler"
 manifest_hash = ""
 packagetype = "Zip"
 functions = ["ImageUploadFunction"]
+
+[function_build_definitions.a2573909-958e-4a83-b4a3-2f7999adb7a4]
+codeuri = "/Users/ghaythallaheebi/order-receiver-app-2/backend/functions/websocket"
+runtime = "nodejs20.x"
+architecture = "x86_64"
+handler = "websocket_handler.handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["WebSocketHandlerFunction", "WebSocketConnectionManagerFunction"]
 
 [layer_build_definitions]

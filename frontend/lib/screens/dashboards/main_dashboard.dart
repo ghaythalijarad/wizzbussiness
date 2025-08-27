@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/business_provider.dart';
 import '../../providers/auth_provider_riverpod.dart';
+import '../../services/api_service.dart';
 import '../auth/auth_screen.dart';
 import '../business_details_screen.dart';
 import '../products_management_screen.dart';
@@ -505,6 +506,8 @@ class ProfileTab extends ConsumerStatefulWidget {
 class _ProfileTabState extends ConsumerState<ProfileTab> {
   bool _showWorkingHours = false;
   bool _showChangePassword = false;
+  bool _isLoadingWorkingHours = false;
+  bool _isSavingWorkingHours = false;
   
   // Password form controllers
   final _currentPasswordController = TextEditingController();
@@ -523,6 +526,7 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
   void initState() {
     super.initState();
     _loadUserAttributes();
+    _loadWorkingHours();
   }
   
   @override
@@ -546,7 +550,121 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
     }
   }
   
-  // Working hours data
+  Future<void> _loadWorkingHours() async {
+    final businessAsyncValue = ref.read(businessProvider);
+    final business = businessAsyncValue.value;
+    
+    if (business == null) return;
+    
+    setState(() {
+      _isLoadingWorkingHours = true;
+    });
+    
+    try {
+      final apiService = ApiService();
+      final response = await apiService.getBusinessWorkingHours(business.id);
+      
+      if (response['workingHours'] != null && mounted) {
+        setState(() {
+          // Convert backend format to frontend format
+          final backendHours = response['workingHours'] as Map<String, dynamic>;
+          
+          for (String day in workingHours.keys) {
+            if (backendHours.containsKey(day)) {
+              final dayData = backendHours[day] as Map<String, dynamic>;
+              workingHours[day] = {
+                'isOpen': dayData['isOpen'] ?? false,
+                'openTime': dayData['openTime'] ?? '09:00',
+                'closeTime': dayData['closeTime'] ?? '17:00',
+              };
+            }
+          }
+        });
+      }
+    } catch (e) {
+      print('Error loading working hours: $e');
+      // Keep default values if loading fails
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingWorkingHours = false;
+        });
+      }
+    }
+  }
+  
+  Future<void> _saveWorkingHours() async {
+    final businessAsyncValue = ref.read(businessProvider);
+    final business = businessAsyncValue.value;
+    
+    if (business == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Business data not available'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+    
+    setState(() {
+      _isSavingWorkingHours = true;
+    });
+    
+    try {
+      final apiService = ApiService();
+      
+      // Convert frontend format to backend format
+      final backendFormat = <String, Map<String, dynamic>>{};
+      
+      for (String day in workingHours.keys) {
+        final dayData = workingHours[day]!;
+        backendFormat[day] = {
+          'isOpen': dayData['isOpen'],
+          'openTime': dayData['isOpen'] ? dayData['openTime'] : null,
+          'closeTime': dayData['isOpen'] ? dayData['closeTime'] : null,
+        };
+      }
+      
+      final requestData = {
+        'workingHours': backendFormat,
+      };
+      
+      await apiService.updateBusinessWorkingHours(business.id, requestData);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Working hours saved successfully!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error saving working hours: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save working hours: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSavingWorkingHours = false;
+        });
+      }
+    }
+  }
+      if (mounted) {
+        setState(() {
+          _isSavingWorkingHours = false;
+        });
+      }
+    }
+  }
   Map<String, Map<String, dynamic>> workingHours = {
     'Monday': {'isOpen': true, 'openTime': '09:00', 'closeTime': '22:00'},
     'Tuesday': {'isOpen': true, 'openTime': '09:00', 'closeTime': '22:00'},
@@ -1044,16 +1162,15 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
                 
                 Expanded(
                   child: ElevatedButton.icon(
-                    icon: const Icon(Icons.save),
-                    label: const Text('Save'),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Working hours saved successfully!'),
-                          backgroundColor: AppColors.success,
-                        ),
-                      );
-                    },
+                    icon: _isSavingWorkingHours 
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.save),
+                    label: Text(_isSavingWorkingHours ? 'Saving...' : 'Save'),
+                    onPressed: _isSavingWorkingHours ? null : _saveWorkingHours,
                   ),
                 ),
               ],

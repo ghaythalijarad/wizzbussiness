@@ -7,13 +7,12 @@ import '../widgets/wizz_business_text_form_field.dart';
 import '../widgets/wizz_business_button.dart';
 import '../screens/forgot_password_screen.dart';
 import '../screens/registration_form_screen.dart';
-import '../screens/dashboards/business_dashboard.dart';
 import '../services/app_auth_service.dart';
 import '../providers/session_provider.dart';
 import '../providers/business_provider.dart';
+import '../providers/auth_provider_riverpod.dart';
 import '../models/business.dart';
 import '../utils/responsive_helper.dart';
-import 'merchant_status_screen.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -89,32 +88,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               debugPrint(
                   '✅ Business object created: ${business.name} (ID: ${business.id})');
 
+              debugPrint('🚀 Login successful, updating session and letting AuthWrapper handle routing');
+
+              // CRITICAL: Update auth provider to reflect authenticated state
+              ref.read(authProviderRiverpod.notifier).setAuthenticatedState();
+              
               // Update session with selected business and refresh provider
               ref.read(sessionProvider.notifier).setSession(business.id);
               ref.invalidate(businessProvider);
 
-              debugPrint('🚀 Attempting navigation...');
-
-              final navigator = Navigator.of(context, rootNavigator: true);
-
-              if (business.status == 'approved') {
-                navigator.pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => BusinessDashboard(initialBusiness: business),
-                  ),
-                );
-              } else {
-                // For any non-approved status (pending, pending_verification, rejected, etc.)
-                navigator.pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => MerchantStatusScreen(
-                      status: business.status,
-                    ),
-                  ),
-                );
-              }
-
-              debugPrint('✅ Navigation completed');
+              debugPrint('✅ Auth provider and session updated, AuthWrapper will handle authorization routing');
             } catch (businessError) {
               debugPrint('💥 Error creating business object: $businessError');
               if (mounted) {

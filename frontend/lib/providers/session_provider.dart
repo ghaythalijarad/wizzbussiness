@@ -6,28 +6,34 @@ class Session {
   final String? businessId;
   final bool isAuthenticated;
   final DateTime? lastLoginTime;
+  final Map<String, dynamic>? businessData; // Add this to store business data
 
   Session({
     this.businessId,
     this.isAuthenticated = false,
     this.lastLoginTime,
+    this.businessData, // Add this parameter
   });
 
   Session copyWith({
     String? businessId,
     bool? isAuthenticated,
     DateTime? lastLoginTime,
+    Map<String, dynamic>? businessData, // Add this parameter
   }) {
     return Session(
       businessId: businessId ?? this.businessId,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       lastLoginTime: lastLoginTime ?? this.lastLoginTime,
+      businessData: businessData ?? this.businessData, // Add this line
     );
   }
 }
 
 class SessionNotifier extends StateNotifier<Session> {
-  SessionNotifier() : super(Session());
+  SessionNotifier() : super(Session()) {
+    _log('🔧 SessionNotifier: Constructor called - initial state: authenticated=${state.isAuthenticated}, businessId=${state.businessId}');
+  }
 
   // Lightweight logger gated by build mode
   void _log(String message) {
@@ -36,20 +42,35 @@ class SessionNotifier extends StateNotifier<Session> {
 
   void setSession(String businessId) {
     _log('🔧 SessionProvider.setSession called with businessId: $businessId');
+    _log('🔧 SessionProvider.setSession BEFORE: authenticated=${state.isAuthenticated}, businessId=${state.businessId}');
     state = Session(
       businessId: businessId,
       isAuthenticated: true,
       lastLoginTime: DateTime.now(),
+      businessData: state.businessData, // Preserve existing business data
     );
-    _log(
-        '🔧 SessionProvider.setSession completed - isAuthenticated: ${state.isAuthenticated}');
+    _log('🔧 SessionProvider.setSession AFTER: authenticated=${state.isAuthenticated}, businessId=${state.businessId}');
+    _log('🔧 SessionProvider.setSession completed successfully');
+  }
+
+  void setSessionWithBusinessData(String businessId, Map<String, dynamic> businessData) {
+    _log('🔧 SessionProvider.setSessionWithBusinessData called with businessId: $businessId');
+    _log('🔧 SessionProvider.setSessionWithBusinessData business data keys: ${businessData.keys}');
+    state = Session(
+      businessId: businessId,
+      isAuthenticated: true,
+      lastLoginTime: DateTime.now(),
+      businessData: businessData,
+    );
+    _log('🔧 SessionProvider.setSessionWithBusinessData completed successfully');
   }
 
   void clearSession() {
     _log('🧹 SessionProvider.clearSession called');
+    _log('🧹 SessionProvider.clearSession BEFORE: authenticated=${state.isAuthenticated}, businessId=${state.businessId}');
     state = Session();
-    _log(
-        '🧹 SessionProvider.clearSession completed - isAuthenticated: ${state.isAuthenticated}');
+    _log('🧹 SessionProvider.clearSession AFTER: authenticated=${state.isAuthenticated}, businessId=${state.businessId}');
+    _log('🧹 SessionProvider.clearSession completed');
   }
 
   Future<void> checkAuthStatus() async {

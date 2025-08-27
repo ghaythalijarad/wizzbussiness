@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import 'package:hadhir_business/config/app_config.dart';
 import 'app_auth_service.dart';
+import 'auth_header_builder.dart';
+import '../utils/token_manager.dart';
 
 class ApiService {
   final String baseUrl = AppConfig.baseUrl;
@@ -20,10 +22,19 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      // Store tokens and user data in shared preferences
+      // Store tokens and user data in shared preferences using TokenManager
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('access_token', data['access_token']);
-      await prefs.setString('refresh_token', data['refresh_token']);
+      
+      // Use TokenManager to sanitize and store access token
+      if (data['access_token'] != null && data['access_token'].toString().isNotEmpty) {
+        await TokenManager.setAccessToken(data['access_token'].toString());
+      }
+      
+      // Store refresh token (also sanitize it)
+      if (data['refresh_token'] != null && data['refresh_token'].toString().isNotEmpty) {
+        await prefs.setString('refresh_token', data['refresh_token'].toString().trim());
+      }
+      
       await prefs.setString('user', jsonEncode(data['user']));
       return data;
     } else {
@@ -509,19 +520,11 @@ class ApiService {
   /// Update business location settings
   Future<Map<String, dynamic>> updateBusinessLocationSettings(
       String businessId, Map<String, dynamic> locationSettings) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-
-    if (token == null) {
-      throw Exception('No access token found');
-    }
+    final headers = await AuthHeaderBuilder.build();
 
     final response = await http.put(
       Uri.parse('$baseUrl/businesses/$businessId/location-settings'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: headers,
       body: jsonEncode(locationSettings),
     );
 
@@ -538,19 +541,11 @@ class ApiService {
   /// Get business location settings
   Future<Map<String, dynamic>> getBusinessLocationSettings(
       String businessId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-
-    if (token == null) {
-      throw Exception('No access token found');
-    }
+    final headers = await AuthHeaderBuilder.build();
 
     final response = await http.get(
       Uri.parse('$baseUrl/businesses/$businessId/location-settings'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: headers,
     );
 
     if (response.statusCode == 200) {
@@ -566,19 +561,11 @@ class ApiService {
   /// Get business working hours
   Future<Map<String, dynamic>> getBusinessWorkingHours(
       String businessId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-
-    if (token == null) {
-      throw Exception('No access token found');
-    }
+    final headers = await AuthHeaderBuilder.build();
 
     final response = await http.get(
       Uri.parse('$baseUrl/businesses/$businessId/working-hours'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: headers,
     );
 
     if (response.statusCode == 200) {
@@ -594,19 +581,11 @@ class ApiService {
   /// Update business working hours
   Future<Map<String, dynamic>> updateBusinessWorkingHours(
       String businessId, Map<String, dynamic> workingHours) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-
-    if (token == null) {
-      throw Exception('No access token found');
-    }
+    final headers = await AuthHeaderBuilder.build();
 
     final response = await http.put(
       Uri.parse('$baseUrl/businesses/$businessId/working-hours'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: headers,
       body: jsonEncode(workingHours),
     );
 

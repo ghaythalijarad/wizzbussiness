@@ -4695,6 +4695,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Previous'**
   String get previous;
+
+  /// No description provided for @merchantStatusApplicationApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Approved!'**
+  String get merchantStatusApplicationApproved;
+
+  /// No description provided for @merchantStatusApplicationUnderReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Under Review'**
+  String get merchantStatusApplicationUnderReview;
+
+  /// No description provided for @merchantStatusApplicationRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Rejected'**
+  String get merchantStatusApplicationRejected;
+
+  /// No description provided for @merchantStatusAccountSuspended.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Suspended'**
+  String get merchantStatusAccountSuspended;
+
+  /// No description provided for @merchantStatusApplicationStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Status'**
+  String get merchantStatusApplicationStatus;
+
+  /// No description provided for @merchantStatusApprovedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations! Your merchant application has been approved. You can now start receiving orders.'**
+  String get merchantStatusApprovedMessage;
+
+  /// No description provided for @merchantStatusPendingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for submitting your application. We are currently reviewing your information and will notify you once the process is complete.'**
+  String get merchantStatusPendingMessage;
+
+  /// No description provided for @merchantStatusRejectedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfortunately, your application has been rejected. Please review the requirements and consider reapplying.'**
+  String get merchantStatusRejectedMessage;
+
+  /// No description provided for @merchantStatusSuspendedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your merchant account has been suspended. Please contact our support team for more information.'**
+  String get merchantStatusSuspendedMessage;
+
+  /// No description provided for @merchantStatusDefaultMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Please contact support for more information about your application status.'**
+  String get merchantStatusDefaultMessage;
+
+  /// No description provided for @merchantStatusWhatHappensNext.
+  ///
+  /// In en, this message translates to:
+  /// **'What happens next?'**
+  String get merchantStatusWhatHappensNext;
+
+  /// No description provided for @merchantStatusWhatHappensNextDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Our team will review your application within 1-2 business days. We may contact you if additional information is needed.'**
+  String get merchantStatusWhatHappensNextDescription;
+
+  /// No description provided for @merchantStatusWhyRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Why was my application rejected?'**
+  String get merchantStatusWhyRejected;
+
+  /// No description provided for @merchantStatusWhyRejectedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Common reasons include incomplete documentation, business verification issues, or policy violations. Contact support for details.'**
+  String get merchantStatusWhyRejectedDescription;
+
+  /// No description provided for @merchantStatusAccountSuspendedInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Suspended'**
+  String get merchantStatusAccountSuspendedInfo;
+
+  /// No description provided for @merchantStatusAccountSuspendedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been temporarily suspended. This may be due to policy violations or security concerns. Contact support for assistance.'**
+  String get merchantStatusAccountSuspendedDescription;
+
+  /// No description provided for @merchantStatusReapply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reapply'**
+  String get merchantStatusReapply;
+
+  /// No description provided for @merchantStatusContactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get merchantStatusContactSupport;
+
+  /// No description provided for @merchantStatusBackToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Login'**
+  String get merchantStatusBackToLogin;
+
+  /// No description provided for @merchantStatusSupportFeatureComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Support contact feature coming soon!'**
+  String get merchantStatusSupportFeatureComingSoon;
 }
 
 class _AppLocalizationsDelegate

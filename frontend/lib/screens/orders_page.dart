@@ -650,8 +650,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
 
   Widget _buildArchiveMenuButton() {
     final isArchiveSelected = ['cancelled', 'returned', 'expired'].contains(_selectedFilter);
-    const customBlueColor = Color(0xFF00C1E8);
-    const customPinkColor = Color(0xFFC6007E);
+    const customLimeGreen = Color(0xFF32CD32);
+    const customGold = Color(0xFFFFD300);
     
     // Responsive sizing
     final screenWidth = MediaQuery.of(context).size.width;
@@ -682,10 +682,10 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
         elevation: isArchiveSelected ? 2 : 0.5,
         borderRadius: BorderRadius.circular(8),
         color: isArchiveSelected
-            ? customBlueColor
+            ? customLimeGreen
             : const Color(0xFF001133).withOpacity(0.05),
         shadowColor: isArchiveSelected
-            ? customBlueColor.withOpacity(0.3)
+            ? customLimeGreen.withOpacity(0.3)
             : const Color(0xFF001133).withOpacity(0.1),
         child: InkWell(
           onTap: () => _showArchiveStatusMenu(context),
@@ -699,8 +699,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isArchiveSelected
-                    ? customPinkColor
-                    : customPinkColor.withOpacity(0.4),
+                    ? customGold
+                    : customGold.withOpacity(0.4),
                 width: 1.5,
               ),
             ),
@@ -709,14 +709,14 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
               children: [
                 Icon(
                   Icons.archive_outlined,
-                  color: isArchiveSelected ? Colors.white : customBlueColor,
+                  color: isArchiveSelected ? Colors.white : customLimeGreen,
                   size: fontSize + 2,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   'Archive',
                   style: TextStyle(
-                    color: isArchiveSelected ? Colors.white : customBlueColor,
+                    color: isArchiveSelected ? Colors.white : customLimeGreen,
                     fontWeight: isArchiveSelected ? FontWeight.w600 : FontWeight.w500,
                     fontSize: fontSize,
                     letterSpacing: 0.1,
@@ -725,7 +725,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                 const SizedBox(width: 4),
                 Icon(
                   Icons.keyboard_arrow_down,
-                  color: isArchiveSelected ? Colors.white : customBlueColor,
+                  color: isArchiveSelected ? Colors.white : customLimeGreen,
                   size: fontSize + 2,
                 ),
               ],
@@ -830,9 +830,9 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
 
   Widget _buildFilterChip(String label, String value) {
     final isSelected = _selectedFilter == value;
-    // Define the custom blue color #00C1E8 for fill and the pink color #C6007E for borders
-    const customBlueColor = Color(0xFF00C1E8);
-    const customPinkColor = Color(0xFFC6007E);
+    // Define the new lime green primary color and gold secondary color
+    const customLimeGreen = Color(0xFF32CD32);
+    const customGold = Color(0xFFFFD300);
 
     // Responsive sizing for chips - longer and little higher
     final screenWidth = MediaQuery.of(context).size.width;
@@ -869,10 +869,10 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
           8,
         ), // Reduced from 16 to 8 for less round corners
         color: isSelected
-            ? customBlueColor
+            ? customLimeGreen
             : const Color(0xFF001133).withOpacity(0.05),
         shadowColor: isSelected
-            ? customBlueColor.withOpacity(0.3)
+            ? customLimeGreen.withOpacity(0.3)
             : const Color(0xFF001133).withOpacity(0.1),
         child: InkWell(
           onTap: () => setState(() => _selectedFilter = value),
@@ -890,15 +890,15 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
               ), // Reduced corners here too
               border: Border.all(
                 color: isSelected
-                    ? customPinkColor
-                    : customPinkColor.withOpacity(0.4),
+                    ? customGold
+                    : customGold.withOpacity(0.4),
                 width: 1.5,
               ),
             ),
             child: Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : customBlueColor,
+                color: isSelected ? Colors.white : customLimeGreen,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 fontSize: fontSize,
                 letterSpacing: 0.1, // Slightly reduced letter spacing

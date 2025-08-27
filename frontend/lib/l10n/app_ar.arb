@@ -951,5 +951,29 @@
   "uploadOwnerIdentificationDocument": "ارفع مستند هوية المالك",
   "uploadHealthCertificateIfApplicable": "ارفع الشهادة الصحية إذا كانت مطلوبة",
   "uploadPhotoOfBusinessOwner": "ارفع صورة مالك النشاط التجاري",
-  "previous": "السابق"
+  "previous": "السابق",
+
+  "merchantStatusApplicationApproved": "تم قبول الطلب!",
+  "merchantStatusApplicationUnderReview": "الطلب قيد المراجعة",
+  "merchantStatusApplicationRejected": "تم رفض الطلب",
+  "merchantStatusAccountSuspended": "تم تعليق الحساب",
+  "merchantStatusApplicationStatus": "حالة الطلب",
+
+  "merchantStatusApprovedMessage": "تهانينا! تم قبول طلب التاجر الخاص بك. يمكنك الآن البدء في استقبال الطلبات.",
+  "merchantStatusPendingMessage": "شكراً لك على تقديم طلبك. نحن نراجع معلوماتك حالياً وسنخبرك بمجرد اكتمال العملية.",
+  "merchantStatusRejectedMessage": "للأسف، تم رفض طلبك. يرجى مراجعة المتطلبات والنظر في إعادة التقديم.",
+  "merchantStatusSuspendedMessage": "تم تعليق حساب التاجر الخاص بك. يرجى الاتصال بفريق الدعم للحصول على مزيد من المعلومات.",
+  "merchantStatusDefaultMessage": "يرجى الاتصال بالدعم للحصول على مزيد من المعلومات حول حالة طلبك.",
+
+  "merchantStatusWhatHappensNext": "ما الذي سيحدث بعد ذلك؟",
+  "merchantStatusWhatHappensNextDescription": "سيقوم فريقنا بمراجعة طلبك خلال 1-2 يوم عمل. قد نتصل بك إذا كانت هناك حاجة لمعلومات إضافية.",
+  "merchantStatusWhyRejected": "لماذا تم رفض طلبي؟",
+  "merchantStatusWhyRejectedDescription": "الأسباب الشائعة تشمل الوثائق غير المكتملة، أو مشاكل في التحقق من النشاط التجاري، أو انتهاكات السياسة. اتصل بالدعم للحصول على التفاصيل.",
+  "merchantStatusAccountSuspendedInfo": "تم تعليق الحساب",
+  "merchantStatusAccountSuspendedDescription": "تم تعليق حسابك مؤقتاً. قد يكون هذا بسبب انتهاكات السياسة أو مخاوف أمنية. اتصل بالدعم للحصول على المساعدة.",
+
+  "merchantStatusReapply": "إعادة التقديم",
+  "merchantStatusContactSupport": "اتصل بالدعم",
+  "merchantStatusBackToLogin": "العودة لتسجيل الدخول",
+  "merchantStatusSupportFeatureComingSoon": "ميزة الاتصال بالدعم قريباً!"
 }

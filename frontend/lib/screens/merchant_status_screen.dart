@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
 import '../core/theme/app_colors.dart';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
+import '../services/app_auth_service.dart';
 import 'auth/auth_screen.dart';
 
 class MerchantStatusScreen extends StatelessWidget {
@@ -19,184 +22,151 @@ class MerchantStatusScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Status Icon
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _getStatusColor().withOpacity(0.1),
-                ),
-                child: Icon(
-                  _getStatusIcon(),
-                  size: 64,
-                  color: _getStatusColor(),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Status Title
-              Text(
-                _getStatusTitle(context),
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-
-              // Status Message
-              Text(
-                message ?? _getDefaultMessage(context),
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
+      backgroundColor: AppColors.surface,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.surface,
+              AppColors.primary.withOpacity(0.05),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(GoldenRatio.spacing24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Modern Status Icon with enhanced design
+                Container(
+                  width: GoldenRatio.xxxl * 1.5,
+                  height: GoldenRatio.xxxl * 1.5,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        _getStatusColor().withOpacity(0.1),
+                        _getStatusColor().withOpacity(0.05),
+                      ],
                     ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
-
-              // Action Buttons
-              if (status == 'pending') ...[
-                _buildInfoCard(
-                  context,
-                  AppLocalizations.of(context)!.merchantStatusWhatHappensNext,
-                  AppLocalizations.of(context)!.merchantStatusWhatHappensNextDescription,
-                  Icons.info_outline,
-                  Colors.blue,
-                ),
-                const SizedBox(height: 24),
-              ] else if (status == 'rejected') ...[
-                _buildInfoCard(
-                  context,
-                  AppLocalizations.of(context)!.merchantStatusWhyRejected,
-                  AppLocalizations.of(context)!.merchantStatusWhyRejectedDescription,
-                  Icons.help_outline,
-                  Colors.orange,
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () => _reapply(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _getStatusColor().withOpacity(0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context)!.merchantStatusReapply,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    ],
+                  ),
+                  child: Icon(
+                    _getStatusIcon(),
+                    size: GoldenRatio.xxxl,
+                    color: _getStatusColor(),
                   ),
                 ),
-                const SizedBox(height: 16),
-              ] else if (status == 'suspended') ...[
-                _buildInfoCard(
-                  context,
-                  AppLocalizations.of(context)!.merchantStatusAccountSuspendedInfo,
-                  AppLocalizations.of(context)!.merchantStatusAccountSuspendedDescription,
-                  Icons.warning_outlined,
-                  Colors.orange,
-                ),
-                const SizedBox(height: 24),
-              ],
+                SizedBox(height: GoldenRatio.spacing24 + GoldenRatio.spacing8),
 
-              // Contact Support Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: OutlinedButton(
-                  onPressed: () => _contactSupport(context),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: const BorderSide(color: AppColors.primary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                // Modern Status Title
+                Text(
+                  _getStatusTitle(context),
+                  style: TypographySystem.headlineMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: GoldenRatio.spacing16),
+
+                // Enhanced Status Message
+                Container(
+                  padding: EdgeInsets.all(GoldenRatio.spacing16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+                    border: Border.all(
+                      color: _getStatusColor().withOpacity(0.2),
+                      width: 1,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Text(
-                    AppLocalizations.of(context)!.merchantStatusContactSupport,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                    message ?? _getDefaultMessage(context),
+                    style: TypographySystem.bodyLarge.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                      height: 1.5,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                SizedBox(height: GoldenRatio.spacing24 + GoldenRatio.spacing16),
 
-              // Back to Login
-              TextButton(
-                onPressed: () => Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const AuthScreen()),
-                  (route) => false,
-                ),
-                child: Text(
-                  AppLocalizations.of(context)!.merchantStatusBackToLogin,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ),
-            ],
+                // Modern Support Section
+                _buildModernSupportSection(context),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildInfoCard(
-      BuildContext context, String title, String description, IconData icon, Color color) {
+  Widget _buildModernSupportSection(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(GoldenRatio.spacing16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: AppColors.onSurfaceVariant.withOpacity(0.2),
+          width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 24),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
           Text(
-            description,
-            style: TextStyle(
-              fontSize: 14,
-              color: color.withOpacity(0.8),
+            'Need Help?',
+            style: TypographySystem.titleMedium.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppColors.onSurface,
             ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: GoldenRatio.spacing12),
+          Text(
+            'Contact our support team if you have any questions.',
+            style: TypographySystem.bodyMedium.copyWith(
+              color: AppColors.onSurfaceVariant,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: GoldenRatio.spacing16),
+          TextButton(
+            onPressed: () => _navigateToLogin(context),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              textStyle: TypographySystem.bodyMedium.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            child: const Text('Back to Login'),
           ),
         ],
       ),
@@ -206,15 +176,15 @@ class MerchantStatusScreen extends StatelessWidget {
   Color _getStatusColor() {
     switch (status.toLowerCase()) {
       case 'approved':
-        return Colors.green;
+        return AppColors.success;
       case 'pending':
-        return Colors.orange;
+        return AppColors.warning;
       case 'rejected':
-        return Colors.red;
+        return AppColors.error;
       case 'suspended':
-        return Colors.red;
+        return AppColors.error;
       default:
-        return Colors.grey;
+        return AppColors.onSurfaceVariant;
     }
   }
 
@@ -223,59 +193,58 @@ class MerchantStatusScreen extends StatelessWidget {
       case 'approved':
         return Icons.check_circle_outline;
       case 'pending':
-        return Icons.schedule;
+        return Icons.access_time;
       case 'rejected':
         return Icons.cancel_outlined;
       case 'suspended':
-        return Icons.block;
+        return Icons.warning_outlined;
       default:
-        return Icons.info_outline;
+        return Icons.help_outline;
     }
   }
 
   String _getStatusTitle(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     switch (status.toLowerCase()) {
       case 'approved':
-        return l10n.merchantStatusApplicationApproved;
+        return 'Account Approved';
       case 'pending':
-        return l10n.merchantStatusApplicationUnderReview;
+        return 'Application Pending';
       case 'rejected':
-        return l10n.merchantStatusApplicationRejected;
+        return 'Application Rejected';
       case 'suspended':
-        return l10n.merchantStatusAccountSuspended;
+        return 'Account Suspended';
       default:
-        return l10n.merchantStatusApplicationStatus;
+        return 'Unknown Status';
     }
   }
 
   String _getDefaultMessage(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     switch (status.toLowerCase()) {
       case 'approved':
-        return l10n.merchantStatusApprovedMessage;
+        return 'Your merchant account has been approved. You can now start using the platform.';
       case 'pending':
-        return l10n.merchantStatusPendingMessage;
+        return 'Your application is being reviewed. We will notify you once the review is complete.';
       case 'rejected':
-        return l10n.merchantStatusRejectedMessage;
+        return 'Your application has been rejected. Please contact support for more information.';
       case 'suspended':
-        return l10n.merchantStatusSuspendedMessage;
+        return 'Your account has been suspended. Please contact support to resolve this issue.';
       default:
-        return l10n.merchantStatusDefaultMessage;
+        return 'Unknown status detected. Please contact support.';
     }
   }
 
-  void _reapply(BuildContext context) {
-    Navigator.of(context).pushReplacementNamed('/registration');
-  }
-
-  void _contactSupport(BuildContext context) {
-    // TODO: Implement contact support functionality
-    // This could open email client, phone dialer, or in-app chat
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.merchantStatusSupportFeatureComingSoon),
-      ),
-    );
+  void _navigateToLogin(BuildContext context) async {
+    try {
+      await AppAuthService.signOut();
+    } catch (e) {
+      // Handle error silently
+    }
+    
+    if (context.mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const AuthScreen()),
+        (route) => false,
+      );
+    }
   }
 }

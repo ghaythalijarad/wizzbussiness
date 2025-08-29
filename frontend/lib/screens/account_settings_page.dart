@@ -11,6 +11,9 @@ import '../services/image_upload_service.dart';
 import '../providers/business_provider.dart';
 import '../providers/session_provider.dart';
 import 'login_page.dart';
+import '../core/theme/app_colors.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
 
 class AccountSettingsPage extends ConsumerStatefulWidget {
   final Business business;
@@ -434,9 +437,9 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF32CD32).withOpacity(0.05), // Lime Green
-              const Color(0xFFFFD300).withOpacity(0.03), // Gold
-              Colors.white,
+              AppColors.primary.withOpacity(0.05),
+              AppColors.secondary.withOpacity(0.03),
+              AppColors.background,
             ],
             stops: const [0.0, 0.3, 1.0],
           ),
@@ -515,16 +518,16 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         data: (business) => business != null
             ? Container(
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [
-                      Color(0xFFFFD300),
-                      Color(0xFFC7A600)
-                    ], // Gold gradient
+                      AppColors.secondary,
+                      AppColors.secondaryDark
+                    ], // Secondary gradient
                   ),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFFD300).withOpacity(0.3),
+                      color: AppColors.secondary.withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -534,7 +537,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                   onPressed: _pickImage,
                   backgroundColor: Colors.transparent,
                   elevation: 0,
-                  child: const Icon(Icons.camera_alt, color: Colors.black87),
+                  child: Icon(Icons.camera_alt, color: AppColors.onSecondary),
                 ),
               )
             : null,
@@ -552,8 +555,8 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF32CD32), // Lime Green
-            const Color(0xFF228B22), // Darker Lime Green
+            AppColors.primary, // Primary color
+            AppColors.primaryDark, // Darker primary
           ],
         ),
         borderRadius: const BorderRadius.only(
@@ -562,7 +565,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF32CD32).withOpacity(0.3),
+            color: AppColors.primary.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -610,14 +613,14 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFFFFD300), // Gold
-                    const Color(0xFFC7A600), // Darker Gold
+                    AppColors.secondary, // Secondary
+                    AppColors.secondaryDark, // Darker Secondary
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFFD300).withOpacity(0.3),
+                    color: AppColors.secondary.withOpacity(0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -644,14 +647,14 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFFFFD300), // Gold
-                    const Color(0xFFC7A600), // Darker Gold
+                    AppColors.secondary, // Secondary
+                    AppColors.secondaryDark, // Darker Secondary
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFFD300).withOpacity(0.3),
+                    color: AppColors.secondary.withOpacity(0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -687,13 +690,13 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white,
-            const Color(0xFF32CD32).withOpacity(0.02),
+            AppColors.surface,
+            AppColors.primary.withOpacity(0.02),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFF32CD32).withOpacity(0.1),
+          color: AppColors.primary.withOpacity(0.1),
           width: 1,
         ),
         boxShadow: [
@@ -709,8 +712,8 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF32CD32), Color(0xFF228B22)],
+              gradient: LinearGradient(
+                colors: [AppColors.primary, AppColors.primaryDark],
               ),
               borderRadius: BorderRadius.circular(16),
             ),
@@ -760,15 +763,15 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF32CD32).withOpacity(0.1),
-                  const Color(0xFFFFD300).withOpacity(0.1),
+                  AppColors.primary.withOpacity(0.1),
+                  AppColors.secondary.withOpacity(0.1),
                 ],
               ),
               borderRadius: BorderRadius.circular(24),
             ),
             child: CircularProgressIndicator(
               valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF32CD32)),
+                  AlwaysStoppedAnimation<Color>(AppColors.primary),
               strokeWidth: 3,
             ),
           ),
@@ -842,7 +845,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                 icon: const Icon(Icons.refresh),
                 label: Text(l10n.retry),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3399FF),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -896,14 +899,17 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFFD300), Color(0xFFC7A600)], // Gold gradient
+            gradient: LinearGradient(
+              colors: [
+                AppColors.secondary,
+                AppColors.secondaryDark
+              ], // Secondary gradient
             ),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             icon,
-            color: Colors.black87,
+            color: AppColors.onSecondary,
             size: 24,
           ),
         ),
@@ -925,18 +931,18 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF32CD32), // Lime Green
-            Color(0xFF228B22), // Darker Lime Green
+            AppColors.primary, // Primary
+            AppColors.primaryDark, // Darker Primary
           ],
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF32CD32).withOpacity(0.3),
+            color: AppColors.primary.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -967,20 +973,20 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 6),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [
-                            Color(0xFFFFD300),
-                            Color(0xFFC7A600)
-                          ], // Gold gradient
+                            AppColors.secondary,
+                            AppColors.secondaryDark
+                          ], // Secondary gradient
                         ),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         business.businessType.name.toUpperCase(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          color: AppColors.onSecondary,
                           letterSpacing: 1,
                         ),
                       ),
@@ -1287,16 +1293,16 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF3399FF).withOpacity(0.1),
+              color: AppColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF3399FF).withOpacity(0.2),
+                color: AppColors.primary.withOpacity(0.2),
                 width: 1,
               ),
             ),
             child: Icon(
               icon,
-              color: const Color(0xFF3399FF),
+              color: AppColors.primary,
               size: 24,
             ),
           ),
@@ -1455,16 +1461,16 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF3399FF).withOpacity(0.1),
+              color: AppColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF3399FF).withOpacity(0.2),
+                color: AppColors.primary.withOpacity(0.2),
                 width: 1,
               ),
             ),
             child: Icon(
               icon,
-              color: const Color(0xFF3399FF),
+              color: AppColors.primary,
               size: 24,
             ),
           ),
@@ -1493,7 +1499,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFF3399FF)),
+                      borderSide: BorderSide(color: AppColors.primary),
                     ),
                     contentPadding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

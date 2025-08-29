@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
+import '../core/theme/app_colors.dart';
 import '../widgets/language_switcher.dart';
-import '../widgets/wizz_business_text_form_field.dart';
-import '../widgets/wizz_business_button.dart';
 import '../screens/forgot_password_screen.dart';
 import '../screens/registration_form_screen.dart';
 import '../services/app_auth_service.dart';
@@ -220,6 +221,390 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return loc.errorInvalidCredentials;
   }
 
+  Widget _buildModernTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData prefixIcon,
+    String? Function(String?)? validator,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        validator: validator,
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+        inputFormatters: inputFormatters,
+        style: TypographySystem.bodyLarge.copyWith(
+          color: AppColors.onSurface,
+        ),
+        decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: TypographySystem.bodyMedium.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
+          prefixIcon: Icon(
+            prefixIcon,
+            color: AppColors.primary,
+            size: GoldenRatio.md,
+          ),
+          suffixIcon: suffixIcon,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+            borderSide: BorderSide(
+              color: AppColors.onSurfaceVariant.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+            borderSide: BorderSide(
+              color: AppColors.onSurfaceVariant.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+            borderSide: BorderSide(
+              color: AppColors.primary,
+              width: 2,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+            borderSide: BorderSide(
+              color: AppColors.error,
+              width: 1,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+            borderSide: BorderSide(
+              color: AppColors.error,
+              width: 2,
+            ),
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: GoldenRatio.spacing16,
+            vertical: GoldenRatio.spacing16,
+          ),
+          fillColor: Colors.white,
+          filled: true,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernAppBar(BuildContext context, AppLocalizations loc) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: GoldenRatio.spacing16,
+        vertical: GoldenRatio.spacing12,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primary, AppColors.primaryDark],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          if (Navigator.of(context).canPop())
+            IconButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+              padding: EdgeInsets.zero,
+            ),
+          Expanded(
+            child: Text(
+              loc.login,
+              style: TypographySystem.headlineSmall.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          LanguageSwitcher(showText: false),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoginCard(
+      BuildContext context, AppLocalizations loc, bool isTabletOrDesktop) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(GoldenRatio.spacing16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(GoldenRatio.spacing24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header Section
+              _buildHeaderSection(context, loc),
+              SizedBox(height: GoldenRatio.spacing24),
+
+              // Email Field
+              _buildModernTextField(
+                controller: _emailController,
+                labelText: loc.email,
+                prefixIcon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'[a-zA-Z0-9@._-]'),
+                  ),
+                ],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return loc.pleaseEnterYourEmail;
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: GoldenRatio.spacing16),
+
+              // Password Field
+              _buildModernTextField(
+                controller: _passwordController,
+                labelText: loc.password,
+                prefixIcon: Icons.lock_outlined,
+                obscureText: !_isPasswordVisible,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'[a-zA-Z0-9!@#$%^&*()_+=\-\[\]{}|;:,.<>?/~`]'),
+                  ),
+                ],
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                    color: AppColors.primary,
+                    size: GoldenRatio.md,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return loc.pleaseEnterYourPassword;
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: GoldenRatio.spacing24),
+
+              // Login Button
+              _buildLoginButton(context, loc),
+              SizedBox(height: GoldenRatio.spacing16),
+
+              // Forgot Password Link
+              _buildForgotPasswordLink(context, loc),
+              SizedBox(height: GoldenRatio.spacing16),
+
+              // Sign Up Link
+              _buildSignUpLink(context, loc),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderSection(BuildContext context, AppLocalizations loc) {
+    return Column(
+      children: [
+        Container(
+          width: GoldenRatio.xxxl,
+          height: GoldenRatio.xxxl,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [AppColors.primary, AppColors.secondary],
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.business,
+            color: Colors.white,
+            size: GoldenRatio.xl,
+          ),
+        ),
+        SizedBox(height: GoldenRatio.spacing16),
+        Text(
+          loc.welcomeBack,
+          style: TypographySystem.headlineMedium.copyWith(
+            color: AppColors.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: GoldenRatio.spacing8),
+        Text(
+          loc.signInToYourAccount,
+          style: TypographySystem.bodyLarge.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginButton(BuildContext context, AppLocalizations loc) {
+    return Container(
+      width: double.infinity,
+      height: GoldenRatio.spacing20 * 2.5,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primary, AppColors.primaryDark],
+        ),
+        borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+          onTap: _isLoading
+              ? null
+              : () {
+                  debugPrint('🔘 LOGIN BUTTON TAPPED!');
+                  if (_isLoading) {
+                    debugPrint('⏳ Already loading, ignoring tap');
+                    return;
+                  }
+                  debugPrint('🎬 Calling _login() method');
+                  _login();
+                },
+          child: Center(
+            child: _isLoading
+                ? SizedBox(
+                    width: GoldenRatio.md,
+                    height: GoldenRatio.md,
+                    child: const CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : Text(
+                    loc.login,
+                    style: TypographySystem.labelLarge.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForgotPasswordLink(BuildContext context, AppLocalizations loc) {
+    return TextButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ForgotPasswordScreen(),
+          ),
+        );
+      },
+      style: TextButton.styleFrom(
+        foregroundColor: AppColors.primary,
+        textStyle: TypographySystem.bodyMedium.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      child: Text(loc.forgotPasswordQuestion),
+    );
+  }
+
+  Widget _buildSignUpLink(BuildContext context, AppLocalizations loc) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          loc.dontHaveAnAccount,
+          style: TypographySystem.bodyMedium.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const RegistrationFormScreen(),
+              ),
+            );
+          },
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            textStyle: TypographySystem.bodyMedium.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          child: Text(loc.register),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -231,16 +616,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         : screenWidth;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.login),
-        elevation: isTabletOrDesktop ? 0 : 1,
-        backgroundColor: isTabletOrDesktop ? Colors.white : null,
-        foregroundColor: isTabletOrDesktop ? Colors.black87 : null,
-        actions: [
-          LanguageSwitcher(
-            showText: false,
-          ),
-        ],
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(GoldenRatio.spacing20 * 2.5),
+        child: _buildModernAppBar(context, loc),
       ),
       body: SafeArea(
         child: Center(
@@ -252,132 +630,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               constraints: isTabletOrDesktop
                   ? const BoxConstraints(maxWidth: 500)
                   : null,
-              child: Card(
-                elevation: isTabletOrDesktop ? 8 : 0,
-                shadowColor: isTabletOrDesktop ? Colors.black26 : null,
-                shape: isTabletOrDesktop
-                    ? RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      )
-                    : null,
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          loc.welcomeBack,
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          loc.signInToYourAccount,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 32),
-                        WizzBusinessTextFormField(
-                          controller: _emailController,
-                          labelText: loc.email,
-                          keyboardType: TextInputType.emailAddress,
-                          inputFormatters: [
-                            // Only allow English Latin letters, numbers, and email symbols
-                            FilteringTextInputFormatter.allow(
-                              RegExp(r'[a-zA-Z0-9@._-]'),
-                            ),
-                          ],
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return loc.pleaseEnterYourEmail;
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        WizzBusinessTextFormField(
-                          controller: _passwordController,
-                          labelText: loc.password,
-                          obscureText: !_isPasswordVisible,
-                          inputFormatters: [
-                            // Only allow English Latin letters, numbers, and common password symbols
-                            FilteringTextInputFormatter.allow(
-                              RegExp(
-                                  r'[a-zA-Z0-9!@#$%^&*()_+=\-\[\]{}|;:,.<>?/~`]'),
-                            ),
-                          ],
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? Icons.visibility_off_rounded
-                                  : Icons.visibility_rounded,
-                              color: const Color(0xFF3399FF),
-                              size: 22,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
-                            },
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return loc.pleaseEnterYourPassword;
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        WizzBusinessButton(
-                          onPressed: () {
-                            debugPrint('🔘 LOGIN BUTTON TAPPED!');
-                            if (_isLoading) {
-                              debugPrint('⏳ Already loading, ignoring tap');
-                              return;
-                            }
-                            debugPrint('🎬 Calling _login() method');
-                            _login();
-                          },
-                          text: loc.login,
-                          isLoading: _isLoading,
-                        ),
-                        const SizedBox(height: 16),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const ForgotPasswordScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(loc.forgotPasswordQuestion),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(loc.dontHaveAnAccount),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const RegistrationFormScreen(),
-                                  ),
-                                );
-                              },
-                              child: Text(loc.register),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              child: _buildLoginCard(context, loc, isTabletOrDesktop),
             ),
           ),
         ),

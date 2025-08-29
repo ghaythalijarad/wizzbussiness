@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
 import '../services/app_auth_service.dart';
 import 'confirm_forgot_password_screen.dart';
 
@@ -25,254 +27,475 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Reset Password'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: AppColors.primary,
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
+      backgroundColor: AppColors.backgroundVariant,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primary.withOpacity(0.05),
+              AppColors.secondary.withOpacity(0.03),
+              AppColors.background,
+            ],
+            stops: const [0.0, 0.3, 1.0],
+          ),
+        ),
+        child: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 32),
-              
-              // Header
+              _buildModernAppBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(GoldenRatio.spacing24),
+                  child: _buildContent(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernAppBar() {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: GoldenRatio.spacing20,
+        vertical: GoldenRatio.spacing16,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.04),
+            blurRadius: GoldenRatio.spacing12,
+            offset: Offset(0, GoldenRatio.spacing4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.arrow_back_rounded, color: AppColors.primary),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          SizedBox(width: GoldenRatio.spacing16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Reset Password',
+                  style: TypographySystem.headlineSmall.copyWith(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Recover your account access',
+                  style: TypographySystem.bodyMedium.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(height: GoldenRatio.spacing20),
+
+        // Icon with modern styling
+        Container(
+          padding: EdgeInsets.all(GoldenRatio.spacing24),
+          margin: EdgeInsets.only(bottom: GoldenRatio.spacing24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.warning.withOpacity(0.1),
+                AppColors.warning.withOpacity(0.05),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+            border: Border.all(
+              color: AppColors.warning.withOpacity(0.2),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.shadow.withOpacity(0.08),
+                blurRadius: GoldenRatio.spacing20,
+                offset: Offset(0, GoldenRatio.spacing8),
+              ),
+            ],
+          ),
+          child: Icon(
+            _emailSent ? Icons.mark_email_read : Icons.lock_reset,
+            size: GoldenRatio.xxxl,
+            color: AppColors.warning,
+          ),
+        ),
+        
+        // Header Section
+        Container(
+          padding: EdgeInsets.all(GoldenRatio.spacing24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.warning.withOpacity(0.05),
+                AppColors.warning.withOpacity(0.02),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+            border: Border.all(
+              color: AppColors.warning.withOpacity(0.1),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            children: [
               Text(
                 _emailSent ? 'Check Your Email' : 'Forgot Password?',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
+                style: TypographySystem.headlineMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.onSurface,
+                ),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              
+              SizedBox(height: GoldenRatio.spacing12),
               
               Text(
                 _emailSent
                     ? 'We\'ve sent a verification code to your email address. Please check your inbox for the 6-digit code.'
                     : 'Enter your email address and we\'ll send you a verification code to reset your password.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-              ),
-              const SizedBox(height: 40),
-
-              if (!_emailSent) ...[
-                // Email Form
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          labelText: 'Email Address',
-                          hintText: 'Enter your email',
-                          prefixIcon: const Icon(Icons.email_outlined),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: AppColors.primary.withOpacity(0.3),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.primary,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
-                          }
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                              .hasMatch(value)) {
-                            return 'Please enter a valid email';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Send Reset Link Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _sendResetLink,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
-                                  ),
-                                )
-                              : const Text(
-                                  'Send Verification Code',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ],
-                  ),
+                style: TypographySystem.bodyLarge.copyWith(
+                  color: AppColors.onSurfaceVariant,
                 ),
-              ] else ...[
-                // Success State
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.green.withOpacity(0.3),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.email_outlined,
-                        size: 64,
-                        color: Colors.green[600],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Verification Code Sent!',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: Colors.green[700],
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Check your spam folder if you don\'t see the code in your inbox.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.green[600],
-                            ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // Continue Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ConfirmForgotPasswordScreen(
-                            email: _emailController.text,
-                          ),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Continue to Verification',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Resend Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: OutlinedButton(
-                    onPressed: _isLoading ? null : _resendResetLink,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      side: const BorderSide(color: AppColors.primary),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.primary),
-                            ),
-                          )
-                        : const Text(
-                            'Resend Code',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                  ),
-                ),
-              ],
-
-              const Spacer(),
-
-              // Back to Login
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Remember your password? ',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text(
-                      'Sign In',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+                textAlign: TextAlign.center,
               ),
             ],
           ),
         ),
+        
+        SizedBox(height: GoldenRatio.xl),
+
+        if (!_emailSent) ...[
+          // Email Form
+          Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                _buildModernTextField(),
+
+                SizedBox(height: GoldenRatio.xl),
+
+                // Send Reset Link Button
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.warning,
+                        AppColors.warning.withOpacity(0.8)
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.warning.withOpacity(0.3),
+                        blurRadius: GoldenRatio.spacing16,
+                        offset: Offset(0, GoldenRatio.spacing8),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _isLoading ? null : _sendResetLink,
+                      borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                            vertical: GoldenRatio.spacing18),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (_isLoading) ...[
+                              SizedBox(
+                                width: GoldenRatio.spacing20,
+                                height: GoldenRatio.spacing20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              SizedBox(width: GoldenRatio.spacing12),
+                            ] else ...[
+                              Icon(
+                                Icons.email_outlined,
+                                color: Colors.white,
+                                size: GoldenRatio.spacing20,
+                              ),
+                              SizedBox(width: GoldenRatio.spacing12),
+                            ],
+                            Text(
+                              _isLoading ? 'Sending...' : 'Send Reset Code',
+                              style: TypographySystem.titleMedium.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ] else ...[
+          // Success State - Email Sent
+          Container(
+            padding: EdgeInsets.all(GoldenRatio.spacing24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.success.withOpacity(0.1),
+                  AppColors.success.withOpacity(0.05),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+              border: Border.all(
+                color: AppColors.success.withOpacity(0.2),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.shadow.withOpacity(0.08),
+                  blurRadius: GoldenRatio.spacing20,
+                  offset: Offset(0, GoldenRatio.spacing8),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.mark_email_read,
+                  size: GoldenRatio.xxxl,
+                  color: AppColors.success,
+                ),
+                SizedBox(height: GoldenRatio.spacing16),
+                Text(
+                  'Verification Code Sent!',
+                  style: TypographySystem.headlineSmall.copyWith(
+                    color: AppColors.success,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: GoldenRatio.spacing8),
+                Text(
+                  'Check your spam folder if you don\'t see the code in your inbox.',
+                  style: TypographySystem.bodyMedium.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          
+          SizedBox(height: GoldenRatio.xl),
+
+          // Continue Button
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.primary, AppColors.primaryDark],
+              ),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.3),
+                  blurRadius: GoldenRatio.spacing16,
+                  offset: Offset(0, GoldenRatio.spacing8),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ConfirmForgotPasswordScreen(
+                        email: _emailController.text,
+                      ),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                child: Padding(
+                  padding:
+                      EdgeInsets.symmetric(vertical: GoldenRatio.spacing18),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                        size: GoldenRatio.spacing20,
+                      ),
+                      SizedBox(width: GoldenRatio.spacing12),
+                      Text(
+                        'Continue to Verification',
+                        style: TypographySystem.titleMedium.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+
+        SizedBox(height: GoldenRatio.xl),
+
+        // Back to Login
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Remember your password? ',
+              style: TypographySystem.bodyMedium.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
+            ),
+            GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Text(
+                'Sign In',
+                style: TypographySystem.bodyMedium.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModernTextField() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+        border: Border.all(
+          color: AppColors.warning.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.04),
+            blurRadius: GoldenRatio.spacing8,
+            offset: Offset(0, GoldenRatio.spacing4),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: _emailController,
+        keyboardType: TextInputType.emailAddress,
+        style: TypographySystem.bodyLarge.copyWith(
+          color: AppColors.onSurface,
+        ),
+        decoration: InputDecoration(
+          labelText: 'Email Address',
+          hintText: 'Enter your email',
+          prefixIcon: Container(
+            margin: EdgeInsets.all(GoldenRatio.spacing12),
+            padding: EdgeInsets.all(GoldenRatio.spacing8),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+            ),
+            child: Icon(
+              Icons.email_outlined,
+              color: AppColors.warning,
+              size: GoldenRatio.spacing20,
+            ),
+          ),
+          filled: true,
+          fillColor: AppColors.surface,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+            borderSide: BorderSide(
+              color: AppColors.warning,
+              width: 2,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+            borderSide: BorderSide(
+              color: AppColors.error,
+              width: 2,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+            borderSide: BorderSide(
+              color: AppColors.error,
+              width: 2,
+            ),
+          ),
+          labelStyle: TypographySystem.bodyMedium.copyWith(
+            color: AppColors.warning,
+            fontWeight: FontWeight.w500,
+          ),
+          hintStyle: TypographySystem.bodyMedium.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: GoldenRatio.spacing20,
+            vertical: GoldenRatio.spacing16,
+          ),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter your email';
+          }
+          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+            return 'Please enter a valid email';
+          }
+          return null;
+        },
       ),
     );
   }
@@ -353,6 +576,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
+  // ignore: unused_element
   Future<void> _resendResetLink() async {
     setState(() {
       _isLoading = true;

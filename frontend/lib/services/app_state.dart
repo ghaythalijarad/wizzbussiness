@@ -108,6 +108,49 @@ class AppState with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Force online status when user logs in (bypassing toggle logic)
+  Future<void> forceOnlineOnLogin(String businessId, String userId) async {
+    try {
+      debugPrint('🟢 AppState: Forcing online status ON after login');
+
+      // Set local state to online
+      _isOnline = true;
+
+      // Update backend status
+      await updateBusinessOnlineStatus(businessId, userId, true);
+
+      // Save to persistence
+      await _savePersistedStatus(true);
+
+      // Store login timestamp to prevent API override
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(
+          'last_login_time', DateTime.now().millisecondsSinceEpoch);
+
+      // Notify listeners
+      notifyListeners();
+
+      debugPrint(
+          '✅ AppState: Successfully forced online status ON after login');
+    } catch (e) {
+      debugPrint('❌ AppState: Failed to force online status on login: $e');
+      // Still set local state to online even if API call fails
+      _isOnline = true;
+      await _savePersistedStatus(true);
+
+      // Store login timestamp even if API call fails
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt(
+            'last_login_time', DateTime.now().millisecondsSinceEpoch);
+      } catch (prefError) {
+        debugPrint('❌ AppState: Failed to store login timestamp: $prefError');
+      }
+
+      notifyListeners();
+    }
+  }
+
   void logout() {
     // Reset app state on logout
     _isOnline = true;

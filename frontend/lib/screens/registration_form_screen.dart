@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
-import '../widgets/wizz_business_text_form_field.dart';
+import '../core/theme/app_colors.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
 import '../widgets/wizz_business_button.dart';
 import '../services/app_auth_service.dart';
 import '../services/image_upload_service.dart';
@@ -91,62 +93,126 @@ class _RegistrationFormScreenState
     final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.registerYourBusiness),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
-            ),
-          ),
-        ),
-        foregroundColor: Colors.white,
-      ),
+      backgroundColor: AppColors.surface,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFF8F9FA), Color(0xFFE8F5E8)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.surface,
+              AppColors.primary.withOpacity(0.05),
+            ],
           ),
         ),
-        child: Column(
-          children: [
-            // Progress Indicator
-            _buildProgressIndicator(),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Modern App Bar
+              _buildModernAppBar(context, loc),
+              
+              // Progress Indicator
+              _buildModernProgressIndicator(),
 
-            // Form Content
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPageIndex = index;
-                  });
-                },
-                children: [
-                  _buildUserInfoPage(loc),
-                  _buildBusinessInfoPage(loc),
-                  _buildDocumentsPage(loc),
-                  _buildVerificationPage(loc),
-                ],
+              // Form Content
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPageIndex = index;
+                    });
+                  },
+                  children: [
+                    _buildUserInfoPage(loc),
+                    _buildBusinessInfoPage(loc),
+                    _buildDocumentsPage(loc),
+                    _buildVerificationPage(loc),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildProgressIndicator() {
+  Widget _buildModernAppBar(BuildContext context, AppLocalizations loc) {
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.symmetric(
+        horizontal: GoldenRatio.spacing16,
+        vertical: GoldenRatio.spacing12,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primary, AppColors.primaryDark],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+            padding: EdgeInsets.zero,
+          ),
+          SizedBox(width: GoldenRatio.spacing8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  loc.registerYourBusiness,
+                  style: TypographySystem.headlineSmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Step ${_currentPageIndex + 1} of 4',
+                  style: TypographySystem.bodyMedium.copyWith(
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.business,
+            color: Colors.white.withOpacity(0.8),
+            size: GoldenRatio.lg,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernProgressIndicator() {
+    return Container(
+      padding: EdgeInsets.all(GoldenRatio.spacing16),
+      margin: EdgeInsets.symmetric(horizontal: GoldenRatio.spacing16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         children: List.generate(4, (index) {
           final isActive = index <= _currentPageIndex;
@@ -154,45 +220,73 @@ class _RegistrationFormScreenState
 
           return Expanded(
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4.0),
+              margin: EdgeInsets.symmetric(horizontal: GoldenRatio.spacing4),
               child: Row(
                 children: [
                   Expanded(
-                    child: Container(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
                       height: 4.0,
                       decoration: BoxDecoration(
+                        gradient: isActive
+                            ? LinearGradient(
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.secondary
+                                ],
+                              )
+                            : null,
                         color: isActive
-                            ? const Color(0xFF4CAF50)
-                            : Colors.grey[300],
+                            ? null
+                            : AppColors.onSurfaceVariant.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(2.0),
                       ),
                     ),
                   ),
                   if (index < 3)
-                    Container(
-                      width: 20,
-                      height: 20,
-                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: 24,
+                      height: 24,
+                      margin: EdgeInsets.symmetric(
+                          horizontal: GoldenRatio.spacing4),
                       decoration: BoxDecoration(
-                        color: isCompleted
-                            ? const Color(0xFF4CAF50)
-                            : isActive
-                                ? const Color(0xFF4CAF50)
-                                : Colors.grey[300],
+                        gradient: isCompleted || isActive
+                            ? LinearGradient(
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.secondary
+                                ],
+                              )
+                            : null,
+                        color: isCompleted || isActive
+                            ? null
+                            : AppColors.onSurfaceVariant.withOpacity(0.3),
                         shape: BoxShape.circle,
+                        boxShadow: isActive
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.primary.withOpacity(0.3),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
                       ),
                       child: isCompleted
                           ? const Icon(Icons.check,
-                              size: 12, color: Colors.white)
-                          : Text(
-                              '${index + 1}',
-                              style: TextStyle(
-                                color:
-                                    isActive ? Colors.white : Colors.grey[600],
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
+                              size: 14, color: Colors.white)
+                          : Center(
+                              child: Text(
+                                '${index + 1}',
+                                style: TypographySystem.bodyMedium.copyWith(
+                                  color: isActive
+                                      ? Colors.white
+                                      : AppColors.onSurfaceVariant,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              textAlign: TextAlign.center,
                             ),
                     ),
                 ],
@@ -239,10 +333,10 @@ class _RegistrationFormScreenState
             Row(
               children: [
                 Expanded(
-                  child: WizzBusinessTextFormField(
+                  child: _buildModernTextField(
                     controller: _firstNameController,
                     labelText: 'First Name',
-                    prefixIcon: const Icon(Icons.person_outline),
+                    prefixIcon: Icons.person_outline,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Please enter your first name';
@@ -253,10 +347,10 @@ class _RegistrationFormScreenState
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: WizzBusinessTextFormField(
+                  child: _buildModernTextField(
                     controller: _lastNameController,
                     labelText: 'Last Name',
-                    prefixIcon: const Icon(Icons.person_outline),
+                    prefixIcon: Icons.person_outline,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Please enter your last name';
@@ -270,10 +364,10 @@ class _RegistrationFormScreenState
             const SizedBox(height: 16),
 
             // Email
-            WizzBusinessTextFormField(
+            _buildModernTextField(
               controller: _emailController,
               labelText: loc.enterYourEmail,
-              prefixIcon: const Icon(Icons.email_outlined),
+              prefixIcon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -289,10 +383,10 @@ class _RegistrationFormScreenState
             const SizedBox(height: 16),
 
             // Phone Number
-            WizzBusinessTextFormField(
+            _buildModernTextField(
               controller: _phoneController,
               labelText: 'Phone Number',
-              prefixIcon: const Icon(Icons.phone_outlined),
+              prefixIcon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -308,10 +402,10 @@ class _RegistrationFormScreenState
             const SizedBox(height: 16),
 
             // Password
-            WizzBusinessTextFormField(
+            _buildModernTextField(
               controller: _passwordController,
               labelText: loc.createAStrongPassword,
-              prefixIcon: const Icon(Icons.lock_outlined),
+              prefixIcon: Icons.lock_outlined,
               obscureText: !_isPasswordVisible,
               suffixIcon: IconButton(
                 icon: Icon(_isPasswordVisible
@@ -340,10 +434,10 @@ class _RegistrationFormScreenState
             const SizedBox(height: 16),
 
             // Confirm Password
-            WizzBusinessTextFormField(
+            _buildModernTextField(
               controller: _confirmPasswordController,
               labelText: loc.confirmYourPassword,
-              prefixIcon: const Icon(Icons.lock_outlined),
+              prefixIcon: Icons.lock_outlined,
               obscureText: !_isConfirmPasswordVisible,
               suffixIcon: IconButton(
                 icon: Icon(_isConfirmPasswordVisible
@@ -410,10 +504,10 @@ class _RegistrationFormScreenState
           const SizedBox(height: 32),
 
           // Business Name
-          WizzBusinessTextFormField(
+          _buildModernTextField(
             controller: _businessNameController,
             labelText: loc.enterYourBusinessName,
-            prefixIcon: const Icon(Icons.business_outlined),
+            prefixIcon: Icons.business_outlined,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Please enter business name';
@@ -432,10 +526,10 @@ class _RegistrationFormScreenState
           const SizedBox(height: 16),
 
           // Street Address
-          WizzBusinessTextFormField(
+          _buildModernTextField(
             controller: _businessStreetController,
             labelText: loc.streetName,
-            prefixIcon: const Icon(Icons.home_outlined),
+            prefixIcon: Icons.home_outlined,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Please enter street address';
@@ -449,10 +543,10 @@ class _RegistrationFormScreenState
           Row(
             children: [
               Expanded(
-                child: WizzBusinessTextFormField(
+                child: _buildModernTextField(
                   controller: _businessCityController,
                   labelText: loc.city,
-                  prefixIcon: const Icon(Icons.location_city_outlined),
+                  prefixIcon: Icons.location_city_outlined,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Please enter city';
@@ -463,10 +557,10 @@ class _RegistrationFormScreenState
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: WizzBusinessTextFormField(
+                child: _buildModernTextField(
                   controller: _businessDistrictController,
                   labelText: loc.neighborhood,
-                  prefixIcon: const Icon(Icons.map_outlined),
+                  prefixIcon: Icons.map_outlined,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Please enter neighborhood';
@@ -480,10 +574,10 @@ class _RegistrationFormScreenState
           const SizedBox(height: 16),
 
           // Country
-          WizzBusinessTextFormField(
+          _buildModernTextField(
             controller: _businessCountryController,
             labelText: loc.country,
-            prefixIcon: const Icon(Icons.flag_outlined),
+            prefixIcon: Icons.flag_outlined,
             enabled: false,
           ),
           const SizedBox(height: 32),
@@ -646,10 +740,10 @@ class _RegistrationFormScreenState
           const SizedBox(height: 32),
 
           // Verification Code Input
-          WizzBusinessTextFormField(
+          _buildModernTextField(
             controller: _verificationController,
             labelText: 'Verification Code',
-            prefixIcon: const Icon(Icons.security_outlined),
+            prefixIcon: Icons.security_outlined,
             keyboardType: TextInputType.number,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
@@ -1503,5 +1597,97 @@ class _RegistrationFormScreenState
       return false;
     }
     return true;
+  }
+
+  Widget _buildModernTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData prefixIcon,
+    String? Function(String?)? validator,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    bool enabled = true,
+    int maxLines = 1,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        validator: validator,
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+        enabled: enabled,
+        maxLines: maxLines,
+        inputFormatters: inputFormatters,
+        style: TypographySystem.bodyLarge.copyWith(
+          color: AppColors.onSurface,
+        ),
+        decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: TypographySystem.bodyMedium.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
+          prefixIcon: Icon(
+            prefixIcon,
+            color: AppColors.primary,
+            size: GoldenRatio.md,
+          ),
+          suffixIcon: suffixIcon,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+            borderSide: BorderSide(
+              color: AppColors.onSurfaceVariant.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+            borderSide: BorderSide(
+              color: AppColors.onSurfaceVariant.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+            borderSide: BorderSide(
+              color: AppColors.primary,
+              width: 2,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+            borderSide: BorderSide(
+              color: AppColors.error,
+              width: 1,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+            borderSide: BorderSide(
+              color: AppColors.error,
+              width: 2,
+            ),
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: GoldenRatio.spacing16,
+            vertical: GoldenRatio.spacing16,
+          ),
+          fillColor: Colors.white,
+          filled: true,
+        ),
+      ),
+    );
   }
 }

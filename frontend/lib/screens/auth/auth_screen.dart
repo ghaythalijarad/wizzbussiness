@@ -9,6 +9,9 @@ import '../../providers/session_provider.dart';
 import '../../providers/business_provider.dart';
 import '../../services/app_auth_service.dart';
 import '../../models/business.dart';
+import '../../core/design_system/golden_ratio_constants.dart';
+import '../../core/design_system/typography_system.dart';
+import '../../core/theme/app_colors.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -57,38 +60,67 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header with logo and title
-            _buildHeader(),
-            
-            // Tab bar
-            _buildTabBar(),
-            
-            // Tab views
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildLoginTab(),
-                  _buildSignupTab(),
-                  _buildForgotPasswordTab(),
-                ],
+      backgroundColor: AppColors.backgroundVariant,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primary.withOpacity(0.05),
+              AppColors.secondary.withOpacity(0.03),
+              AppColors.background,
+            ],
+            stops: const [0.0, 0.3, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header with logo and title
+              _buildModernHeader(),
+
+              // Tab bar
+              _buildModernTabBar(),
+
+              // Tab views
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildLoginTab(),
+                    _buildSignupTab(),
+                    _buildForgotPasswordTab(),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
   
-  Widget _buildHeader() {
+  Widget _buildModernHeader() {
     final localizations = AppLocalizations.of(context)!;
     
     return Container(
-      padding: const EdgeInsets.fromLTRB(24.0, 48.0, 24.0, 32.0),
+      padding: EdgeInsets.fromLTRB(
+        GoldenRatio.spacing24, 
+        GoldenRatio.xl, 
+        GoldenRatio.spacing24, 
+        GoldenRatio.spacing20
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.04),
+            blurRadius: GoldenRatio.spacing12,
+            offset: Offset(0, GoldenRatio.spacing4),
+          ),
+        ],
+      ),
       child: Column(
         children: [
           // Language toggle button at the top right
@@ -99,40 +131,51 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
                 builder: (context, ref, child) {
                   final currentLocale = ref.watch(languageProviderRiverpod);
                   final languageNotifier = ref.read(languageProviderRiverpod.notifier);
-                  return IconButton(
-                    onPressed: () {
-                      languageNotifier.toggleLanguage();
-                    },
-                    icon: Icon(
-                      Icons.language,
-                      color: Theme.of(context).colorScheme.primary,
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+                      border: Border.all(
+                        color: AppColors.primary.withOpacity(0.2),
+                        width: 1,
+                      ),
                     ),
-                    tooltip: currentLocale.languageCode == 'en' ? 'العربية' : 'English',
+                    child: IconButton(
+                      onPressed: () {
+                        languageNotifier.toggleLanguage();
+                      },
+                      icon: Icon(
+                        Icons.language,
+                        color: AppColors.primary,
+                        size: GoldenRatio.spacing20,
+                      ),
+                      tooltip: currentLocale.languageCode == 'en'
+                          ? 'العربية'
+                          : 'English',
+                    ),
                   );
                 },
               ),
             ],
           ),
           
-          const SizedBox(height: 16),
-          
-          const SizedBox(height: 24),
+          SizedBox(height: GoldenRatio.spacing16),
           
           // Title
           Text(
             localizations.appTitle,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
+            style: TypographySystem.headlineMedium.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppColors.onSurface,
             ),
           ),
           
-          const SizedBox(height: 8),
+          SizedBox(height: GoldenRatio.spacing8),
           
           Text(
             'Restaurant Management System',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            style: TypographySystem.bodyLarge.copyWith(
+              color: AppColors.onSurfaceVariant,
             ),
           ),
         ],
@@ -140,33 +183,66 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
     );
   }
   
-  Widget _buildTabBar() {
+  Widget _buildModernTabBar() {
     final localizations = AppLocalizations.of(context)!;
     
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
+      margin: EdgeInsets.symmetric(horizontal: GoldenRatio.spacing24),
+      padding: EdgeInsets.all(GoldenRatio.spacing4),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.08),
+            blurRadius: GoldenRatio.spacing16,
+            offset: Offset(0, GoldenRatio.spacing4),
+          ),
+        ],
       ),
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary,
-          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            colors: [AppColors.primary, AppColors.primaryDark],
+          ),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.3),
+              blurRadius: GoldenRatio.spacing8,
+              offset: Offset(0, GoldenRatio.spacing4),
+            ),
+          ],
         ),
-        labelColor: Theme.of(context).colorScheme.onPrimary,
-        unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+        labelColor: AppColors.onPrimary,
+        unselectedLabelColor: AppColors.onSurfaceVariant,
+        labelStyle: TypographySystem.labelLarge.copyWith(
+          fontWeight: FontWeight.bold,
+        ),
+        unselectedLabelStyle: TypographySystem.labelLarge.copyWith(
           fontWeight: FontWeight.w500,
         ),
-        unselectedLabelStyle: Theme.of(context).textTheme.labelLarge,
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,
+        overlayColor: MaterialStateProperty.all(Colors.transparent),
         tabs: [
-          Tab(text: localizations.login),
-          Tab(text: localizations.signUp),
-          Tab(text: localizations.reset),
+          Tab(
+            height: GoldenRatio.xl + GoldenRatio.spacing8,
+            text: localizations.login,
+          ),
+          Tab(
+            height: GoldenRatio.xl + GoldenRatio.spacing8,
+            text: localizations.signUp,
+          ),
+          Tab(
+            height: GoldenRatio.xl + GoldenRatio.spacing8,
+            text: localizations.reset,
+          ),
         ],
       ),
     );
@@ -176,44 +252,62 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
     final localizations = AppLocalizations.of(context)!;
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: EdgeInsets.all(GoldenRatio.spacing24),
       child: Form(
         key: _loginFormKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 32),
+            SizedBox(height: GoldenRatio.spacing20),
             
-            Text(
-              localizations.welcomeBack,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
+            // Welcome Section
+            Container(
+              padding: EdgeInsets.all(GoldenRatio.spacing24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.05),
+                    AppColors.secondary.withOpacity(0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+                border: Border.all(
+                  color: AppColors.primary.withOpacity(0.1),
+                  width: 1,
+                ),
               ),
-              textAlign: TextAlign.center,
+              child: Column(
+                children: [
+                  Text(
+                    localizations.welcomeBack,
+                    style: TypographySystem.headlineSmall.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  
+                  SizedBox(height: GoldenRatio.spacing8),
+                  Text(
+                    localizations.signInToYourAccount,
+                    style: TypographySystem.bodyLarge.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
             
-            const SizedBox(height: 8),
-            
-            Text(
-              localizations.signInToYourAccount,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            
-            const SizedBox(height: 48),
+            SizedBox(height: GoldenRatio.xl),
             
             // Email field
-            TextFormField(
+            _buildModernTextField(
               controller: _loginEmailController,
+              label: localizations.email,
+              hint: localizations.enterYourEmail,
+              icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                labelText: localizations.email,
-                hintText: localizations.enterYourEmail,
-                prefixIcon: const Icon(Icons.email_outlined),
-              ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Email is required';
@@ -225,26 +319,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
               },
             ),
             
-            const SizedBox(height: 16),
+            SizedBox(height: GoldenRatio.spacing20),
             
             // Password field
-            TextFormField(
+            _buildModernTextField(
               controller: _loginPasswordController,
+              label: localizations.password,
+              hint: localizations.enterYourPassword,
+              icon: Icons.lock_outline,
               obscureText: _obscureLoginPassword,
-              decoration: InputDecoration(
-                labelText: localizations.password,
-                hintText: localizations.enterYourPassword,
-                prefixIcon: const Icon(Icons.lock_outline),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureLoginPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscureLoginPassword = !_obscureLoginPassword;
-                    });
-                  },
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureLoginPassword
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color: AppColors.primary,
                 ),
+                onPressed: () {
+                  setState(() {
+                    _obscureLoginPassword = !_obscureLoginPassword;
+                  });
+                },
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -254,17 +349,56 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
               },
             ),
             
-            const SizedBox(height: 32),
+            SizedBox(height: GoldenRatio.xl),
             
             // Login button
-            FilledButton(
-              onPressed: () => _handleLogin(),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryDark],
+                ),
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: GoldenRatio.spacing16,
+                    offset: Offset(0, GoldenRatio.spacing8),
+                  ),
+                ],
               ),
-              child: Text(localizations.signIn),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _handleLogin(),
+                  borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                  child: Padding(
+                    padding:
+                        EdgeInsets.symmetric(vertical: GoldenRatio.spacing18),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.login,
+                          color: AppColors.onPrimary,
+                          size: GoldenRatio.spacing20,
+                        ),
+                        SizedBox(width: GoldenRatio.spacing12),
+                        Text(
+                          localizations.signIn,
+                          style: TypographySystem.titleMedium.copyWith(
+                            color: AppColors.onPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
             
+            SizedBox(height: GoldenRatio.spacing24),
 
           ],
         ),
@@ -276,104 +410,191 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
     final localizations = AppLocalizations.of(context)!;
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: EdgeInsets.all(GoldenRatio.spacing24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 80),
+          SizedBox(height: GoldenRatio.xl),
           
-          // Icon
-          Icon(
-            Icons.business_center,
-            size: 80,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          
-          const SizedBox(height: 32),
-          
-          Text(
-            localizations.createBusinessAccount,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
+          // Business Icon with modern styling
+          Container(
+            padding: EdgeInsets.all(GoldenRatio.spacing24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primary.withOpacity(0.1),
+                  AppColors.secondary.withOpacity(0.1),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+              border: Border.all(
+                color: AppColors.primary.withOpacity(0.2),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.shadow.withOpacity(0.08),
+                  blurRadius: GoldenRatio.spacing20,
+                  offset: Offset(0, GoldenRatio.spacing8),
+                ),
+              ],
             ),
-            textAlign: TextAlign.center,
-          ),
-          
-          const SizedBox(height: 16),
-          
-          Text(
-            localizations.joinThousandsOfBusinessOwners,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            child: Icon(
+              Icons.business_center,
+              size: GoldenRatio.xxxl,
+              color: AppColors.primary,
             ),
-            textAlign: TextAlign.center,
           ),
           
-          const SizedBox(height: 48),
+          SizedBox(height: GoldenRatio.spacing20),
           
-          // Features list
-          _buildFeatureItem(
+          // Header Section
+          Container(
+            padding: EdgeInsets.all(GoldenRatio.spacing24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primary.withOpacity(0.05),
+                  AppColors.secondary.withOpacity(0.05),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+              border: Border.all(
+                color: AppColors.primary.withOpacity(0.1),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  localizations.createBusinessAccount,
+                  style: TypographySystem.headlineMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                SizedBox(height: GoldenRatio.spacing12),
+                Text(
+                  localizations.joinThousandsOfBusinessOwners,
+                  style: TypographySystem.bodyLarge.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          
+          SizedBox(height: GoldenRatio.xl),
+          
+          // Features list with modern cards
+          _buildModernFeatureItem(
             Icons.store,
             localizations.completeBusinessRegistration,
             localizations.setUpYourBusinessProfileWithAllNecessaryInformationAndDocuments,
+            AppColors.primary,
           ),
           
-          const SizedBox(height: 20),
+          SizedBox(height: GoldenRatio.spacing20),
           
-          _buildFeatureItem(
+          _buildModernFeatureItem(
             Icons.verified_user,
             localizations.secureAndVerified,
             localizations.yourBusinessWillBeVerifiedBeforeActivationForSecurityAndTrust,
+            AppColors.secondary,
           ),
           
-          const SizedBox(height: 20),
+          SizedBox(height: GoldenRatio.spacing20),
           
-          _buildFeatureItem(
+          _buildModernFeatureItem(
             Icons.dashboard,
             localizations.fullDashboardAccess,
             localizations.manageOrdersProductsAnalyticsAndBusinessSettingsInOnePlace,
+            AppColors.success,
           ),
           
-          const SizedBox(height: 48),
+          SizedBox(height: GoldenRatio.xl),
           
           // Create account button
-          FilledButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const RegistrationFormScreen(),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.secondary, AppColors.secondaryDark],
+              ),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.secondary.withOpacity(0.3),
+                  blurRadius: GoldenRatio.spacing16,
+                  offset: Offset(0, GoldenRatio.spacing8),
                 ),
-              );
-            },
-            style: FilledButton.styleFrom(
-              minimumSize: const Size(double.infinity, 56),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RegistrationFormScreen(),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                child: Padding(
+                  padding:
+                      EdgeInsets.symmetric(vertical: GoldenRatio.spacing18),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.business_center,
+                        color: AppColors.onSecondary,
+                        size: GoldenRatio.spacing20,
+                      ),
+                      SizedBox(width: GoldenRatio.spacing12),
+                      Text(
+                        localizations.startBusinessRegistration,
+                        style: TypographySystem.titleMedium.copyWith(
+                          color: AppColors.onSecondary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          SizedBox(height: GoldenRatio.spacing24),
+          
+          // Terms and conditions
+          Container(
+            padding: EdgeInsets.all(GoldenRatio.spacing16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+              border: Border.all(
+                color: AppColors.primary.withOpacity(0.1),
+                width: 1,
               ),
             ),
             child: Text(
-              localizations.startBusinessRegistration,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+              localizations
+                  .byCreatingAnAccountYouAgreeToOurTermsOfServiceAndPrivacyPolicy,
+              style: TypographySystem.bodySmall.copyWith(
+                color: AppColors.onSurfaceVariant,
               ),
+              textAlign: TextAlign.center,
             ),
           ),
           
-          const SizedBox(height: 24),
-          
-          // Terms and conditions
-          Text(
-            localizations.byCreatingAnAccountYouAgreeToOurTermsOfServiceAndPrivacyPolicy,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          
-          const SizedBox(height: 40),
+          SizedBox(height: GoldenRatio.spacing24),
         ],
       ),
     );
@@ -383,63 +604,98 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
     final localizations = AppLocalizations.of(context)!;
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: EdgeInsets.all(GoldenRatio.spacing24),
       child: Form(
         key: _forgotPasswordFormKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 32),
+            SizedBox(height: GoldenRatio.spacing20),
             
-            // Icon
+            // Icon with modern styling
             Container(
-              width: 80,
-              height: 80,
-              margin: const EdgeInsets.only(bottom: 24),
+              padding: EdgeInsets.all(GoldenRatio.spacing24),
+              margin: EdgeInsets.only(bottom: GoldenRatio.spacing24),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.1),
+                    AppColors.secondary.withOpacity(0.1),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+                border: Border.all(
+                  color: AppColors.primary.withOpacity(0.2),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.shadow.withOpacity(0.08),
+                    blurRadius: GoldenRatio.spacing20,
+                    offset: Offset(0, GoldenRatio.spacing8),
+                  ),
+                ],
               ),
               child: Icon(
                 _forgotPasswordSent ? Icons.mark_email_read : Icons.lock_reset,
-                size: 40,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                size: GoldenRatio.xxxl,
+                color: AppColors.primary,
               ),
             ),
             
-            Text(
-              _forgotPasswordSent ? 'Check Your Email' : localizations.resetPassword,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
+            // Header Section
+            Container(
+              padding: EdgeInsets.all(GoldenRatio.spacing24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.05),
+                    AppColors.secondary.withOpacity(0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+                border: Border.all(
+                  color: AppColors.primary.withOpacity(0.1),
+                  width: 1,
+                ),
               ),
-              textAlign: TextAlign.center,
+              child: Column(
+                children: [
+                  Text(
+                    _forgotPasswordSent
+                        ? 'Check Your Email'
+                        : localizations.resetPassword,
+                    style: TypographySystem.headlineSmall.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  
+                  SizedBox(height: GoldenRatio.spacing12),
+                  Text(
+                    _forgotPasswordSent
+                        ? 'We\'ve sent a verification code to your email address. Please enter the code below along with your new password.'
+                        : 'Enter your email address and we\'ll send you a verification code to reset your password.',
+                    style: TypographySystem.bodyLarge.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
             
-            const SizedBox(height: 16),
-            
-            Text(
-              _forgotPasswordSent 
-                ? 'We\'ve sent a verification code to your email address. Please enter the code below along with your new password.'
-                : 'Enter your email address and we\'ll send you a verification code to reset your password.',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            
-            const SizedBox(height: 48),
+            SizedBox(height: GoldenRatio.xl),
             
             if (!_forgotPasswordSent) ...[
               // Email field
-              TextFormField(
+              _buildModernTextField(
                 controller: _forgotPasswordEmailController,
+                label: localizations.email,
+                hint: 'Enter your registered email',
+                icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: localizations.email,
-                  hintText: 'Enter your registered email',
-                  prefixIcon: const Icon(Icons.email_outlined),
-                ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Email is required';
@@ -451,27 +707,65 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
                 },
               ),
               
-              const SizedBox(height: 32),
+              SizedBox(height: GoldenRatio.xl),
               
               // Send verification code button
-              FilledButton(
-                onPressed: () => _handleForgotPassword(),
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.warning,
+                      AppColors.warning.withOpacity(0.8)
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.warning.withOpacity(0.3),
+                      blurRadius: GoldenRatio.spacing16,
+                      offset: Offset(0, GoldenRatio.spacing8),
+                    ),
+                  ],
                 ),
-                child: const Text('Send Verification Code'),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _handleForgotPassword(),
+                    borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: GoldenRatio.spacing18),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.email_outlined,
+                            color: Colors.white,
+                            size: GoldenRatio.spacing20,
+                          ),
+                          SizedBox(width: GoldenRatio.spacing12),
+                          Text(
+                            'Send Verification Code',
+                            style: TypographySystem.titleMedium.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ] else ...[
               // Verification code field
-              TextFormField(
+              _buildModernTextField(
                 controller: _forgotPasswordCodeController,
+                label: 'Verification Code',
+                hint: 'Enter 6-digit code',
+                icon: Icons.vpn_key,
                 keyboardType: TextInputType.number,
-                maxLength: 6,
-                decoration: const InputDecoration(
-                  labelText: 'Verification Code',
-                  hintText: 'Enter 6-digit code',
-                  prefixIcon: Icon(Icons.vpn_key),
-                ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Verification code is required';
@@ -483,28 +777,28 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
                 },
               ),
               
-              const SizedBox(height: 16),
+              SizedBox(height: GoldenRatio.spacing20),
               
               // New password field
-              TextFormField(
+              _buildModernTextField(
                 controller: _forgotPasswordNewPasswordController,
+                label: 'New Password',
+                hint: 'Enter your new password',
+                icon: Icons.lock_outline,
                 obscureText: _obscureForgotPasswordNewPassword,
-                decoration: InputDecoration(
-                  labelText: 'New Password',
-                  hintText: 'Enter your new password',
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureForgotPasswordNewPassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureForgotPasswordNewPassword = !_obscureForgotPasswordNewPassword;
-                      });
-                    },
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureForgotPasswordNewPassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    color: AppColors.primary,
                   ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureForgotPasswordNewPassword =
+                          !_obscureForgotPasswordNewPassword;
+                    });
+                  },
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -517,28 +811,28 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
                 },
               ),
               
-              const SizedBox(height: 16),
+              SizedBox(height: GoldenRatio.spacing20),
               
               // Confirm password field
-              TextFormField(
+              _buildModernTextField(
                 controller: _forgotPasswordConfirmPasswordController,
+                label: 'Confirm Password',
+                hint: 'Confirm your new password',
+                icon: Icons.lock_outline,
                 obscureText: _obscureForgotPasswordConfirmPassword,
-                decoration: InputDecoration(
-                  labelText: 'Confirm Password',
-                  hintText: 'Confirm your new password',
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureForgotPasswordConfirmPassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureForgotPasswordConfirmPassword = !_obscureForgotPasswordConfirmPassword;
-                      });
-                    },
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureForgotPasswordConfirmPassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    color: AppColors.primary,
                   ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureForgotPasswordConfirmPassword =
+                          !_obscureForgotPasswordConfirmPassword;
+                    });
+                  },
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -551,47 +845,79 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
                 },
               ),
               
-              const SizedBox(height: 32),
+              SizedBox(height: GoldenRatio.xl),
               
               // Reset password button
-              FilledButton(
-                onPressed: () => _handleConfirmForgotPassword(),
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.success,
+                      AppColors.success.withOpacity(0.8)
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.success.withOpacity(0.3),
+                      blurRadius: GoldenRatio.spacing16,
+                      offset: Offset(0, GoldenRatio.spacing8),
+                    ),
+                  ],
                 ),
-                child: const Text('Reset Password'),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _handleConfirmForgotPassword(),
+                    borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: GoldenRatio.spacing18),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.check_circle_outline,
+                            color: Colors.white,
+                            size: GoldenRatio.spacing20,
+                          ),
+                          SizedBox(width: GoldenRatio.spacing12),
+                          Text(
+                            'Reset Password',
+                            style: TypographySystem.titleMedium.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
               
-              const SizedBox(height: 16),
+              SizedBox(height: GoldenRatio.spacing20),
               
               // Resend code button
-              OutlinedButton(
+              TextButton.icon(
                 onPressed: () => _handleResendEmail(),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
+                icon: Icon(
+                  Icons.refresh,
+                  color: AppColors.primary,
+                  size: GoldenRatio.spacing18,
                 ),
-                child: const Text('Resend Code'),
-              ),
-              
-              const SizedBox(height: 16),
-              
-              OutlinedButton(
-                onPressed: () {
-                  setState(() {
-                    _forgotPasswordSent = false;
-                    _forgotPasswordEmailController.clear();
-                    _forgotPasswordCodeController.clear();
-                    _forgotPasswordNewPasswordController.clear();
-                    _forgotPasswordConfirmPasswordController.clear();
-                  });
-                  _tabController.animateTo(0); // Go back to login
-                },
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
+                label: Text(
+                  'Resend Code',
+                  style: TypographySystem.bodyLarge.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                child: const Text('Back to login'),
               ),
             ],
+            
+            SizedBox(height: GoldenRatio.spacing24),
           ],
         ),
       ),
@@ -898,45 +1224,171 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
       }
     }
   }
-  
-  Widget _buildFeatureItem(IconData icon, String title, String description) {
-    return Row(
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+
+  Widget _buildModernFeatureItem(
+      IconData icon, String title, String description, Color color) {
+    return Container(
+      padding: EdgeInsets.all(GoldenRatio.spacing20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.04),
+            blurRadius: GoldenRatio.spacing12,
+            offset: Offset(0, GoldenRatio.spacing4),
           ),
-          child: Icon(
-            icon,
-            color: Theme.of(context).colorScheme.primary,
-            size: 24,
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(GoldenRatio.spacing16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  color.withOpacity(0.1),
+                  color.withOpacity(0.05),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+              border: Border.all(
+                color: color.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: GoldenRatio.spacing24,
+            ),
+          ),
+          SizedBox(width: GoldenRatio.spacing16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TypographySystem.titleMedium.copyWith(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: GoldenRatio.spacing4),
+                Text(
+                  description,
+                  style: TypographySystem.bodyMedium.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.04),
+            blurRadius: GoldenRatio.spacing8,
+            offset: Offset(0, GoldenRatio.spacing4),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+        validator: validator,
+        style: TypographySystem.bodyLarge.copyWith(
+          color: AppColors.onSurface,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          prefixIcon: Container(
+            margin: EdgeInsets.all(GoldenRatio.spacing12),
+            padding: EdgeInsets.all(GoldenRatio.spacing8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+            ),
+            child: Icon(
+              icon,
+              color: AppColors.primary,
+              size: GoldenRatio.spacing20,
+            ),
+          ),
+          suffixIcon: suffixIcon,
+          filled: true,
+          fillColor: AppColors.surface,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+            borderSide: BorderSide(
+              color: AppColors.primary,
+              width: 2,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+            borderSide: BorderSide(
+              color: AppColors.error,
+              width: 2,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+            borderSide: BorderSide(
+              color: AppColors.error,
+              width: 2,
+            ),
+          ),
+          labelStyle: TypographySystem.bodyMedium.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w500,
+          ),
+          hintStyle: TypographySystem.bodyMedium.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: GoldenRatio.spacing20,
+            vertical: GoldenRatio.spacing16,
           ),
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/order.dart';
+import '../../core/design_system/golden_ratio_constants.dart';
+import '../../core/design_system/typography_system.dart';
+import '../../core/theme/app_colors.dart';
 
 class ActionableOrderNotificationCard extends StatelessWidget {
   final Order order;
@@ -42,8 +45,8 @@ class ActionableOrderNotificationCard extends StatelessWidget {
                   ElevatedButton(
                     onPressed: onAccept,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.success,
+                      foregroundColor: AppColors.onPrimary,
                     ),
                     child: const Text('Accept'),
                   ),
@@ -51,8 +54,8 @@ class ActionableOrderNotificationCard extends StatelessWidget {
                   ElevatedButton(
                     onPressed: onReject,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.error,
+                      foregroundColor: AppColors.onPrimary,
                     ),
                     child: const Text('Reject'),
                   ),
@@ -60,8 +63,8 @@ class ActionableOrderNotificationCard extends StatelessWidget {
                   ElevatedButton(
                     onPressed: onViewDetails,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.info,
+                      foregroundColor: AppColors.onPrimary,
                     ),
                     child: const Text('View Details'),
                   ),

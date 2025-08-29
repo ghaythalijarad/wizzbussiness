@@ -3,7 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'amplifyconfiguration.dart';
-import 'core/theme/app_theme.dart';
+import 'core/design_system/design_system.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/auth_provider_riverpod.dart';
 import 'providers/language_provider_riverpod.dart';
@@ -64,8 +64,8 @@ class _OrderReceiverAppState extends ConsumerState<OrderReceiverApp> {
 
     return MaterialApp(
       title: 'WIZZ Business Manager',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: DesignSystem.lightTheme,
+      darkTheme: DesignSystem.darkTheme,
       themeMode: ThemeMode.system,
       locale: currentLocale,
       localizationsDelegates: const [

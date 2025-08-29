@@ -10,6 +10,9 @@ import '../services/app_auth_service.dart';
 import '../services/product_service.dart';
 import '../screens/login_page.dart';
 import '../utils/responsive_helper.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
+import '../core/theme/app_colors.dart';
 
 class DiscountManagementPage extends StatefulWidget {
   final Business business;
@@ -168,7 +171,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to load discounts: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -201,7 +204,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to load products: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -234,7 +237,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(result['message'] ?? 'Using default categories'),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.warning,
               duration: Duration(seconds: 3),
             ),
           );
@@ -249,7 +252,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to load categories: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -291,6 +294,14 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       });
 
       final discountData = discount.toJson();
+      
+      // Debug: Print the discount data being sent
+      print('🔍 DEBUG: Creating discount with data:');
+      print('Type: ${discountData['type']}');
+      print('ConditionalParameters: ${discountData['conditionalParameters']}');
+      print('ConditionalRule: ${discountData['conditionalRule']}');
+      print('Full JSON: ${discountData}');
+      
       final createdDiscountData =
           await _apiService.createDiscount(discountData);
       final createdDiscount = Discount.fromJson(createdDiscountData);
@@ -304,7 +315,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Discount created successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -318,7 +329,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to create discount: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -348,7 +359,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Discount updated successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -362,7 +373,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to update discount: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -386,7 +397,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Discount deleted successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -400,7 +411,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to delete discount: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -415,7 +426,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.security, color: Colors.red[700]),
+            Icon(Icons.security, color: AppColors.error),
             const SizedBox(width: 8),
             Expanded(child: Text(title)),
           ],
@@ -447,37 +458,61 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     if (_isInitializing) {
       return Scaffold(
+        backgroundColor: AppColors.backgroundVariant,
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                const Color(0xFF32CD32).withOpacity(0.05), // Lime Green
-                const Color(0xFFFFD300).withOpacity(0.03), // Gold
-                Colors.white,
+                AppColors.primary.withOpacity(0.05),
+                AppColors.secondary.withOpacity(0.03),
+                AppColors.background,
               ],
               stops: const [0.0, 0.3, 1.0],
             ),
           ),
           child: Center(
             child: Container(
-              padding: const EdgeInsets.all(32),
+              padding:
+                  EdgeInsets.all(GoldenRatio.spacing24 + GoldenRatio.spacing8),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF32CD32).withOpacity(0.1),
-                    const Color(0xFFFFD300).withOpacity(0.1),
+                    AppColors.primary.withOpacity(0.1),
+                    AppColors.secondary.withOpacity(0.1),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.shadow.withOpacity(0.1),
+                    blurRadius: GoldenRatio.spacing20,
+                    offset: Offset(0, GoldenRatio.spacing8),
+                  ),
+                ],
               ),
-              child: CircularProgressIndicator(
-                valueColor:
-                    const AlwaysStoppedAnimation<Color>(Color(0xFF32CD32)),
-                strokeWidth: 3,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    strokeWidth: 3,
+                  ),
+                  SizedBox(height: GoldenRatio.spacing16),
+                  Text(
+                    'Loading discount management...',
+                    style: TypographySystem.bodyLarge.copyWith(
+                      color: AppColors.onSurface,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -486,187 +521,112 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppColors.backgroundVariant,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF32CD32).withOpacity(0.05), // Lime Green
-              const Color(0xFFFFD300).withOpacity(0.03), // Gold
-              Colors.white,
+              AppColors.primary.withOpacity(0.05),
+              AppColors.secondary.withOpacity(0.03),
+              AppColors.background,
             ],
             stops: const [0.0, 0.3, 1.0],
           ),
         ),
         child: SafeArea(
-          child: Stack(
+          child: Column(
             children: [
-              Column(
-                children: [
-                  // Modern Material 3 App Bar with gradient
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          const Color(0xFF32CD32), // Lime Green
-                          const Color(0xFF228B22), // Darker Lime Green
-                        ],
-                      ),
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(32),
-                        bottomRight: Radius.circular(32),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF32CD32).withOpacity(0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back_ios_new,
-                                color: Colors.white),
-                            onPressed: () => Navigator.of(context).pop(),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)!
-                                    .discountManagement,
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Create and manage your discounts',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white.withOpacity(0.9),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              // Modern App Bar
+              _buildModernAppBar(loc),
 
-                  // Filter chips with Material 3 design
-                  Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: const Color(0xFF32CD32).withOpacity(0.2),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
+              // Content
+              Expanded(
+                child: Stack(
+                  children: [
+                    Column(
+                      children: [
+                        // Header Section with Statistics
+                        _buildHeaderSection(loc),
+
+                        // Filter chips with Material 3 design
+                        _buildFilterSection(loc),
+
+                        // Discounts list
+                        Expanded(
+                          child: _filteredDiscounts.isEmpty
+                              ? _buildEmptyState()
+                              : ListView.builder(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: GoldenRatio.spacing16),
+                                  itemCount: _filteredDiscounts.length,
+                                  itemBuilder: (context, index) {
+                                    final discount = _filteredDiscounts[index];
+                                    return Padding(
+                                      padding: EdgeInsets.only(
+                                          bottom: GoldenRatio.spacing16),
+                                      child: DiscountCard(
+                                        discount: discount,
+                                        onEdit: () =>
+                                            _showEditDiscountDialog(discount),
+                                        onDelete: () =>
+                                            _showDeleteConfirmationDialog(discount),
+                                      ),
+                                    );
+                                  },
+                                ),
                         ),
                       ],
                     ),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _buildFilterChip(
-                              AppLocalizations.of(context)!.allDiscounts,
-                              'all'),
-                          const SizedBox(width: 12),
-                          _buildFilterChip(
-                              AppLocalizations.of(context)!.activeDiscounts,
-                              'active'),
-                          const SizedBox(width: 12),
-                          _buildFilterChip(
-                              AppLocalizations.of(context)!.scheduledDiscounts,
-                              'scheduled'),
-                          const SizedBox(width: 12),
-                          _buildFilterChip(
-                              AppLocalizations.of(context)!.expiredDiscounts,
-                              'expired'),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  // Discounts list
-                  Expanded(
-                    child: _filteredDiscounts.isEmpty
-                        ? _buildEmptyState()
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemCount: _filteredDiscounts.length,
-                            itemBuilder: (context, index) {
-                              final discount = _filteredDiscounts[index];
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: DiscountCard(
-                                  discount: discount,
-                                  onEdit: () =>
-                                      _showEditDiscountDialog(discount),
-                                  onDelete: () =>
-                                      _showDeleteConfirmationDialog(discount),
+                    // Loading overlay
+                    if (_isLoading)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.overlay,
+                          borderRadius:
+                              BorderRadius.circular(GoldenRatio.radiusLg),
+                        ),
+                        child: Center(
+                          child: Container(
+                            padding: EdgeInsets.all(
+                                GoldenRatio.spacing24 + GoldenRatio.spacing8),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius:
+                                  BorderRadius.circular(GoldenRatio.radiusXl),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withOpacity(0.3),
+                                  blurRadius: GoldenRatio.spacing20,
+                                  offset: Offset(0, GoldenRatio.spacing8),
                                 ),
-                              );
-                            },
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppColors.primary),
+                                  strokeWidth: 3,
+                                ),
+                                SizedBox(height: GoldenRatio.spacing16),
+                                Text(
+                                  'Processing...',
+                                  style: TypographySystem.bodyLarge.copyWith(
+                                    color: AppColors.onSurface,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                  ),
-                ],
-              ),
-              // Loading overlay
-              if (_isLoading)
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF32CD32).withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
+                        ),
                       ),
-                      child: CircularProgressIndicator(
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                            Color(0xFF32CD32)),
-                        strokeWidth: 3,
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
+              ),
             ],
           ),
         ),
@@ -675,41 +635,41 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              const Color(0xFF32CD32), // Lime Green
-              const Color(0xFF228B22), // Darker Lime Green
+              AppColors.secondary,
+              AppColors.secondary.withOpacity(0.8),
             ],
           ),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF32CD32).withOpacity(0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: AppColors.secondary.withOpacity(0.4),
+              blurRadius: GoldenRatio.spacing20,
+              offset: Offset(0, GoldenRatio.spacing8),
             ),
           ],
         ),
         child: FloatingActionButton.extended(
           onPressed: () => _showCreateDiscountDialog(),
           backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.onSecondary,
           elevation: 0,
           icon: Container(
-            padding: const EdgeInsets.all(6),
+            padding: EdgeInsets.all(GoldenRatio.spacing8 * 0.75),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFD300), // Gold accent
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(GoldenRatio.spacing8),
             ),
-            child: const Icon(
-              Icons.add,
-              color: Colors.black87,
-              size: 18,
+            child: Icon(
+              Icons.add_rounded,
+              color: AppColors.onPrimary,
+              size: GoldenRatio.spacing18,
             ),
           ),
           label: Text(
-            AppLocalizations.of(context)!.createDiscount,
-            style: const TextStyle(
+            loc.createDiscount,
+            style: TypographySystem.titleMedium.copyWith(
+              color: AppColors.onSecondary,
               fontWeight: FontWeight.bold,
-              fontSize: 16,
             ),
           ),
         ),
@@ -724,31 +684,33 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       curve: Curves.easeInOut,
       child: Material(
         elevation: isSelected ? 4 : 0,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
         color: isSelected
-            ? const Color(0xFF32CD32)
+            ? AppColors.primary
             : Colors.transparent,
         shadowColor: isSelected
-            ? const Color(0xFF32CD32).withOpacity(0.4)
+            ? AppColors.primary.withOpacity(0.4)
             : Colors.transparent,
         child: InkWell(
           onTap: () => setState(() => _selectedFilter = value),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: EdgeInsets.symmetric(
+                horizontal: GoldenRatio.spacing20,
+                vertical: GoldenRatio.spacing12),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
               border: Border.all(
                 color: isSelected
                     ? Colors.transparent
-                    : const Color(0xFF32CD32).withOpacity(0.3),
+                    : AppColors.primary.withOpacity(0.3),
                 width: 2,
               ),
               gradient: isSelected
                   ? LinearGradient(
                       colors: [
-                        const Color(0xFF32CD32),
-                        const Color(0xFF228B22),
+                        AppColors.primary,
+                        AppColors.primaryDark,
                       ],
                     )
                   : null,
@@ -758,24 +720,23 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
               children: [
                 if (isSelected)
                   Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.all(4),
+                    margin: EdgeInsets.only(right: GoldenRatio.spacing8),
+                    padding: EdgeInsets.all(GoldenRatio.spacing8 / 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFD300),
-                      borderRadius: BorderRadius.circular(6),
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.circular(GoldenRatio.radiusSm),
                     ),
                     child: Icon(
                       Icons.check,
-                      size: 12,
-                      color: Colors.black87,
+                      size: GoldenRatio.spacing12,
+                      color: AppColors.onSecondary,
                     ),
                   ),
                 Text(
                   label,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : const Color(0xFF32CD32),
+                  style: TypographySystem.bodyMedium.copyWith(
+                    color: isSelected ? AppColors.onPrimary : AppColors.primary,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                    fontSize: 14,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -788,30 +749,33 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
   }
 
   Widget _buildEmptyState() {
+    final loc = AppLocalizations.of(context)!;
+    
     return Center(
       child: Container(
-        margin: const EdgeInsets.all(32),
-        padding: const EdgeInsets.all(40),
+        margin: EdgeInsets.all(GoldenRatio.spacing24 + GoldenRatio.spacing8),
+        padding: EdgeInsets.all(GoldenRatio.spacing24 + GoldenRatio.spacing16),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white,
-              const Color(0xFF32CD32).withOpacity(0.02),
-              const Color(0xFFFFD300).withOpacity(0.02),
+              AppColors.surface,
+              AppColors.primary.withOpacity(0.02),
+              AppColors.secondary.withOpacity(0.02),
             ],
           ),
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(
+              GoldenRatio.spacing24 + GoldenRatio.spacing8),
           border: Border.all(
-            color: const Color(0xFF32CD32).withOpacity(0.2),
+            color: AppColors.primary.withOpacity(0.2),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: AppColors.shadow.withOpacity(0.04),
+              blurRadius: GoldenRatio.spacing20,
+              offset: Offset(0, GoldenRatio.spacing8),
             ),
           ],
         ),
@@ -819,57 +783,117 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(GoldenRatio.spacing24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF32CD32).withOpacity(0.1),
-                    const Color(0xFFFFD300).withOpacity(0.1),
+                    AppColors.primary.withOpacity(0.1),
+                    AppColors.secondary.withOpacity(0.1),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
               ),
               child: Icon(
                 Icons.local_offer_outlined,
-                size: 64,
-                color: const Color(0xFF32CD32),
+                size: GoldenRatio.spacing24 * 2.5,
+                color: AppColors.primary,
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: GoldenRatio.spacing24),
             Text(
-              AppLocalizations.of(context)!.noDiscountsCreated,
-              style: const TextStyle(
-                fontSize: 22,
+              _selectedFilter == 'all'
+                  ? loc.noDiscountsCreated
+                  : 'No ${_selectedFilter} discounts found',
+              style: TypographySystem.headlineMedium.copyWith(
+                color: AppColors.onSurface,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1C1C1C),
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: GoldenRatio.spacing12),
             Text(
-              AppLocalizations.of(context)!.createYourFirstDiscount,
+              _selectedFilter == 'all'
+                  ? loc.createYourFirstDiscount
+                  : 'Try adjusting your filter or create a new discount',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
+              style: TypographySystem.bodyLarge.copyWith(
+                color: AppColors.onSurface.withOpacity(0.7),
                 height: 1.5,
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: GoldenRatio.spacing24 + GoldenRatio.spacing8),
+
+            // Feature benefits
+            Container(
+              padding: EdgeInsets.all(GoldenRatio.spacing20),
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                border: Border.all(
+                  color: AppColors.primary.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'Boost Your Sales with Discounts',
+                    style: TypographySystem.titleMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: GoldenRatio.spacing16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildBenefitItem(
+                          icon: Icons.trending_up_rounded,
+                          title: 'Increase Orders',
+                          subtitle: 'Attract more customers',
+                          color: AppColors.success,
+                        ),
+                      ),
+                      SizedBox(width: GoldenRatio.spacing12),
+                      Expanded(
+                        child: _buildBenefitItem(
+                          icon: Icons.favorite_rounded,
+                          title: 'Customer Loyalty',
+                          subtitle: 'Reward repeat customers',
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                      SizedBox(width: GoldenRatio.spacing12),
+                      Expanded(
+                        child: _buildBenefitItem(
+                          icon: Icons.schedule_rounded,
+                          title: 'Smart Timing',
+                          subtitle: 'Schedule promotions',
+                          color: AppColors.warning,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: GoldenRatio.spacing24),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF32CD32),
-                    const Color(0xFF228B22),
+                    AppColors.primary,
+                    AppColors.primaryDark,
                   ],
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF32CD32).withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: GoldenRatio.spacing12,
+                    offset: Offset(0, GoldenRatio.spacing8 * 0.75),
                   ),
                 ],
               ),
@@ -877,33 +901,33 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => _showCreateDiscountDialog(),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: GoldenRatio.spacing24,
+                      vertical: GoldenRatio.spacing16,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(6),
+                          padding: EdgeInsets.all(GoldenRatio.spacing8 * 0.75),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFD300),
-                            borderRadius: BorderRadius.circular(8),
+                            color: AppColors.secondary,
+                            borderRadius:
+                                BorderRadius.circular(GoldenRatio.spacing8),
                           ),
-                          child: const Icon(
-                            Icons.add,
-                            color: Colors.black87,
-                            size: 18,
+                          child: Icon(
+                            Icons.add_rounded,
+                            color: AppColors.onSecondary,
+                            size: GoldenRatio.spacing18,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: GoldenRatio.spacing12),
                         Text(
-                          AppLocalizations.of(context)!.createDiscount,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
+                          loc.createDiscount,
+                          style: TypographySystem.titleMedium.copyWith(
+                            color: AppColors.onPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -919,6 +943,49 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     );
   }
 
+  Widget _buildBenefitItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+  }) {
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(GoldenRatio.spacing12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+          ),
+          child: Icon(
+            icon,
+            color: color,
+            size: GoldenRatio.spacing20,
+          ),
+        ),
+        SizedBox(height: GoldenRatio.spacing8),
+        Text(
+          title,
+          style: TypographySystem.labelMedium.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColors.onSurface,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: GoldenRatio.spacing4),
+        Text(
+          subtitle,
+          style: TypographySystem.labelSmall.copyWith(
+            color: AppColors.onSurface.withOpacity(0.7),
+          ),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+  }
+
   void _showCreateDiscountDialog() {
     _showDiscountDialog();
   }
@@ -931,104 +998,102 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: Colors.red.withOpacity(0.2), width: 2),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+          side: BorderSide(color: AppColors.error.withOpacity(0.2), width: 2),
         ),
         title: Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(GoldenRatio.spacing16),
           decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
+            color: AppColors.errorContainer,
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
           ),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(GoldenRatio.spacing8),
                 decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.error,
+                  borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.delete_forever,
-                  color: Colors.white,
-                  size: 20,
+                  color: AppColors.onPrimary,
+                  size: GoldenRatio.spacing20,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: GoldenRatio.spacing12),
               Text(
                 AppLocalizations.of(context)!.deleteDiscount,
-                style: const TextStyle(
-                  color: Color(0xFF1C1C1C),
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                style: TypographySystem.headlineSmall.copyWith(
+                  color: AppColors.onSurface,
                 ),
               ),
             ],
           ),
         ),
         content: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: EdgeInsets.symmetric(vertical: GoldenRatio.spacing16),
           child: Text(
             AppLocalizations.of(context)!.areYouSureYouWantToDeleteThisDiscount,
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 16,
+            style: TypographySystem.bodyLarge.copyWith(
+              color: AppColors.onSurface.withOpacity(0.8),
               height: 1.5,
             ),
           ),
         ),
         actions: [
           Container(
-            margin: const EdgeInsets.all(8),
+            margin: EdgeInsets.all(GoldenRatio.spacing8),
             child: TextButton(
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
-                foregroundColor: Colors.grey.shade600,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                foregroundColor: AppColors.onSurfaceVariant,
+                padding: EdgeInsets.symmetric(
+                    horizontal: GoldenRatio.spacing24,
+                    vertical: GoldenRatio.spacing12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.shade300, width: 1),
+                  borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+                  side: BorderSide(color: AppColors.border, width: 1),
                 ),
               ),
               child: Text(
                 AppLocalizations.of(context)!.cancel,
-                style: const TextStyle(
+                style: TypographySystem.titleMedium.copyWith(
                   fontWeight: FontWeight.w600,
-                  fontSize: 16,
                 ),
               ),
             ),
           ),
           Container(
-            margin: const EdgeInsets.all(8),
+            margin: EdgeInsets.all(GoldenRatio.spacing8),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.red.shade400,
-                  Colors.red.shade600,
+                  AppColors.error,
+                  AppColors.error.withOpacity(0.8),
                 ],
               ),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.red.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
+                  color: AppColors.error.withOpacity(0.3),
+                  blurRadius: GoldenRatio.spacing8,
+                  offset: Offset(0, GoldenRatio.spacing4),
                 ),
               ],
             ),
             child: TextButton(
               onPressed: () async {
                 Navigator.of(context).pop();
-              await _deleteDiscount(discount.id);
-            },
-            style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                await _deleteDiscount(discount.id);
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.onPrimary,
+                padding: EdgeInsets.symmetric(
+                    horizontal: GoldenRatio.spacing24,
+                    vertical: GoldenRatio.spacing12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -1040,9 +1105,9 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                   const SizedBox(width: 8),
                   Text(
                     AppLocalizations.of(context)!.delete,
-                    style: const TextStyle(
+                    style: TypographySystem.titleMedium.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      color: AppColors.onPrimary,
                     ),
                   ),
                 ],
@@ -1095,46 +1160,44 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
             side: BorderSide(
-                color: const Color(0xFF32CD32).withOpacity(0.2), width: 2),
+                color: AppColors.primary.withOpacity(0.2), width: 2),
           ),
           title: Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(GoldenRatio.spacing16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF32CD32).withOpacity(0.1),
-                  const Color(0xFFFFD300).withOpacity(0.1),
+                  AppColors.primary.withOpacity(0.1),
+                  AppColors.secondary.withOpacity(0.1),
                 ],
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(GoldenRatio.spacing8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF32CD32),
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
                   ),
                   child: Icon(
                     isEditing ? Icons.edit : Icons.add,
-                    color: Colors.white,
-                    size: 20,
+                    color: AppColors.onPrimary,
+                    size: GoldenRatio.spacing20,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: GoldenRatio.spacing12),
                 Text(
                   isEditing
                       ? AppLocalizations.of(context)!.editDiscount
                       : AppLocalizations.of(context)!.createDiscount,
-                  style: const TextStyle(
-                    color: Color(0xFF1C1C1C),
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                  style: TypographySystem.headlineSmall.copyWith(
+                    color: AppColors.onSurface,
                   ),
                 ),
               ],
@@ -1161,41 +1224,42 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                           controller: titleController,
                           decoration: InputDecoration(
                             labelText: AppLocalizations.of(context)!.title,
-                            labelStyle: TextStyle(
-                              color: const Color(0xFF32CD32),
+                            labelStyle: TypographySystem.bodyLarge.copyWith(
+                              color: AppColors.primary,
                               fontWeight: FontWeight.w600,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius:
+                                  BorderRadius.circular(GoldenRatio.radiusLg),
                               borderSide: BorderSide(
-                                color: const Color(0xFF32CD32).withOpacity(0.3),
+                                color: AppColors.primary.withOpacity(0.3),
                                 width: 2,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF32CD32),
+                              borderRadius:
+                                  BorderRadius.circular(GoldenRatio.radiusLg),
+                              borderSide: BorderSide(
+                                color: AppColors.primary,
                                 width: 2,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius:
+                                  BorderRadius.circular(GoldenRatio.radiusLg),
                               borderSide: BorderSide(
-                                color: const Color(0xFF32CD32).withOpacity(0.3),
+                                color: AppColors.primary.withOpacity(0.3),
                                 width: 2,
                               ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 16,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: GoldenRatio.spacing20,
+                              vertical: GoldenRatio.spacing16,
                             ),
                             filled: true,
-                            fillColor:
-                                const Color(0xFF32CD32).withOpacity(0.05),
+                            fillColor: AppColors.primary.withOpacity(0.05),
                           ),
-                          style: const TextStyle(
-                            fontSize: 16,
+                          style: TypographySystem.bodyLarge.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
                           validator: (value) {
@@ -1217,13 +1281,13 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                   labelText: AppLocalizations.of(context)!
                                       .discountType,
                                   labelStyle: TextStyle(
-                                    color: const Color(0xFF32CD32),
+                                    color: AppColors.primary,
                                     fontWeight: FontWeight.w600,
                                   ),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: BorderSide(
-                                      color: const Color(0xFF32CD32)
+                                      color: AppColors.primary
                                           .withOpacity(0.3),
                                       width: 2,
                                     ),
@@ -1231,23 +1295,24 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: const BorderSide(
-                                      color: Color(0xFF32CD32),
+                                      color: AppColors.primary,
                                       width: 2,
                                     ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: BorderSide(
-                                      color: const Color(0xFF32CD32)
+                                      color: AppColors.primary
                                           .withOpacity(0.3),
                                       width: 2,
                                     ),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 16),
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: GoldenRatio.spacing20,
+                                      vertical: GoldenRatio.spacing16),
                                   filled: true,
                                   fillColor:
-                                      const Color(0xFF32CD32).withOpacity(0.05),
+                                      AppColors.primary.withOpacity(0.05),
                                 ),
                                 isExpanded: true,
                                 items: DiscountType.values.map((type) {
@@ -1333,28 +1398,28 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                         labelText:
                                             AppLocalizations.of(context)!.value,
                                         labelStyle: TextStyle(
-                                          color: const Color(0xFF00c1e8),
+                                          color: AppColors.secondary,
                                           fontWeight: FontWeight.w500,
                                         ),
                                         border: OutlineInputBorder(
                                           borderRadius:
                                               BorderRadius.circular(12),
                                           borderSide: BorderSide(
-                                            color: Colors.grey.shade300,
+                                            color: AppColors.border,
                                           ),
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderRadius:
                                               BorderRadius.circular(12),
                                           borderSide: const BorderSide(
-                                            color: Color(0xFF00c1e8),
+                                            color: AppColors.secondary,
                                             width: 2,
                                           ),
                                         ),
                                         contentPadding:
-                                            const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 16,
+                                            EdgeInsets.symmetric(
+                                          horizontal: GoldenRatio.spacing16,
+                                          vertical: GoldenRatio.spacing16,
                                         ),
                                       ),
                                       items: [
@@ -1398,21 +1463,21 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                         labelText:
                                             AppLocalizations.of(context)!.value,
                                         labelStyle: TextStyle(
-                                          color: Colors.grey.shade500,
+                                          color: AppColors.textSecondary,
                                           fontWeight: FontWeight.w500,
                                         ),
                                         border: OutlineInputBorder(
                                           borderRadius:
                                               BorderRadius.circular(12),
                                           borderSide: BorderSide(
-                                            color: Colors.grey.shade300,
+                                            color: AppColors.border,
                                           ),
                                         ),
                                         disabledBorder: OutlineInputBorder(
                                           borderRadius:
                                               BorderRadius.circular(12),
                                           borderSide: BorderSide(
-                                            color: Colors.grey.shade300,
+                                            color: AppColors.border,
                                           ),
                                         ),
                                         hintText: discountType ==
@@ -1423,19 +1488,19 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                                 ? 'Buy X Get Y (0.0)'
                                                 : 'Conditional (0.0)',
                                         hintStyle: TextStyle(
-                                          color: Colors.grey.shade600,
+                                          color: AppColors.textSecondary,
                                           fontStyle: FontStyle.italic,
                                         ),
                                         filled: true,
-                                        fillColor: Colors.grey.shade50,
+                                        fillColor: AppColors.surfaceVariant,
                                         contentPadding:
-                                            const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 16,
+                                            EdgeInsets.symmetric(
+                                          horizontal: GoldenRatio.spacing16,
+                                          vertical: GoldenRatio.spacing16,
                                         ),
                                       ),
                                       style: TextStyle(
-                                        color: Colors.grey.shade600,
+                                        color: AppColors.textSecondary,
                                       ),
                                     ),
                             ),
@@ -1447,13 +1512,13 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                         if (discountType == DiscountType.buyXGetY ||
                             discountType == DiscountType.conditional) ...[
                           Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: EdgeInsets.all(GoldenRatio.spacing16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF00c1e8).withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(12),
+                              color: AppColors.secondary.withOpacity(0.08),
+                              borderRadius:
+                                  BorderRadius.circular(GoldenRatio.radiusMd),
                               border: Border.all(
-                                  color:
-                                      const Color(0xFF00c1e8).withOpacity(0.2)),
+                                  color: AppColors.secondary.withOpacity(0.2)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1461,7 +1526,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                 Row(
                                   children: [
                                     Icon(Icons.shopping_cart,
-                                        color: const Color(0xFF00c1e8),
+                                        color: AppColors.secondary,
                                         size: 20),
                                     const SizedBox(width: 8),
                                     Text(
@@ -1472,7 +1537,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                               .buyXGetYConfiguration,
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF00c1e8),
+                                        color: AppColors.secondary,
                                       ),
                                     ),
                                   ],
@@ -1485,7 +1550,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                       .buyConfiguration,
                                   style: TextStyle(
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.grey.shade700,
+                                    color: AppColors.textPrimary,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -1529,12 +1594,14 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                           });
                                         }),
                                         child: Container(
-                                          padding: const EdgeInsets.all(12),
+                                          padding: EdgeInsets.all(
+                                              GoldenRatio.spacing12),
                                           decoration: BoxDecoration(
                                             border: Border.all(
-                                                color: Colors.grey.shade400),
+                                                color: AppColors.border),
                                             borderRadius:
-                                                BorderRadius.circular(4),
+                                                BorderRadius.circular(
+                                                GoldenRatio.radiusXs),
                                           ),
                                           child: Row(
                                             children: [
@@ -1550,13 +1617,15 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                                   style: TextStyle(
                                                     color: selectedBuyItemId ==
                                                             null
-                                                        ? Colors.grey.shade600
-                                                        : Colors.black,
+                                                        ? AppColors
+                                                            .textSecondary
+                                                        : AppColors.textPrimary,
                                                   ),
                                                 ),
                                               ),
                                               Icon(Icons.arrow_drop_down,
-                                                  color: Colors.grey.shade600),
+                                                  color:
+                                                      AppColors.textSecondary),
                                             ],
                                           ),
                                         ),
@@ -1572,7 +1641,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                       .getConfiguration,
                                   style: TextStyle(
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.grey.shade700,
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -1619,7 +1688,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
                                             border: Border.all(
-                                                color: Colors.grey.shade400),
+                                                color: AppColors.border),
                                             borderRadius:
                                                 BorderRadius.circular(4),
                                           ),
@@ -1637,13 +1706,15 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                                   style: TextStyle(
                                                     color: selectedGetItemId ==
                                                             null
-                                                        ? Colors.grey.shade600
-                                                        : Colors.black,
+                                                        ? AppColors
+                                                            .textSecondary
+                                                        : AppColors.textPrimary,
                                                   ),
                                                 ),
                                               ),
                                               Icon(Icons.arrow_drop_down,
-                                                  color: Colors.grey.shade600),
+                                                  color:
+                                                      AppColors.textSecondary),
                                             ],
                                           ),
                                         ),
@@ -1669,16 +1740,15 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                               color: (discountType ==
                                           DiscountType.conditional ||
                                       discountType == DiscountType.buyXGetY)
-                                  ? const Color(0xFF00c1e8).withOpacity(0.08)
-                                  : const Color(0xFF00c1e8).withOpacity(0.08),
+                                      ? AppColors.secondary.withOpacity(0.08)
+                                      : AppColors.secondary.withOpacity(0.08),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                   color: (discountType ==
                                               DiscountType.conditional ||
                                           discountType == DiscountType.buyXGetY)
-                                      ? const Color(0xFF00c1e8).withOpacity(0.2)
-                                      : const Color(0xFF00c1e8)
-                                          .withOpacity(0.2)),
+                                      ? AppColors.secondary.withOpacity(0.2)
+                                      : AppColors.secondary.withOpacity(0.2)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1686,7 +1756,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                 Row(
                                   children: [
                                     Icon(Icons.category,
-                                        color: const Color(0xFF00c1e8),
+                                        color: AppColors.secondary,
                                         size: 20),
                                     const SizedBox(width: 8),
                                     Text(
@@ -1694,7 +1764,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                           .discountApplicability,
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF00c1e8),
+                                        color: AppColors.secondary,
                                       ),
                                     ),
                                   ],
@@ -1775,10 +1845,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey.shade50,
+                                      color: AppColors.surfaceVariant,
                                       borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
-                                          color: Colors.grey.shade300),
+                                          color: AppColors.border),
                                     ),
                                     child: Column(
                                       crossAxisAlignment:
@@ -1788,14 +1858,14 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                           children: [
                                             Icon(Icons.shopping_basket,
                                                 size: 16,
-                                                color: Colors.grey.shade600),
+                                                color: AppColors.textSecondary),
                                             const SizedBox(width: 8),
                                             Text(
                                               AppLocalizations.of(context)!
                                                   .selectItems,
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w600,
-                                                color: Colors.grey.shade700,
+                                                color: AppColors.textSecondary,
                                               ),
                                             ),
                                           ],
@@ -1808,7 +1878,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                             padding: const EdgeInsets.all(8),
                                             decoration: BoxDecoration(
                                               border: Border.all(
-                                                  color: Colors.grey.shade400),
+                                                  color: AppColors.border),
                                               borderRadius:
                                                   BorderRadius.circular(4),
                                             ),
@@ -1824,14 +1894,17 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                                     style: TextStyle(
                                                       color: selectedItemIds
                                                               .isEmpty
-                                                          ? Colors.grey.shade600
-                                                          : Colors.black,
+                                                          ? AppColors
+                                                              .textSecondary
+                                                          : AppColors
+                                                              .textPrimary,
                                                     ),
                                                   ),
                                                 ),
                                                 Icon(Icons.arrow_drop_down,
                                                     color:
-                                                        Colors.grey.shade600),
+                                                        AppColors
+                                                        .textSecondary),
                                               ],
                                             ),
                                           ),
@@ -1849,10 +1922,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey.shade50,
+                                      color: AppColors.surfaceVariant,
                                       borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
-                                          color: Colors.grey.shade300),
+                                          color: AppColors.border),
                                     ),
                                     child: Column(
                                       crossAxisAlignment:
@@ -1862,14 +1935,14 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                           children: [
                                             Icon(Icons.folder,
                                                 size: 16,
-                                                color: Colors.grey.shade600),
+                                                color: AppColors.textSecondary),
                                             const SizedBox(width: 8),
                                             Text(
                                               AppLocalizations.of(context)!
                                                   .selectCategories,
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w600,
-                                                color: Colors.grey.shade700,
+                                                color: AppColors.textSecondary,
                                               ),
                                             ),
                                           ],
@@ -1884,7 +1957,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                             padding: const EdgeInsets.all(8),
                                             decoration: BoxDecoration(
                                               border: Border.all(
-                                                  color: Colors.grey.shade400),
+                                                  color: AppColors.border),
                                               borderRadius:
                                                   BorderRadius.circular(4),
                                             ),
@@ -1900,14 +1973,17 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                                                     style: TextStyle(
                                                       color: selectedCategoryIds
                                                               .isEmpty
-                                                          ? Colors.grey.shade600
-                                                          : Colors.black,
+                                                          ? AppColors
+                                                              .textSecondary
+                                                          : AppColors
+                                                              .textPrimary,
                                                     ),
                                                   ),
                                                 ),
                                                 Icon(Icons.arrow_drop_down,
                                                     color:
-                                                        Colors.grey.shade600),
+                                                        AppColors
+                                                        .textSecondary),
                                               ],
                                             ),
                                           ),
@@ -1929,14 +2005,14 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                             child: Row(
                               children: [
                                 Icon(Icons.info_outline,
-                                    color: Colors.grey.shade600, size: 16),
+                                    color: AppColors.textSecondary, size: 16),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     AppLocalizations.of(context)!
                                         .applicabilityNotConfigurable,
                                     style: TextStyle(
-                                      color: Colors.grey.shade600,
+                                      color: AppColors.textSecondary,
                                       fontSize: 12,
                                       fontStyle: FontStyle.italic,
                                     ),
@@ -2046,12 +2122,12 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
               child: TextButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.grey.shade600,
+                  foregroundColor: AppColors.textSecondary,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.grey.shade300, width: 1),
+                    side: BorderSide(color: AppColors.border, width: 1),
                   ),
                 ),
                 child: Text(
@@ -2117,8 +2193,18 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
 
                   if (discountType == DiscountType.buyXGetY ||
                       discountType == DiscountType.conditional) {
+                      // Debug: Print current values
+                      print('🔍 DEBUG: Buy X Get Y validation');
+                      print('selectedBuyItemId: $selectedBuyItemId');
+                      print('selectedGetItemId: $selectedGetItemId');
+                      print(
+                          'buyXQuantityController.text: ${buyXQuantityController.text}');
+                      print(
+                          'getYQuantityController.text: ${getYQuantityController.text}');
+                    
                     if (selectedBuyItemId == null ||
                         selectedGetItemId == null) {
+                        print('❌ DEBUG: Missing item IDs detected');
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
@@ -2147,6 +2233,10 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                       'getItemId': selectedGetItemId,
                       'getQuantity': int.parse(getYQuantityController.text),
                     };
+                    
+                      // Debug: Print constructed parameters
+                      print('✅ DEBUG: Conditional parameters constructed:');
+                      print('conditionalParams: $conditionalParams');
                   }
 
                   final newDiscount = Discount(
@@ -2190,7 +2280,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                           SnackBar(
                             content: Text(AppLocalizations.of(context)!
                                 .conflictingDiscounts),
-                            backgroundColor: Colors.red,
+                              backgroundColor: AppColors.error,
                           ),
                         );
                       }
@@ -2203,7 +2293,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
               },
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
-                foregroundColor: Colors.white,
+                  foregroundColor: AppColors.onPrimary,
                   elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -2224,7 +2314,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                       ),
                       child: Icon(
                         isEditing ? Icons.save : Icons.add,
-                        color: Colors.black87,
+                        color: AppColors.textPrimary,
                         size: 18,
                       ),
                     ),
@@ -2391,7 +2481,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00c1e8),
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.onPrimary,
                   ),
                   child: Text(AppLocalizations.of(context)!.ok),
                 ),
@@ -2474,7 +2564,7 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00c1e8),
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.onPrimary,
                   ),
                   child: Text(AppLocalizations.of(context)!.ok),
                 ),
@@ -2618,6 +2708,309 @@ class _DiscountManagementPageState extends State<DiscountManagementPage> {
       },
     );
   }
+
+  Widget _buildModernAppBar(AppLocalizations loc) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: GoldenRatio.spacing20,
+        vertical: GoldenRatio.spacing16,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.04),
+            blurRadius: GoldenRatio.spacing12,
+            offset: Offset(0, GoldenRatio.spacing4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.arrow_back_rounded, color: AppColors.primary),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          SizedBox(width: GoldenRatio.spacing16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  loc.discounts,
+                  style: TypographySystem.headlineSmall.copyWith(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Manage offers and promotional discounts',
+                  style: TypographySystem.bodyMedium.copyWith(
+                    color: AppColors.onSurface.withOpacity(0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.primary, AppColors.primaryDark],
+              ),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.3),
+                  blurRadius: GoldenRatio.spacing8,
+                  offset: Offset(0, GoldenRatio.spacing4),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: _isLoading
+                  ? SizedBox(
+                      width: GoldenRatio.spacing20,
+                      height: GoldenRatio.spacing20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.onPrimary,
+                      ),
+                    )
+                  : Icon(Icons.add_rounded, color: AppColors.onPrimary),
+              onPressed: _isLoading ? null : () => _showCreateDiscountDialog(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderSection(AppLocalizations loc) {
+    final activeCount =
+        _discounts.where((d) => d.status == DiscountStatus.active).length;
+    final scheduledCount =
+        _discounts.where((d) => d.status == DiscountStatus.scheduled).length;
+    final expiredCount =
+        _discounts.where((d) => d.status == DiscountStatus.expired).length;
+
+    return Container(
+      margin: EdgeInsets.all(GoldenRatio.spacing16),
+      padding: EdgeInsets.all(GoldenRatio.spacing24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.surface,
+            AppColors.primary.withOpacity(0.02),
+            AppColors.secondary.withOpacity(0.01),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.06),
+            blurRadius: GoldenRatio.spacing24,
+            offset: Offset(0, GoldenRatio.spacing8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(GoldenRatio.spacing16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.1),
+                      AppColors.secondary.withOpacity(0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                ),
+                child: Icon(
+                  Icons.local_offer_rounded,
+                  color: AppColors.primary,
+                  size: GoldenRatio.spacing24 + GoldenRatio.spacing8,
+                ),
+              ),
+              SizedBox(width: GoldenRatio.spacing20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Discount Overview',
+                      style: TypographySystem.titleLarge.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.onSurface,
+                      ),
+                    ),
+                    SizedBox(height: GoldenRatio.spacing8),
+                    Text(
+                      '${_discounts.length} total discount${_discounts.length != 1 ? 's' : ''} configured',
+                      style: TypographySystem.bodyMedium.copyWith(
+                        color: AppColors.onSurface.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: GoldenRatio.spacing20),
+
+          // Statistics Cards
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  title: 'Active',
+                  count: activeCount,
+                  icon: Icons.check_circle_rounded,
+                  color: AppColors.success,
+                ),
+              ),
+              SizedBox(width: GoldenRatio.spacing12),
+              Expanded(
+                child: _buildStatCard(
+                  title: 'Scheduled',
+                  count: scheduledCount,
+                  icon: Icons.schedule_rounded,
+                  color: AppColors.warning,
+                ),
+              ),
+              SizedBox(width: GoldenRatio.spacing12),
+              Expanded(
+                child: _buildStatCard(
+                  title: 'Expired',
+                  count: expiredCount,
+                  icon: Icons.history_rounded,
+                  color: AppColors.error,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required String title,
+    required int count,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(GoldenRatio.spacing16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: GoldenRatio.spacing20,
+          ),
+          SizedBox(height: GoldenRatio.spacing8),
+          Text(
+            count.toString(),
+            style: TypographySystem.headlineMedium.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          SizedBox(height: GoldenRatio.spacing4),
+          Text(
+            title,
+            style: TypographySystem.labelMedium.copyWith(
+              color: AppColors.onSurface.withOpacity(0.8),
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterSection(AppLocalizations loc) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: GoldenRatio.spacing16),
+      padding: EdgeInsets.all(GoldenRatio.spacing20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.04),
+            blurRadius: GoldenRatio.spacing20,
+            offset: Offset(0, GoldenRatio.spacing8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.filter_list_rounded,
+                color: AppColors.primary,
+                size: GoldenRatio.spacing20,
+              ),
+              SizedBox(width: GoldenRatio.spacing12),
+              Text(
+                'Filter Discounts',
+                style: TypographySystem.titleMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.onSurface,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: GoldenRatio.spacing16),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildFilterChip(loc.allDiscounts, 'all'),
+                const SizedBox(width: 12),
+                _buildFilterChip(loc.activeDiscounts, 'active'),
+                const SizedBox(width: 12),
+                _buildFilterChip(loc.scheduledDiscounts, 'scheduled'),
+                const SizedBox(width: 12),
+                _buildFilterChip(loc.expiredDiscounts, 'expired'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // Top-level widget for individual discount cards
@@ -2644,25 +3037,25 @@ class DiscountCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white,
-            const Color(0xFF32CD32).withOpacity(0.02),
+            AppColors.surface,
+            AppColors.primary.withOpacity(0.02),
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
         border: Border.all(
           color: statusColor.withOpacity(0.3),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: AppColors.shadow.withOpacity(0.04),
+            blurRadius: GoldenRatio.spacing20,
+            offset: Offset(0, GoldenRatio.spacing8),
           ),
           BoxShadow(
             color: statusColor.withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            blurRadius: GoldenRatio.spacing12,
+            offset: Offset(0, GoldenRatio.spacing4),
           ),
         ],
       ),
@@ -2670,9 +3063,9 @@ class DiscountCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onEdit,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(GoldenRatio.spacing24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -2684,19 +3077,16 @@ class DiscountCard extends StatelessWidget {
                         children: [
                           Text(
                             discount.title,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Color(0xFF1C1C1C),
+                            style: TypographySystem.headlineSmall.copyWith(
+                              color: AppColors.onSurface,
                             ),
                           ),
                           if (discount.description.isNotEmpty) ...[
-                            const SizedBox(height: 8),
+                            SizedBox(height: GoldenRatio.spacing8),
                             Text(
                               discount.description,
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 14,
+                              style: TypographySystem.bodyMedium.copyWith(
+                                color: AppColors.onSurface.withOpacity(0.7),
                                 height: 1.4,
                               ),
                             ),
@@ -2704,10 +3094,11 @@ class DiscountCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: GoldenRatio.spacing16),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: GoldenRatio.spacing16,
+                          vertical: GoldenRatio.spacing8),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -2715,7 +3106,8 @@ class DiscountCard extends StatelessWidget {
                             statusColor.withOpacity(0.05),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius:
+                            BorderRadius.circular(GoldenRatio.radiusLg),
                         border: Border.all(
                           color: statusColor.withOpacity(0.3),
                           width: 1,
@@ -2725,20 +3117,20 @@ class DiscountCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: 8,
-                            height: 8,
+                            width: GoldenRatio.spacing8,
+                            height: GoldenRatio.spacing8,
                             decoration: BoxDecoration(
                               color: statusColor,
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius:
+                                  BorderRadius.circular(GoldenRatio.spacing4),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: GoldenRatio.spacing8),
                           Text(
                             statusText,
-                            style: TextStyle(
+                            style: TypographySystem.labelSmall.copyWith(
                               color: statusColor,
                               fontWeight: FontWeight.bold,
-                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -2746,21 +3138,21 @@ class DiscountCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: GoldenRatio.spacing20),
 
                 // Discount details section
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(GoldenRatio.spacing20),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFF32CD32).withOpacity(0.05),
-                        const Color(0xFFFFD300).withOpacity(0.05),
+                        AppColors.primary.withOpacity(0.05),
+                        AppColors.secondary.withOpacity(0.05),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
                     border: Border.all(
-                      color: const Color(0xFF32CD32).withOpacity(0.2),
+                      color: AppColors.primary.withOpacity(0.2),
                       width: 1,
                     ),
                   ),
@@ -2769,15 +3161,17 @@ class DiscountCard extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: EdgeInsets.all(GoldenRatio.spacing8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF32CD32),
-                              borderRadius: BorderRadius.circular(12),
+                              color: AppColors.primary,
+                              borderRadius:
+                                  BorderRadius.circular(GoldenRatio.radiusMd),
                             ),
-                            child: const Icon(Icons.local_offer,
-                                color: Colors.white, size: 20),
+                            child: Icon(Icons.local_offer,
+                                color: AppColors.onPrimary,
+                                size: GoldenRatio.spacing20),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: GoldenRatio.spacing12),
                           Expanded(
                             child: Text(
                               discount.type == DiscountType.percentage
@@ -2786,33 +3180,34 @@ class DiscountCard extends StatelessWidget {
                                       ? AppLocalizations.of(context)!
                                           .freeDelivery
                                       : '${AppLocalizations.of(context)!.conditional} ${AppLocalizations.of(context)!.discount}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(0xFF1C1C1C),
+                              style: TypographySystem.titleMedium.copyWith(
+                                color: AppColors.onSurface,
                               ),
                             ),
                           ),
                           if ((discount.minimumOrderAmount ?? 0) > 0) ...[
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: GoldenRatio.spacing12,
+                                  vertical: GoldenRatio.spacing8 * 0.75),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFD300).withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
+                                color: AppColors.secondary.withOpacity(0.2),
+                                borderRadius:
+                                    BorderRadius.circular(GoldenRatio.radiusMd),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.shopping_cart,
-                                      color: const Color(0xFFFFD300), size: 16),
-                                  const SizedBox(width: 6),
+                                      color: AppColors.secondary,
+                                      size: GoldenRatio.spacing16),
+                                  SizedBox(width: GoldenRatio.spacing8 * 0.75),
                                   Text(
                                     'Min: \$${(discount.minimumOrderAmount ?? 0).toStringAsFixed(2)}',
-                                    style: TextStyle(
+                                    style: TypographySystem.labelSmall.copyWith(
                                       fontWeight: FontWeight.w600,
-                                      fontSize: 12,
-                                      color: Colors.grey.shade700,
+                                      color:
+                                          AppColors.onSurface.withOpacity(0.8),
                                     ),
                                   ),
                                 ],
@@ -2821,36 +3216,36 @@ class DiscountCard extends StatelessWidget {
                           ],
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: GoldenRatio.spacing16),
                       Row(
                         children: [
                           Icon(Icons.category,
-                              color: Colors.grey.shade600, size: 18),
-                          const SizedBox(width: 12),
+                              color: AppColors.onSurface.withOpacity(0.6),
+                              size: GoldenRatio.spacing18),
+                          SizedBox(width: GoldenRatio.spacing12),
                           Expanded(
                             child: Text(
                               getLocalizedApplicabilityText(context, discount),
-                              style: TextStyle(
-                                color: Colors.grey.shade700,
-                                fontSize: 14,
+                              style: TypographySystem.bodyMedium.copyWith(
+                                color: AppColors.onSurface.withOpacity(0.8),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: GoldenRatio.spacing12),
                       Row(
                         children: [
                           Icon(Icons.date_range,
-                              color: Colors.grey.shade600, size: 18),
-                          const SizedBox(width: 12),
+                              color: AppColors.onSurface.withOpacity(0.6),
+                              size: GoldenRatio.spacing18),
+                          SizedBox(width: GoldenRatio.spacing12),
                           Expanded(
                             child: Text(
                               'Valid: ${discount.validFrom.day}/${discount.validFrom.month}/${discount.validFrom.year} - ${discount.validTo.day}/${discount.validTo.month}/${discount.validTo.year}',
-                              style: TextStyle(
-                                color: Colors.grey.shade700,
-                                fontSize: 14,
+                              style: TypographySystem.bodyMedium.copyWith(
+                                color: AppColors.onSurface.withOpacity(0.8),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -2861,7 +3256,7 @@ class DiscountCard extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: GoldenRatio.spacing20),
 
                 // Action buttons
                 Row(
@@ -2871,53 +3266,58 @@ class DiscountCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF32CD32),
-                            const Color(0xFF228B22),
+                            AppColors.primary,
+                            AppColors.primaryDark,
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius:
+                            BorderRadius.circular(GoldenRatio.radiusMd),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF32CD32).withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
+                            color: AppColors.primary.withOpacity(0.3),
+                            blurRadius: GoldenRatio.spacing8,
+                            offset: Offset(0, GoldenRatio.spacing4),
                           ),
                         ],
                       ),
                       child: IconButton(
                         icon: Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: EdgeInsets.all(GoldenRatio.spacing4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFD300),
-                            borderRadius: BorderRadius.circular(6),
+                            color: AppColors.secondary,
+                            borderRadius: BorderRadius.circular(
+                                GoldenRatio.spacing8 * 0.75),
                           ),
-                          child: const Icon(Icons.edit,
-                              color: Colors.black87, size: 16),
+                          child: Icon(Icons.edit,
+                              color: AppColors.onSecondary,
+                              size: GoldenRatio.spacing16),
                         ),
                         onPressed: onEdit,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: GoldenRatio.spacing12),
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Colors.red.shade400,
-                            Colors.red.shade600,
+                            AppColors.error,
+                            AppColors.error.withOpacity(0.8),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius:
+                            BorderRadius.circular(GoldenRatio.radiusMd),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.red.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
+                            color: AppColors.error.withOpacity(0.3),
+                            blurRadius: GoldenRatio.spacing8,
+                            offset: Offset(0, GoldenRatio.spacing4),
                           ),
                         ],
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.delete,
-                            color: Colors.white, size: 20),
+                        icon: Icon(Icons.delete,
+                            color: AppColors.onPrimary,
+                            size: GoldenRatio.spacing20),
                         onPressed: onDelete,
                       ),
                     ),
@@ -2963,13 +3363,13 @@ String getApplicabilityText(Discount discount) {
 Color getStatusColor(Discount discount) {
   switch (discount.status) {
     case DiscountStatus.active:
-      return const Color(0xFF32CD32); // Lime Green for active
+      return AppColors.success; // Green for active
     case DiscountStatus.scheduled:
-      return const Color(0xFFFFD300); // Gold for scheduled
+      return AppColors.warning; // Amber for scheduled
     case DiscountStatus.expired:
-      return Colors.red.shade400; // Red for expired
+      return AppColors.error; // Red for expired
     default:
-      return Colors.grey.shade500; // Grey for inactive
+      return AppColors.onSurfaceVariant; // Grey for inactive
   }
 }
 

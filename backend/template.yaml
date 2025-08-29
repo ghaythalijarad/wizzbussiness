@@ -1159,6 +1159,238 @@ Resources:
                         method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
                         method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
 
+            # Discount Management endpoints
+            /discounts:
+              get:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${DiscountManagementFunction.Arn}/invocations
+              post:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${DiscountManagementFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+
+            /discounts/{discountId}:
+              get:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${DiscountManagementFunction.Arn}/invocations
+              put:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${DiscountManagementFunction.Arn}/invocations
+              delete:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${DiscountManagementFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+
+            /discounts/{discountId}/toggle-status:
+              patch:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${DiscountManagementFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+
+            /discounts/validate-discount:
+              post:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${DiscountManagementFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+
+            /discounts/apply-discount:
+              post:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${DiscountManagementFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+
+            /discounts/stats:
+              get:
+                security:
+                  - CognitoAuthorizer: []
+                x-amazon-apigateway-integration:
+                  type: aws_proxy
+                  httpMethod: POST
+                  uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${DiscountManagementFunction.Arn}/invocations
+              options:
+                security: []
+                responses:
+                  '200':
+                    description: CORS preflight response
+                    headers:
+                      Access-Control-Allow-Origin:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Methods:
+                        schema:
+                          type: string
+                      Access-Control-Allow-Headers:
+                        schema:
+                          type: string
+                x-amazon-apigateway-integration:
+                  type: mock
+                  requestTemplates:
+                    application/json: '{"statusCode": 200}'
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                        method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+
   # Explicit Lambda permissions to break circular dependency
   UnifiedAuthFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -1220,6 +1452,14 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref BusinessOnlineStatusFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RegionalRestApi}/*/*"
+
+  DiscountManagementFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DiscountManagementFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RegionalRestApi}/*/*"
@@ -1477,6 +1717,33 @@ Resources:
               Resource: 
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-${Stage}"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-${Stage}/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses/index/*"
+            - Effect: Allow
+              Action:
+                - cognito-idp:GetUser
+              Resource: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
+
+  DiscountManagementFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'order-receiver-regional-${Stage}-discount-management-v1-sam'
+      CodeUri: functions/discounts/
+      Handler: discount_management_handler.handler
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource: 
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Discounts"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Discounts/index/*"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses/index/*"
             - Effect: Allow

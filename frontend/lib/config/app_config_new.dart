@@ -4,7 +4,7 @@ class AppConfig {
       String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
   static const String apiUrl = String.fromEnvironment('API_URL',
       defaultValue:
-          'https://zz9cszv6a8.execute-api.us-east-1.amazonaws.com/dev');
+          'https://m90p0zj1g1.execute-api.us-east-1.amazonaws.com/dev');
   static const String authMode =
       String.fromEnvironment('AUTH_MODE', defaultValue: 'cognito');
   static const String cognitoUserPoolId = String.fromEnvironment(

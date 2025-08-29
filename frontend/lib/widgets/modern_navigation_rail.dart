@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
+import '../core/theme/app_colors.dart';
 
 class ModernNavigationRail extends StatefulWidget {
   final int selectedIndex;
@@ -112,8 +115,8 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            colorScheme.primaryContainer,
-            colorScheme.primary.withOpacity(0.1),
+            const Color(0xFF00C1E8).withOpacity(0.1),
+            const Color(0xFF3399FF).withOpacity(0.05),
           ],
         ),
         borderRadius: const BorderRadius.only(
@@ -129,12 +132,12 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.1),
+                  color: const Color(0xFF00C1E8).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.restaurant_menu_rounded,
-                  color: colorScheme.primary,
+                  color: const Color(0xFF00C1E8),
                   size: 24,
                 ),
               ),
@@ -146,7 +149,7 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
                     Text(
                       localizations.appTitle,
                       style: TextStyle(
-                        color: colorScheme.onPrimaryContainer,
+                        color: const Color(0xFF00C1E8),
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
@@ -154,7 +157,7 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
                     Text(
                       localizations.dashboard,
                       style: TextStyle(
-                        color: colorScheme.onPrimaryContainer.withOpacity(0.7),
+                        color: AppColors.onSurfaceVariant,
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),
@@ -185,13 +188,13 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: widget.isOnline
-                  ? Colors.green.withOpacity(0.1)
-                  : Colors.orange.withOpacity(0.1),
+                  ? const Color(0xFF00C1E8).withOpacity(0.1)
+                  : AppColors.warning.withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: widget.isOnline
-                    ? Colors.green.withOpacity(0.3)
-                    : Colors.orange.withOpacity(0.3),
+                    ? const Color(0xFF00C1E8).withOpacity(0.3)
+                    : AppColors.warning.withOpacity(0.3),
                 width: 1,
               ),
             ),
@@ -199,7 +202,7 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
               children: [
                 Icon(
                   widget.isOnline ? Icons.wifi_rounded : Icons.wifi_off_rounded,
-                  color: widget.isOnline ? Colors.green : Colors.orange,
+                  color: widget.isOnline ? AppColors.info : AppColors.warning,
                   size: 18,
                 ),
                 const SizedBox(width: 8),
@@ -213,8 +216,8 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
                             : localizations.offline,
                         style: TextStyle(
                           color: widget.isOnline
-                              ? Colors.green.shade700
-                              : Colors.orange.shade700,
+                              ? const Color(0xFF00C1E8)
+                              : AppColors.warning,
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                         ),
@@ -224,7 +227,7 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
                             ? localizations.readyToReceiveOrders
                             : localizations.ordersArePaused,
                         style: TextStyle(
-                          color: colorScheme.onSurface.withOpacity(0.6),
+                          color: AppColors.onSurfaceVariant,
                           fontSize: 11,
                         ),
                       ),
@@ -234,8 +237,8 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
                 Switch.adaptive(
                   value: widget.isOnline,
                   onChanged: widget.onToggleStatus,
-                  activeColor: Colors.green,
-                  inactiveThumbColor: Colors.orange,
+                  activeColor: const Color(0xFF00C1E8),
+                  inactiveThumbColor: AppColors.warning,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ],
@@ -318,12 +321,12 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isSelected
-                  ? colorScheme.primaryContainer.withOpacity(0.8)
+                  ? const Color(0xFF00C1E8).withOpacity(0.1)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected
-                    ? colorScheme.primary.withOpacity(0.3)
+                    ? const Color(0xFF00C1E8).withOpacity(0.3)
                     : Colors.transparent,
                 width: 1,
               ),
@@ -337,8 +340,8 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
                     isSelected ? item.selectedIcon : item.icon,
                     key: ValueKey(isSelected),
                     color: isSelected
-                        ? colorScheme.primary
-                        : colorScheme.onSurface.withOpacity(0.7),
+                        ? AppColors.primary
+                        : AppColors.onSurfaceVariant,
                     size: 24,
                   ),
                 ),
@@ -353,8 +356,8 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
                         item.label,
                         style: TextStyle(
                           color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.onSurface,
+                              ? AppColors.primary
+                              : AppColors.onSurface,
                           fontSize: 16,
                           fontWeight:
                               isSelected ? FontWeight.w600 : FontWeight.w500,
@@ -365,7 +368,7 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
                         Text(
                           item.description,
                           style: TextStyle(
-                            color: colorScheme.onSurface.withOpacity(0.6),
+                            color: AppColors.onSurfaceVariant,
                             fontSize: 12,
                           ),
                         ),
@@ -380,7 +383,7 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
                     width: 4,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: colorScheme.primary,
+                      color: const Color(0xFF00C1E8),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -395,9 +398,9 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
   Widget _buildFooter(BuildContext context, AppLocalizations localizations,
       ColorScheme colorScheme) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant.withOpacity(0.3),
+        color: const Color(0xFF00C1E8).withOpacity(0.05),
         borderRadius: const BorderRadius.only(
           bottomRight: Radius.circular(24),
         ),
@@ -408,37 +411,37 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
             children: [
               Icon(
                 Icons.business_rounded,
-                color: colorScheme.onSurface.withOpacity(0.6),
-                size: 16,
+                color: AppColors.onSurfaceVariant,
+                size: 14,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   localizations.businessDashboardVersion,
                   style: TextStyle(
-                    color: colorScheme.onSurface.withOpacity(0.6),
-                    fontSize: 12,
+                    color: AppColors.onSurfaceVariant,
+                    fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Row(
             children: [
               Icon(
                 Icons.info_outline_rounded,
-                color: colorScheme.onSurface.withOpacity(0.4),
-                size: 14,
+                color: const Color(0xFF00C1E8).withOpacity(0.6),
+                size: 12,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   localizations.modernMaterialDesign,
                   style: TextStyle(
-                    color: colorScheme.onSurface.withOpacity(0.4),
-                    fontSize: 10,
+                    color: AppColors.textSecondary,
+                    fontSize: 9,
                   ),
                 ),
               ),

@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../core/theme/app_colors.dart';
 import '../models/business.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import '../services/image_upload_service.dart';
 import '../providers/business_provider.dart';
 import '../providers/session_provider.dart';
+import '../core/theme/app_colors.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
 import 'login_page.dart';
 
 class BusinessDetailsScreen extends ConsumerStatefulWidget {
@@ -22,9 +24,7 @@ class BusinessDetailsScreen extends ConsumerStatefulWidget {
       _BusinessDetailsScreenState();
 }
 
-class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
+class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   late TextEditingController _businessNameController;
   late TextEditingController _ownerNameController;
   late TextEditingController _phoneController;
@@ -42,7 +42,6 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
     _initializeControllers();
   }
 
@@ -61,7 +60,6 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
 
   @override
   void dispose() {
-    _tabController.dispose();
     _businessNameController.dispose();
     _ownerNameController.dispose();
     _phoneController.dispose();
@@ -76,71 +74,99 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
     try {
       showModalBottomSheet(
         context: context,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
+        backgroundColor: Colors.transparent,
         builder: (BuildContext context) {
-          return SafeArea(
-            child: Wrap(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Update Business Photo',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
+          return Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(GoldenRatio.radiusXl),
+                topRight: Radius.circular(GoldenRatio.radiusXl),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.shadow.withOpacity(0.1),
+                  blurRadius: GoldenRatio.spacing24,
+                  offset: Offset(0, -GoldenRatio.spacing8),
                 ),
-                ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.photo_library, color: Colors.blue),
-                  ),
-                  title: const Text('Choose from Gallery'),
-                  subtitle: const Text('Select an existing photo'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await _pickImageFromGallery();
-                  },
-                ),
-                ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.camera_alt, color: Colors.green),
-                  ),
-                  title: const Text('Take Photo'),
-                  subtitle: const Text('Use camera to take a new photo'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await _pickImageFromCamera();
-                  },
-                ),
-                const SizedBox(height: 16),
               ],
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(GoldenRatio.spacing24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Handle bar
+                    Container(
+                      width: GoldenRatio.spacing24 * 2,
+                      height: GoldenRatio.spacing4,
+                      decoration: BoxDecoration(
+                        color: AppColors.onSurfaceVariant.withOpacity(0.3),
+                        borderRadius:
+                            BorderRadius.circular(GoldenRatio.spacing4),
+                      ),
+                    ),
+                    SizedBox(height: GoldenRatio.spacing20),
+                    // Title
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(GoldenRatio.spacing12),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.primary.withOpacity(0.1),
+                                AppColors.secondary.withOpacity(0.1),
+                              ],
+                            ),
+                            borderRadius:
+                                BorderRadius.circular(GoldenRatio.radiusMd),
+                          ),
+                          child: Icon(
+                            Icons.photo_camera_rounded,
+                            color: AppColors.primary,
+                            size: GoldenRatio.spacing20,
+                          ),
+                        ),
+                        SizedBox(width: GoldenRatio.spacing16),
+                        Text(
+                          'Update Business Photo',
+                          style: TypographySystem.headlineSmall.copyWith(
+                            color: AppColors.onSurface,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: GoldenRatio.spacing24),
+                    // Gallery option
+                    _buildPhotoOption(
+                      icon: Icons.photo_library_rounded,
+                      title: 'Choose from Gallery',
+                      subtitle: 'Select an existing photo',
+                      color: AppColors.secondary,
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await _pickImageFromGallery();
+                      },
+                    ),
+                    SizedBox(height: GoldenRatio.spacing16),
+                    // Camera option
+                    _buildPhotoOption(
+                      icon: Icons.camera_alt_rounded,
+                      title: 'Take Photo',
+                      subtitle: 'Use camera to take a new photo',
+                      color: AppColors.primary,
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await _pickImageFromCamera();
+                      },
+                    ),
+                    SizedBox(height: GoldenRatio.spacing16),
+                  ],
+                ),
+              ),
             ),
           );
         },
@@ -148,6 +174,85 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
     } catch (e) {
       _showSnackBar('Error selecting photo option: $e', isError: true);
     }
+  }
+
+  Widget _buildPhotoOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.04),
+            blurRadius: GoldenRatio.spacing8,
+            offset: Offset(0, GoldenRatio.spacing4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+          child: Padding(
+            padding: EdgeInsets.all(GoldenRatio.spacing20),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(GoldenRatio.spacing12),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: color,
+                    size: GoldenRatio.spacing20,
+                  ),
+                ),
+                SizedBox(width: GoldenRatio.spacing16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TypographySystem.titleMedium.copyWith(
+                          color: AppColors.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: GoldenRatio.spacing4),
+                      Text(
+                        subtitle,
+                        style: TypographySystem.bodyMedium.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.onSurfaceVariant,
+                  size: GoldenRatio.spacing20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _pickImageFromGallery() async {
@@ -317,9 +422,9 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        icon: const Icon(
+        icon: Icon(
           Icons.security,
-          color: AppColors.primary,
+          color: const Color(0xFF00C1E8),
           size: 48,
         ),
         title: Text(
@@ -339,7 +444,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
               );
             },
             style: TextButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: const Color(0xFF00C1E8),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -359,72 +464,168 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
     final business = widget.business;
 
     return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 300,
-              floating: false,
-              pinned: true,
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              flexibleSpace: FlexibleSpaceBar(
-                background: _buildBusinessHeader(business),
+      backgroundColor: AppColors.backgroundVariant,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primary.withOpacity(0.05),
+              AppColors.secondary.withOpacity(0.03),
+              AppColors.background,
+            ],
+            stops: const [0.0, 0.3, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Modern App Bar
+              _buildModernAppBar(l10n),
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(GoldenRatio.spacing20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Business Header Card
+                      _buildBusinessHeaderCard(business),
+                      SizedBox(height: GoldenRatio.spacing24),
+                      // Business Details Section
+                      _buildDetailsTab(l10n, business),
+                    ],
+                  ),
+                ),
               ),
-              actions: [
-                if (!_isEditing)
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: _toggleEditMode,
-                  ),
-                if (_isEditing) ...[
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: _toggleEditMode,
-                  ),
-                  IconButton(
-                    icon: _isSaving
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Icon(Icons.check),
-                    onPressed: _isSaving ? null : _saveBusinessProfile,
-                  ),
-                ],
-              ],
-              bottom: TabBar(
-                controller: _tabController,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white70,
-                indicatorColor: Colors.white,
-                indicatorWeight: 3,
-                tabs: [
-                  Tab(icon: const Icon(Icons.info), text: 'Details'),
-                  Tab(icon: const Icon(Icons.access_time), text: 'Hours'),
-                  Tab(icon: const Icon(Icons.location_on), text: l10n.location),
-                ],
-              ),
-            ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildDetailsTab(l10n, business),
-            _buildHoursTab(l10n, business),
-            _buildLocationTab(l10n, business),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBusinessHeader(Business business) {
+  Widget _buildModernAppBar(AppLocalizations l10n) {
     return Container(
-      decoration: const BoxDecoration(
+      padding: EdgeInsets.symmetric(
+        horizontal: GoldenRatio.spacing20,
+        vertical: GoldenRatio.spacing16,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.04),
+            blurRadius: GoldenRatio.spacing12,
+            offset: Offset(0, GoldenRatio.spacing4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.arrow_back_rounded, color: AppColors.primary),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          SizedBox(width: GoldenRatio.spacing16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.businessDetails,
+                  style: TypographySystem.headlineSmall.copyWith(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Manage your business profile',
+                  style: TypographySystem.bodyMedium.copyWith(
+                    color: AppColors.onSurface.withOpacity(0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (!_isEditing)
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.secondary, AppColors.secondaryDark],
+                ),
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.secondary.withOpacity(0.3),
+                    blurRadius: GoldenRatio.spacing8,
+                    offset: Offset(0, GoldenRatio.spacing4),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: Icon(Icons.edit_rounded, color: AppColors.onSecondary),
+                onPressed: _toggleEditMode,
+              ),
+            ),
+          if (_isEditing) ...[
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: IconButton(
+                icon: Icon(Icons.close_rounded,
+                    color: AppColors.onSurfaceVariant),
+                onPressed: _toggleEditMode,
+              ),
+            ),
+            SizedBox(width: GoldenRatio.spacing12),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryDark],
+                ),
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: GoldenRatio.spacing8,
+                    offset: Offset(0, GoldenRatio.spacing4),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: _isSaving
+                    ? SizedBox(
+                        width: GoldenRatio.spacing20,
+                        height: GoldenRatio.spacing20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.onPrimary,
+                        ),
+                      )
+                    : Icon(Icons.check_rounded, color: AppColors.onPrimary),
+                onPressed: _isSaving ? null : _saveBusinessProfile,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBusinessHeaderCard(Business business) {
+    return Container(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -433,6 +634,14 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
             AppColors.primaryDark,
           ],
         ),
+        borderRadius: BorderRadius.circular(GoldenRatio.spacing24),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: GoldenRatio.spacing20,
+            offset: Offset(0, GoldenRatio.spacing8),
+          ),
+        ],
       ),
       child: Stack(
         children: [
@@ -442,141 +651,134 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
               painter: _HeaderPatternPainter(),
             ),
           ),
-          // Content
           Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: EdgeInsets.all(GoldenRatio.spacing24),
+            child: Row(
               children: [
-                const SizedBox(height: 80), // Account for app bar
-                Row(
+                // Business Photo
+                Stack(
                   children: [
-                    // Business Photo
-                    Stack(
-                      children: [
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
-                              width: 3,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: _selectedImage != null
-                                ? Image.file(_selectedImage!, fit: BoxFit.cover)
-                                : business.businessPhotoUrl != null &&
-                                        business.businessPhotoUrl!.isNotEmpty
-                                    ? Image.network(
-                                        business.businessPhotoUrl!,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                          return _buildDefaultBusinessIcon();
-                                        },
-                                      )
-                                    : _buildDefaultBusinessIcon(),
-                          ),
+                    Container(
+                      width: GoldenRatio.spacing24 * 4,
+                      height: GoldenRatio.spacing24 * 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.surface.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.surface.withOpacity(0.3),
+                          width: 3,
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: _isUploadingPhoto ? null : _pickImage,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: _isUploadingPhoto
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2),
-                                    )
-                                  : const Icon(
-                                      Icons.camera_alt,
-                                      color: AppColors.primary,
-                                      size: 16,
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 20),
-                    // Business Info
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            business.name,
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              height: 1.2,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              business.businessType.name.toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // Status indicators
-                          Row(
-                            children: [
-                              _buildStatusChip(
-                                business.status == 'approved'
-                                    ? 'Active'
-                                    : 'Pending',
-                                business.status == 'approved',
-                              ),
-                              const SizedBox(width: 8),
-                              _buildStatusChip('Verified', true),
-                            ],
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.shadow.withOpacity(0.2),
+                            blurRadius: GoldenRatio.spacing20,
+                            offset: Offset(0, GoldenRatio.spacing8),
                           ),
                         ],
                       ),
+                      child: ClipOval(
+                        child: _selectedImage != null
+                            ? Image.file(_selectedImage!, fit: BoxFit.cover)
+                            : business.businessPhotoUrl != null &&
+                                    business.businessPhotoUrl!.isNotEmpty
+                                ? Image.network(
+                                    business.businessPhotoUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return _buildDefaultBusinessIcon();
+                                    },
+                                  )
+                                : _buildDefaultBusinessIcon(),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: _isUploadingPhoto ? null : _pickImage,
+                        child: Container(
+                          padding: EdgeInsets.all(GoldenRatio.spacing8),
+                          decoration: BoxDecoration(
+                            color: AppColors.secondary,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.shadow.withOpacity(0.2),
+                                blurRadius: GoldenRatio.spacing8,
+                                offset: Offset(0, GoldenRatio.spacing4),
+                              ),
+                            ],
+                          ),
+                          child: _isUploadingPhoto
+                              ? SizedBox(
+                                  width: GoldenRatio.spacing16,
+                                  height: GoldenRatio.spacing16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.onSecondary,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.camera_alt_rounded,
+                                  color: AppColors.onSecondary,
+                                  size: GoldenRatio.spacing16,
+                                ),
+                        ),
+                      ),
                     ),
                   ],
+                ),
+                SizedBox(width: GoldenRatio.spacing20),
+                // Business Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        business.name,
+                        style: TypographySystem.headlineMedium.copyWith(
+                          color: AppColors.onPrimary,
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: GoldenRatio.spacing8),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: GoldenRatio.spacing16,
+                          vertical: GoldenRatio.spacing8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondary,
+                          borderRadius: BorderRadius.circular(GoldenRatio.spacing20),
+                        ),
+                        child: Text(
+                          business.businessType.name.toUpperCase(),
+                          style: TypographySystem.labelSmall.copyWith(
+                            color: AppColors.onSecondary,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: GoldenRatio.spacing12),
+                      // Status indicators
+                      Row(
+                        children: [
+                          _buildStatusChip(
+                            business.status == 'approved'
+                                ? 'Active'
+                                : 'Pending',
+                            business.status == 'approved',
+                          ),
+                          SizedBox(width: GoldenRatio.spacing8),
+                          _buildStatusChip('Verified', true),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -588,25 +790,28 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
 
   Widget _buildDefaultBusinessIcon() {
     return Container(
-      color: Colors.white.withOpacity(0.1),
-      child: const Icon(
-        Icons.business,
-        size: 40,
-        color: Colors.white,
+      color: AppColors.primary.withOpacity(0.1),
+      child: Icon(
+        Icons.business_rounded,
+        size: GoldenRatio.spacing24 * 1.5,
+        color: AppColors.onPrimary,
       ),
     );
   }
 
   Widget _buildStatusChip(String label, bool isActive) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: GoldenRatio.spacing12,
+        vertical: GoldenRatio.spacing8,
+      ),
       decoration: BoxDecoration(
         color: isActive
-            ? Colors.green.withOpacity(0.2)
-            : Colors.orange.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(16),
+            ? AppColors.success.withOpacity(0.2)
+            : AppColors.warning.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(GoldenRatio.spacing16),
         border: Border.all(
-          color: isActive ? Colors.green : Colors.orange,
+          color: isActive ? AppColors.success : AppColors.warning,
           width: 1,
         ),
       ),
@@ -614,20 +819,19 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 8,
-            height: 8,
+            width: GoldenRatio.spacing8,
+            height: GoldenRatio.spacing8,
             decoration: BoxDecoration(
-              color: isActive ? Colors.green : Colors.orange,
+              color: isActive ? AppColors.success : AppColors.warning,
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 6),
+          SizedBox(width: GoldenRatio.spacing8),
           Text(
             label,
-            style: TextStyle(
-              color: isActive ? Colors.green : Colors.orange,
+            style: TypographySystem.labelSmall.copyWith(
+              color: isActive ? AppColors.success : AppColors.warning,
               fontWeight: FontWeight.w600,
-              fontSize: 12,
             ),
           ),
         ],
@@ -637,184 +841,67 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
 
   Widget _buildDetailsTab(AppLocalizations l10n, Business business) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(GoldenRatio.spacing20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Basic Information Card
           _buildModernCard(
             title: l10n.businessInformation,
-            icon: Icons.business,
+            icon: Icons.business_rounded,
             children: [
               _buildFormField(
                 label: l10n.businessName,
                 controller: _businessNameController,
-                icon: Icons.store,
+                icon: Icons.store_rounded,
                 enabled: _isEditing,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: GoldenRatio.spacing20),
               _buildFormField(
                 label: l10n.ownerName,
                 controller: _ownerNameController,
-                icon: Icons.person,
+                icon: Icons.person_rounded,
                 enabled: _isEditing,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: GoldenRatio.spacing20),
               _buildFormField(
                 label: l10n.emailAddress,
                 controller: _emailController,
-                icon: Icons.email,
+                icon: Icons.email_rounded,
                 enabled: false, // Email should not be editable
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: GoldenRatio.spacing20),
               _buildFormField(
                 label: l10n.phoneNumber,
                 controller: _phoneController,
-                icon: Icons.phone,
+                icon: Icons.phone_rounded,
                 enabled: _isEditing,
                 keyboardType: TextInputType.phone,
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: GoldenRatio.spacing24),
 
           // Business Details Card
           _buildModernCard(
             title: 'Business Details',
-            icon: Icons.description,
+            icon: Icons.description_rounded,
             children: [
               _buildFormField(
                 label: 'Description',
                 controller: _descriptionController,
-                icon: Icons.description,
+                icon: Icons.description_rounded,
                 enabled: _isEditing,
                 maxLines: 3,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: GoldenRatio.spacing20),
               _buildFormField(
                 label: 'Website',
                 controller: _websiteController,
-                icon: Icons.language,
+                icon: Icons.language_rounded,
                 enabled: _isEditing,
                 keyboardType: TextInputType.url,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Business Statistics Card
-          _buildModernCard(
-            title: 'Statistics',
-            icon: Icons.analytics,
-            children: [
-              _buildStatItem('Total Orders', '1,234'),
-              const SizedBox(height: 12),
-              _buildStatItem('Rating', '4.8 ⭐'),
-              const SizedBox(height: 12),
-              _buildStatItem('Reviews', '256'),
-              const SizedBox(height: 12),
-              _buildStatItem('Member Since', 'January 2024'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHoursTab(AppLocalizations l10n, Business business) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          _buildModernCard(
-            title: 'Working Hours',
-            icon: Icons.access_time,
-            children: [
-              Text(
-                'Configure your business operating hours to let customers know when you\'re available.',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 20),
-              _buildWorkingHoursSection(business),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    _showSnackBar('Working hours configuration coming soon!');
-                  },
-                  icon: const Icon(Icons.edit),
-                  label: Text('Edit Working Hours'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLocationTab(AppLocalizations l10n, Business business) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          _buildModernCard(
-            title: l10n.businessLocation,
-            icon: Icons.location_on,
-            children: [
-              _buildFormField(
-                label: l10n.addressLabel,
-                controller: _addressController,
-                icon: Icons.location_on,
-                enabled: _isEditing,
-                maxLines: 3,
-              ),
-              const SizedBox(height: 20),
-              if (business.latitude != null && business.longitude != null) ...[
-                _buildInfoRow(
-                  'Latitude',
-                  business.latitude!.toStringAsFixed(6),
-                  Icons.my_location,
-                ),
-                const SizedBox(height: 12),
-                _buildInfoRow(
-                  'Longitude',
-                  business.longitude!.toStringAsFixed(6),
-                  Icons.my_location,
-                ),
-                const SizedBox(height: 20),
-              ],
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    _showSnackBar(
-                        'Location settings configuration coming soon!');
-                  },
-                  icon: const Icon(Icons.edit_location),
-                  label: Text('Edit Location Settings'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
               ),
             ],
           ),
@@ -830,47 +917,64 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+        border: Border.all(
+          color: AppColors.border.withOpacity(0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+            color: AppColors.shadow.withOpacity(0.06),
+            blurRadius: GoldenRatio.spacing24,
+            offset: Offset(0, GoldenRatio.spacing8),
+          ),
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.02),
+            blurRadius: GoldenRatio.spacing4,
+            offset: Offset(0, GoldenRatio.spacing4),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(GoldenRatio.spacing24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(GoldenRatio.spacing12),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withOpacity(0.1),
+                        AppColors.secondary.withOpacity(0.1),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+                    border: Border.all(
+                      color: AppColors.primary.withOpacity(0.2),
+                      width: 1,
+                    ),
                   ),
                   child: Icon(
                     icon,
                     color: AppColors.primary,
-                    size: 20,
+                    size: GoldenRatio.spacing20,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: GoldenRatio.spacing16),
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: TypographySystem.headlineSmall.copyWith(
+                    color: AppColors.onSurface,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: GoldenRatio.spacing24),
             ...children,
           ],
         ),
@@ -891,172 +995,98 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen>
       enabled: enabled,
       maxLines: maxLines,
       keyboardType: keyboardType,
+      style: TypographySystem.bodyLarge.copyWith(
+        color: enabled ? AppColors.onSurface : AppColors.onSurfaceVariant,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: TypographySystem.bodyMedium.copyWith(
+          color: enabled
+              ? AppColors.onSurfaceVariant
+              : AppColors.onSurfaceVariant.withOpacity(0.6),
+          fontWeight: FontWeight.w500,
+        ),
         prefixIcon: Container(
-          margin: const EdgeInsets.all(8),
-          padding: const EdgeInsets.all(8),
+          margin: EdgeInsets.all(GoldenRatio.spacing8),
+          padding: EdgeInsets.all(GoldenRatio.spacing8),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(enabled ? 0.1 : 0.05),
-            borderRadius: BorderRadius.circular(8),
+            gradient: enabled
+                ? LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.1),
+                      AppColors.secondary.withOpacity(0.1),
+                    ],
+                  )
+                : null,
+            color: enabled ? null : AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+            border: Border.all(
+              color: enabled
+                  ? AppColors.primary.withOpacity(0.2)
+                  : AppColors.border.withOpacity(0.1),
+              width: 1,
+            ),
           ),
           child: Icon(
             icon,
             color: enabled
                 ? AppColors.primary
-                : AppColors.primary.withOpacity(0.5),
-            size: 20,
+                : AppColors.onSurfaceVariant.withOpacity(0.5),
+            size: GoldenRatio.spacing20,
           ),
         ),
         filled: true,
-        fillColor: enabled ? Colors.white : Colors.grey.shade50,
+        fillColor: enabled
+            ? AppColors.surface
+            : AppColors.surfaceVariant.withOpacity(0.3),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+          borderSide: BorderSide(
+            color: AppColors.border.withOpacity(0.2),
+            width: 1,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+          borderSide: BorderSide(
+            color: AppColors.border.withOpacity(0.3),
+            width: 1,
+          ),
         ),
         disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+          borderSide: BorderSide(
+            color: AppColors.border.withOpacity(0.1),
+            width: 1,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primary, width: 2),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+          borderSide: BorderSide(
+            color: AppColors.primary,
+            width: 2,
+          ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+          borderSide: BorderSide(
+            color: AppColors.error,
+            width: 2,
+          ),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+          borderSide: BorderSide(
+            color: AppColors.error,
+            width: 2,
+          ),
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: GoldenRatio.spacing20,
+          vertical: GoldenRatio.spacing16,
+        ),
       ),
-      style: TextStyle(
-        color: enabled ? Colors.black87 : Colors.grey.shade600,
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 14,
-          ),
-        ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value, IconData icon) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            color: AppColors.primary,
-            size: 16,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildWorkingHoursSection(Business business) {
-    final days = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday'
-    ];
-
-    return Column(
-      children: days.map((day) {
-        // This is mock data - replace with actual business hours
-        final isOpen = day != 'Sunday';
-        final hours = isOpen ? '9:00 AM - 6:00 PM' : 'Closed';
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                day,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isOpen
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.grey.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  hours,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: isOpen ? Colors.green[700] : Colors.grey[600],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
     );
   }
 }

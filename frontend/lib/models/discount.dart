@@ -198,6 +198,7 @@ class Discount {
     return {
       'id': id,
       'name': name,
+      'title': title, // Add title field that backend expects
       'description': description,
       'type': type.name,
       'value': value,
@@ -205,6 +206,8 @@ class Discount {
       'status': status.name,
       'startDate': startDate.toIso8601String(),
       'endDate': endDate.toIso8601String(),
+      'validFrom': validFrom.toIso8601String(), // Backend expects validFrom
+      'validTo': validTo.toIso8601String(), // Backend expects validTo
       'minimumOrderAmount': minimumOrderAmount,
       'maxUsage': maxUsage,
       'currentUsage': currentUsage,
@@ -212,6 +215,8 @@ class Discount {
       'applicableCategoryIds': applicableCategoryIds,
       'conditionalRule': conditionalRule?.name,
       'conditionalRuleData': conditionalRuleData,
+      'conditionalParameters':
+          conditionalParameters, // Add this field for backend validation
       'businessId': businessId,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),

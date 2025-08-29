@@ -32,7 +32,6 @@
     "notificationsTapped",
     "returnAnOrder",
     "manageDiscounts",
-    "returnOrder",
     "posSettingsUpdated",
     "connectionSuccessful",
     "close",

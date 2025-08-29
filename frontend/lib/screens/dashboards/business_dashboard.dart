@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../orders_page.dart';
 import '../products_management_screen.dart';
 import '../analytics_page.dart';
@@ -14,6 +15,9 @@ import '../../services/app_auth_service.dart';
 import '../../providers/session_provider.dart';
 import '../../providers/business_provider.dart';
 import '../../widgets/modern_navigation_rail.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/design_system/golden_ratio_constants.dart';
+import '../../core/design_system/typography_system.dart';
 import '../../widgets/modern_sidebar.dart';
 import '../../utils/responsive_helper.dart';
 import '../../l10n/app_localizations.dart';
@@ -57,7 +61,12 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
   }
 
   void _onAppStateChanged() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {
+        // Sync local _isOnline with AppState.isOnline to ensure sidebar shows correct status
+        _isOnline = _appState.isOnline;
+      });
+    }
   }
 
   Future<void> _initializeData() async {
@@ -71,6 +80,25 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
   /// Load online status from API and sync with local state
   Future<void> _loadOnlineStatus(String businessId) async {
     try {
+      // Check if we just recently forced online status during login
+      // If so, skip loading from API to preserve the forced status
+      final prefs = await SharedPreferences.getInstance();
+      final lastLoginTime = prefs.getInt('last_login_time') ?? 0;
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      final timeSinceLogin = currentTime - lastLoginTime;
+
+      // If login was within the last 30 seconds, keep forced online status
+      if (timeSinceLogin < 30000) {
+        debugPrint('🟢 Preserving forced online status from recent login');
+        if (mounted) {
+          setState(() {
+            _isOnline = _appState.isOnline;
+          });
+        }
+        return;
+      }
+
+      // Otherwise, load from API as usual
       await _appState.loadOnlineStatusFromAPI(businessId);
       if (mounted) {
         setState(() {
@@ -159,7 +187,7 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
                 ? AppLocalizations.of(context)!.businessNowOnline 
                 : AppLocalizations.of(context)!.businessNowOffline,
             ),
-            backgroundColor: isOnline ? Colors.green : Colors.orange,
+            backgroundColor: isOnline ? AppColors.success : AppColors.warning,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -172,7 +200,7 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
             content: Text(
               AppLocalizations.of(context)!.errorUpdatingStatus,
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -202,10 +230,10 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
 
   Widget _buildDashboardBody(Business business) {
     switch (_selectedIndex) {
-      case 0:
+            case 0:
         return OrdersPage(businessId: business.id);
       case 1:
-        return const ProductsManagementScreen();
+        return ProductsManagementScreen(business: business);
       case 2:
         return AnalyticsPage(
           business: business,
@@ -235,10 +263,17 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
       appBar: AppBar(
         title: Row(
           children: [
-            Icon(
-              Icons.business,
-              size: 24,
-              color: Theme.of(context).primaryColor,
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.business,
+                size: 20,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -247,64 +282,91 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 1,
-        shadowColor: Colors.black12,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primary,
+                AppColors.primaryDark,
+              ],
+            ),
+          ),
+        ),
         actions: [
-          // Status Indicator
+          // Status Indicator with Material 3 design
           Container(
             margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: _isOnline ? Colors.green.shade50 : Colors.red.shade50,
-              borderRadius: BorderRadius.circular(16),
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: _isOnline ? Colors.green.shade200 : Colors.red.shade200,
+                color: Colors.white.withOpacity(0.3),
+                width: 1,
               ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 6,
-                  height: 6,
+                  width: 8,
+                  height: 8,
                   decoration: BoxDecoration(
-                    color: _isOnline ? Colors.green : Colors.red,
+                    color: _isOnline ? AppColors.success : AppColors.error,
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: (_isOnline ? AppColors.success : AppColors.error)
+                            .withOpacity(0.5),
+                        blurRadius: 4,
+                        spreadRadius: 1,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 6),
                 Text(
                   _isOnline
                       ? AppLocalizations.of(context)!.online
                       : AppLocalizations.of(context)!.offline,
-                  style: TextStyle(
-                    color:
-                        _isOnline ? Colors.green.shade700 : Colors.red.shade700,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 10,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
                   ),
                 ),
               ],
             ),
           ),
-          // Hamburger Menu Button
-          Builder(
-            builder: (context) => IconButton(
-              onPressed: () => Scaffold.of(context).openEndDrawer(),
-              icon: const Icon(
-                Icons.menu,
-                color: Color(0xFF00C1E8),
-                size: 24,
+          // Hamburger Menu Button with Material 3 design
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Builder(
+              builder: (context) => IconButton(
+                onPressed: () => Scaffold.of(context).openEndDrawer(),
+                icon: Icon(
+                  Icons.menu_rounded,
+                  color: AppColors.secondary,
+                  size: 24,
+                ),
+                tooltip: AppLocalizations.of(context)!.menu,
               ),
-              tooltip: AppLocalizations.of(context)!.menu,
             ),
           ),
         ],
@@ -314,8 +376,8 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: _onNavigate,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.onSurfaceVariant,
         items: [
           BottomNavigationBarItem(
             icon: const Icon(Icons.shopping_bag),
@@ -401,20 +463,20 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
                   const Icon(
                     Icons.business,
                     size: 64,
-                    color: Colors.grey,
+                    color: AppColors.onSurfaceVariant,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'No business found',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: Colors.grey[600],
+                          color: AppColors.onSurfaceVariant,
                         ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Please contact support',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[500],
+                          color: AppColors.textSecondary,
                         ),
                     textAlign: TextAlign.center,
                   ),
@@ -440,23 +502,23 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              const              Icon(
                 Icons.error_outline,
                 size: 64,
-                color: Colors.red,
+                color: AppColors.error,
               ),
               const SizedBox(height: 16),
               Text(
                 'Error loading business',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Colors.red,
+                      color: AppColors.error,
                     ),
               ),
               const SizedBox(height: 8),
               Text(
                 error.toString(),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
+                      color: AppColors.onSurfaceVariant,
                     ),
                 textAlign: TextAlign.center,
               ),

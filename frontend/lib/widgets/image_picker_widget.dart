@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
+import '../core/theme/app_colors.dart';
 
 class ImagePickerWidget extends StatelessWidget {
   final File? selectedImage;
@@ -43,9 +46,9 @@ class ImagePickerWidget extends StatelessWidget {
         height: 200,
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.grey[200],
+          color: AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: AppColors.border),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
@@ -90,7 +93,7 @@ class ImagePickerWidget extends StatelessWidget {
     return Icon(
       Icons.image,
       size: 64,
-      color: Colors.grey[400],
+      color: AppColors.onSurfaceVariant,
     );
   }
 
@@ -115,9 +118,9 @@ class ImagePickerWidget extends StatelessWidget {
             icon: const Icon(Icons.delete_outline),
             label: const Text('Remove'),
             style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.red,
-              backgroundColor: Colors.white,
-              side: const BorderSide(color: Colors.red),
+              foregroundColor: AppColors.error,
+              backgroundColor: AppColors.surface,
+              side: BorderSide(color: AppColors.error),
             ),
           ),
         ],

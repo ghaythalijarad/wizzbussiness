@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
+import '../core/design_system/design_system.dart';
+import '../core/theme/app_colors.dart';
 
 class WizzBusinessTextFormField extends StatelessWidget {
   final TextEditingController controller;
@@ -41,63 +45,54 @@ class WizzBusinessTextFormField extends StatelessWidget {
       inputFormatters: inputFormatters,
       enabled: enabled,
       textDirection: TextDirection.ltr, // Always left-to-right
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-      ),
+      style: TypographySystem.bodyMedium,
       decoration: InputDecoration(
         labelText: labelText,
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: const Color(0xFFF8FBFF), // Light blue background
+        fillColor: enabled ? AppColors.surface : AppColors.surfaceVariant,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
+          horizontal: GoldenRatio.md,
+          vertical: GoldenRatio.sm,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16), // More rounded
-          borderSide: BorderSide(
-            color: const Color(0xFF3399FF).withOpacity(0.3),
-            width: 1.5,
-          ),
+          borderRadius: BorderRadius.circular(DesignSystem.borderRadius),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(DesignSystem.borderRadius),
           borderSide: BorderSide(
-            color: const Color(0xFF3399FF).withOpacity(0.3),
-            width: 1.5,
+            color: AppColors.border,
+            width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(DesignSystem.borderRadius),
           borderSide: const BorderSide(
-            color: Color(0xFF3399FF), // Blue focused border
-            width: 2.5,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(
-            color: Colors.red,
+            color: AppColors.primary,
             width: 2,
           ),
         ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(
-            color: Colors.red,
-            width: 2.5,
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(DesignSystem.borderRadius),
+          borderSide: BorderSide(
+            color: DesignSystem.errorColor,
+            width: 1,
           ),
         ),
-        labelStyle: TextStyle(
-          color: Colors.grey[600],
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(DesignSystem.borderRadius),
+          borderSide: BorderSide(
+            color: DesignSystem.errorColor,
+            width: 2,
+          ),
         ),
-        floatingLabelStyle: const TextStyle(
-          color: Color(0xFF3399FF), // Blue label when focused
-          fontSize: 16,
+        labelStyle: TypographySystem.bodyMedium.copyWith(
+          color: AppColors.onSurfaceVariant,
+        ),
+        floatingLabelStyle: TypographySystem.bodyMedium.copyWith(
+          color: AppColors.primary,
           fontWeight: FontWeight.w600,
         ),
       ),

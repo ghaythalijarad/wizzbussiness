@@ -117,19 +117,17 @@ class NotificationService extends ChangeNotifier {
   /// Add an order notification
   void addOrderNotification({
     required String title,
-    required String message,
+    required String body,
     String? orderId,
   }) {
     final notification = NotificationModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      businessId: 'default', // You might want to pass this as parameter
-      type: 'order',
       title: title,
-      message: message,
-      timestamp: DateTime.now(),
-      isRead: false,
+      body: body,
+      type: 'order',
+      createdAt: DateTime.now(),
       data: orderId != null ? {'orderId': orderId} : {},
-      priority: 'normal',
+      businessId: 'default',
     );
     addNotification(notification);
   }
@@ -137,18 +135,16 @@ class NotificationService extends ChangeNotifier {
   /// Add a system notification
   void addSystemNotification({
     required String title,
-    required String message,
+    required String body,
   }) {
     final notification = NotificationModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      businessId: 'default', // You might want to pass this as parameter
-      type: 'system',
       title: title,
-      message: message,
-      timestamp: DateTime.now(),
-      isRead: false,
+      body: body,
+      type: 'system',
+      createdAt: DateTime.now(),
       data: {},
-      priority: 'normal',
+      businessId: 'default',
     );
     addNotification(notification);
   }
@@ -163,7 +159,7 @@ class NotificationService extends ChangeNotifier {
   Future<void> sendTestNotification() async {
     addSystemNotification(
       title: 'Test Notification',
-      message: 'This is a test notification to verify the system is working.',
+      body: 'This is a test notification to verify the system is working.',
     );
   }
 

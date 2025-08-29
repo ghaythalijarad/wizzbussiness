@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/theme/app_colors.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
 
 class NotificationSettingsPage extends ConsumerStatefulWidget {
   const NotificationSettingsPage({Key? key}) : super(key: key);
@@ -44,9 +47,33 @@ class _NotificationSettingsPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Notification Settings'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
         elevation: 0,
+        title: Text(
+          'Notification Settings',
+          style: TypographySystem.titleLarge.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppColors.onPrimary,
+          ),
+        ),
+        actions: [
+          FilledButton.icon(
+            onPressed: () => _saveSettings(),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.secondary,
+              foregroundColor: AppColors.onSecondary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+              ),
+            ),
+            icon: const Icon(Icons.save_rounded),
+            label: const Text('Save'),
+          ),
+          SizedBox(width: GoldenRatio.spacing16),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -54,16 +81,16 @@ class _NotificationSettingsPageState
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF32CD32).withOpacity(0.05), // Lime Green
-              const Color(0xFFFFD300).withOpacity(0.03), // Gold
-              Colors.white,
+              AppColors.primaryContainer.withOpacity(0.1),
+              AppColors.secondaryContainer.withOpacity(0.05),
+              AppColors.background,
             ],
             stops: const [0.0, 0.3, 1.0],
           ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
+            padding: EdgeInsets.all(GoldenRatio.spacing20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -71,7 +98,7 @@ class _NotificationSettingsPageState
                 _buildNotificationSection(
                         'Delivery Methods',
                   Icons.send,
-                  const Color(0xFF32CD32),
+                  AppColors.primary,
                   [
                     _buildModernSwitchTile(
                       'Push Notifications',
@@ -79,7 +106,7 @@ class _NotificationSettingsPageState
                       _pushNotifications,
                       (value) => setState(() => _pushNotifications = value),
                       Icons.notifications,
-                      const Color(0xFF32CD32),
+                      AppColors.primary,
                     ),
                     _buildModernSwitchTile(
                       'Email Notifications',
@@ -87,7 +114,7 @@ class _NotificationSettingsPageState
                       _emailNotifications,
                       (value) => setState(() => _emailNotifications = value),
                       Icons.email,
-                      const Color(0xFFFFD300),
+                      AppColors.secondary,
                     ),
                     _buildModernSwitchTile(
                       'SMS Notifications',
@@ -95,7 +122,7 @@ class _NotificationSettingsPageState
                       _smsNotifications,
                       (value) => setState(() => _smsNotifications = value),
                       Icons.sms,
-                      const Color(0xFF32CD32),
+                      AppColors.primary,
                     ),
                   ],
                 ),
@@ -105,7 +132,7 @@ class _NotificationSettingsPageState
                 _buildNotificationSection(
                   'Order Notifications',
                   Icons.shopping_cart,
-                  const Color(0xFFFFD300),
+                  AppColors.secondary,
                   [
                     _buildModernSwitchTile(
                       'New Orders',
@@ -113,7 +140,7 @@ class _NotificationSettingsPageState
                       _newOrderNotifications,
                       (value) => setState(() => _newOrderNotifications = value),
                       Icons.add_shopping_cart,
-                      const Color(0xFF32CD32),
+                      AppColors.primary,
                     ),
                     _buildModernSwitchTile(
                       'Order Status Updates',
@@ -122,7 +149,7 @@ class _NotificationSettingsPageState
                       (value) =>
                           setState(() => _orderStatusNotifications = value),
                       Icons.update,
-                      const Color(0xFFFFD300),
+                      AppColors.secondary,
                     ),
                     _buildModernSwitchTile(
                       'Payment Notifications',
@@ -130,7 +157,7 @@ class _NotificationSettingsPageState
                       _paymentNotifications,
                       (value) => setState(() => _paymentNotifications = value),
                       Icons.payment,
-                      const Color(0xFF32CD32),
+                      AppColors.primary,
                     ),
                   ],
                 ),
@@ -146,24 +173,24 @@ class _NotificationSettingsPageState
       String title, IconData icon, Color iconColor, List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
         border: Border.all(
           color: iconColor.withOpacity(0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: AppColors.onSurface.withOpacity(0.04),
+            blurRadius: GoldenRatio.spacing20,
+            offset: Offset(0, GoldenRatio.sm),
           ),
         ],
       ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(GoldenRatio.spacing20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -171,39 +198,38 @@ class _NotificationSettingsPageState
                   iconColor.withOpacity(0.05),
                 ],
               ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(GoldenRatio.radiusXl),
+                topRight: Radius.circular(GoldenRatio.radiusXl),
               ),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(GoldenRatio.spacing12),
                   decoration: BoxDecoration(
                     color: iconColor,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
                   ),
                   child: Icon(
                     icon,
                     color: Colors.white,
-                    size: 24,
+                    size: GoldenRatio.spacing20,
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: GoldenRatio.spacing16),
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 20,
+                  style: TypographySystem.titleMedium.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1C1C1C),
+                    color: AppColors.onSurface,
                   ),
                 ),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(GoldenRatio.spacing20),
             child: Column(
               children: children,
             ),
@@ -216,11 +242,11 @@ class _NotificationSettingsPageState
   Widget _buildModernSwitchTile(String title, String subtitle, bool value,
       ValueChanged<bool> onChanged, IconData icon, Color iconColor) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
+      margin: EdgeInsets.only(bottom: GoldenRatio.spacing16),
+      padding: EdgeInsets.all(GoldenRatio.spacing20),
       decoration: BoxDecoration(
         color: iconColor.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
         border: Border.all(
           color: iconColor.withOpacity(0.1),
           width: 1,
@@ -229,36 +255,34 @@ class _NotificationSettingsPageState
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(GoldenRatio.sm),
             decoration: BoxDecoration(
               color: iconColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(GoldenRatio.sm),
             ),
             child: Icon(
               icon,
               color: iconColor,
-              size: 20,
+              size: GoldenRatio.spacing20,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: GoldenRatio.spacing16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TypographySystem.bodyLarge.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1C1C1C),
+                    color: AppColors.onSurface,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: GoldenRatio.xs),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
+                  style: TypographySystem.bodyMedium.copyWith(
+                    color: AppColors.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -269,9 +293,100 @@ class _NotificationSettingsPageState
             onChanged: onChanged,
             activeColor: iconColor,
             activeTrackColor: iconColor.withOpacity(0.3),
+            inactiveThumbColor: AppColors.onSurfaceVariant,
+            inactiveTrackColor: AppColors.surfaceVariant,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _saveSettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('notif_push', _pushNotifications);
+      await prefs.setBool('notif_email', _emailNotifications);
+      await prefs.setBool('notif_sms', _smsNotifications);
+      await prefs.setBool('notif_new_order', _newOrderNotifications);
+      await prefs.setBool('notif_order_status', _orderStatusNotifications);
+      await prefs.setBool('notif_payment', _paymentNotifications);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: Colors.black87,
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Notification settings saved successfully',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.error_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Failed to save settings: $e',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    }
   }
 }

@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../providers/locale_provider_riverpod.dart';
 import '../services/language_service.dart';
 import '../services/app_state.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/theme/app_colors.dart';
+import '../core/design_system/typography_system.dart';
+import '../utils/responsive_helper.dart';
+import 'dart:io';
 
+/// ModernSidebar - Adaptive sidebar component
+///
+/// This component automatically adapts its behavior and appearance
+/// based on the platform (iOS/Android) and screen size.
+/// Features:
+/// - Material Design 3 styling with golden ratio proportions
+/// - Platform-specific animations and interactions
+/// - Responsive layout for mobile/tablet/desktop
+/// - Complete design system integration
 class ModernSidebar extends ConsumerStatefulWidget {
   final bool isOnline;
   final Future<void> Function(bool) onToggleStatus;
@@ -40,9 +55,20 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
     super.initState();
     _appState.addListener(_onAppStateChanged);
 
+    // Platform-specific animation curves and durations
+    final isIOS = Platform.isIOS;
+    final animationDuration = isIOS
+        ? const Duration(
+            milliseconds: 400) // iOS prefers slightly longer animations
+        : const Duration(milliseconds: 350); // Android standard
+
+    final animationCurve = isIOS
+        ? Curves.easeInOutCubic // iOS characteristic curve
+        : Curves.easeOutCubic; // Material Design curve
+
     // Main slide animation
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 350),
+      duration: animationDuration,
       vsync: this,
     );
 
@@ -57,7 +83,7 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
       end: 0,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeOutCubic,
+      curve: animationCurve,
     ));
 
     _fadeAnimation = Tween<double>(
@@ -73,7 +99,7 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeOutBack,
+      curve: isIOS ? Curves.easeOutBack : Curves.easeOutCubic,
     ));
 
     _animationController.forward();
@@ -94,14 +120,87 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
   }
 
   void _closeWithAnimation() async {
+    // Platform-specific haptic feedback
+    if (Platform.isIOS) {
+      HapticFeedback.lightImpact();
+    } else {
+      HapticFeedback.selectionClick();
+    }
+    
     await _animationController.reverse();
     widget.onClose();
+  }
+
+  Future<void> _handleSwitchToggle(bool value) async {
+    // Platform-specific haptic feedback for switch interaction
+    if (Platform.isIOS) {
+      HapticFeedback.selectionClick();
+    } else {
+      HapticFeedback.lightImpact();
+    }
+
+    try {
+      await _appState.setOnline(value, widget.onToggleStatus);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(GoldenRatio.xs),
+                  decoration: BoxDecoration(
+                    color: AppColors.errorContainer,
+                    borderRadius:
+                        BorderRadius.circular(GoldenRatio.buttonRadius),
+                  ),
+                  child: Icon(
+                    Icons.error_outline_rounded,
+                    color: AppColors.error,
+                    size: GoldenRatio.iconSm,
+                  ),
+                ),
+                const SizedBox(width: GoldenRatio.spacing12),
+                const Expanded(
+                  child: Text(
+                    'Failed to update status. Please try again.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(GoldenRatio.cardRadius),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
+    final isIOS = Platform.isIOS;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Platform and size-specific sidebar width
+    double sidebarWidth;
+    if (ResponsiveHelper.isDesktop(context)) {
+      sidebarWidth = GoldenRatio.drawerWidth; // 304px for desktop
+    } else if (ResponsiveHelper.isTablet(context)) {
+      sidebarWidth = screenWidth * 0.75; // 75% on tablet
+    } else {
+      // Mobile: iOS prefers slightly wider sidebars
+      sidebarWidth = isIOS ? screenWidth * 0.85 : screenWidth * 0.8;
+    }
 
     return GestureDetector(
       onTap: _closeWithAnimation,
@@ -119,13 +218,15 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
           },
           child: Stack(
             children: [
-              // Animated backdrop
+              // Animated backdrop with platform-specific opacity
               AnimatedBuilder(
                 animation: _fadeAnimation,
                 builder: (context, child) {
+                  final backdropOpacity =
+                      isIOS ? 0.4 : 0.5; // iOS uses lighter backdrop
                   return Container(
-                    color: Colors.black
-                        .withValues(alpha: _fadeAnimation.value * 0.5),
+                    color: Colors.black.withValues(
+                        alpha: _fadeAnimation.value * backdropOpacity),
                   );
                 },
               ),
@@ -135,9 +236,7 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
                 builder: (context, child) {
                   return Transform.translate(
                     offset: Offset(
-                      _slideAnimation.value *
-                          MediaQuery.of(context).size.width *
-                          0.8,
+                      _slideAnimation.value * sidebarWidth,
                       0,
                     ),
                     child: Align(
@@ -145,19 +244,40 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
                       child: Transform.scale(
                         scale: _scaleAnimation.value,
                         child: Container(
-                          width: MediaQuery.of(context).size.width * 0.8,
+                          width: sidebarWidth,
                           height: MediaQuery.of(context).size.height,
                           decoration: BoxDecoration(
-                            color: colorScheme.surface,
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(8),
-                              bottomRight: Radius.circular(8),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.white,
+                                AppColors.primary.withOpacity(0.02),
+                                AppColors.secondary.withOpacity(0.01),
+                              ],
+                              stops: const [0.0, 0.7, 1.0],
+                            ),
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(isIOS
+                                  ? GoldenRatio.modalRadius
+                                  : GoldenRatio.sheetRadius),
+                              bottomRight: Radius.circular(isIOS
+                                  ? GoldenRatio.modalRadius
+                                  : GoldenRatio.sheetRadius),
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 8,
-                                offset: const Offset(2, 0),
+                                color: AppColors.primary.withOpacity(0.08),
+                                blurRadius: isIOS
+                                    ? GoldenRatio.elevation5
+                                    : GoldenRatio.elevation4,
+                                offset: const Offset(3, 0),
+                                spreadRadius: 1,
+                              ),
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: GoldenRatio.elevation2,
+                                offset: const Offset(1, 0),
                               ),
                             ],
                           ),
@@ -195,9 +315,6 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
           Expanded(
             child: _buildNavigationMenu(context, localizations, colorScheme),
           ),
-
-          // Modern footer
-          _buildModernFooter(context, localizations, colorScheme),
         ],
       ),
     );
@@ -205,81 +322,137 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
 
   Widget _buildStatusCard(BuildContext context, AppLocalizations localizations,
       ColorScheme colorScheme) {
+    final isOnline = _appState.isOnline;
+    
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(
+          horizontal: GoldenRatio.spacing16, vertical: GoldenRatio.spacing12),
+      padding: const EdgeInsets.all(GoldenRatio.spacing16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant,
-        borderRadius: BorderRadius.circular(8),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            isOnline
+                ? AppColors.success.withOpacity(0.1)
+                : AppColors.warning.withOpacity(0.1),
+            isOnline
+                ? AppColors.success.withOpacity(0.05)
+                : AppColors.warning.withOpacity(0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(GoldenRatio.cardRadius),
+        border: Border.all(
+          color: isOnline
+              ? AppColors.success.withOpacity(0.2)
+              : AppColors.warning.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isOnline ? AppColors.success : AppColors.warning)
+                .withOpacity(0.1),
+            blurRadius: GoldenRatio.elevation2,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          // Simple status indicator
-          Icon(
-            _appState.isOnline ? Icons.wifi : Icons.wifi_off,
-            color: _appState.isOnline ? Colors.green : Colors.orange,
-            size: 20,
-          ),
-          const SizedBox(width: 12),
-
-          Expanded(
-            child: Text(
-              _appState.isOnline ? localizations.online : localizations.offline,
-              style: TextStyle(
-                color: colorScheme.onSurface,
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
+          Row(
+            children: [
+              // Status icon with animation
+              Container(
+                padding: const EdgeInsets.all(GoldenRatio.spacing12),
+                decoration: BoxDecoration(
+                  color: isOnline ? AppColors.success : AppColors.warning,
+                  borderRadius: BorderRadius.circular(GoldenRatio.cardRadius),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isOnline ? AppColors.success : AppColors.warning)
+                          .withOpacity(0.3),
+                      blurRadius: GoldenRatio.elevation1,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  isOnline ? Icons.wifi_rounded : Icons.wifi_off_rounded,
+                  color: Colors.white,
+                  size: GoldenRatio.iconSm,
+                ),
               ),
-            ),
-          ),
+              const SizedBox(width: GoldenRatio.spacing12),
 
-          // Loading indicator or toggle switch
-          _appState.isToggling
-              ? SizedBox(
-                  width: 48,
-                  height: 28,
-                  child: Center(
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          _appState.isOnline ? Colors.green : Colors.orange,
-                        ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isOnline ? localizations.online : localizations.offline,
+                      style: TypographySystem.labelLarge.copyWith(
+                        color: isOnline ? AppColors.success : AppColors.warning,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                )
-              : Switch.adaptive(
-                  value: _appState.isOnline,
-                  onChanged: _appState.isToggling
-                      ? null
-                      : (value) async {
-                          try {
-                            await _appState.setOnline(
-                                value, widget.onToggleStatus);
-                          } catch (error) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Failed to update status. Please try again.',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  backgroundColor: Colors.red,
-                                  duration: Duration(seconds: 3),
-                                ),
-                              );
-                            }
-                          }
-                        },
-                  activeColor: Colors.green.shade700,
-                  activeTrackColor: Colors.green.shade300,
-                  inactiveThumbColor: Colors.red.shade700,
-                  inactiveTrackColor: Colors.red.shade300,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    const SizedBox(height: GoldenRatio.xs),
+                    Text(
+                      isOnline
+                          ? localizations.readyToReceiveOrders
+                          : localizations.ordersArePaused,
+                      style: TypographySystem.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+
+              // Loading indicator or toggle switch with platform-specific behavior
+              _appState.isToggling
+                  ? Container(
+                      width: 44,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceVariant,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Center(
+                        child: SizedBox(
+                          width: GoldenRatio.iconSm,
+                          height: GoldenRatio.iconSm,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              isOnline ? AppColors.success : AppColors.warning,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Platform.isIOS
+                      ? CupertinoSwitch(
+                          value: isOnline,
+                          onChanged:
+                              _appState.isToggling ? null : _handleSwitchToggle,
+                          activeColor: AppColors.success,
+                          trackColor: AppColors.warning.withOpacity(0.3),
+                        )
+                      : Switch.adaptive(
+                          value: isOnline,
+                          onChanged:
+                              _appState.isToggling ? null : _handleSwitchToggle,
+                          activeColor: AppColors.success,
+                          activeTrackColor: AppColors.success.withOpacity(0.3),
+                          inactiveThumbColor: AppColors.warning,
+                          inactiveTrackColor:
+                              AppColors.warning.withOpacity(0.3),
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        ),
+            ],
+          ),
         ],
       ),
     );
@@ -288,9 +461,9 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
   Widget _buildNavigationMenu(BuildContext context,
       AppLocalizations localizations, ColorScheme colorScheme) {
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: GoldenRatio.spacing16),
       children: [
-        // Main navigation items
+        // Main navigation items with consistent spacing
         _buildMenuItem(
           context: context,
           icon: Icons.shopping_bag,
@@ -298,6 +471,8 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
           onTap: () => _navigateAndClose(0),
           colorScheme: colorScheme,
         ),
+
+        const SizedBox(height: GoldenRatio.sm),
 
         _buildMenuItem(
           context: context,
@@ -307,6 +482,8 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
           colorScheme: colorScheme,
         ),
 
+        const SizedBox(height: GoldenRatio.sm),
+
         _buildMenuItem(
           context: context,
           icon: Icons.analytics,
@@ -314,6 +491,8 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
           onTap: () => _navigateAndClose(2),
           colorScheme: colorScheme,
         ),
+
+        const SizedBox(height: GoldenRatio.sm),
 
         _buildMenuItem(
           context: context,
@@ -323,6 +502,8 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
           colorScheme: colorScheme,
         ),
 
+        const SizedBox(height: GoldenRatio.sm),
+
         _buildMenuItem(
           context: context,
           icon: Icons.settings,
@@ -331,11 +512,11 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
           colorScheme: colorScheme,
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: GoldenRatio.spacing16),
         Divider(height: 1, color: colorScheme.outline.withOpacity(0.2)),
-        const SizedBox(height: 8),
+        const SizedBox(height: GoldenRatio.spacing16),
 
-        // Quick action items
+        // Quick action items with consistent spacing
         _buildMenuItem(
           context: context,
           icon: Icons.language,
@@ -344,16 +525,17 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
           colorScheme: colorScheme,
         ),
 
+        const SizedBox(height: GoldenRatio.sm),
+
         _buildMenuItem(
           context: context,
-          icon: Icons.undo,
+          icon: Icons.undo_rounded,
           title: localizations.returnOrder,
           onTap: () {
             widget.onReturnOrder();
             _closeWithAnimation();
           },
           colorScheme: colorScheme,
-          isDestructive: true,
         ),
       ],
     );
@@ -365,39 +547,60 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
     required String title,
     required VoidCallback onTap,
     required ColorScheme colorScheme,
-    bool isDestructive = false,
   }) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      leading: Icon(
-        icon,
-        color: isDestructive ? Colors.red : colorScheme.onSurface,
-        size: 20,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDestructive ? Colors.red : colorScheme.onSurface,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      onTap: onTap,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-    );
-  }
-
-  Widget _buildModernFooter(BuildContext context,
-      AppLocalizations localizations, ColorScheme colorScheme) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      child: Text(
-        localizations.tapOutsideOrPressEscToClose,
-        style: TextStyle(
-          color: colorScheme.onSurface.withOpacity(0.6),
-          fontSize: 12,
+      margin: const EdgeInsets.symmetric(horizontal: GoldenRatio.xs),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+                horizontal: GoldenRatio.spacing16,
+                vertical: GoldenRatio.spacing12),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(GoldenRatio.cardRadius),
+              border: Border.all(
+                color: AppColors.primary.withOpacity(0.1),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(GoldenRatio.sm),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius:
+                        BorderRadius.circular(GoldenRatio.buttonRadius),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: AppColors.primary,
+                    size: GoldenRatio.iconSm,
+                  ),
+                ),
+                const SizedBox(width: GoldenRatio.spacing12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TypographySystem.bodyMedium.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: AppColors.textSecondary,
+                  size: GoldenRatio.iconXs,
+                ),
+              ],
+            ),
+          ),
         ),
-        textAlign: TextAlign.center,
       ),
     );
   }
@@ -413,22 +616,37 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: AppColors.surface,
+          surfaceTintColor: AppColors.primary.withOpacity(0.1),
+          elevation: GoldenRatio.elevation4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(GoldenRatio.modalRadius),
+          ),
           title: Row(
             children: [
-              Icon(
-                Icons.language_rounded,
-                size: 24,
-                color: Theme.of(context).colorScheme.primary,
+              Container(
+                padding: const EdgeInsets.all(GoldenRatio.spacing12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(GoldenRatio.cardRadius),
+                ),
+                child: Icon(
+                  Icons.language_rounded,
+                  color: AppColors.primary,
+                  size: GoldenRatio.iconRegular,
+                ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                localizations.selectLanguage,
-                style: const TextStyle(fontSize: 18),
+              const SizedBox(width: GoldenRatio.spacing12),
+              Expanded(
+                child: Text(
+                  localizations.selectLanguage,
+                  style: TypographySystem.headlineSmall.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ),
             ],
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -439,7 +657,20 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
                 name: localizations.english,
                 locale: const Locale('en'),
               ),
-              const Divider(height: 1),
+              const SizedBox(height: GoldenRatio.sm),
+              Container(
+                height: 1,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      const Color(0xFF00C1E8).withOpacity(0.2),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: GoldenRatio.sm),
               _buildLanguageTile(
                 context: context,
                 flag: '🇸🇦',
@@ -449,14 +680,20 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
             ],
           ),
           actions: [
-            TextButton(
+            FilledButton.tonalIcon(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                localizations.cancel,
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary.withOpacity(0.1),
+                foregroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(GoldenRatio.cardRadius),
+                ),
               ),
+              icon: const Icon(Icons.close_rounded),
+              label: Text(localizations.cancel),
             ),
           ],
+          actionsAlignment: MainAxisAlignment.center,
         );
       },
     );
@@ -472,42 +709,119 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
     final currentLocale = Localizations.localeOf(context);
     final isSelected = currentLocale.languageCode == locale.languageCode;
 
-    return ListTile(
-      leading: Text(flag, style: const TextStyle(fontSize: 24)),
-      title: Text(name),
-      trailing: isSelected
-          ? Icon(
-              Icons.check_circle_rounded,
-              color: Theme.of(context).colorScheme.primary,
-            )
-          : null,
-      onTap: () async {
-        // Update the locale using the provider
-        ref.read(localeProvider.notifier).setLocale(locale);
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: GoldenRatio.xs),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () async {
+            // Update the locale using the provider
+            ref.read(localeProvider.notifier).setLocale(locale);
 
-        // Save the language preference
-        await LanguageService.setLanguage(locale.languageCode);
+            // Save the language preference
+            await LanguageService.setLanguage(locale.languageCode);
 
-        Navigator.of(context).pop();
+            Navigator.of(context).pop();
 
-        // Show confirmation
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                locale.languageCode == 'ar'
-                    ? localizations.languageChangedToArabic
-                    : localizations.languageChangedToEnglish,
-              ),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            // Show confirmation
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(GoldenRatio.xs),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.2),
+                          borderRadius:
+                              BorderRadius.circular(GoldenRatio.buttonRadius),
+                        ),
+                        child: Icon(Icons.check_rounded,
+                            color: AppColors.primary, size: GoldenRatio.iconSm),
+                      ),
+                      const SizedBox(width: GoldenRatio.spacing12),
+                      Expanded(
+                        child: Text(
+                          locale.languageCode == 'ar'
+                              ? localizations.languageChangedToArabic
+                              : localizations.languageChangedToEnglish,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  backgroundColor: AppColors.success,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(GoldenRatio.cardRadius),
+                  ),
+                ),
+              );
+            }
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(GoldenRatio.spacing16),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primary.withOpacity(0.1)
+                  : AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(GoldenRatio.cardRadius),
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.primary
+                    : AppColors.textSecondary.withOpacity(0.3),
+                width: isSelected ? 1.5 : 1,
               ),
             ),
-          );
-        }
-      },
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(GoldenRatio.sm),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.primary.withOpacity(0.1)
+                        : AppColors.surfaceContainer,
+                    borderRadius:
+                        BorderRadius.circular(GoldenRatio.buttonRadius),
+                  ),
+                  child: Text(flag, style: TypographySystem.titleMedium),
+                ),
+                const SizedBox(width: GoldenRatio.spacing16),
+                Expanded(
+                  child: Text(
+                    name,
+                    style: TypographySystem.bodyLarge.copyWith(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textPrimary,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+                if (isSelected)
+                  Container(
+                    padding: const EdgeInsets.all(GoldenRatio.xs),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius:
+                          BorderRadius.circular(GoldenRatio.buttonRadius),
+                    ),
+                    child: Icon(
+                      Icons.check_rounded,
+                      color: AppColors.onPrimary,
+                      size: GoldenRatio.iconSm,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -426,7 +426,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get manageDiscounts => 'Manage Discounts';
 
   @override
-  String get returnOrder => 'Return Order';
+  String get returnOrder => 'إرجاع الطلب';
 
   @override
   String get accountSettings => 'إعدادات الحساب';

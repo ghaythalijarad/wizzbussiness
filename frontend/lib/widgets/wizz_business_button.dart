@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
+import '../core/theme/app_colors.dart';
 
 class WizzBusinessButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -22,34 +25,58 @@ class WizzBusinessButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final buttonColor = backgroundColor ?? AppColors.primary;
+    final buttonTextColor = textColor ?? Colors.white;
+    
     return SizedBox(
       width: width ?? double.infinity,
-      height: height ?? 50,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? Theme.of(context).primaryColor,
-          foregroundColor: textColor ?? Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
+      height: height ?? (GoldenRatio.spacing20 * 2.5),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              buttonColor,
+              buttonColor == AppColors.primary
+                  ? AppColors.primaryDark
+                  : buttonColor.withOpacity(0.8),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+          boxShadow: [
+            BoxShadow(
+              color: buttonColor.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+            onTap: isLoading ? null : onPressed,
+            child: Center(
+              child: isLoading
+                  ? SizedBox(
+                      width: GoldenRatio.md,
+                      height: GoldenRatio.md,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      text,
+                      style: TypographySystem.labelLarge.copyWith(
+                        color: buttonTextColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
           ),
         ),
-        child: isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
       ),
     );
   }

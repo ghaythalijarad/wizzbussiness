@@ -4,6 +4,9 @@ import '../models/business.dart';
 import '../services/api_service.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/location_settings_widget.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/theme/app_colors.dart';
+import '../core/design_system/typography_system.dart';
 
 class OtherSettingsPage extends ConsumerStatefulWidget {
   final Business business;
@@ -137,7 +140,7 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to load location settings: $e'),
-            backgroundColor: Colors.orange,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -213,9 +216,9 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Location settings saved successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.primary,
           ),
         );
       }
@@ -224,7 +227,7 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to save location settings: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -362,18 +365,18 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      backgroundColor: AppColors.backgroundVariant,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF32CD32).withOpacity(0.05), // Lime Green
-              const Color(0xFFFFD300).withOpacity(0.03), // Gold
-              Colors.white,
+              AppColors.primary.withOpacity(0.05),
+              AppColors.secondary.withOpacity(0.03),
+              AppColors.background,
             ],
             stops: const [0.0, 0.3, 1.0],
           ),
@@ -381,15 +384,15 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
         child: SafeArea(
           child: Column(
             children: [
-              // Modern Material 3 App Bar
-              _buildModernAppBar(context, loc),
-
+              // Modern App Bar
+              _buildModernAppBar(loc),
+              
               // Content
               Expanded(
                 child: _isLoading
                     ? _buildLoadingState()
                     : SingleChildScrollView(
-                        padding: const EdgeInsets.all(24.0),
+                        padding: EdgeInsets.all(GoldenRatio.spacing20),
                         child: Form(
                           key: _formKey,
                           child: Column(
@@ -397,18 +400,21 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
                             children: [
                               // Header Section
                               _buildHeaderSection(loc),
-                              const SizedBox(height: 32),
+                              SizedBox(height: GoldenRatio.spacing24),
                               
                               // Business Address Section
-                              _buildAddressSection(loc, colorScheme),
-                              const SizedBox(height: 24),
+                              _buildAddressSection(loc),
+                              SizedBox(height: GoldenRatio.spacing24),
 
                               // GPS Location Section
-                              _buildGPSSection(colorScheme),
-                              const SizedBox(height: 32),
+                              _buildGPSSection(),
+                              SizedBox(height: GoldenRatio.spacing24),
 
                               // Save Button
                               _buildSaveButton(loc),
+                              
+                              // Bottom spacing
+                              SizedBox(height: GoldenRatio.spacing24),
                             ],
                           ),
                         ),
@@ -421,27 +427,55 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
     );
   }
 
-  Widget _buildModernAppBar(BuildContext context, AppLocalizations loc) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF32CD32), // Lime Green
-            const Color(0xFF228B22), // Darker Lime Green
+  Widget _buildLoadingState() {
+    return Center(
+      child: Container(
+        padding: EdgeInsets.all(GoldenRatio.spacing24 + GoldenRatio.spacing8),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadow.withOpacity(0.1),
+              blurRadius: GoldenRatio.spacing20,
+              offset: Offset(0, GoldenRatio.spacing8),
+            ),
           ],
         ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(
+              color: AppColors.primary,
+              strokeWidth: 3,
+            ),
+            SizedBox(height: GoldenRatio.spacing16),
+            Text(
+              'Loading location settings...',
+              style: TypographySystem.bodyLarge.copyWith(
+                color: AppColors.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildModernAppBar(AppLocalizations loc) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: GoldenRatio.spacing20,
+        vertical: GoldenRatio.spacing16,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF32CD32).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: AppColors.shadow.withOpacity(0.04),
+            blurRadius: GoldenRatio.spacing12,
+            offset: Offset(0, GoldenRatio.spacing4),
           ),
         ],
       ),
@@ -449,33 +483,30 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
             ),
             child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+              icon: Icon(Icons.arrow_back_rounded, color: AppColors.primary),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: GoldenRatio.spacing16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   loc.locationSettings,
-                  style: const TextStyle(
-                    fontSize: 28,
+                  style: TypographySystem.headlineSmall.copyWith(
+                    color: AppColors.onSurface,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 4),
                 Text(
-                  'Configure your business location',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white.withOpacity(0.9),
+                  'Manage your business location and GPS coordinates',
+                  style: TypographySystem.bodyMedium.copyWith(
+                    color: AppColors.onSurface.withOpacity(0.7),
                   ),
                 ),
               ],
@@ -484,59 +515,29 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  const Color(0xFFFFD300), // Gold
-                  const Color(0xFFC7A600), // Darker Gold
-                ],
+                colors: [AppColors.primary, AppColors.primaryDark],
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFFD300).withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
+                  color: AppColors.primary.withOpacity(0.3),
+                  blurRadius: GoldenRatio.spacing8,
+                  offset: Offset(0, GoldenRatio.spacing4),
                 ),
               ],
             ),
             child: IconButton(
-              icon: const Icon(Icons.save, color: Colors.black87),
+              icon: _isLoading
+                  ? SizedBox(
+                      width: GoldenRatio.spacing20,
+                      height: GoldenRatio.spacing20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.onPrimary,
+                      ),
+                    )
+                  : Icon(Icons.save_rounded, color: AppColors.onPrimary),
               onPressed: _isLoading ? null : _saveLocationSettings,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF32CD32).withOpacity(0.1),
-                  const Color(0xFFFFD300).withOpacity(0.1),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: CircularProgressIndicator(
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF32CD32)),
-              strokeWidth: 3,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Loading location settings...',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[600],
             ),
           ),
         ],
@@ -546,90 +547,186 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
 
   Widget _buildHeaderSection(AppLocalizations loc) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(GoldenRatio.spacing24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white,
-            const Color(0xFF32CD32).withOpacity(0.02),
+            AppColors.surface,
+            AppColors.primary.withOpacity(0.02),
+            AppColors.secondary.withOpacity(0.01),
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
         border: Border.all(
-          color: const Color(0xFF32CD32).withOpacity(0.1),
+          color: AppColors.primary.withOpacity(0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: AppColors.shadow.withOpacity(0.06),
+            blurRadius: GoldenRatio.spacing24,
+            offset: Offset(0, GoldenRatio.spacing8),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF32CD32), Color(0xFF228B22)],
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(GoldenRatio.spacing16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.1),
+                      AppColors.secondary.withOpacity(0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+                ),
+                child: Icon(
+                  Icons.location_on_rounded,
+                  color: AppColors.primary,
+                  size: GoldenRatio.spacing24 + GoldenRatio.spacing8,
+                ),
               ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(
-              Icons.location_on,
-              color: Colors.white,
-              size: 32,
-            ),
+              SizedBox(width: GoldenRatio.spacing20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Business Location',
+                      style: TypographySystem.headlineMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.onSurface,
+                      ),
+                    ),
+                    SizedBox(height: GoldenRatio.spacing8),
+                    Text(
+                      'Set your business location to help customers find you and improve delivery accuracy.',
+                      style: TypographySystem.bodyLarge.copyWith(
+                        color: AppColors.onSurface.withOpacity(0.8),
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Business Location',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1C1C1C),
-                  ),
+          SizedBox(height: GoldenRatio.spacing20),
+          // Feature highlights
+          Row(
+            children: [
+              Expanded(
+                child: _buildFeatureHighlight(
+                  icon: Icons.visibility_rounded,
+                  title: 'Customer Visibility',
+                  description:
+                      'Your location will be shown to customers when they place orders',
+                  color: AppColors.primary,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Set your business location to help customers find you and improve delivery accuracy.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                    height: 1.4,
-                  ),
+              ),
+              SizedBox(width: GoldenRatio.spacing16),
+              Expanded(
+                child: _buildFeatureHighlight(
+                  icon: Icons.route_rounded,
+                  title: 'Delivery Optimization',
+                  description:
+                      'Accurate location helps optimize delivery routes and timing',
+                  color: AppColors.secondary,
                 ),
-              ],
-            ),
+              ),
+              SizedBox(width: GoldenRatio.spacing16),
+              Expanded(
+                child: _buildFeatureHighlight(
+                  icon: Icons.security_rounded,
+                  title: 'Privacy & Security',
+                  description:
+                      'Your location data is encrypted and securely stored',
+                  color: AppColors.success,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAddressSection(AppLocalizations loc, ColorScheme colorScheme) {
+  Widget _buildFeatureHighlight({
+    required IconData icon,
+    required String title,
+    required String description,
+    required Color color,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(GoldenRatio.spacing16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
         border: Border.all(
-          color: const Color(0xFFFFD300).withOpacity(0.2),
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(GoldenRatio.spacing8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: GoldenRatio.spacing20,
+            ),
+          ),
+          SizedBox(height: GoldenRatio.spacing12),
+          Text(
+            title,
+            style: TypographySystem.titleSmall.copyWith(
+              color: AppColors.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: GoldenRatio.spacing8),
+          Text(
+            description,
+            style: TypographySystem.bodySmall.copyWith(
+              color: AppColors.onSurface.withOpacity(0.7),
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddressSection(AppLocalizations loc) {
+    return Container(
+      padding: EdgeInsets.all(GoldenRatio.spacing24),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: AppColors.shadow.withOpacity(0.1),
+            blurRadius: GoldenRatio.spacing20,
+            offset: Offset(0, GoldenRatio.sm),
           ),
         ],
       ),
@@ -639,31 +736,28 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(GoldenRatio.spacing12),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFFD300), Color(0xFFC7A600)],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.primaryContainer,
+                  borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.business,
-                  color: Colors.black87,
-                  size: 24,
+                  color: AppColors.onPrimaryContainer,
+                  size: GoldenRatio.spacing24,
                 ),
               ),
-              const SizedBox(width: 16),
-              const Text(
+              SizedBox(width: GoldenRatio.spacing16),
+              Text(
                 'Business Address',
-                style: TextStyle(
-                  fontSize: 20,
+                style: TypographySystem.titleLarge.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1C1C1C),
+                  color: AppColors.onSurface,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: GoldenRatio.spacing24),
 
           // Address form fields in Material 3 style
           Row(
@@ -673,7 +767,7 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
                   controller: _cityController,
                   label: 'City',
                   icon: Icons.location_city,
-                  color: const Color(0xFF32CD32),
+                  color: AppColors.primary,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'City required';
@@ -682,24 +776,24 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
                   },
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: GoldenRatio.spacing16),
               Expanded(
                 child: _buildModernTextField(
                   controller: _districtController,
                   label: 'District',
                   icon: Icons.map,
-                  color: const Color(0xFFFFD300),
+                  color: AppColors.secondary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: GoldenRatio.spacing20),
 
           _buildModernTextField(
             controller: _countryController,
             label: 'Country',
             icon: Icons.public,
-            color: const Color(0xFF32CD32),
+            color: AppColors.primary,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please enter country';
@@ -707,13 +801,13 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
               return null;
             },
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: GoldenRatio.spacing20),
 
           _buildModernTextField(
             controller: _streetController,
             label: 'Street Name',
             icon: Icons.streetview,
-            color: const Color(0xFFFFD300),
+            color: AppColors.secondary,
             helperText: 'Street name used for location mapping and delivery',
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -738,120 +832,117 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
     return TextFormField(
       controller: controller,
       validator: validator,
-      style: const TextStyle(
-        fontSize: 16,
+      style: TypographySystem.bodyLarge.copyWith(
         fontWeight: FontWeight.w500,
-        color: Color(0xFF1C1C1C),
+        color: AppColors.onSurface,
       ),
       decoration: InputDecoration(
         labelText: label,
         helperText: helperText,
         prefixIcon: Container(
-          margin: const EdgeInsets.all(8),
-          padding: const EdgeInsets.all(8),
+          margin: EdgeInsets.all(GoldenRatio.sm),
+          padding: EdgeInsets.all(GoldenRatio.sm),
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
           ),
           child: Icon(
             icon,
             color: color,
-            size: 24,
+            size: GoldenRatio.spacing24,
           ),
         ),
         filled: true,
         fillColor: color.withOpacity(0.03),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
           borderSide: BorderSide(color: color.withOpacity(0.2)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
           borderSide: BorderSide(color: color.withOpacity(0.2)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
           borderSide: BorderSide(color: color, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+          borderSide: BorderSide(color: AppColors.error, width: 2),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+          borderSide: BorderSide(color: AppColors.error, width: 2),
         ),
-        labelStyle: TextStyle(
+        labelStyle: TypographySystem.bodyMedium.copyWith(
           color: color,
           fontWeight: FontWeight.w500,
         ),
-        helperStyle: TextStyle(
-          color: Colors.grey[600],
-          fontSize: 12,
+        helperStyle: TypographySystem.bodySmall.copyWith(
+          color: AppColors.onSurfaceVariant,
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: GoldenRatio.spacing20,
+          vertical: GoldenRatio.spacing16,
+        ),
       ),
     );
   }
 
-  Widget _buildGPSSection(ColorScheme colorScheme) {
+  Widget _buildGPSSection() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
         border: Border.all(
-          color: const Color(0xFF32CD32).withOpacity(0.2),
+          color: AppColors.primary.withOpacity(0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: AppColors.shadow.withOpacity(0.1),
+            blurRadius: GoldenRatio.spacing20,
+            offset: Offset(0, GoldenRatio.sm),
           ),
         ],
       ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(GoldenRatio.spacing24),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF32CD32).withOpacity(0.1),
-                  const Color(0xFFFFD300).withOpacity(0.05),
+                  AppColors.primaryContainer.withOpacity(0.3),
+                  AppColors.secondaryContainer.withOpacity(0.1),
                 ],
               ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(GoldenRatio.radiusXl),
+                topRight: Radius.circular(GoldenRatio.radiusXl),
               ),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(GoldenRatio.spacing12),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF32CD32), Color(0xFF228B22)],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.primaryContainer,
+                    borderRadius: BorderRadius.circular(GoldenRatio.radiusMd),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.gps_fixed,
-                    color: Colors.white,
-                    size: 24,
+                    color: AppColors.onPrimaryContainer,
+                    size: GoldenRatio.spacing24,
                   ),
                 ),
-                const SizedBox(width: 16),
-                const Expanded(
+                SizedBox(width: GoldenRatio.spacing16),
+                Expanded(
                   child: Text(
                     'GPS Location',
-                    style: TextStyle(
-                      fontSize: 20,
+                    style: TypographySystem.titleLarge.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1C1C1C),
+                      color: AppColors.onSurface,
                     ),
                   ),
                 ),
@@ -859,7 +950,7 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(GoldenRatio.spacing24),
             child: LocationSettingsWidget(
               initialLatitude: _latitude,
               initialLongitude: _longitude,
@@ -881,16 +972,16 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF32CD32), // Lime Green
-            const Color(0xFF228B22), // Darker Lime Green
+            AppColors.primary,
+            AppColors.primaryDark,
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF32CD32).withOpacity(0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: AppColors.primary.withOpacity(0.4),
+            blurRadius: GoldenRatio.spacing20,
+            offset: Offset(0, GoldenRatio.sm),
           ),
         ],
       ),
@@ -898,43 +989,43 @@ class _OtherSettingsPageState extends ConsumerState<OtherSettingsPage> {
         color: Colors.transparent,
         child: InkWell(
           onTap: _isLoading ? null : _saveLocationSettings,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
+            padding: EdgeInsets.symmetric(vertical: GoldenRatio.lg),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (_isLoading) ...[
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
+                  SizedBox(
+                    width: GoldenRatio.spacing20,
+                    height: GoldenRatio.spacing20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: GoldenRatio.spacing12),
                 ] else ...[
                   Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: EdgeInsets.all(GoldenRatio.xs),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFD300), // Gold accent
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.circular(GoldenRatio.sm),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.save,
-                      color: Colors.black87,
-                      size: 18,
+                      color: AppColors.onSecondary,
+                      size: GoldenRatio.lg,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: GoldenRatio.spacing12),
                 ],
                 Text(
                   _isLoading ? 'Saving...' : 'Save Location Settings',
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: TypographySystem.titleMedium.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                   ),
                 ),
               ],

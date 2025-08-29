@@ -479,6 +479,79 @@ Resources:
             Path: /businesses/{businessId}/heartbeat
             Method: post
 
+  DiscountManagementFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'order-receiver-regional-${Stage}-discount-management-v1-sam'
+      CodeUri: functions/discounts/
+      Handler: discount_management_handler.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: WhizzMerchants_Discounts
+        - DynamoDBCrudPolicy:
+            TableName: WhizzMerchants_Businesses
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:GetUser
+              Resource: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
+      Events:
+        DiscountsGet:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RegionalRestApi
+            Path: /discounts
+            Method: get
+        DiscountsPost:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RegionalRestApi
+            Path: /discounts
+            Method: post
+        DiscountGet:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RegionalRestApi
+            Path: /discounts/{discountId}
+            Method: get
+        DiscountPut:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RegionalRestApi
+            Path: /discounts/{discountId}
+            Method: put
+        DiscountDelete:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RegionalRestApi
+            Path: /discounts/{discountId}
+            Method: delete
+        DiscountToggleStatus:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RegionalRestApi
+            Path: /discounts/{discountId}/toggle-status
+            Method: patch
+        DiscountValidate:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RegionalRestApi
+            Path: /discounts/validate-discount
+            Method: post
+        DiscountApply:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RegionalRestApi
+            Path: /discounts/apply-discount
+            Method: post
+        DiscountStats:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RegionalRestApi
+            Path: /discounts/stats
+            Method: get
+
   # WebSocket API
   WebSocketApi:
     Type: AWS::ApiGatewayV2::Api
@@ -612,6 +685,34 @@ Resources:
           Value: !Ref Stage
         - Key: Service
           Value: WhizzMerchants
+
+  DiscountsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: WhizzMerchants_Discounts
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: discountId
+          AttributeType: S
+        - AttributeName: businessId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: discountId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: BusinessIdIndex
+          KeySchema:
+            - AttributeName: businessId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: !Ref Stage
+        - Key: Service
+          Value: WhizzMerchants
+        - Key: Purpose
+          Value: discount-management
 
 Outputs:
   ApiGatewayEndpoint:

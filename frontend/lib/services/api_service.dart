@@ -119,11 +119,10 @@ class ApiService {
   }
 
   Future<List<Map<String, dynamic>>> getDiscounts() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
+    final token = await TokenManager.getAuthorizationToken();
 
     if (token == null) {
-      throw Exception('No access token found');
+      throw Exception('No authorization token found');
     }
 
     final response = await http.get(
@@ -322,11 +321,10 @@ class ApiService {
 
   Future<Map<String, dynamic>> createDiscount(
       Map<String, dynamic> discountData) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
+    final token = await TokenManager.getAuthorizationToken();
 
     if (token == null) {
-      throw Exception('No access token found');
+      throw Exception('No authorization token found');
     }
 
     final response = await http.post(
@@ -352,11 +350,10 @@ class ApiService {
 
   Future<Map<String, dynamic>> updateDiscount(
       String discountId, Map<String, dynamic> discountData) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
+    final token = await TokenManager.getAuthorizationToken();
 
     if (token == null) {
-      throw Exception('No access token found');
+      throw Exception('No authorization token found');
     }
 
     final response = await http.put(
@@ -381,11 +378,10 @@ class ApiService {
   }
 
   Future<void> deleteDiscount(String discountId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
+    final token = await TokenManager.getAuthorizationToken();
 
     if (token == null) {
-      throw Exception('No access token found');
+      throw Exception('No authorization token found');
     }
 
     final response = await http.delete(

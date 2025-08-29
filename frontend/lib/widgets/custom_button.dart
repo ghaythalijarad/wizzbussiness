@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
+import '../core/theme/app_colors.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -28,46 +31,98 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final primaryColor = backgroundColor ?? theme.primaryColor;
+    final primaryColor = backgroundColor ?? AppColors.primary;
     final onPrimaryColor = textColor ?? Colors.white;
 
     return SizedBox(
       width: width,
       height: height,
       child: isOutlined
-          ? OutlinedButton(
-              onPressed: isLoading ? null : onPressed,
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: primaryColor, width: 2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          ? _buildOutlinedButton(primaryColor)
+          : _buildElevatedButton(primaryColor, onPrimaryColor),
+    );
+  }
+
+  Widget _buildElevatedButton(Color primaryColor, Color onPrimaryColor) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            primaryColor,
+            primaryColor == AppColors.primary
+                ? AppColors.primaryDark
+                : primaryColor.withOpacity(0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+          onTap: isLoading ? null : onPressed,
+          child: Container(
+            padding: padding ??
+                EdgeInsets.symmetric(
+                  horizontal: GoldenRatio.spacing16,
+                  vertical: GoldenRatio.spacing12,
                 ),
-                padding: padding,
-              ),
-              child: _buildButtonContent(primaryColor, false),
-            )
-          : ElevatedButton(
-              onPressed: isLoading ? null : onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: onPrimaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            child: _buildButtonContent(onPrimaryColor, true),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOutlinedButton(Color primaryColor) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+        border: Border.all(
+          color: primaryColor,
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(GoldenRatio.spacing12),
+          onTap: isLoading ? null : onPressed,
+          child: Container(
+            padding: padding ??
+                EdgeInsets.symmetric(
+                  horizontal: GoldenRatio.spacing16,
+                  vertical: GoldenRatio.spacing12,
                 ),
-                elevation: 2,
-                padding: padding,
-              ),
-              child: _buildButtonContent(onPrimaryColor, true),
-            ),
+            child: _buildButtonContent(primaryColor, false),
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildButtonContent(Color color, bool isElevated) {
     if (isLoading) {
       return SizedBox(
-        width: 20,
-        height: 20,
+        width: GoldenRatio.md,
+        height: GoldenRatio.md,
         child: CircularProgressIndicator(
           strokeWidth: 2,
           valueColor: AlwaysStoppedAnimation<Color>(
@@ -77,10 +132,9 @@ class CustomButton extends StatelessWidget {
       );
     }
 
-    final textStyle = TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
+    final textStyle = TypographySystem.labelLarge.copyWith(
       color: isElevated ? Colors.white : color,
+      fontWeight: FontWeight.bold,
     );
 
     if (icon != null) {
@@ -90,10 +144,10 @@ class CustomButton extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 20,
+            size: GoldenRatio.md,
             color: isElevated ? Colors.white : color,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: GoldenRatio.spacing8),
           Text(text, style: textStyle),
         ],
       );

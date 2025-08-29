@@ -10,6 +10,9 @@ import '../screens/login_page.dart';
 import '../widgets/order_card.dart';
 import '../utils/responsive_helper.dart';
 import '../providers/session_provider.dart';
+import '../core/theme/app_colors.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
 
 class OrdersPage extends ConsumerStatefulWidget {
   final String? businessId;
@@ -70,21 +73,36 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.new_releases, color: Colors.white),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.successContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.new_releases_rounded,
+                      color: AppColors.success, size: 20),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     '🆕 New order from ${newOrder.customerName}\nTotal: ${newOrder.totalAmount.toStringAsFixed(2)} IQD',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             duration: const Duration(seconds: 6),
             action: SnackBarAction(
               label: 'VIEW',
               textColor: Colors.white,
+              backgroundColor: AppColors.successContainer,
               onPressed: () {
                 setState(() {
                   _selectedFilter = 'pending';
@@ -309,39 +327,49 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        icon: const Icon(
-          Icons.security,
-          color: Color(0xFF00C1E8),
-          size: 48,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        backgroundColor: AppColors.surface,
+        elevation: 6,
+        icon: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.primaryContainer,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Icon(
+            Icons.security_rounded,
+            color: AppColors.primary,
+            size: 32,
+          ),
         ),
         title: Text(
           loc.userNotLoggedIn,
-          style: const TextStyle(
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w600,
-            color: Color(0xFF001133),
+                color: AppColors.onSurface,
           ),
           textAlign: TextAlign.center,
         ),
         content: Text(
           'Please sign in to view orders',
-          style: TextStyle(
-            color: const Color(0xFF001133).withOpacity(0.7),
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: AppColors.onSurfaceVariant,
           ),
           textAlign: TextAlign.center,
         ),
         actions: [
-          TextButton(
+          FilledButton.icon(
             onPressed: () => _navigateToLogin(),
-            style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFF00C1E8),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.onPrimary,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
-            child: Text(loc.signIn),
+            icon: const Icon(Icons.login_rounded),
+            label: Text(loc.signIn),
           ),
         ],
         actionsAlignment: MainAxisAlignment.center,
@@ -400,10 +428,32 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Orders refreshed successfully'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.successContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.refresh_rounded,
+                      color: AppColors.success, size: 20),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Orders refreshed successfully',
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -411,8 +461,30 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to refresh orders: $e'),
-            backgroundColor: Colors.red,
+            content: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.errorContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.error_outline_rounded,
+                      color: AppColors.error, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Failed to refresh orders: $e',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -469,23 +541,38 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     if (hasExpiredOrders && _selectedFilter == 'pending' && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
+          content: Row(
             children: [
-              Icon(Icons.timer_off, color: Colors.white),
-              SizedBox(width: 8),
-              Expanded(
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.warningContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.timer_off_rounded,
+                    color: AppColors.warning, size: 20),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
                 child: Text(
                   '⏰ Some orders have expired and moved to Expired tab',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],
           ),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.warning,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           duration: const Duration(seconds: 4),
           action: SnackBarAction(
             label: 'VIEW EXPIRED',
             textColor: Colors.white,
+            backgroundColor: AppColors.warningContainer,
             onPressed: () {
               setState(() {
                 _selectedFilter = 'expired';
@@ -502,11 +589,13 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppColors.surface,
+      elevation: 8,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,57 +603,68 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
             // Header
             Row(
               children: [
-                const Icon(
-                  Icons.archive_outlined,
-                  color: Color(0xFF00C1E8),
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Archive & History',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF001133),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryContainer,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.archive_rounded,
+                    color: AppColors.primary,
+                    size: 24,
                   ),
                 ),
-                const Spacer(),
-                IconButton(
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'Archive & History',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                      color: AppColors.onSurface,
+                    ),
+                  ),
+                ),
+                IconButton.filledTonal(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: Color(0xFF001133)),
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppColors.surfaceVariant,
+                    foregroundColor: AppColors.onSurfaceVariant,
+                  ),
+                  icon: const Icon(Icons.close_rounded),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             
             // Archive status options
             _buildArchiveMenuItem(
               context,
-              icon: Icons.cancel_outlined,
+              icon: Icons.cancel_rounded,
               label: loc.cancelled,
               subtitle: 'View cancelled orders',
               value: 'cancelled',
-              color: Colors.red,
+              color: AppColors.error,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             _buildArchiveMenuItem(
               context,
-              icon: Icons.keyboard_return,
+              icon: Icons.keyboard_return_rounded,
               label: loc.orderReturned,
               subtitle: 'View returned orders',
               value: 'returned',
-              color: Colors.orange,
+              color: AppColors.warning,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             _buildArchiveMenuItem(
               context,
-              icon: Icons.timer_off_outlined,
+              icon: Icons.timer_off_rounded,
               label: 'Expired',
               subtitle: 'View expired/timed out orders',
               value: 'expired',
-              color: Colors.grey,
+              color: AppColors.onSurfaceVariant,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -581,9 +681,18 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
   }) {
     final isSelected = _selectedFilter == value;
     
-    return Material(
-      color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
+    return Card(
+      elevation: isSelected ? 4 : 1,
+      shadowColor: isSelected
+          ? color.withOpacity(0.2)
+          : AppColors.onSurface.withOpacity(0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isSelected ? color : color.withOpacity(0.2),
+          width: isSelected ? 2 : 1,
+        ),
+      ),
       child: InkWell(
         onTap: () {
           setState(() {
@@ -591,25 +700,18 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
           });
           Navigator.pop(context);
         },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected ? color : color.withOpacity(0.2),
-              width: isSelected ? 2 : 1,
-            ),
-          ),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: color, size: 20),
+                child: Icon(icon, color: color, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -618,28 +720,33 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                   children: [
                     Text(
                       label,
-                      style: TextStyle(
-                        fontSize: 16,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: isSelected ? color : const Color(0xFF001133),
+                            color: isSelected ? color : AppColors.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: const Color(0xFF001133).withOpacity(0.6),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.onSurfaceVariant,
                       ),
                     ),
                   ],
                 ),
               ),
               if (isSelected)
-                Icon(
-                  Icons.check_circle,
-                  color: color,
-                  size: 20,
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
                 ),
             ],
           ),
@@ -649,89 +756,65 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
   }
 
   Widget _buildArchiveMenuButton() {
-    final isArchiveSelected = ['cancelled', 'returned', 'expired'].contains(_selectedFilter);
-    const customLimeGreen = Color(0xFF32CD32);
-    const customGold = Color(0xFFFFD300);
+    final isArchiveSelected =
+        ['cancelled', 'returned', 'expired'].contains(_selectedFilter);
     
-    // Responsive sizing
-    final screenWidth = MediaQuery.of(context).size.width;
+    // Use design system spacing
     final isMobile = ResponsiveHelper.isMobile(context);
-    
-    double horizontalPadding;
-    double verticalPadding;
-    double fontSize;
-    
-    if (screenWidth < 400) {
-      horizontalPadding = 12;
-      verticalPadding = 8;
-      fontSize = 13;
-    } else if (isMobile) {
-      horizontalPadding = 16;
-      verticalPadding = 8;
-      fontSize = 14;
-    } else {
-      horizontalPadding = 20;
-      verticalPadding = 10;
-      fontSize = 15;
-    }
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
-      child: Material(
-        elevation: isArchiveSelected ? 2 : 0.5,
-        borderRadius: BorderRadius.circular(8),
-        color: isArchiveSelected
-            ? customLimeGreen
-            : const Color(0xFF001133).withOpacity(0.05),
-        shadowColor: isArchiveSelected
-            ? customLimeGreen.withOpacity(0.3)
-            : const Color(0xFF001133).withOpacity(0.1),
-        child: InkWell(
-          onTap: () => _showArchiveStatusMenu(context),
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: horizontalPadding,
-              vertical: verticalPadding,
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: isArchiveSelected
-                    ? customGold
-                    : customGold.withOpacity(0.4),
-                width: 1.5,
+      child: FilterChip(
+        selected: isArchiveSelected,
+        onSelected: (_) => _showArchiveStatusMenu(context),
+        avatar: Icon(
+          Icons.archive_rounded,
+          color: isArchiveSelected ? AppColors.onPrimary : AppColors.primary,
+          size: GoldenRatio.lg,
+        ),
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Archive',
+              style: TypographySystem.labelLarge.copyWith(
+                fontWeight:
+                    isArchiveSelected ? FontWeight.w600 : FontWeight.w500,
+                color:
+                    isArchiveSelected ? AppColors.onPrimary : AppColors.primary,
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.archive_outlined,
-                  color: isArchiveSelected ? Colors.white : customLimeGreen,
-                  size: fontSize + 2,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Archive',
-                  style: TextStyle(
-                    color: isArchiveSelected ? Colors.white : customLimeGreen,
-                    fontWeight: isArchiveSelected ? FontWeight.w600 : FontWeight.w500,
-                    fontSize: fontSize,
-                    letterSpacing: 0.1,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.keyboard_arrow_down,
-                  color: isArchiveSelected ? Colors.white : customLimeGreen,
-                  size: fontSize + 2,
-                ),
-              ],
+            SizedBox(width: GoldenRatio.xs),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color:
+                  isArchiveSelected ? AppColors.onPrimary : AppColors.primary,
+              size: GoldenRatio.lg,
             ),
-          ),
+          ],
         ),
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? GoldenRatio.lg : GoldenRatio.xl,
+          vertical: GoldenRatio.md,
+        ),
+        backgroundColor: AppColors.surfaceVariant,
+        selectedColor: AppColors.primary,
+        side: BorderSide(
+          color: isArchiveSelected
+              ? AppColors.secondary
+              : AppColors.secondary.withOpacity(0.4),
+          width: 2,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(GoldenRatio.md),
+        ),
+        labelStyle: TypographySystem.labelLarge.copyWith(
+          color: isArchiveSelected ? AppColors.onPrimary : AppColors.primary,
+        ),
+        elevation: isArchiveSelected ? GoldenRatio.xs : 0,
+        shadowColor:
+            isArchiveSelected ? AppColors.primary.withOpacity(0.3) : null,
       ),
     );
   }
@@ -739,10 +822,39 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
   @override
   Widget build(BuildContext context) {
     if (_isInitializing) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(
-            color: Color(0xFF00C1E8),
+      return Scaffold(
+        backgroundColor: AppColors.backgroundVariant,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primary.withOpacity(0.05),
+                AppColors.secondary.withOpacity(0.03),
+                AppColors.background,
+              ],
+              stops: const [0.0, 0.3, 1.0],
+            ),
+          ),
+          child: Center(
+            child: Container(
+              padding:
+                  EdgeInsets.all(GoldenRatio.spacing24 + GoldenRatio.spacing8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.1),
+                    AppColors.secondary.withOpacity(0.1),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+              ),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                strokeWidth: 3,
+              ),
+            ),
           ),
         ),
       );
@@ -765,146 +877,224 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     }
 
     return Scaffold(
-      body: Column(
-        children: [
-          // Filter bar
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: Directionality(
-              textDirection:
-                  Localizations.localeOf(context).languageCode == 'ar'
-                      ? TextDirection.rtl
-                      : TextDirection.ltr,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildFilterChip(loc.pending, 'pending'),
-                      const SizedBox(width: 6),
-                      _buildFilterChip(loc.confirmed, 'confirmed'),
-                      const SizedBox(width: 6),
-                      _buildFilterChip(loc.orderReady, 'ready'),
-                      const SizedBox(width: 12),
-                      // Archive menu button
-                      _buildArchiveMenuButton(),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+      backgroundColor: AppColors.backgroundVariant,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primary.withOpacity(0.05),
+              AppColors.secondary.withOpacity(0.03),
+              AppColors.background,
+            ],
+            stops: const [0.0, 0.3, 1.0],
           ),
-          // Orders list
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : filteredOrders.isEmpty
-                    ? Center(
-                        child: Text(
-                          loc.noOrdersFoundFor(_selectedFilter),
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _refreshOrders,
-                        child: ResponsiveHelper.isTablet(context) ||
-                                ResponsiveHelper.isDesktop(context)
-                            ? _buildGridLayout(filteredOrders)
-                            : _buildListLayout(filteredOrders),
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  // Filter chips with Material 3 design
+                  Container(
+                    margin: EdgeInsets.all(GoldenRatio.spacing16),
+                    padding: EdgeInsets.all(GoldenRatio.spacing20),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(GoldenRatio.radiusXl),
+                      border: Border.all(
+                        color: AppColors.primary.withOpacity(0.2),
+                        width: 1,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.shadow.withOpacity(0.04),
+                          blurRadius: GoldenRatio.spacing20,
+                          offset: Offset(0, GoldenRatio.spacing8),
+                        ),
+                      ],
+                    ),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildFilterChip(loc.pending, 'pending'),
+                          const SizedBox(width: 12),
+                          _buildFilterChip(loc.confirmed, 'confirmed'),
+                          const SizedBox(width: 12),
+                          _buildFilterChip(loc.orderReady, 'ready'),
+                          const SizedBox(width: 20),
+                          _buildArchiveMenuButton(),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Orders list
+                  Expanded(
+                    child: _isLoading
+                        ? Center(
+                            child: Container(
+                              padding: EdgeInsets.all(GoldenRatio.spacing24),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius:
+                                    BorderRadius.circular(GoldenRatio.radiusXl),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.shadow.withOpacity(0.04),
+                                    blurRadius: GoldenRatio.spacing20,
+                                    offset: Offset(0, GoldenRatio.spacing8),
+                                  ),
+                                ],
+                              ),
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                                strokeWidth: 3,
+                              ),
+                            ),
+                          )
+                        : filteredOrders.isEmpty
+                            ? Center(
+                                child: Container(
+                                  margin: EdgeInsets.all(GoldenRatio.spacing24),
+                                  padding: EdgeInsets.all(
+                                      GoldenRatio.spacing24 +
+                                          GoldenRatio.spacing8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(
+                                        GoldenRatio.radiusXl),
+                                    border: Border.all(
+                                      color: AppColors.primary.withOpacity(0.2),
+                                      width: 1,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            AppColors.shadow.withOpacity(0.04),
+                                        blurRadius: GoldenRatio.spacing20,
+                                        offset: Offset(0, GoldenRatio.spacing8),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.all(
+                                            GoldenRatio.spacing16),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary
+                                              .withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                              GoldenRatio.radiusXl),
+                                        ),
+                                        child: Icon(
+                                          Icons.inbox_outlined,
+                                          size: GoldenRatio.spacing24 * 2,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                      SizedBox(height: GoldenRatio.spacing20),
+                                      Text(
+                                        loc.noOrdersFoundFor(_selectedFilter),
+                                        style: TypographySystem.titleLarge
+                                            .copyWith(
+                                          color: AppColors.onSurface,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      SizedBox(height: GoldenRatio.spacing12),
+                                      Text(
+                                        'When orders come in, they\'ll appear here',
+                                        style: TypographySystem.bodyMedium
+                                            .copyWith(
+                                          color: AppColors.onSurface
+                                              .withOpacity(0.7),
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : RefreshIndicator(
+                                onRefresh: _refreshOrders,
+                                color: AppColors.primary,
+                                backgroundColor: AppColors.surface,
+                                child: ResponsiveHelper.isTablet(context) ||
+                                        ResponsiveHelper.isDesktop(context)
+                                    ? _buildGridLayout(filteredOrders)
+                                    : _buildListLayout(filteredOrders),
+                              ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildFilterChip(String label, String value) {
     final isSelected = _selectedFilter == value;
-    // Define the new lime green primary color and gold secondary color
-    const customLimeGreen = Color(0xFF32CD32);
-    const customGold = Color(0xFFFFD300);
-
-    // Responsive sizing for chips - longer and little higher
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = ResponsiveHelper.isMobile(context);
-
-    // Increased horizontal padding for longer chips
-    double horizontalPadding;
-    double verticalPadding; // Increased vertical padding for higher chips
-    double fontSize;
-
-    if (screenWidth < 400) {
-      // Very small mobile screens
-      horizontalPadding = 12; // Increased from 8 for longer chips
-      verticalPadding = 8; // Increased from 4 for higher chips
-      fontSize = 13; // Increased from 11 for better visibility
-    } else if (isMobile) {
-      // Regular mobile screens
-      horizontalPadding = 16; // Increased from 10 for longer chips
-      verticalPadding = 8; // Increased from 4 for higher chips
-      fontSize = 14; // Increased from 12 for better visibility
-    } else {
-      // Desktop/tablet
-      horizontalPadding = 20; // Increased from 12 for longer chips
-      verticalPadding = 10; // Increased from 6 for higher chips
-      fontSize = 15; // Increased from 13 for better visibility
-    }
-
+    
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
       child: Material(
-        elevation: isSelected ? 2 : 0.5,
-        borderRadius: BorderRadius.circular(
-          8,
-        ), // Reduced from 16 to 8 for less round corners
-        color: isSelected
-            ? customLimeGreen
-            : const Color(0xFF001133).withOpacity(0.05),
+        elevation: isSelected ? 4 : 1,
+        borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
+        color: isSelected ? AppColors.primary : AppColors.surface,
         shadowColor: isSelected
-            ? customLimeGreen.withOpacity(0.3)
-            : const Color(0xFF001133).withOpacity(0.1),
+            ? AppColors.primary.withOpacity(0.3)
+            : AppColors.shadow.withOpacity(0.1),
         child: InkWell(
           onTap: () => setState(() => _selectedFilter = value),
-          borderRadius: BorderRadius.circular(
-            8,
-          ), // Match the container border radius
+          borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
           child: Container(
             padding: EdgeInsets.symmetric(
-              horizontal: horizontalPadding,
-              vertical: verticalPadding,
+              horizontal: GoldenRatio.spacing20,
+              vertical: GoldenRatio.spacing12,
             ),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(
-                8,
-              ), // Reduced corners here too
+              borderRadius: BorderRadius.circular(GoldenRatio.radiusLg),
               border: Border.all(
-                color: isSelected
-                    ? customGold
-                    : customGold.withOpacity(0.4),
-                width: 1.5,
+                color: isSelected 
+                    ? AppColors.secondary.withOpacity(0.3)
+                    : AppColors.primary.withOpacity(0.2),
+                width: isSelected ? 2 : 1,
               ),
             ),
-            child: Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : customLimeGreen,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                fontSize: fontSize,
-                letterSpacing: 0.1, // Slightly reduced letter spacing
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis, // Handle text overflow
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isSelected) ...[
+                  Container(
+                    padding: EdgeInsets.all(GoldenRatio.spacing4),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.circular(GoldenRatio.radiusSm),
+                    ),
+                    child: Icon(
+                      Icons.check,
+                      color: AppColors.onSecondary,
+                      size: GoldenRatio.spacing16,
+                    ),
+                  ),
+                  SizedBox(width: GoldenRatio.spacing8),
+                ],
+                Text(
+                  label,
+                  style: TypographySystem.labelLarge.copyWith(
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected ? AppColors.onPrimary : AppColors.primary,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -915,12 +1105,16 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
   Widget _buildListLayout(List<Order> orders) {
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.all(ResponsiveHelper.getResponsivePadding(context)),
+      padding: EdgeInsets.all(GoldenRatio.lg),
       itemCount: orders.length,
       itemBuilder: (context, index) {
         final order = orders[index];
-        return OrderCard(
-          order: order,
+        return Padding(
+          padding: EdgeInsets.only(bottom: GoldenRatio.md),
+          child: OrderCard(
+            order: order,
+            onOrderUpdated: _handleOrderUpdate,
+          ),
         );
       },
     );
@@ -930,11 +1124,11 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     final crossAxisCount = ResponsiveHelper.getGridCrossAxisCount(context);
     return GridView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.all(ResponsiveHelper.getResponsivePadding(context)),
+      padding: EdgeInsets.all(GoldenRatio.lg),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisSpacing: GoldenRatio.lg,
+        mainAxisSpacing: GoldenRatio.lg,
         childAspectRatio: ResponsiveHelper.isDesktop(context) ? 1.2 : 0.85,
       ),
       itemCount: orders.length,
@@ -942,6 +1136,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
         final order = orders[index];
         return OrderCard(
           order: order,
+          onOrderUpdated: _handleOrderUpdate,
         );
       },
     );

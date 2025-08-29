@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/language_provider_riverpod.dart';
-import '../../providers/auth_provider_riverpod.dart';
 import '../dashboards/main_dashboard.dart';
+import '../../services/app_auth_service.dart';
 
 class ConfirmationScreen extends StatefulWidget {
   final String email;
@@ -57,22 +55,21 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
       setState(() {
         _isLoading = true;
       });
-
+      
       try {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
         final code = _codeController.text.trim();
         
-        final success = await authProvider.confirmSignUp(
-          email: widget.email,
-          confirmationCode: code,
+        final result = await AppAuthService.confirmSignUp(
+          username: widget.email,
+          code: code,
         );
 
         if (mounted) {
           setState(() {
             _isLoading = false;
           });
-          
-          if (success) {
+
+          if (result.success) {
             // Success - navigate to dashboard
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -95,7 +92,8 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
             // Error - show error message
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(authProvider.errorMessage ?? 'Invalid confirmation code. Please try again.'),
+                content: Text(result.message ??
+                    'Invalid confirmation code. Please try again.'),
                 backgroundColor: Theme.of(context).colorScheme.error,
               ),
             );
@@ -129,28 +127,17 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
     _startResendCountdown();
 
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
-      final success = await authProvider.resendConfirmationCode(
-        email: widget.email,
+      await AppAuthService.resendSignUpCode(
+        username: widget.email,
       );
 
       if (mounted) {
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Confirmation code resent to ${widget.email}'),
-              backgroundColor: Theme.of(context).colorScheme.tertiary,
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(authProvider.errorMessage ?? 'Failed to resend code'),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Confirmation code resent to ${widget.email}'),
+            backgroundColor: Theme.of(context).colorScheme.tertiary,
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -333,19 +320,15 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
           ),
           
           // Language toggle button
-          Consumer<LanguageProvider>(
-            builder: (context, languageProvider, child) {
-              return IconButton(
-                onPressed: () {
-                  languageProvider.toggleLanguage();
-                },
-                icon: Icon(
-                  Icons.language,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                tooltip: languageProvider.isEnglish ? 'العربية' : 'English',
-              );
+          IconButton(
+            onPressed: () {
+              // TODO: Implement language toggle
             },
+            icon: Icon(
+              Icons.language,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            tooltip: 'Language',
           ),
         ],
       ),

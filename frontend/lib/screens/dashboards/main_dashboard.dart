@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../core/design_system/design_system.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/business_provider.dart';
 import '../../providers/auth_provider_riverpod.dart';
@@ -9,37 +10,153 @@ import '../auth/auth_screen.dart';
 import '../business_details_screen.dart';
 import '../products_management_screen.dart';
 
-class MainDashboard extends StatefulWidget {
+class MainDashboard extends ConsumerStatefulWidget {
   const MainDashboard({super.key});
 
   @override
-  State<MainDashboard> createState() => _MainDashboardState();
+  ConsumerState<MainDashboard> createState() => _MainDashboardState();
 }
 
-class _MainDashboardState extends State<MainDashboard> {
+class _MainDashboardState extends ConsumerState<MainDashboard> {
   int selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
+    final businessAsync = ref.watch(businessProvider);
+
+    return businessAsync.when(
+      data: (business) {
+        if (business == null) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  const Text('No business data available'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => ref.invalidate(businessProvider),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return _buildDashboard(context, business);
+      },
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stackTrace) => Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Error: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(businessProvider),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDashboard(BuildContext context, business) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('WIZZ Business Manager'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notifications feature coming soon')),
-              );
-            },
+        title: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(GoldenRatio.xs),
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(GoldenRatio.xs),
+              ),
+              child: Icon(
+                Icons.dashboard_rounded,
+                size: GoldenRatio.lg,
+                color: AppColors.secondary,
+              ),
+            ),
+            SizedBox(width: GoldenRatio.md),
+            Text(
+              'WIZZ Business Manager',
+              style: TypographySystem.headlineSmall.copyWith(
+                color: AppColors.onPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
+        elevation: GoldenRatio.xs,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primary,
+                AppColors.primaryDark,
+              ],
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings feature coming soon')),
-              );
-            },
+        ),
+        actions: [
+          Container(
+            margin: EdgeInsets.only(right: GoldenRatio.xs),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(GoldenRatio.md),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.notifications_rounded),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Notifications feature coming soon'),
+                    backgroundColor: AppColors.primary,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(GoldenRatio.md),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(right: GoldenRatio.xs),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(GoldenRatio.md),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.settings_rounded),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Settings feature coming soon'),
+                    backgroundColor: AppColors.primary,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(GoldenRatio.md),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -48,7 +165,7 @@ class _MainDashboardState extends State<MainDashboard> {
         children: [
           const DashboardHomeTab(),
           const OrdersTab(),
-          ProductsManagementScreen(),
+          ProductsManagementScreen(business: business),
           const AnalyticsTab(),
           const ProfileTab(),
         ],
@@ -107,25 +224,25 @@ class DashboardHomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(GoldenRatio.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Welcome Back!',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            style: TypographySystem.headlineMedium.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: GoldenRatio.lg),
           
           // Stats Cards
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
+            crossAxisSpacing: GoldenRatio.lg,
+            mainAxisSpacing: GoldenRatio.lg,
             children: [
               _buildStatCard('Today\'s Orders', '24', Icons.receipt_long, AppColors.primary),
               _buildStatCard('Revenue', '\$1,245', Icons.attach_money, AppColors.secondary),
@@ -134,17 +251,16 @@ class DashboardHomeTab extends StatelessWidget {
             ],
           ),
           
-          const SizedBox(height: 24),
+          SizedBox(height: GoldenRatio.xl),
           
           // Recent Orders
           Text(
             'Recent Orders',
-            style: TextStyle(
-              fontSize: 20,
+            style: TypographySystem.headlineSmall.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: GoldenRatio.md),
           
           ...List.generate(3, (index) => _buildOrderCard(
             'Order #${1001 + index}',
@@ -153,17 +269,16 @@ class DashboardHomeTab extends StatelessWidget {
             index == 0 ? 'New' : index == 1 ? 'Preparing' : 'Ready',
           )),
           
-          const SizedBox(height: 24),
+          SizedBox(height: GoldenRatio.xl),
           
           // Color Palette Showcase
           Text(
             'App Color Palette',
-            style: TextStyle(
-              fontSize: 20,
+            style: TypographySystem.headlineSmall.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: GoldenRatio.md),
           _buildColorPalette(),
         ],
       ),
@@ -172,25 +287,27 @@ class DashboardHomeTab extends StatelessWidget {
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Card(
+      elevation: GoldenRatio.xs,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(GoldenRatio.md),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(GoldenRatio.lg),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 32, color: color),
-            const SizedBox(height: 8),
+            Icon(icon, size: GoldenRatio.xl, color: color),
+            SizedBox(height: GoldenRatio.xs),
             Text(
               value,
-              style: TextStyle(
-                fontSize: 24,
+              style: TypographySystem.headlineSmall.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
               title,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
+              style: TypographySystem.bodySmall.copyWith(
+                color: AppColors.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -211,43 +328,46 @@ class DashboardHomeTab extends StatelessWidget {
     ];
     
     return Card(
+      elevation: GoldenRatio.xs,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(GoldenRatio.md),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(GoldenRatio.lg),
         child: Column(
           children: [
             ...colorData.map((data) => Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
+                      padding: EdgeInsets.only(bottom: GoldenRatio.md),
               child: Row(
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
+                            width: GoldenRatio.xl,
+                            height: GoldenRatio.xl,
                     decoration: BoxDecoration(
                       color: data['color'] as Color,
-                      borderRadius: BorderRadius.circular(8),
+                              borderRadius:
+                                  BorderRadius.circular(GoldenRatio.xs),
                       border: Border.all(
-                        color: Colors.grey.withOpacity(0.3),
+                                color: AppColors.border,
                         width: 1,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                          SizedBox(width: GoldenRatio.lg),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           data['name'] as String,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
+                                  style: TypographySystem.bodyLarge.copyWith(
+                                    fontWeight: FontWeight.w600,
                           ),
                         ),
                         Text(
                           data['hex'] as String,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
+                                  style: TypographySystem.bodySmall.copyWith(
+                                    color: AppColors.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -263,37 +383,60 @@ class DashboardHomeTab extends StatelessWidget {
   }
 
   Widget _buildOrderCard(String orderNumber, String customer, String amount, String status) {
-    Color statusColor = status == 'New' ? Colors.blue : 
-                       status == 'Preparing' ? Colors.orange : Colors.green;
+    Color statusColor = status == 'New'
+        ? AppColors.info
+        : status == 'Preparing'
+            ? AppColors.warning
+            : AppColors.success;
     
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: EdgeInsets.only(bottom: GoldenRatio.xs),
+      elevation: GoldenRatio.xs,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(GoldenRatio.md),
+      ),
       child: ListTile(
+        contentPadding: EdgeInsets.all(GoldenRatio.md),
         leading: CircleAvatar(
-          backgroundColor: statusColor.withOpacity(0.2),
+          backgroundColor: statusColor.withOpacity(0.12),
           child: Icon(Icons.receipt, color: statusColor),
         ),
-        title: Text(orderNumber),
-        subtitle: Text(customer),
+        title: Text(
+          orderNumber,
+          style: TypographySystem.titleMedium.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Text(
+          customer,
+          style: TypographySystem.bodyMedium.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
               amount,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TypographySystem.titleSmall.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: EdgeInsets.symmetric(
+                horizontal: GoldenRatio.xs,
+                vertical: GoldenRatio.xs / 2,
+              ),
               decoration: BoxDecoration(
                 color: statusColor,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(GoldenRatio.md),
               ),
               child: Text(
                 status,
-                style: const TextStyle(
+                style: TypographySystem.labelSmall.copyWith(
                   color: Colors.white,
-                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -506,7 +649,6 @@ class ProfileTab extends ConsumerStatefulWidget {
 class _ProfileTabState extends ConsumerState<ProfileTab> {
   bool _showWorkingHours = false;
   bool _showChangePassword = false;
-  bool _isLoadingWorkingHours = false;
   bool _isSavingWorkingHours = false;
   
   // Password form controllers
@@ -556,10 +698,6 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
     
     if (business == null) return;
     
-    setState(() {
-      _isLoadingWorkingHours = true;
-    });
-    
     try {
       final apiService = ApiService();
       final response = await apiService.getBusinessWorkingHours(business.id);
@@ -584,12 +722,6 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
     } catch (e) {
       print('Error loading working hours: $e');
       // Keep default values if loading fails
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingWorkingHours = false;
-        });
-      }
     }
   }
   
@@ -658,13 +790,7 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
       }
     }
   }
-      if (mounted) {
-        setState(() {
-          _isSavingWorkingHours = false;
-        });
-      }
-    }
-  }
+
   Map<String, Map<String, dynamic>> workingHours = {
     'Monday': {'isOpen': true, 'openTime': '09:00', 'closeTime': '22:00'},
     'Tuesday': {'isOpen': true, 'openTime': '09:00', 'closeTime': '22:00'},

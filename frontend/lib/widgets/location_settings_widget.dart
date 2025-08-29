@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../services/location_service.dart';
 import '../l10n/app_localizations.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/design_system/typography_system.dart';
+import '../core/theme/app_colors.dart';
 
 class LocationSettingsWidget extends StatefulWidget {
   final double? initialLatitude;
@@ -119,7 +122,7 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Location retrieved successfully'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.success,
             ),
           );
         }
@@ -127,7 +130,7 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.enableLocationServices),
-            backgroundColor: Colors.orange,
+            backgroundColor: AppColors.warning,
           ),
         );
       }
@@ -172,7 +175,7 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
               localizations.businessLocationDescription,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade600,
+                color: AppColors.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 16),
@@ -243,9 +246,9 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade50,
+                  color: AppColors.successContainer,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.shade200),
+                  border: Border.all(color: AppColors.success.withOpacity(0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,7 +257,7 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
                       children: [
                         Icon(
                           Icons.check_circle,
-                          color: Colors.green.shade600,
+                          color: AppColors.success,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -262,7 +265,7 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
                           localizations.locationSet,
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
-                            color: Colors.green.shade700,
+                            color: AppColors.success,
                           ),
                         ),
                       ],
@@ -273,7 +276,7 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
                         _address!,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey.shade600,
+                          color: AppColors.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -282,7 +285,7 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
                       'Coordinates: ${_latitude!.toStringAsFixed(6)}, ${_longitude!.toStringAsFixed(6)}',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: AppColors.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -293,15 +296,15 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
+                  color: AppColors.warningContainer,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.shade200),
+                  border: Border.all(color: AppColors.warning.withOpacity(0.3)),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.location_off,
-                      color: Colors.orange.shade600,
+                      color: AppColors.warning,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -310,7 +313,7 @@ class _LocationSettingsWidgetState extends State<LocationSettingsWidget> {
                         localizations.noLocationSet,
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
-                          color: Colors.orange.shade700,
+                          color: AppColors.warning,
                         ),
                       ),
                     ),

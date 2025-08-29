@@ -1012,3 +1012,4 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with TickerProviderStat
       ],
     );
   }
+}

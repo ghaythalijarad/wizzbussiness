@@ -45,4 +45,13 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["WebSocketHandlerFunction", "WebSocketConnectionManagerFunction"]
 
+[function_build_definitions.96d758d6-3812-4b24-b101-a7450c883621]
+codeuri = "/Users/ghaythallaheebi/order-receiver-app-2/backend/functions/discounts"
+runtime = "nodejs20.x"
+architecture = "x86_64"
+handler = "discount_management_handler.handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["DiscountManagementFunction"]
+
 [layer_build_definitions]

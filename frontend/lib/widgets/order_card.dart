@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/order.dart';
 import '../utils/responsive_helper.dart';
+import '../core/design_system/design_system.dart';
 
 class OrderCard extends ConsumerWidget {
   final Order order;
@@ -28,25 +29,25 @@ class OrderCard extends ConsumerWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: EdgeInsets.all(isMobile ? 8.0 : 12.0),
+        margin: EdgeInsets.all(isMobile ? GoldenRatio.md : GoldenRatio.lg),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(GoldenRatio.lg),
           border: Border.all(
             color: _getStatusColor(order.status).withOpacity(0.3),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: AppColors.shadow,
               spreadRadius: 2,
-              blurRadius: 8,
+              blurRadius: GoldenRatio.md,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(GoldenRatio.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -56,112 +57,116 @@ class OrderCard extends ConsumerWidget {
                 children: [
                   Text(
                     'Order #${order.id.substring(0, 8)}',
-                    style: const TextStyle(
+                    style: TypographySystem.titleMedium.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Color(0xFF2E7D32),
+                      color: AppColors.primary,
                     ),
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: GoldenRatio.lg, vertical: GoldenRatio.xs),
                     decoration: BoxDecoration(
                       color: _getStatusColor(order.status),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(GoldenRatio.xl),
                     ),
                     child: Text(
                       _getStatusText(order.status),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
+                      style: TypographySystem.labelMedium.copyWith(
+                        color: AppColors.onPrimary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: GoldenRatio.lg),
 
               // Customer Info
               Row(
                 children: [
-                  const Icon(Icons.person, size: 16, color: Colors.grey),
-                  const SizedBox(width: 8),
+                  Icon(Icons.person,
+                      size: GoldenRatio.lg, color: AppColors.onSurfaceVariant),
+                  SizedBox(width: GoldenRatio.md),
                   Expanded(
                     child: Text(
                       order.customerName,
-                      style: const TextStyle(
+                      style: TypographySystem.bodyMedium.copyWith(
                         fontWeight: FontWeight.w500,
-                        fontSize: 14,
+                        color: AppColors.onSurface,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: GoldenRatio.md),
 
               // Phone
               if (order.customerPhone?.isNotEmpty ?? false) ...[
                 Row(
                   children: [
-                    const Icon(Icons.phone, size: 16, color: Colors.grey),
-                    const SizedBox(width: 8),
+                    Icon(Icons.phone,
+                        size: GoldenRatio.lg,
+                        color: AppColors.onSurfaceVariant),
+                    SizedBox(width: GoldenRatio.md),
                     Text(
                       order.customerPhone!,
-                      style: const TextStyle(fontSize: 14),
+                      style: TypographySystem.bodyMedium.copyWith(
+                        color: AppColors.onSurface,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: GoldenRatio.md),
               ],
 
               // Items
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(GoldenRatio.lg),
                 decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(GoldenRatio.md),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Items (${order.items.length})',
-                      style: const TextStyle(
+                      style: TypographySystem.titleSmall.copyWith(
                         fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: Color(0xFF2E7D32),
+                        color: AppColors.primary,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: GoldenRatio.md),
                     ...order.items.take(3).map((item) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          padding:
+                              EdgeInsets.symmetric(vertical: GoldenRatio.xs),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Expanded(
                                 child: Text(
                                   '${item.quantity}x ${item.name}',
-                                  style: const TextStyle(fontSize: 13),
+                                  style: TypographySystem.bodySmall.copyWith(
+                                    color: AppColors.onSurface,
+                                  ),
                                 ),
                               ),
                               Text(
                                 '\$${(item.price * item.quantity).toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontSize: 13,
+                                style: TypographySystem.bodySmall.copyWith(
                                   fontWeight: FontWeight.w500,
+                                  color: AppColors.onSurface,
                                 ),
                               ),
                             ],
                           ),
                         )),
                     if (order.items.length > 3) ...[
-                      const SizedBox(height: 4),
+                      SizedBox(height: GoldenRatio.xs),
                       Text(
                         '+ ${order.items.length - 3} more items',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                        style: TypographySystem.bodySmall.copyWith(
+                          color: AppColors.onSurfaceVariant,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -169,89 +174,106 @@ class OrderCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: GoldenRatio.lg),
 
               // Total
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Total',
-                    style: TextStyle(
+                    style: TypographySystem.titleMedium.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Color(0xFF2E7D32),
+                      color: AppColors.primary,
                     ),
                   ),
                   Text(
                     '\$${order.totalAmount.toStringAsFixed(2)}',
-                    style: const TextStyle(
+                    style: TypographySystem.titleMedium.copyWith(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
-                      color: Color(0xFF2E7D32),
+                      color: AppColors.primary,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: GoldenRatio.lg),
 
               // Time
               Text(
                 'Ordered ${_formatTime(order.createdAt)}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
+                style: TypographySystem.bodySmall.copyWith(
+                  color: AppColors.onSurfaceVariant,
                 ),
               ),
 
               // Action Buttons
               if (order.status == OrderStatus.pending) ...[
-                const SizedBox(height: 16),
+                SizedBox(height: GoldenRatio.xl),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
                         onPressed: onReject,
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.red),
+                          foregroundColor: AppColors.error,
+                          side: BorderSide(color: AppColors.error),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(GoldenRatio.md),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: GoldenRatio.lg),
+                        ),
+                        child: Text(
+                          'Reject',
+                          style: TypographySystem.labelLarge.copyWith(
+                            color: AppColors.error,
                           ),
                         ),
-                        child: const Text('Reject'),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: GoldenRatio.lg),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: onAccept,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4CAF50),
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.onPrimary,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(GoldenRatio.md),
+                          ),
+                          padding:
+                              EdgeInsets.symmetric(vertical: GoldenRatio.lg),
+                        ),
+                        child: Text(
+                          'Accept',
+                          style: TypographySystem.labelLarge.copyWith(
+                            color: AppColors.onPrimary,
                           ),
                         ),
-                        child: const Text('Accept'),
                       ),
                     ),
                   ],
                 ),
               ] else if (order.status == OrderStatus.ready) ...[
-                const SizedBox(height: 16),
+                SizedBox(height: GoldenRatio.xl),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: onComplete,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CAF50),
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.onPrimary,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(GoldenRatio.md),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: GoldenRatio.lg),
+                    ),
+                    child: Text(
+                      'Mark as Completed',
+                      style: TypographySystem.labelLarge.copyWith(
+                        color: AppColors.onPrimary,
                       ),
                     ),
-                    child: const Text('Mark as Completed'),
                   ),
                 ),
               ],
@@ -265,25 +287,25 @@ class OrderCard extends ConsumerWidget {
   Color _getStatusColor(OrderStatus status) {
     switch (status) {
       case OrderStatus.pending:
-        return Colors.orange;
+        return AppColors.warning;
       case OrderStatus.confirmed:
-        return Colors.blue;
+        return AppColors.info;
       case OrderStatus.preparing:
-        return Colors.purple;
+        return AppColors.secondary;
       case OrderStatus.ready:
-        return Colors.green;
+        return AppColors.success;
       case OrderStatus.completed:
-        return Colors.teal;
+        return AppColors.successContainer;
       case OrderStatus.cancelled:
-        return Colors.red;
+        return AppColors.error;
       case OrderStatus.expired:
-        return Colors.grey;
+        return AppColors.onSurfaceVariant;
       case OrderStatus.onTheWay:
-        return Colors.indigo;
+        return AppColors.primary;
       case OrderStatus.delivered:
-        return Colors.cyan;
+        return AppColors.secondary;
       case OrderStatus.returned:
-        return Colors.brown;
+        return AppColors.errorContainer;
     }
   }
 

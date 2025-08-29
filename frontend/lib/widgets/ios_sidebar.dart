@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
-import '../providers/locale_provider.dart';
+import '../providers/locale_provider_riverpod.dart';
 import '../services/app_state.dart';
 import '../services/app_auth_service.dart';
 import '../screens/login_page.dart';
 import '../utils/responsive_helper.dart';
+import '../core/design_system/golden_ratio_constants.dart';
+import '../core/theme/app_colors.dart';
+import '../core/design_system/typography_system.dart';
 
 class IOSSidebar extends ConsumerStatefulWidget {
   final bool isOnline;
@@ -62,7 +65,7 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Sign Out', style: const TextStyle(color: Colors.red)),
+            child: Text('Sign Out', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -183,8 +186,10 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
         children: [
           // App icon
           Container(
-            width: ResponsiveHelper.getResponsiveIconSize(context, 32),
-            height: ResponsiveHelper.getResponsiveIconSize(context, 32),
+            width:
+                ResponsiveHelper.getResponsiveIconSize(context, baseSize: 32),
+            height:
+                ResponsiveHelper.getResponsiveIconSize(context, baseSize: 32),
             decoration: BoxDecoration(
               color: const Color(0xff00c1e8),
               borderRadius: BorderRadius.circular(8),
@@ -192,10 +197,11 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
             child: Icon(
               Icons.restaurant_menu,
               color: Colors.white,
-              size: ResponsiveHelper.getResponsiveIconSize(context, 18),
+              size:
+                  ResponsiveHelper.getResponsiveIconSize(context, baseSize: 18),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: GoldenRatio.spacing12),
 
           // App name
           Expanded(
@@ -215,8 +221,10 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
           GestureDetector(
             onTap: _close,
             child: Container(
-              width: ResponsiveHelper.getResponsiveIconSize(context, 32),
-              height: ResponsiveHelper.getResponsiveIconSize(context, 32),
+              width:
+                  ResponsiveHelper.getResponsiveIconSize(context, baseSize: 32),
+              height:
+                  ResponsiveHelper.getResponsiveIconSize(context, baseSize: 32),
               decoration: BoxDecoration(
                 color: const Color(0xFFF2F2F7),
                 borderRadius: BorderRadius.circular(16),
@@ -224,7 +232,8 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
               child: Icon(
                 Icons.close,
                 color: const Color(0xFF8E8E93),
-                size: ResponsiveHelper.getResponsiveIconSize(context, 18),
+                size: ResponsiveHelper.getResponsiveIconSize(context,
+                    baseSize: 18),
               ),
             ),
           ),
@@ -241,9 +250,10 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: responsivePadding,
-        vertical: isCompact ? 8 : 12,
+        vertical: isCompact ? GoldenRatio.sm : GoldenRatio.spacing12,
       ),
-      padding: EdgeInsets.all(isCompact ? 16 : 20),
+      padding: EdgeInsets.all(
+          isCompact ? GoldenRatio.spacing16 : GoldenRatio.spacing20),
       decoration: BoxDecoration(
         color: _appState.isOnline
             ? const Color(0xFF34C759).withValues(alpha: 0.1)
@@ -267,7 +277,7 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: GoldenRatio.spacing12),
                     Expanded(
                       child: Text(
                         _appState.isOnline
@@ -285,7 +295,7 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: GoldenRatio.sm),
                 Row(
                   children: [
                     Expanded(
@@ -300,7 +310,7 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: GoldenRatio.spacing12),
                     // iOS-style switch with loading state
                     _appState.isToggling
                         ? SizedBox(
@@ -347,10 +357,10 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                                       }
                                     }
                                   },
-                            activeColor: const Color(0xFF34C759),
+                            activeThumbColor: const Color(0xFF34C759),
                             inactiveThumbColor: const Color(0xFFFF3B30),
                             inactiveTrackColor:
-                                const Color(0xFFFF3B30).withOpacity(0.3),
+                                const Color(0xFFFF3B30).withValues(alpha: 0.3),
                           ),
                   ],
                 ),
@@ -370,7 +380,7 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: GoldenRatio.spacing12),
 
                 Expanded(
                   child: Column(
@@ -389,7 +399,7 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                               : const Color(0xFFFF3B30),
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: GoldenRatio.xs),
                       Text(
                         _appState.isOnline
                             ? localizations.readyToReceiveOrders
@@ -408,7 +418,7 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                 Switch.adaptive(
                   value: _appState.isOnline,
                   onChanged: widget.onToggleStatus,
-                  activeColor: const Color(0xFF34C759),
+                  activeThumbColor: const Color(0xFF34C759),
                 ),
               ],
             ),
@@ -465,7 +475,8 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                       Container(
                         margin: EdgeInsets.only(
                           left: ResponsiveHelper.getResponsiveIconSize(
-                              context, 52),
+                              context,
+                              baseSize: 52),
                         ),
                         height: 0.5,
                         color: const Color(0xFFC6C6C8),
@@ -497,7 +508,8 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                     context),
                 Container(
                   margin: EdgeInsets.only(
-                    left: ResponsiveHelper.getResponsiveIconSize(context, 52),
+                    left: ResponsiveHelper.getResponsiveIconSize(context,
+                        baseSize: 52),
                   ),
                   height: 0.5,
                   color: const Color(0xFFC6C6C8),
@@ -542,9 +554,10 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                 color: item.isDestructive
                     ? const Color(0xFFFF3B30)
                     : const Color(0xff00c1e8),
-                size: ResponsiveHelper.getResponsiveIconSize(context, 20),
+                size: ResponsiveHelper.getResponsiveIconSize(context,
+                    baseSize: 20),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: GoldenRatio.spacing16),
               Expanded(
                 child: Text(
                   item.title,
@@ -563,7 +576,8 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
               Icon(
                 Icons.chevron_right,
                 color: const Color(0xFFC6C6C8),
-                size: ResponsiveHelper.getResponsiveIconSize(context, 18),
+                size: ResponsiveHelper.getResponsiveIconSize(context,
+                    baseSize: 18),
               ),
             ],
           ),
@@ -577,7 +591,8 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
     final isCompact = ResponsiveHelper.shouldUseCompactLayout(context);
 
     return Container(
-      padding: EdgeInsets.all(isCompact ? 16 : responsivePadding),
+      padding:
+          EdgeInsets.all(isCompact ? GoldenRatio.spacing16 : responsivePadding),
       child: Text(
         localizations.tapOutsideOrPressEscToClose,
         style: TextStyle(
@@ -611,10 +626,11 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
             children: [
               Icon(
                 Icons.language,
-                size: ResponsiveHelper.getResponsiveIconSize(context, 24),
+                size: ResponsiveHelper.getResponsiveIconSize(context,
+                    baseSize: 24),
                 color: const Color(0xff00c1e8),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: GoldenRatio.sm),
               Expanded(
                 child: Text(
                   localizations.changeAppLanguage,
@@ -689,7 +705,8 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
           ? Icon(
               Icons.check_circle,
               color: const Color(0xff00c1e8),
-              size: ResponsiveHelper.getResponsiveIconSize(context, 24),
+              size:
+                  ResponsiveHelper.getResponsiveIconSize(context, baseSize: 24),
             )
           : null,
       onTap: () async {

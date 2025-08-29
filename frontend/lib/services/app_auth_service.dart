@@ -6,6 +6,7 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import './cognito_auth_service.dart';
 import './api_service.dart';
 import './session_manager.dart';
+import './app_state.dart';
 import '../providers/session_provider.dart';
 import '../providers/business_provider.dart';
 import '../config/app_config.dart';
@@ -162,6 +163,9 @@ class AppAuthService {
           
           // Add lightweight login tracking for business user
           await _trackBusinessLogin(businessId, userId, email);
+          
+          // FORCE ONLINE STATUS ON LOGIN
+          await _forceOnlineStatusOnLogin(businessId, userId, email);
         }
 
         return SignInResult(
@@ -216,6 +220,28 @@ class AppAuthService {
     } catch (e) {
       print('⚠️ Error tracking business login: $e');
       // Don't fail login if tracking fails
+    }
+  }
+
+  /// Force online status when user logs in
+  static Future<void> _forceOnlineStatusOnLogin(
+      String businessId, String? userId, String email) async {
+    try {
+      print('🟢 Forcing online status on login');
+      print('   Business ID: $businessId');
+      print('   User ID: $userId');
+      print('   Email: $email');
+
+      // Get AppState instance and force online status
+      final appState = AppState();
+
+      // Use the dedicated login method that handles API call and state sync
+      await appState.forceOnlineOnLogin(businessId, userId ?? email);
+
+      print('✅ Online status forced to ON after login');
+    } catch (e) {
+      print('⚠️ Error forcing online status on login: $e');
+      // Don't fail login if forcing online status fails
     }
   }
 

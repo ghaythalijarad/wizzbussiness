@@ -115,6 +115,7 @@ class FirebaseService {
     if (notification != null) {
       // Show local notification
       NotificationHelper.showNotification(
+        id: DateTime.now().millisecondsSinceEpoch,
         title: notification.title ?? 'New Order',
         body: notification.body ?? 'You have a new order!',
       );

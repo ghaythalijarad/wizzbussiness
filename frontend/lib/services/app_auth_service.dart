@@ -260,6 +260,11 @@ class AppAuthService {
         userId = currentUser?['userId'] ?? currentUser?['sub'];
       }
 
+      // Send WebSocket logout notification first (before disconnecting)
+      if (businessId != null && userId != null) {
+        await _sendWebSocketLogout(businessId, userId);
+      }
+
       // Remove login tracking for this business user
       if (businessId != null) {
         await _trackBusinessLogout(businessId, userId);
@@ -308,6 +313,40 @@ class AppAuthService {
     } catch (e) {
       print('⚠️ Error tracking business logout: $e');
       // Don't fail logout if tracking fails
+    }
+  }
+
+  /// Send WebSocket logout notification to update subscriptions
+  static Future<void> _sendWebSocketLogout(String businessId, String userId) async {
+    try {
+      print('🔌 Sending WebSocket logout notification');
+      print('   Business ID: $businessId');
+      print('   User ID: $userId');
+      
+      // Check if we have an active real-time service with WebSocket
+      if (_container != null) {
+        final realtimeService = _container!.read(realtimeOrderServiceProvider);
+        
+        // Send logout notification via WebSocket if connected
+        if (realtimeService.isConnected) {
+          // Use the public sendMerchantLogout method
+          realtimeService.sendMerchantLogout(
+            businessId: businessId,
+            userId: userId,
+          );
+          
+          // Wait for logout message to be sent
+          await Future.delayed(const Duration(milliseconds: 1000));
+          print('✅ WebSocket logout notification sent');
+        } else {
+          print('⚠️ WebSocket not connected, skipping logout notification');
+        }
+      } else {
+        print('⚠️ Riverpod container not available, skipping WebSocket logout');
+      }
+    } catch (e) {
+      print('⚠️ Error sending WebSocket logout notification: $e');
+      // Don't fail logout if WebSocket notification fails
     }
   }
 

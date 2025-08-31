@@ -73,7 +73,7 @@ class WebSocketService {
           final notificationService = ref.read(notificationServiceProvider);
           notificationService.addOrderNotification(
             title: 'New Order!',
-            message: 'You have a new order: $orderId',
+            body: 'You have a new order: $orderId',
             orderId: orderId,
           );
         }
@@ -123,5 +123,81 @@ class WebSocketService {
     _channel?.sink.close();
     _channel = null;
     _channelSubscription = null;
+  }
+
+  /// Send merchant status update when toggle is changed
+  void sendMerchantStatusUpdate({
+    required String businessId,
+    required String userId,
+    required bool isOnline,
+  }) {
+    if (_channel?.sink == null) {
+      print("WebSocket: Cannot send status update - no active connection");
+      return;
+    }
+
+    final message = {
+      'type': 'BUSINESS_STATUS_UPDATE',
+      'businessId': businessId,
+      'userId': userId,
+      'status': isOnline ? 'online' : 'offline',
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+
+    try {
+      _channel!.sink.add(jsonEncode(message));
+      print("WebSocket: Merchant status update sent - $businessId: ${isOnline ? 'online' : 'offline'}");
+    } catch (error) {
+      print("WebSocket: Error sending merchant status update: $error");
+    }
+  }
+
+  /// Send merchant logout notification
+  void sendMerchantLogout({
+    required String businessId,
+    required String userId,
+  }) {
+    if (_channel?.sink == null) {
+      print("WebSocket: Cannot send logout notification - no active connection");
+      return;
+    }
+
+    final logoutMessage = {
+      'type': 'MERCHANT_LOGOUT',
+      'businessId': businessId,
+      'userId': userId,
+      'timestamp': DateTime.now().toIso8601String(),
+      'reason': 'user_logout',
+    };
+
+    try {
+      _channel!.sink.add(jsonEncode(logoutMessage));
+      print("WebSocket: Merchant logout notification sent - $businessId");
+      
+      // Wait a moment for the message to be sent before disconnecting
+      Future.delayed(const Duration(milliseconds: 500), () {
+        disconnect();
+      });
+    } catch (error) {
+      print("WebSocket: Error sending logout notification: $error");
+      // Still disconnect even if message fails
+      disconnect();
+    }
+  }
+
+  /// Send heartbeat/ping message
+  void sendHeartbeat() {
+    if (_channel?.sink == null) return;
+
+    final message = {
+      'type': 'HEARTBEAT',
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+
+    try {
+      _channel!.sink.add(jsonEncode(message));
+    } catch (error) {
+      print("WebSocket: Error sending heartbeat: $error");
+    }
   }
 }

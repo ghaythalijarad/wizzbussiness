@@ -1,6 +1,5 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, PutCommand, ScanCommand, DeleteCommand, GetCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, PutCommand, UpdateCommand, DeleteCommand, GetCommand, QueryCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
 const { ApiGatewayManagementApiClient, PostToConnectionCommand } = require('@aws-sdk/client-apigatewaymanagementapi');
 const { WebSocketConnectionsAdapter } = require('./websocket_table_adapter');
 
@@ -330,6 +329,41 @@ async function handleMessage(event) {
                 }
                 break;
 
+            case 'MERCHANT_STATUS_UPDATE':
+                // Handle merchant online/offline status changes from toggle
+                if (message.businessId && message.status && message.userId) {
+                    await handleMerchantStatusUpdate(
+                        message.businessId, 
+                        message.userId, 
+                        message.status, 
+                        connectionId
+                    );
+                }
+                break;
+
+            case 'BUSINESS_STATUS_UPDATE':
+                // Handle business status updates for actual subscription pattern
+                if (message.businessId && message.status && message.userId) {
+                    await handleBusinessStatusSubscriptionUpdate(
+                        message.businessId, 
+                        message.userId, 
+                        message.status, 
+                        connectionId
+                    );
+                }
+                break;
+
+            case 'MERCHANT_LOGOUT':
+                // Handle merchant logout - set all subscriptions to inactive
+                if (message.businessId && message.userId) {
+                    await handleMerchantLogout(
+                        message.businessId,
+                        message.userId,
+                        connectionId
+                    );
+                }
+                break;
+
             default:
                 console.log('Unknown message type:', message.type);
                 await sendMessageToConnection(connectionId, {
@@ -388,6 +422,315 @@ async function handleBusinessStatusUpdate(businessId, status, connectionId) {
 }
 
 /**
+ * Handle merchant online/offline status updates from toggle
+ * Updates both business table and shared WebSocket subscription table
+ */
+async function handleMerchantStatusUpdate(businessId, userId, status, connectionId) {
+    try {
+        const isOnline = status === 'online';
+        const timestamp = new Date().toISOString();
+        
+        // 1. Update business accepting orders status
+        const businessUpdateParams = {
+            TableName: process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev',
+            Key: {
+                businessId: businessId
+            },
+            UpdateExpression: 'SET acceptingOrders = :status, lastStatusUpdate = :timestamp',
+            ExpressionAttributeValues: {
+                ':status': isOnline,
+                ':timestamp': timestamp
+            }
+        };
+
+        await dynamodb.send(new UpdateCommand(businessUpdateParams));
+
+        // 2. Update or create subscription in shared WebSocket subscription table
+        const subscriptionId = `merchant_${businessId}_${userId}`;
+        const subscriptionUpdateParams = {
+            TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
+            Key: {
+                subscriptionId: subscriptionId
+            },
+            UpdateExpression: 'SET entityType = :entityType, entityId = :entityId, userId = :userId, #status = :status, topic = :topic, lastUpdate = :timestamp, isActive = :isActive',
+            ExpressionAttributeNames: {
+                '#status': 'status'
+            },
+            ExpressionAttributeValues: {
+                ':entityType': 'merchant',
+                ':entityId': businessId,
+                ':userId': userId,
+                ':status': status,
+                ':topic': `merchant_status_${businessId}`,
+                ':timestamp': timestamp,
+                ':isActive': isOnline
+            }
+        };
+
+        await dynamodb.send(new UpdateCommand(subscriptionUpdateParams));
+
+        // 3. Broadcast status change to customers app via shared infrastructure
+        await broadcastMerchantStatusChange(businessId, status, timestamp);
+
+        // 4. Send confirmation back to the merchant
+        await sendMessageToConnection(connectionId, {
+            type: 'MERCHANT_STATUS_UPDATED',
+            businessId: businessId,
+            status: status,
+            timestamp: timestamp,
+            message: isOnline ? 'Restaurant is now online and accepting orders' : 'Restaurant is now offline - orders are paused'
+        });
+
+        console.log(`✅ Merchant status updated: ${businessId} -> ${status} (subscription: ${subscriptionId})`);
+
+    } catch (error) {
+        console.error('Error updating merchant status:', error);
+        await sendMessageToConnection(connectionId, {
+            type: 'ERROR',
+            message: 'Failed to update merchant status',
+            businessId: businessId,
+            error: error.message
+        });
+    }
+}
+
+/**
+ * Handle business status updates for the actual subscription pattern used by the app
+ * Updates the business_status subscription that actually exists
+ */
+async function handleBusinessStatusSubscriptionUpdate(businessId, userId, status, connectionId) {
+    try {
+        const isOnline = status === 'online';
+        const timestamp = new Date().toISOString();
+        
+        console.log(`🔄 Business status subscription update: ${businessId} -> ${status} (user: ${userId})`);
+        
+        // 1. Update business accepting orders status
+        const businessUpdateParams = {
+            TableName: process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev',
+            Key: {
+                businessId: businessId
+            },
+            UpdateExpression: 'SET acceptingOrders = :status, lastStatusUpdate = :timestamp',
+            ExpressionAttributeValues: {
+                ':status': isOnline,
+                ':timestamp': timestamp
+            }
+        };
+
+        await dynamodb.send(new UpdateCommand(businessUpdateParams));
+
+        // 2. Find and update the actual subscription record using the business_status pattern
+        // Search for subscriptions with businessId and userId matching
+        const findSubscriptionParams = {
+            TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
+            FilterExpression: 'businessId = :businessId AND userId = :userId AND subscriptionType = :subType',
+            ExpressionAttributeValues: {
+                ':businessId': businessId,
+                ':userId': userId,
+                ':subType': 'business_status'
+            }
+        };
+
+        const scanResult = await dynamodb.send(new ScanCommand(findSubscriptionParams));
+        
+        if (scanResult.Items && scanResult.Items.length > 0) {
+            // Update each matching subscription
+            const updatePromises = scanResult.Items.map(async (subscription) => {
+                const updateParams = {
+                    TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
+                    Key: {
+                        subscriptionId: subscription.subscriptionId
+                    },
+                    UpdateExpression: 'SET isActive = :isActive',
+                    ExpressionAttributeValues: {
+                        ':isActive': isOnline
+                    }
+                };
+                
+                return dynamodb.send(new UpdateCommand(updateParams));
+            });
+            
+            await Promise.all(updatePromises);
+            console.log(`✅ Updated ${scanResult.Items.length} business_status subscription(s) for ${businessId}`);
+        } else {
+            console.log(`⚠️ No business_status subscriptions found for ${businessId} and user ${userId}`);
+        }
+
+        // 3. Send confirmation back to the merchant
+        await sendMessageToConnection(connectionId, {
+            type: 'BUSINESS_STATUS_UPDATED',
+            businessId: businessId,
+            status: status,
+            timestamp: timestamp,
+            message: isOnline ? 'Restaurant is now online and accepting orders' : 'Restaurant is now offline - orders are paused'
+        });
+
+        console.log(`✅ Business status subscription updated: ${businessId} -> ${status}`);
+
+    } catch (error) {
+        console.error('Error updating business status subscription:', error);
+        await sendMessageToConnection(connectionId, {
+            type: 'ERROR',
+            message: 'Failed to update business status subscription',
+            businessId: businessId,
+            error: error.message
+        });
+    }
+}
+
+/**
+ * Handle merchant logout - set business offline and subscriptions inactive
+ * This ensures that when merchant logs out, they appear offline to customers
+ */
+async function handleMerchantLogout(businessId, userId, connectionId) {
+    try {
+        const timestamp = new Date().toISOString();
+        
+        console.log(`🚪 Processing merchant logout: ${businessId} (user: ${userId})`);
+        
+        // 1. Set business to offline/not accepting orders
+        const businessUpdateParams = {
+            TableName: process.env.BUSINESSES_TABLE || 'WhizzMerchants_Businesses',
+            Key: {
+                businessId: businessId
+            },
+            UpdateExpression: 'SET acceptingOrders = :offline, lastStatusUpdate = :timestamp',
+            ExpressionAttributeValues: {
+                ':offline': false,
+                ':timestamp': timestamp
+            }
+        };
+
+        await dynamodb.send(new UpdateCommand(businessUpdateParams));
+        console.log(`✅ Business set to offline: ${businessId}`);
+
+        // 2. Set all business_status subscriptions to inactive
+        const findSubscriptionParams = {
+            TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
+            FilterExpression: 'businessId = :businessId AND userId = :userId AND subscriptionType = :subType',
+            ExpressionAttributeValues: {
+                ':businessId': businessId,
+                ':userId': userId,
+                ':subType': 'business_status'
+            }
+        };
+
+        const scanResult = await dynamodb.send(new ScanCommand(findSubscriptionParams));
+        
+        if (scanResult.Items && scanResult.Items.length > 0) {
+            const updatePromises = scanResult.Items.map(async (subscription) => {
+                const updateParams = {
+                    TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
+                    Key: {
+                        subscriptionId: subscription.subscriptionId
+                    },
+                    UpdateExpression: 'SET isActive = :inactive, lastUpdate = :timestamp',
+                    ExpressionAttributeValues: {
+                        ':inactive': false,
+                        ':timestamp': timestamp
+                    }
+                };
+                
+                return dynamodb.send(new UpdateCommand(updateParams));
+            });
+            
+            await Promise.all(updatePromises);
+            console.log(`✅ Set ${scanResult.Items.length} subscription(s) to inactive for ${businessId}`);
+        }
+
+        // 3. Broadcast logout status to customer apps
+        await broadcastMerchantStatusChange(businessId, 'offline', timestamp);
+
+        // 4. Send confirmation back to the merchant
+        await sendMessageToConnection(connectionId, {
+            type: 'MERCHANT_LOGOUT_CONFIRMED',
+            businessId: businessId,
+            status: 'offline',
+            timestamp: timestamp,
+            message: 'Logout processed - restaurant is now offline'
+        });
+
+        console.log(`✅ Merchant logout processed: ${businessId} -> offline`);
+
+    } catch (error) {
+        console.error('Error processing merchant logout:', error);
+        await sendMessageToConnection(connectionId, {
+            type: 'ERROR',
+            message: 'Failed to process merchant logout',
+            businessId: businessId,
+            error: error.message
+        });
+    }
+}
+
+/**
+ * Handle merchant logout - set all subscriptions to inactive
+ */
+async function handleMerchantLogout(businessId, userId, connectionId) {
+    try {
+        const timestamp = new Date().toISOString();
+        
+        console.log(`🔄 Merchant logout: ${businessId} (user: ${userId})`);
+        
+        // 1. Find and update all subscriptions for the merchant
+        const findSubscriptionParams = {
+            TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
+            FilterExpression: 'businessId = :businessId AND userId = :userId',
+            ExpressionAttributeValues: {
+                ':businessId': businessId,
+                ':userId': userId
+            }
+        };
+
+        const scanResult = await dynamodb.send(new ScanCommand(findSubscriptionParams));
+        
+        if (scanResult.Items && scanResult.Items.length > 0) {
+            // Update each matching subscription
+            const updatePromises = scanResult.Items.map(async (subscription) => {
+                const updateParams = {
+                    TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
+                    Key: {
+                        subscriptionId: subscription.subscriptionId
+                    },
+                    UpdateExpression: 'SET isActive = :isActive, lastUpdate = :timestamp',
+                    ExpressionAttributeValues: {
+                        ':isActive': false,
+                        ':timestamp': timestamp
+                    }
+                };
+                
+                return dynamodb.send(new UpdateCommand(updateParams));
+            });
+            
+            await Promise.all(updatePromises);
+            console.log(`✅ Updated ${scanResult.Items.length} subscription(s) to inactive for ${businessId}`);
+        } else {
+            console.log(`⚠️ No subscriptions found for ${businessId} and user ${userId}`);
+        }
+
+        // 2. Send confirmation back to the merchant
+        await sendMessageToConnection(connectionId, {
+            type: 'MERCHANT_LOGOUT_CONFIRMED',
+            businessId: businessId,
+            timestamp: timestamp,
+            message: 'Merchant has been logged out and all subscriptions set to inactive'
+        });
+
+        console.log(`✅ Merchant logout processed: ${businessId}`);
+
+    } catch (error) {
+        console.error('Error processing merchant logout:', error);
+        await sendMessageToConnection(connectionId, {
+            type: 'ERROR',
+            message: 'Failed to process merchant logout',
+            businessId: businessId,
+            error: error.message
+        });
+    }
+}
+
+/**
  * Broadcast message to multiple merchants
  */
 async function broadcastToMerchants(merchantIds, message) {
@@ -401,6 +744,80 @@ async function broadcastToMerchants(merchantIds, message) {
 
     } catch (error) {
         console.error('Error broadcasting to merchants:', error);
+    }
+}
+
+/**
+ * Broadcast merchant status change to customers app via shared WebSocket infrastructure
+ * This notifies customers app about restaurant availability changes
+ */
+async function broadcastMerchantStatusChange(businessId, status, timestamp) {
+    try {
+        // Get all customer app subscriptions that should be notified about this merchant
+        const customerSubscriptionsParams = {
+            TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
+            IndexName: 'topic-createdAt-index', // Use the existing GSI
+            KeyConditionExpression: 'topic = :topic',
+            ExpressionAttributeValues: {
+                ':topic': `merchant_status_${businessId}` // Customers subscribe to specific merchant status updates
+            }
+        };
+
+        const subscriptionsResult = await dynamodb.send(new QueryCommand(customerSubscriptionsParams));
+        
+        if (subscriptionsResult.Items && subscriptionsResult.Items.length > 0) {
+            // Create broadcast message for customers app
+            const broadcastMessage = {
+                type: 'MERCHANT_STATUS_CHANGE',
+                data: {
+                    merchantId: businessId,
+                    status: status,
+                    timestamp: timestamp,
+                    isAcceptingOrders: status === 'online'
+                }
+            };
+
+            // Get active WebSocket connections for customer apps that are subscribed
+            const connectionPromises = subscriptionsResult.Items.map(async (subscription) => {
+                try {
+                    // Get active WebSocket connections for this user/customer
+                    const connectionsParams = {
+                        TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE || 'WizzUser_websocket_connections_dev',
+                        IndexName: 'userId-topic-index', // Use the existing GSI
+                        KeyConditionExpression: 'userId = :userId',
+                        FilterExpression: 'entityType = :entityType AND isActive = :isActive',
+                        ExpressionAttributeValues: {
+                            ':userId': subscription.userId,
+                            ':entityType': 'customer',
+                            ':isActive': true
+                        }
+                    };
+
+                    const connectionsResult = await dynamodb.send(new QueryCommand(connectionsParams));
+                    
+                    if (connectionsResult.Items && connectionsResult.Items.length > 0) {
+                        // Send message to all active customer connections
+                        const sendPromises = connectionsResult.Items.map(connection =>
+                            sendMessageToConnection(connection.connectionId, broadcastMessage)
+                        );
+                        
+                        await Promise.allSettled(sendPromises);
+                        console.log(`📤 Sent merchant status update to ${connectionsResult.Items.length} customer connections for user ${subscription.userId}`);
+                    }
+                } catch (connectionError) {
+                    console.warn(`Warning: Could not send to user ${subscription.userId}:`, connectionError.message);
+                }
+            });
+
+            await Promise.allSettled(connectionPromises);
+            console.log(`🔔 Merchant status broadcast completed for ${businessId}: ${subscriptionsResult.Items.length} subscribers notified`);
+        } else {
+            console.log(`ℹ️ No customer subscriptions found for merchant ${businessId}`);
+        }
+
+    } catch (error) {
+        console.error('Error broadcasting merchant status change:', error);
+        // Don't throw error - this is a notification feature, not critical for main functionality
     }
 }
 

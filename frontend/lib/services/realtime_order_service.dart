@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:http/http.dart' as http;
 import '../models/order.dart';
 import '../models/delivery_address.dart';
 import 'package:hadhir_business/config/app_config.dart';
@@ -540,6 +539,18 @@ class RealtimeOrderService {
         debugPrint('❌ Error sending WebSocket message: $error');
       }
     }
+  }
+
+  /// Send merchant logout notification via WebSocket (public method)
+  void sendMerchantLogout({required String businessId, required String userId}) {
+    debugPrint('🔌 Sending merchant logout notification');
+    _sendWebSocketMessage({
+      'type': 'MERCHANT_LOGOUT',
+      'businessId': businessId,
+      'userId': userId,
+      'timestamp': DateTime.now().toIso8601String(),
+      'reason': 'user_logout',
+    });
   }
 
   /// Start periodic ping to keep connection alive

@@ -4,8 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
 import '../providers/locale_provider_riverpod.dart';
+import '../providers/session_provider.dart';
 import '../services/language_service.dart';
 import '../services/app_state.dart';
+import '../services/websocket_service.dart';
+import '../services/app_auth_service.dart';
 import '../core/design_system/golden_ratio_constants.dart';
 import '../core/theme/app_colors.dart';
 import '../core/design_system/typography_system.dart';
@@ -140,7 +143,25 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
     }
 
     try {
+      // Get current session for business ID and user data for user ID
+      final session = ref.read(sessionProvider);
+      final currentUser = await AppAuthService.getCurrentUser();
+      
+      // Update business status via existing API
       await _appState.setOnline(value, widget.onToggleStatus);
+      
+      // Send WebSocket message to update shared subscription table
+      if (session.businessId != null && currentUser != null && currentUser['userId'] != null) {
+        final webSocketService = ref.read(webSocketServiceProvider);
+        webSocketService.sendMerchantStatusUpdate(
+          businessId: session.businessId!,
+          userId: currentUser['userId']!,
+          isOnline: value,
+        );
+        
+        print('📤 Sent merchant status update via WebSocket: ${session.businessId} -> ${value ? 'online' : 'offline'}');
+      }
+      
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

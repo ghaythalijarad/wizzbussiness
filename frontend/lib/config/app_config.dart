@@ -22,10 +22,10 @@ class AppConfig {
   // Backward compatibility - some services use baseUrl
   static String get baseUrl => apiUrl;
   
-  // WebSocket URL - Using deployed WebSocket API Gateway endpoint
+  // WebSocket URL - Using shared WizzUser-WebSocket-dev infrastructure
   static String get webSocketUrl {
     return const String.fromEnvironment('WEBSOCKET_URL',
-        defaultValue: 'wss://pyc140yn0h.execute-api.us-east-1.amazonaws.com/dev');
+        defaultValue: 'wss://lwk0wf6rpl.execute-api.us-east-1.amazonaws.com/dev');
   }
   
   // Development flags

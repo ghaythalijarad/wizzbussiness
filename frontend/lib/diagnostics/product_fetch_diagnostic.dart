@@ -7,7 +7,7 @@
 //   --dart-define=COGNITO_REGION=us-east-1 \
 //   --dart-define=ENVIRONMENT=development \
 //   --dart-define=API_URL=https://s8nf89antk.execute-api.us-east-1.amazonaws.com/Prod \
-//   --dart-define=WEBSOCKET_URL=wss://mnbzrgc0o4.execute-api.us-east-1.amazonaws.com/dev
+//   --dart-define=WEBSOCKET_URL=wss://lwk0wf6rpl.execute-api.us-east-1.amazonaws.com/dev
 //
 // NOTE: Contains test credentials for controlled diagnostic only.
 

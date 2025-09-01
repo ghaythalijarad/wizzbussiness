@@ -10,11 +10,8 @@ class AppState with ChangeNotifier {
   }
 
   bool _isOnline = true;
-  bool _isToggling = false;
-  final ApiService _apiService = ApiService();
 
   bool get isOnline => _isOnline;
-  bool get isToggling => _isToggling;
 
   /// Load persisted online status from SharedPreferences
   Future<void> _loadPersistedStatus() async {
@@ -37,124 +34,41 @@ class AppState with ChangeNotifier {
     }
   }
 
-  /// Update business online status via API
-  Future<void> updateBusinessOnlineStatus(
-    String businessId,
-    String userId,
-    bool isOnline,
-  ) async {
-    try {
-      debugPrint('🔄 AppState: Updating business online status to ${isOnline ? 'ONLINE' : 'OFFLINE'}');
-      await _apiService.updateBusinessOnlineStatus(businessId, userId, isOnline);
-      debugPrint('✅ AppState: Successfully updated business online status');
-    } catch (e) {
-      debugPrint('❌ AppState: Failed to update business online status: $e');
-      rethrow;
-    }
-  }
-
-  /// Get business online status from API
-  Future<bool> getBusinessOnlineStatus(String businessId) async {
-    try {
-      debugPrint('🔄 AppState: Getting business online status');
-      final response = await _apiService.getBusinessOnlineStatus(businessId);
-      final isOnline = response['isOnline'] ?? false;
-      debugPrint('✅ AppState: Retrieved business online status: ${isOnline ? 'ONLINE' : 'OFFLINE'}');
-      return isOnline;
-    } catch (e) {
-      debugPrint('❌ AppState: Failed to get business online status: $e');
-      return false; // Default to offline if we can't determine status
-    }
-  }
-
-  /// Load business online status from API and update local state
-  Future<void> loadOnlineStatusFromAPI(String businessId) async {
-    try {
-      final apiStatus = await getBusinessOnlineStatus(businessId);
-      _isOnline = apiStatus;
-      await _savePersistedStatus(_isOnline);
-      notifyListeners();
-    } catch (e) {
-      debugPrint('❌ AppState: Failed to load online status from API: $e');
-      // Keep current persisted status if API fails
-    }
-  }
-
-  Future<void> setOnline(
-      bool isOnline, Future<void> Function(bool) onToggleCallback) async {
-    if (_isToggling) return; // Prevent multiple simultaneous toggles
-
-    _isToggling = true;
-    notifyListeners();
-
-    try {
-      await onToggleCallback(isOnline);
-      // Only update the state if the operation succeeds
-      _isOnline = isOnline;
-      await _savePersistedStatus(_isOnline);
-    } catch (error) {
-      // Don't update the state if the operation fails
-      debugPrint('❌ AppState: Failed to toggle online status: $error');
-      rethrow; // Let the UI handle the error
-    } finally {
-      _isToggling = false;
-      notifyListeners();
-    }
-  }
-
   void updateOnlineStatus(bool isOnline) {
     _isOnline = isOnline;
     _savePersistedStatus(_isOnline);
     notifyListeners();
   }
 
-  /// Force online status when user logs in (bypassing toggle logic)
-  Future<void> forceOnlineOnLogin(String businessId, String userId) async {
-    try {
-      debugPrint('🟢 AppState: Forcing online status ON after login');
-
-      // Set local state to online
-      _isOnline = true;
-
-      // Update backend status
-      await updateBusinessOnlineStatus(businessId, userId, true);
-
-      // Save to persistence
-      await _savePersistedStatus(true);
-
-      // Store login timestamp to prevent API override
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt(
-          'last_login_time', DateTime.now().millisecondsSinceEpoch);
-
-      // Notify listeners
-      notifyListeners();
-
-      debugPrint(
-          '✅ AppState: Successfully forced online status ON after login');
-    } catch (e) {
-      debugPrint('❌ AppState: Failed to force online status on login: $e');
-      // Still set local state to online even if API call fails
-      _isOnline = true;
-      await _savePersistedStatus(true);
-
-      // Store login timestamp even if API call fails
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt(
-            'last_login_time', DateTime.now().millisecondsSinceEpoch);
-      } catch (prefError) {
-        debugPrint('❌ AppState: Failed to store login timestamp: $prefError');
-      }
-
-      notifyListeners();
-    }
-  }
-
   void logout() {
     // Reset app state on logout
     _isOnline = true;
-    _isToggling = false;
     notifyListeners();
+  }
+
+  /// Force online status when user logs in
+  /// This ensures the business is automatically set to online after successful login
+  Future<void> forceOnlineOnLogin(String businessId, String userId) async {
+    try {
+      debugPrint('🟢 AppState: Forcing online status ON after login');
+      debugPrint('   Business ID: $businessId');
+      debugPrint('   User ID: $userId');
+
+      // Update local state to online
+      _isOnline = true;
+      await _savePersistedStatus(true);
+
+      // Update backend status via API
+      final apiService = ApiService();
+      await apiService.updateBusinessOnlineStatus(businessId, userId, true);
+
+      // Notify listeners of the state change
+      notifyListeners();
+
+      debugPrint('✅ AppState: Successfully forced online status ON after login');
+    } catch (e) {
+      debugPrint('❌ AppState: Failed to force online status after login: $e');
+      // Don't throw error to prevent login failure
+    }
   }
 }

@@ -1,54 +1,80 @@
-# Wizz Business - Order Receiver App
+# Order Receiver App - Flutter Business Management
 
-A comprehensive Flutter-based business management application for restaurants and food businesses, featuring order management, POS integration, product management, and real-time business analytics.
+A comprehensive Flutter-based merchant app for restaurants and food businesses, featuring real-time order management, WebSocket integration, and business analytics. Part of the WizzUser ecosystem for streamlined food ordering and delivery.
 
-## 🚀 Features
+## 🚀 Key Features
 
-### Core Functionality
+### 🔄 Real-time Order Management
+
+- **Live Order Notifications**: WebSocket-powered real-time order updates
+- **Order Status Tracking**: Complete lifecycle from pending to delivered  
+- **Audio Notifications**: Customizable sound alerts for new orders
+- **Offline Fallback**: Polling mechanism when WebSocket is unavailable
+
+### 🏢 Business Operations
+
+- **Online/Offline Toggle**: Control order acceptance via sidebar switch
 - **Multi-language Support**: Arabic and English interface
-- **User Authentication**: Secure registration and auto-login flow
-- **Business Management**: Complete business profile and settings management
-- **Order Management**: Real-time order processing and tracking
-- **Product Management**: Full CRUD operations for menu items and categories
-- **POS Integration**: Support for Square, Toast, Clover, and generic APIs
-- **Discount Management**: Create and manage various discount types
-- **Real-time Analytics**: Business performance insights and reporting
+- **Business Profile Management**: Complete business settings and photos
+- **Working Hours Configuration**: Set operational hours and availability
 
-### User Experience
-- **Auto-Login**: Seamless registration → verification → dashboard flow
-- **Responsive Design**: Optimized for mobile, tablet, and desktop
-- **Real-time Updates**: Live order notifications and status updates
-- **Offline Support**: Core functionality works without internet connection
-- **Business Photo Management**: Upload and manage business profile images
+### 📊 Advanced Features
 
-## 🏗️ Architecture
+- **Product Management**: Full CRUD for menu items and categories
+- **Discount Management**: Create percentage, fixed, and BOGO discounts
+- **Analytics Dashboard**: Business performance insights
+- **Document Management**: Handle business registration documents
+
+### 🔐 Authentication & Security
+
+- **AWS Cognito Integration**: Secure user authentication
+- **Auto-Login Flow**: Seamless registration → verification → dashboard
+- **Token Management**: Automatic refresh and secure storage
+- **Session Management**: Persistent login state
+
+## 🏗️ Technical Architecture
 
 ### Frontend (Flutter)
-- **Framework**: Flutter 3.x with Dart
-- **State Management**: Provider pattern with ChangeNotifier
-- **Navigation**: Flutter Router with named routes
-- **UI Components**: Custom widgets with Material Design
-- **Localization**: Complete Arabic and English support
-- **Authentication**: AWS Cognito integration with auto-login
 
-### Backend (AWS Serverless)
-- **API Gateway**: RESTful API endpoints
-- **Lambda Functions**: Node.js serverless functions
-- **Database**: DynamoDB with optimized schemas
-- **Authentication**: AWS Cognito User Pools
-- **File Storage**: S3 for business photos and assets
-- **Real-time**: WebSocket connections for live updates
+```
+frontend/
+├── lib/
+│   ├── core/                    # Core utilities and design system
+│   │   ├── design_system/       # Golden ratio, typography, colors
+│   │   └── theme/              # App theming
+│   ├── models/                 # Data models
+│   ├── providers/              # Riverpod state management
+│   ├── screens/                # UI screens
+│   ├── services/               # Business logic services
+│   │   ├── realtime_order_service.dart  # WebSocket management
+│   │   ├── app_auth_service.dart        # Authentication
+│   │   └── api_service.dart             # REST API calls
+│   └── widgets/                # Reusable UI components
+```
 
-### Third-party Integrations
-- **POS Systems**: Square, Toast, Clover APIs
-- **Payment Processing**: Stripe integration
-- **Analytics**: Custom dashboard with business metrics
-- **Notifications**: Push notifications for orders and updates
+### Backend (AWS SAM)
 
-## 📱 Screenshots
+```
+backend/
+├── functions/
+│   ├── auth/                   # Authentication Lambda
+│   ├── business/               # Business management
+│   ├── products/               # Product CRUD operations
+│   ├── websocket/              # Real-time WebSocket handler
+│   └── upload/                 # File upload handling
+├── template.yaml               # SAM infrastructure definition
+└── deploy-dev.sh              # Deployment script
+```
 
-### Registration & Authentication
-- Seamless multi-step registration process
+### WebSocket Integration
+
+- **Shared Infrastructure**: Uses WizzUser-WebSocket-dev (lwk0wf6rpl)
+- **Entity Types**: Merchant connections with proper authorization
+- **Message Types**: 
+  - `REGISTER_CONNECTION`: Override entity type to merchant
+  - `SUBSCRIBE_ORDERS`: Subscribe to business order updates
+  - `BUSINESS_STATUS_UPDATE`: Toggle online/offline status
+- **Real-time Updates**: Live order notifications and status changes
 - Auto-login after email verification
 - Secure password reset functionality
 

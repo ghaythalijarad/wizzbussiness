@@ -4,16 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/locale_provider_riverpod.dart';
 import '../services/app_state.dart';
-import '../services/app_auth_service.dart';
-import '../screens/login_page.dart';
+// Removed unused imports after locking toggle logic
+// import '../services/app_auth_service.dart';
+// import '../screens/login_page.dart';
 import '../utils/responsive_helper.dart';
 import '../core/design_system/golden_ratio_constants.dart';
-import '../core/theme/app_colors.dart';
-import '../core/design_system/typography_system.dart';
+// Removed unused AppColors after cleanup
+// import '../core/theme/app_colors.dart';
+// import '../core/design_system/typography_system.dart';
 
 class IOSSidebar extends ConsumerStatefulWidget {
   final bool isOnline;
-  final Future<void> Function(bool) onToggleStatus;
+  // Removed onToggleStatus - no toggle functionality needed
   final VoidCallback onReturnOrder;
   final Function(int) onNavigate;
   final VoidCallback onClose;
@@ -21,7 +23,7 @@ class IOSSidebar extends ConsumerStatefulWidget {
   const IOSSidebar({
     super.key,
     required this.isOnline,
-    required this.onToggleStatus,
+    // Removed onToggleStatus parameter
     required this.onReturnOrder,
     required this.onNavigate,
     required this.onClose,
@@ -52,38 +54,8 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
     }
   }
 
-  Future<void> _signOut() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Sign Out'),
-        content: Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Sign Out', style: TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      // Disconnect from real-time service is now handled by AppAuthService.signOut()
-      // context.read(realtimeOrderServiceProvider).disconnect();
-      
-      await AppAuthService.signOut();
-      
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-        (route) => false,
-      );
-    }
-  }
+  // Removed unused _signOut method
+  // Future<void> _signOut() async { }
 
   void _close() {
     widget.onClose();
@@ -311,57 +283,16 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                       ),
                     ),
                     const SizedBox(width: GoldenRatio.spacing12),
-                    // iOS-style switch with loading state
-                    _appState.isToggling
-                        ? SizedBox(
-                            width: 48,
-                            height: 28,
-                            child: Center(
-                              child: SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    _appState.isOnline
-                                        ? const Color(0xFF34C759)
-                                        : const Color(0xFFFF3B30),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        : Switch.adaptive(
-                            value: _appState.isOnline,
-                            onChanged: _appState.isToggling
-                                ? null
-                                : (value) async {
-                                    try {
-                                      await _appState.setOnline(
-                                          value, widget.onToggleStatus);
-                                    } catch (error) {
-                                      if (mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Failed to update status. Please try again.',
-                                              style: TextStyle(
-                                                  color: Colors.white),
-                                            ),
-                                            backgroundColor:
-                                                const Color(0xFFFF3B30),
-                                            duration: Duration(seconds: 3),
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  },
-                            activeThumbColor: const Color(0xFF34C759),
-                            inactiveThumbColor: const Color(0xFFFF3B30),
-                            inactiveTrackColor:
-                                const Color(0xFFFF3B30).withValues(alpha: 0.3),
-                          ),
+                    // iOS-style switch - toggle completely disabled
+                    Switch.adaptive(
+                        value: _appState.isOnline,
+                        // Toggle locked: disable interactions to prevent websocket status updates
+                        onChanged: null,
+                        activeThumbColor: const Color(0xFF34C759),
+                        inactiveThumbColor: const Color(0xFFFF3B30),
+                        inactiveTrackColor:
+                            const Color(0xFFFF3B30).withValues(alpha: 0.3),
+                      ),
                   ],
                 ),
               ],
@@ -417,7 +348,8 @@ class _IOSSidebarState extends ConsumerState<IOSSidebar> {
                 // iOS-style switch
                 Switch.adaptive(
                   value: _appState.isOnline,
-                  onChanged: widget.onToggleStatus,
+                  // Toggle locked: disable interactions to prevent websocket status updates
+                  onChanged: null,
                   activeThumbColor: const Color(0xFF34C759),
                 ),
               ],

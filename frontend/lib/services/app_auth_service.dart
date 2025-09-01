@@ -166,6 +166,19 @@ class AppAuthService {
           
           // FORCE ONLINE STATUS ON LOGIN
           await _forceOnlineStatusOnLogin(businessId, userId, email);
+
+          // Ensure real WebSocket connection is established after login
+          try {
+            final realtimeService = RealtimeOrderService();
+            if (!realtimeService.isConnected) {
+              await realtimeService.initialize(businessId);
+              print('✅ Real-time WebSocket connection initialized after login');
+            } else {
+              print('ℹ️ WebSocket already connected, skipping initialization');
+            }
+          } catch (e) {
+            print('⚠️ Failed to initialize WebSocket after login: $e');
+          }
         }
 
         return SignInResult(

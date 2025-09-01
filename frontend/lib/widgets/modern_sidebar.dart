@@ -7,13 +7,13 @@ import '../providers/locale_provider_riverpod.dart';
 import '../providers/session_provider.dart';
 import '../services/language_service.dart';
 import '../services/app_state.dart';
-import '../services/websocket_service.dart';
-import '../services/app_auth_service.dart';
+import '../services/realtime_order_service.dart';
 import '../core/design_system/golden_ratio_constants.dart';
 import '../core/theme/app_colors.dart';
 import '../core/design_system/typography_system.dart';
 import '../utils/responsive_helper.dart';
 import 'dart:io';
+import '../services/app_auth_service.dart';
 
 /// ModernSidebar - Adaptive sidebar component
 ///
@@ -26,7 +26,7 @@ import 'dart:io';
 /// - Complete design system integration
 class ModernSidebar extends ConsumerStatefulWidget {
   final bool isOnline;
-  final Future<void> Function(bool) onToggleStatus;
+  // Removed onToggleStatus - no toggle functionality needed
   final VoidCallback onReturnOrder;
   final Function(int) onNavigate;
   final VoidCallback onClose;
@@ -34,7 +34,7 @@ class ModernSidebar extends ConsumerStatefulWidget {
   const ModernSidebar({
     super.key,
     required this.isOnline,
-    required this.onToggleStatus,
+    // Removed onToggleStatus parameter
     required this.onReturnOrder,
     required this.onNavigate,
     required this.onClose,
@@ -122,6 +122,39 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
     }
   }
 
+  Future<void> _handleSwitchToggle(bool value) async {
+    // Optimistic UI update
+    _appState.updateOnlineStatus(value);
+
+    try {
+      final session = ref.read(sessionProvider);
+      final businessId = session.businessId;
+      if (businessId == null || businessId.isEmpty) {
+        debugPrint('❌ Cannot toggle status: missing businessId');
+        _appState.updateOnlineStatus(!value);
+        return;
+      }
+
+      final currentUser = await AppAuthService.getCurrentUser();
+      final userId = currentUser?['userId'] ?? currentUser?['user']?['userId'] ?? businessId;
+
+      // Ensure WebSocket is initialized (guarded against duplicate connects)
+      final realtime = RealtimeOrderService();
+      await realtime.initialize(businessId);
+
+      // Send BUSINESS_STATUS_UPDATE with isActive
+      realtime.sendBusinessStatusUpdate(
+        businessId: businessId,
+        userId: userId,
+        isActive: value,
+      );
+    } catch (e) {
+      debugPrint('❌ Failed to toggle online status: $e');
+      // Revert UI on failure
+      _appState.updateOnlineStatus(!value);
+    }
+  }
+
   void _closeWithAnimation() async {
     // Platform-specific haptic feedback
     if (Platform.isIOS) {
@@ -132,77 +165,6 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
     
     await _animationController.reverse();
     widget.onClose();
-  }
-
-  Future<void> _handleSwitchToggle(bool value) async {
-    // Platform-specific haptic feedback for switch interaction
-    if (Platform.isIOS) {
-      HapticFeedback.selectionClick();
-    } else {
-      HapticFeedback.lightImpact();
-    }
-
-    try {
-      // Get current session for business ID and user data for user ID
-      final session = ref.read(sessionProvider);
-      final currentUser = await AppAuthService.getCurrentUser();
-      
-      // Update business status via existing API
-      await _appState.setOnline(value, widget.onToggleStatus);
-      
-      // Send WebSocket message to update shared subscription table
-      if (session.businessId != null && currentUser != null && currentUser['userId'] != null) {
-        final webSocketService = ref.read(webSocketServiceProvider);
-        webSocketService.sendMerchantStatusUpdate(
-          businessId: session.businessId!,
-          userId: currentUser['userId']!,
-          isOnline: value,
-        );
-        
-        print('📤 Sent merchant status update via WebSocket: ${session.businessId} -> ${value ? 'online' : 'offline'}');
-      }
-      
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(GoldenRatio.xs),
-                  decoration: BoxDecoration(
-                    color: AppColors.errorContainer,
-                    borderRadius:
-                        BorderRadius.circular(GoldenRatio.buttonRadius),
-                  ),
-                  child: Icon(
-                    Icons.error_outline_rounded,
-                    color: AppColors.error,
-                    size: GoldenRatio.iconSm,
-                  ),
-                ),
-                const SizedBox(width: GoldenRatio.spacing12),
-                const Expanded(
-                  child: Text(
-                    'Failed to update status. Please try again.',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(GoldenRatio.cardRadius),
-            ),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    }
   }
 
   @override
@@ -430,48 +392,25 @@ class _ModernSidebarState extends ConsumerState<ModernSidebar>
                 ),
               ),
 
-              // Loading indicator or toggle switch with platform-specific behavior
-              _appState.isToggling
-                  ? Container(
-                      width: 44,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceVariant,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Center(
-                        child: SizedBox(
-                          width: GoldenRatio.iconSm,
-                          height: GoldenRatio.iconSm,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              isOnline ? AppColors.success : AppColors.warning,
-                            ),
-                          ),
-                        ),
-                      ),
+              // Toggle switch with platform-specific behavior
+              Platform.isIOS
+                  ? CupertinoSwitch(
+                      value: isOnline,
+                      onChanged: _handleSwitchToggle,
+                      activeColor: AppColors.success,
+                      trackColor: AppColors.warning.withOpacity(0.3),
                     )
-                  : Platform.isIOS
-                      ? CupertinoSwitch(
-                          value: isOnline,
-                          onChanged:
-                              _appState.isToggling ? null : _handleSwitchToggle,
-                          activeColor: AppColors.success,
-                          trackColor: AppColors.warning.withOpacity(0.3),
-                        )
-                      : Switch.adaptive(
-                          value: isOnline,
-                          onChanged:
-                              _appState.isToggling ? null : _handleSwitchToggle,
-                          activeColor: AppColors.success,
-                          activeTrackColor: AppColors.success.withOpacity(0.3),
-                          inactiveThumbColor: AppColors.warning,
-                          inactiveTrackColor:
-                              AppColors.warning.withOpacity(0.3),
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                        ),
+                  : Switch.adaptive(
+                      value: isOnline,
+                      onChanged: _handleSwitchToggle,
+                      activeColor: AppColors.success,
+                      activeTrackColor: AppColors.success.withOpacity(0.3),
+                      inactiveThumbColor: AppColors.warning,
+                      inactiveTrackColor:
+                          AppColors.warning.withOpacity(0.3),
+                      materialTapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap,
+                    ),
             ],
           ),
         ],

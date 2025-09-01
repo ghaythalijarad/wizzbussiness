@@ -1,4 +1,3 @@
-
 # General
 .DS_Store
 *.log
@@ -16,12 +15,13 @@ frontend/node_modules/
 build/
 dist/
 backend/.webpack/
+backend/.aws-sam/
 frontend/build/
 frontend/.dart_tool/
 frontend/.flutter-plugins
 frontend/.flutter-plugins-dependencies
 
-# Test and debug files
+# Test and debug files (keep some for documentation)
 test_*.js
 debug_*.js
 check_*.js
@@ -30,11 +30,37 @@ check_*.js
 access_token.txt
 id_token.txt
 category_id.txt
+monitor_*.js
+monitor_*.sh
+simple_*.js
+fix_*.js
+force_*.js
+remove_*.js
+simulate_*.js
+toggle_*.js
+ui_*.js
+verify_*.js
+*_monitor.js
+*_monitor.sh
+*_test.js
+*_test.sh
+validate_*.sh
+database_monitor.py
+cleanup_*.js
+cleanup_*.sh
+manual_*.sh
 
-# Documentation and status files
+# Documentation and status files (keep important ones)
 *.md.bak
 *_COMPLETE.md
 *_STATUS.md
+*_SUMMARY.md
+*_IMPLEMENTATION_*.md
+*_DEPLOYMENT_*.md
+*_FIX_*.md
+BUSY_STATUS_*.sh
+deploy_*.sh
+complete_*.sh
 
 # Python Backend
 backend/venv/
@@ -125,3 +151,7 @@ coverage/
 
 node_modules
 *.zip
+
+# Lambda deployment artifacts
+backend/functions/**/websocket_handler.zip
+backend/functions/**/websocket-handler.zip

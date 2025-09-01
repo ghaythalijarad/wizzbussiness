@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:hadhir_business/l10n/app_localizations.dart';
-import '../core/design_system/golden_ratio_constants.dart';
-import '../core/design_system/typography_system.dart';
+// Removed unused design system imports flagged by analyzer
+// import '../core/design_system/golden_ratio_constants.dart';
+// import '../core/design_system/typography_system.dart';
 import '../core/theme/app_colors.dart';
 
 class ModernNavigationRail extends StatefulWidget {
   final int selectedIndex;
   final Function(int) onNavigate;
   final bool isOnline;
-  final Function(bool) onToggleStatus;
+  // Removed onToggleStatus - no toggle functionality needed
 
   const ModernNavigationRail({
     super.key,
     required this.selectedIndex,
     required this.onNavigate,
     required this.isOnline,
-    required this.onToggleStatus,
+    // Removed onToggleStatus parameter
   });
 
   @override
@@ -236,7 +237,8 @@ class _ModernNavigationRailState extends State<ModernNavigationRail>
                 ),
                 Switch.adaptive(
                   value: widget.isOnline,
-                  onChanged: widget.onToggleStatus,
+                  // Toggle locked: disable interactions to prevent websocket status updates
+                  onChanged: null,
                   activeColor: const Color(0xFF00C1E8),
                   inactiveThumbColor: AppColors.warning,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

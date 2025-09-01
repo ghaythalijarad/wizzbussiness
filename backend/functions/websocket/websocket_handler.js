@@ -40,7 +40,16 @@ async function handleConnect(event) {
         const merchantId = event.queryStringParameters?.merchantId;
         const businessId = event.queryStringParameters?.businessId;
         const userId = event.queryStringParameters?.userId;
+        // FIXED: Use entityType from query params if provided, otherwise default to merchant
         const entityType = event.queryStringParameters?.entityType || 'merchant';
+
+        // Diagnostic: Authorization header presence/format (do not log token)
+        const authHeader = event.headers?.Authorization || event.headers?.authorization;
+        const hasBearer = typeof authHeader === 'string' && authHeader.startsWith('Bearer ');
+        console.log('🔐 $connect auth header:', {
+            present: !!authHeader,
+            format: hasBearer ? 'Bearer' : (authHeader ? 'raw' : 'none')
+        });
 
         // For merchants, use merchantId or businessId as the identifier
         const effectiveMerchantId = merchantId || businessId;
@@ -98,6 +107,27 @@ async function handleConnect(event) {
             lastHeartbeat: currentTime
         });
         console.log(`✅ Stored real WebSocket connection in unified tracking table`);
+
+        // Dedupe: keep only the newest REAL connection per business/user
+        if (effectiveMerchantId) {
+            try {
+                const all = await getActiveConnectionsForBusiness(effectiveMerchantId);
+                // Filter by same user and not the current connectionId
+                const sameUser = all.filter(c => c.userId === effectiveUserId);
+                if (sameUser.length > 1) {
+                    // Sort by connectedAt desc and keep first
+                    sameUser.sort((a, b) => (b.connectedAt || '').localeCompare(a.connectedAt || ''));
+                    const keep = sameUser[0];
+                    const toDelete = sameUser.filter(c => c.connectionId !== keep.connectionId);
+                    if (toDelete.length > 0) {
+                        await connectionsAdapter.deleteConnections(toDelete);
+                        console.log(`🧹 Deduped ${toDelete.length} older connection(s) for ${effectiveMerchantId}/${effectiveUserId}`);
+                    }
+                }
+            } catch (dedupeErr) {
+                console.warn('⚠️ Dedupe failed:', dedupeErr.message);
+            }
+        }
 
         console.log(`🔌 WebSocket connected: ${connectionId} for ${entityType}: ${effectiveUserId}${effectiveMerchantId ? ` (business: ${effectiveMerchantId})` : ''}`);
 
@@ -314,27 +344,35 @@ async function handleMessage(event) {
                 break;
 
             case 'SUBSCRIBE_ORDERS':
-                // Subscribe to order updates (could implement filtering here)
-                await sendMessageToConnection(connectionId, {
-                    type: 'SUBSCRIBED',
-                    message: 'Subscribed to order updates',
-                    businessId: message.businessId
-                });
-                break;
-
-            case 'STATUS_UPDATE':
-                // Handle business status updates
-                if (message.businessId && message.status) {
-                    await handleBusinessStatusUpdate(message.businessId, message.status, connectionId);
+                // Subscribe to order updates AND create proper subscription record
+                if (message.businessId) {
+                    await handleSubscribeOrders(connectionId, message);
+                } else {
+                    await sendMessageToConnection(connectionId, {
+                        type: 'ERROR',
+                        message: 'Missing businessId for SUBSCRIBE_ORDERS'
+                    });
                 }
                 break;
 
-            case 'MERCHANT_STATUS_UPDATE':
-                // Handle merchant online/offline status changes from toggle
-                if (message.businessId && message.status && message.userId) {
-                    await handleMerchantStatusUpdate(
+            case 'REGISTER_CONNECTION':
+                // Safety-net registration to ensure REAL connection record exists
+                if (message.businessId || message.userId) {
+                    await handleRegisterConnection(connectionId, message);
+                } else {
+                    await sendMessageToConnection(connectionId, {
+                        type: 'ERROR',
+                        message: 'Missing businessId or userId for REGISTER_CONNECTION'
+                    });
+                }
+                break;
+
+            case 'ORDER_STATUS_UPDATE':
+                // Handle order status updates for actual subscription pattern
+                if (message.businessId && message.orderId && message.status && message.userId) {
+                    await handleOrderStatusSubscriptionUpdate(
                         message.businessId, 
-                        message.userId, 
+                        message.orderId, 
                         message.status, 
                         connectionId
                     );
@@ -342,12 +380,12 @@ async function handleMessage(event) {
                 break;
 
             case 'BUSINESS_STATUS_UPDATE':
-                // Handle business status updates for actual subscription pattern
-                if (message.businessId && message.status && message.userId) {
+                // Handle business status updates
+                if (message.businessId && message.userId !== undefined && message.isActive !== undefined) {
                     await handleBusinessStatusSubscriptionUpdate(
-                        message.businessId, 
-                        message.userId, 
-                        message.status, 
+                        message.businessId,
+                        message.userId,
+                        message.isActive,
                         connectionId
                     );
                 }
@@ -382,252 +420,193 @@ async function handleMessage(event) {
 }
 
 /**
- * Handle business status updates from WebSocket
+ * Handle SUBSCRIBE_ORDERS message and create proper subscription records
  */
-async function handleBusinessStatusUpdate(businessId, status, connectionId) {
+async function handleSubscribeOrders(connectionId, message) {
     try {
-        // Update business accepting orders status
-        const updateParams = {
-            TableName: process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev',
-            Key: {
-                businessId: businessId
-            },
-            UpdateExpression: 'SET acceptingOrders = :status, lastStatusUpdate = :timestamp',
-            ExpressionAttributeValues: {
-                ':status': status === 'online',
-                ':timestamp': new Date().toISOString()
-            }
-        };
-
-        await dynamodb.send(new UpdateCommand(updateParams));
-
-        // Send confirmation back to the connection
-        await sendMessageToConnection(connectionId, {
-            type: 'STATUS_UPDATED',
-            businessId: businessId,
-            status: status,
-            timestamp: new Date().toISOString()
-        });
-
-        console.log(`✅ Business status updated via WebSocket: ${businessId} -> ${status}`);
-
-    } catch (error) {
-        console.error('Error updating business status:', error);
-        await sendMessageToConnection(connectionId, {
-            type: 'ERROR',
-            message: 'Failed to update business status',
-            businessId: businessId
-        });
-    }
-}
-
-/**
- * Handle merchant online/offline status updates from toggle
- * Updates both business table and shared WebSocket subscription table
- */
-async function handleMerchantStatusUpdate(businessId, userId, status, connectionId) {
-    try {
-        const isOnline = status === 'online';
+        const { businessId, userId, entityType = 'merchant' } = message;
         const timestamp = new Date().toISOString();
         
-        // 1. Update business accepting orders status
-        const businessUpdateParams = {
-            TableName: process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev',
-            Key: {
-                businessId: businessId
-            },
-            UpdateExpression: 'SET acceptingOrders = :status, lastStatusUpdate = :timestamp',
-            ExpressionAttributeValues: {
-                ':status': isOnline,
-                ':timestamp': timestamp
-            }
-        };
-
-        await dynamodb.send(new UpdateCommand(businessUpdateParams));
-
-        // 2. Update or create subscription in shared WebSocket subscription table
-        const subscriptionId = `merchant_${businessId}_${userId}`;
-        const subscriptionUpdateParams = {
-            TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
-            Key: {
-                subscriptionId: subscriptionId
-            },
-            UpdateExpression: 'SET entityType = :entityType, entityId = :entityId, userId = :userId, #status = :status, topic = :topic, lastUpdate = :timestamp, isActive = :isActive',
-            ExpressionAttributeNames: {
-                '#status': 'status'
-            },
-            ExpressionAttributeValues: {
-                ':entityType': 'merchant',
-                ':entityId': businessId,
-                ':userId': userId,
-                ':status': status,
-                ':topic': `merchant_status_${businessId}`,
-                ':timestamp': timestamp,
-                ':isActive': isOnline
-            }
-        };
-
-        await dynamodb.send(new UpdateCommand(subscriptionUpdateParams));
-
-        // 3. Broadcast status change to customers app via shared infrastructure
-        await broadcastMerchantStatusChange(businessId, status, timestamp);
-
-        // 4. Send confirmation back to the merchant
-        await sendMessageToConnection(connectionId, {
-            type: 'MERCHANT_STATUS_UPDATED',
-            businessId: businessId,
-            status: status,
-            timestamp: timestamp,
-            message: isOnline ? 'Restaurant is now online and accepting orders' : 'Restaurant is now offline - orders are paused'
-        });
-
-        console.log(`✅ Merchant status updated: ${businessId} -> ${status} (subscription: ${subscriptionId})`);
-
-    } catch (error) {
-        console.error('Error updating merchant status:', error);
-        await sendMessageToConnection(connectionId, {
-            type: 'ERROR',
-            message: 'Failed to update merchant status',
-            businessId: businessId,
-            error: error.message
-        });
-    }
-}
-
-/**
- * Handle business status updates for the actual subscription pattern used by the app
- * Updates the business_status subscription that actually exists
- */
-async function handleBusinessStatusSubscriptionUpdate(businessId, userId, status, connectionId) {
-    try {
-        const isOnline = status === 'online';
-        const timestamp = new Date().toISOString();
+        console.log(`🔄 SUBSCRIBE_ORDERS: ${businessId} (user: ${userId}, entity: ${entityType})`);
         
-        console.log(`🔄 Business status subscription update: ${businessId} -> ${status} (user: ${userId})`);
-        
-        // 1. Update business accepting orders status
-        const businessUpdateParams = {
-            TableName: process.env.BUSINESSES_TABLE || 'order-receiver-businesses-dev',
-            Key: {
-                businessId: businessId
-            },
-            UpdateExpression: 'SET acceptingOrders = :status, lastStatusUpdate = :timestamp',
-            ExpressionAttributeValues: {
-                ':status': isOnline,
-                ':timestamp': timestamp
-            }
-        };
-
-        await dynamodb.send(new UpdateCommand(businessUpdateParams));
-
-        // 2. Find and update the actual subscription record using the business_status pattern
-        // Search for subscriptions with businessId and userId matching
-        const findSubscriptionParams = {
-            TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
-            FilterExpression: 'businessId = :businessId AND userId = :userId AND subscriptionType = :subType',
-            ExpressionAttributeValues: {
-                ':businessId': businessId,
-                ':userId': userId,
-                ':subType': 'business_status'
-            }
-        };
-
-        const scanResult = await dynamodb.send(new ScanCommand(findSubscriptionParams));
-        
-        if (scanResult.Items && scanResult.Items.length > 0) {
-            // Update each matching subscription
-            const updatePromises = scanResult.Items.map(async (subscription) => {
-                const updateParams = {
-                    TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
+        // CRITICAL FIX: Force update connection entityType to "merchant" if businessId is present
+        // This corrects the WizzUser system's default "customer" entity type for merchant connections
+        if (businessId) {
+            try {
+                console.log(`🔧 FIXING: Updating connection ${connectionId} entityType from "customer" to "merchant"`);
+                const connectionUpdateParams = {
+                    TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE || 'WizzUser_websocket_connections_dev',
                     Key: {
-                        subscriptionId: subscription.subscriptionId
+                        connectionId: connectionId
                     },
-                    UpdateExpression: 'SET isActive = :isActive',
+                    UpdateExpression: 'SET entityType = :entityType, businessId = :businessId, lastUpdate = :timestamp',
                     ExpressionAttributeValues: {
-                        ':isActive': isOnline
+                        ':entityType': 'merchant',
+                        ':businessId': businessId,
+                        ':timestamp': timestamp
                     }
                 };
                 
-                return dynamodb.send(new UpdateCommand(updateParams));
-            });
-            
-            await Promise.all(updatePromises);
-            console.log(`✅ Updated ${scanResult.Items.length} business_status subscription(s) for ${businessId}`);
+                await dynamodb.send(new UpdateCommand(connectionUpdateParams));
+                console.log(`✅ FIXED: Connection ${connectionId} entityType updated to "merchant"`);
+            } catch (connectionUpdateError) {
+                console.error('⚠️ Failed to update connection entityType:', connectionUpdateError);
+                // Continue processing even if connection update fails
+            }
+        }
+        
+        // Prevent duplicate business_status subscriptions for same business/user
+        const subscriptionsTable = process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev';
+        const findSubscriptionParams = {
+            TableName: subscriptionsTable,
+            FilterExpression: 'businessId = :businessId AND userId = :userId AND subscriptionType = :subscriptionType',
+            ExpressionAttributeValues: {
+                ':businessId': businessId,
+                ':userId': userId || businessId,
+                ':subscriptionType': 'business_status'
+            }
+        };
+        
+        const existing = await dynamodb.send(new ScanCommand(findSubscriptionParams));
+        
+        if (existing.Items && existing.Items.length > 0) {
+            // Update the first existing subscription to be active and correct types
+            const sub = existing.Items[0];
+            const updateParams = {
+                TableName: subscriptionsTable,
+                Key: { subscriptionId: sub.subscriptionId },
+                UpdateExpression: 'SET isActive = :isActive, userType = :userType, entityType = :entityType, connectionId = :connectionId, lastUpdate = :timestamp',
+                ExpressionAttributeValues: {
+                    ':isActive': true,
+                    ':userType': 'merchant',
+                    ':entityType': 'merchant',
+                    ':connectionId': connectionId,
+                    ':timestamp': timestamp
+                }
+            };
+            await dynamodb.send(new UpdateCommand(updateParams));
+            console.log(`🔁 Activated existing business_status subscription: ${sub.subscriptionId}`);
         } else {
-            console.log(`⚠️ No business_status subscriptions found for ${businessId} and user ${userId}`);
+            // Create business_status subscription with correct merchant entity type
+            const subscriptionId = `${connectionId}_business_status_${Date.now()}`;
+            
+            const subscriptionParams = {
+                TableName: subscriptionsTable,
+                Item: {
+                    subscriptionId,
+                    connectionId,
+                    businessId,
+                    userId: userId || businessId,
+                    userType: 'merchant', // FIXED: Use merchant instead of customer
+                    entityType: 'merchant', // FIXED: Use merchant instead of customer  
+                    subscriptionType: 'business_status',
+                    topic: `business:${businessId}`,
+                    isActive: true,
+                    createdAt: timestamp,
+                    lastUpdate: timestamp
+                }
+            };
+            
+            await dynamodb.send(new PutCommand(subscriptionParams));
+            console.log(`✅ Created business_status subscription: ${subscriptionId} with userType=merchant`);
         }
 
-        // 3. Send confirmation back to the merchant
+        // Send success response
         await sendMessageToConnection(connectionId, {
-            type: 'BUSINESS_STATUS_UPDATED',
-            businessId: businessId,
-            status: status,
-            timestamp: timestamp,
-            message: isOnline ? 'Restaurant is now online and accepting orders' : 'Restaurant is now offline - orders are paused'
+            type: 'SUBSCRIBED',
+            message: 'Subscribed to order updates',
+            businessId,
+            entityType: 'merchant',
+            subscriptionType: 'business_status',
+            timestamp
         });
 
-        console.log(`✅ Business status subscription updated: ${businessId} -> ${status}`);
-
     } catch (error) {
-        console.error('Error updating business status subscription:', error);
+        console.error('Error handling SUBSCRIBE_ORDERS:', error);
         await sendMessageToConnection(connectionId, {
             type: 'ERROR',
-            message: 'Failed to update business status subscription',
-            businessId: businessId,
+            message: 'Failed to subscribe to orders',
             error: error.message
         });
     }
 }
 
 /**
- * Handle merchant logout - set business offline and subscriptions inactive
- * This ensures that when merchant logs out, they appear offline to customers
+ * Handle business status subscription update (toggle online/offline)
  */
-async function handleMerchantLogout(businessId, userId, connectionId) {
+async function handleBusinessStatusSubscriptionUpdate(businessId, userId, isActive, connectionId) {
     try {
         const timestamp = new Date().toISOString();
         
-        console.log(`🚪 Processing merchant logout: ${businessId} (user: ${userId})`);
+        console.log(`🔄 Business status update: ${businessId} (user: ${userId}) → isActive: ${isActive}`);
         
-        // 1. Set business to offline/not accepting orders
+        // CRITICAL FIX: Force update connection entityType to "merchant" for any business operation
+        if (businessId && connectionId) {
+            try {
+                console.log(`🔧 FIXING: Updating connection ${connectionId} entityType to "merchant" during toggle`);
+                const connectionUpdateParams = {
+                    TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE || 'WizzUser_websocket_connections_dev',
+                    Key: {
+                        connectionId: connectionId
+                    },
+                    UpdateExpression: 'SET entityType = :entityType, businessId = :businessId, lastUpdate = :timestamp',
+                    ExpressionAttributeValues: {
+                        ':entityType': 'merchant',
+                        ':businessId': businessId,
+                        ':timestamp': timestamp
+                    }
+                };
+                
+                await dynamodb.send(new UpdateCommand(connectionUpdateParams));
+                console.log(`✅ FIXED: Connection ${connectionId} entityType updated to "merchant"`);
+            } catch (connectionUpdateError) {
+                console.error('⚠️ Failed to update connection entityType during toggle:', connectionUpdateError);
+                // Continue processing even if connection update fails
+            }
+        }
+        
+        // 1. Update the business isActive field in WhizzMerchants_Businesses table
         const businessUpdateParams = {
             TableName: process.env.BUSINESSES_TABLE || 'WhizzMerchants_Businesses',
             Key: {
                 businessId: businessId
             },
-            UpdateExpression: 'SET acceptingOrders = :offline, lastStatusUpdate = :timestamp',
+            UpdateExpression: 'SET isActive = :isActive, updatedAt = :timestamp',
             ExpressionAttributeValues: {
-                ':offline': false,
+                ':isActive': isActive,
                 ':timestamp': timestamp
             }
         };
-
+        
         await dynamodb.send(new UpdateCommand(businessUpdateParams));
-        console.log(`✅ Business set to offline: ${businessId}`);
-
-        // 2. Set all business_status subscriptions to inactive
+        console.log(`✅ Updated business ${businessId} isActive field to: ${isActive}`);
+        
+        // 2. Find existing business_status subscriptions for this business (ignore userId to avoid mismatches)
+        const subscriptionsTable = process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev';
         const findSubscriptionParams = {
-            TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
-            FilterExpression: 'businessId = :businessId AND userId = :userId AND subscriptionType = :subType',
+            TableName: subscriptionsTable,
+            FilterExpression: 'businessId = :businessId AND subscriptionType = :subscriptionType',
             ExpressionAttributeValues: {
                 ':businessId': businessId,
-                ':userId': userId,
-                ':subType': 'business_status'
+                ':subscriptionType': 'business_status'
             }
         };
-
+        
         const scanResult = await dynamodb.send(new ScanCommand(findSubscriptionParams));
         
         if (scanResult.Items && scanResult.Items.length > 0) {
+            // Update existing subscriptions with correct entity types and isActive status
             const updatePromises = scanResult.Items.map(async (subscription) => {
                 const updateParams = {
-                    TableName: process.env.WEBSOCKET_SUBSCRIPTIONS_TABLE || 'WizzUser_websocket_subscriptions_dev',
+                    TableName: subscriptionsTable,
                     Key: {
                         subscriptionId: subscription.subscriptionId
                     },
-                    UpdateExpression: 'SET isActive = :inactive, lastUpdate = :timestamp',
+                    UpdateExpression: 'SET isActive = :isActive, userType = :userType, entityType = :entityType, lastUpdate = :timestamp',
                     ExpressionAttributeValues: {
-                        ':inactive': false,
+                        ':isActive': isActive,
+                        ':userType': 'merchant', // FIXED: Use merchant instead of customer
+                        ':entityType': 'merchant', // FIXED: Use merchant instead of customer
                         ':timestamp': timestamp
                     }
                 };
@@ -636,29 +615,128 @@ async function handleMerchantLogout(businessId, userId, connectionId) {
             });
             
             await Promise.all(updatePromises);
-            console.log(`✅ Set ${scanResult.Items.length} subscription(s) to inactive for ${businessId}`);
+            console.log(`✅ Updated ${scanResult.Items.length} business_status subscription(s) with merchant entity types`);
+        } else {
+            // No existing subscription found, create a new one with correct entity types
+            const subscriptionId = `${connectionId}_business_status_${Date.now()}`;
+            const subscriptionParams = {
+                TableName: subscriptionsTable,
+                Item: {
+                    subscriptionId,
+                    connectionId,
+                    businessId,
+                    userId,
+                    userType: 'merchant', // FIXED: Use merchant instead of customer
+                    entityType: 'merchant', // FIXED: Use merchant instead of customer
+                    subscriptionType: 'business_status',
+                    topic: `business:${businessId}`,
+                    isActive: isActive,
+                    createdAt: timestamp,
+                    lastUpdate: timestamp
+                }
+            };
+            
+            await dynamodb.send(new PutCommand(subscriptionParams));
+            console.log(`✅ Created new business_status subscription: ${subscriptionId} with merchant entity types`);
         }
 
-        // 3. Broadcast logout status to customer apps
-        await broadcastMerchantStatusChange(businessId, 'offline', timestamp);
+        // 2a. Upsert shared status row for customers: subscriptionType=merchant_status, topic=merchant_status_<businessId>
+        try {
+            const sharedStatusId = `merchant_status_${businessId}`;
+            const upsertSharedStatus = {
+                TableName: subscriptionsTable,
+                Key: { subscriptionId: sharedStatusId },
+                UpdateExpression: 'SET businessId = :businessId, subscriptionType = :stype, topic = :topic, isActive = :isActive, userType = :userType, entityType = :entityType, lastUpdate = :timestamp ADD version :one',
+                ExpressionAttributeValues: {
+                    ':businessId': businessId,
+                    ':stype': 'merchant_status',
+                    ':topic': `merchant_status_${businessId}`,
+                    ':isActive': isActive,
+                    ':userType': 'merchant',
+                    ':entityType': 'merchant',
+                    ':timestamp': timestamp,
+                    ':one': 1
+                },
+                ReturnValues: 'ALL_NEW'
+            };
+            await dynamodb.send(new UpdateCommand(upsertSharedStatus));
+            console.log(`🗂️ Upserted shared merchant_status row: ${sharedStatusId} → isActive=${isActive}`);
+        } catch (sharedErr) {
+            console.warn('⚠️ Failed to upsert shared merchant_status row:', sharedErr?.message || sharedErr);
+        }
 
-        // 4. Send confirmation back to the merchant
+        // 2b. Ecosystem broadcast: notify all customer apps subscribed to this merchant's status
+        try {
+            const statusText = isActive ? 'online' : 'offline';
+            await broadcastMerchantStatusChange(businessId, statusText, timestamp);
+            console.log(`📣 Broadcasted merchant status change to customers: ${businessId} → ${statusText}`);
+        } catch (broadcastErr) {
+            console.warn('⚠️ Failed to broadcast merchant status change:', broadcastErr?.message || broadcastErr);
+        }
+
+        // 3. Send confirmation back to the client
         await sendMessageToConnection(connectionId, {
-            type: 'MERCHANT_LOGOUT_CONFIRMED',
+            type: 'BUSINESS_STATUS_UPDATED',
             businessId: businessId,
-            status: 'offline',
+            isActive: isActive,
+            entityType: 'merchant',
             timestamp: timestamp,
-            message: 'Logout processed - restaurant is now offline'
+            message: `Business status updated to ${isActive ? 'online' : 'offline'}`
         });
 
-        console.log(`✅ Merchant logout processed: ${businessId} -> offline`);
+        console.log(`✅ Business status update completed for: ${businessId}`);
 
     } catch (error) {
-        console.error('Error processing merchant logout:', error);
+        console.error('Error updating business status:', error);
         await sendMessageToConnection(connectionId, {
             type: 'ERROR',
-            message: 'Failed to process merchant logout',
+            message: 'Failed to update business status',
             businessId: businessId,
+            error: error.message
+        });
+    }
+}
+
+/**
+ * Safety-net: explicitly register/refresh a REAL WebSocket connection from client message
+ */
+async function handleRegisterConnection(connectionId, message) {
+    try {
+        const currentTime = new Date().toISOString();
+        const ttl = Math.floor(Date.now() / 1000) + 3600; // 1 hour TTL
+
+        const entityType = message.entityType || 'merchant';
+        const businessId = message.businessId || null;
+        const userId = message.userId || businessId;
+
+        await connectionsAdapter.createConnection({
+            connectionId,
+            entityType,
+            userId,
+            businessId,
+            connectedAt: currentTime,
+            ttl,
+            isActive: true,
+            connectionType: 'REAL',
+            lastHeartbeat: currentTime,
+            source: 'client_register'
+        });
+
+        console.log(`✅ REGISTER_CONNECTION upserted: ${connectionId} (userId=${userId}, businessId=${businessId})`);
+
+        await sendMessageToConnection(connectionId, {
+            type: 'REGISTERED',
+            connectionId,
+            entityType,
+            businessId,
+            userId,
+            timestamp: currentTime
+        });
+    } catch (error) {
+        console.error('Error handling REGISTER_CONNECTION:', error);
+        await sendMessageToConnection(connectionId, {
+            type: 'ERROR',
+            message: 'Failed to register connection',
             error: error.message
         });
     }

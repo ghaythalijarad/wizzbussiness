@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/io.dart';
 import '../models/order.dart';
 import '../models/delivery_address.dart';
 import 'package:hadhir_business/config/app_config.dart';
@@ -9,6 +10,7 @@ import 'order_service.dart';
 import 'app_auth_service.dart';
 import 'audio_notification_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'app_state.dart';
 
 final realtimeOrderServiceProvider = Provider<RealtimeOrderService>((ref) {
   return RealtimeOrderService();
@@ -35,6 +37,9 @@ class RealtimeOrderService {
   String? _businessId;
   String? _authToken;
   bool _isDisposed = false;
+  bool _isConnecting = false;
+  Future<void>? _ongoingInitialize;
+  bool _didSendSubscribe = false;
 
   // Sound notification tracking to prevent duplicates
   final Set<String> _soundPlayedForOrders = <String>{};
@@ -195,10 +200,31 @@ class RealtimeOrderService {
   }
 
   /// Initialize the service with business context
-  Future<void> initialize(String businessId) async {
-    _isDisposed = false; // Mark as active
-    _ensureControllersInitialized();
+  Future<void> initialize(String? businessId) async {
+    // If already connected to the same business, skip
+    if (_isConnected && _businessId != null && _businessId == businessId) {
+      debugPrint('ℹ️ RealtimeOrderService already connected for business $_businessId');
+      return;
+    }
 
+    // Coalesce concurrent initialize calls
+    if (_isConnecting) {
+      debugPrint('ℹ️ Initialize already in progress, awaiting existing operation');
+      await _ongoingInitialize;
+      return;
+    }
+
+    _isConnecting = true;
+    _ongoingInitialize = _initializeInternal(businessId);
+    try {
+      await _ongoingInitialize;
+    } finally {
+      _isConnecting = false;
+      _ongoingInitialize = null;
+    }
+  }
+
+  Future<void> _initializeInternal(String? businessId) async {
     _businessId = businessId;
     _authToken = await AppAuthService.getAccessToken();
 
@@ -212,8 +238,7 @@ class RealtimeOrderService {
       return;
     }
 
-    debugPrint(
-        '✅ Initializing RealtimeOrderService with businessId: $_businessId');
+    debugPrint('✅ Initializing RealtimeOrderService with businessId: $_businessId');
     await _connectWebSocket();
     _startPollingFallback(); // Always have polling as backup
   }
@@ -235,6 +260,21 @@ class RealtimeOrderService {
       return;
     }
 
+    if (_isConnecting) {
+      debugPrint('ℹ️ Already connecting, aborting duplicate _connectWebSocket call');
+      return;
+    }
+
+    _isConnecting = true;
+    _didSendSubscribe = false; // reset before new connection
+
+    // If an existing channel is present, ensure it is closed before reconnecting
+    if (_channel != null) {
+      try {
+        await disconnect();
+      } catch (_) {}
+    }
+
     _manualDisconnect = false; // Reset manual disconnect flag on new connection attempt
 
     try {
@@ -243,17 +283,24 @@ class RealtimeOrderService {
       final userId = currentUser?['userId'] ?? currentUser?['user']?['userId'];
 
       // Build WebSocket URL with proper parameters for unified tracking
+      debugPrint('🔍 AppConfig.webSocketUrl: ${AppConfig.webSocketUrl}');
       final wsUrl = '${AppConfig.webSocketUrl}'
           '?businessId=$_businessId'
           '&entityType=merchant'
-          '&userId=${userId ?? _businessId}'
-          '&merchantId=$_businessId'; // Keep for backward compatibility
-      
+          '&userId=${userId ?? _businessId}';
+
       debugPrint('🔌 Connecting to WebSocket: $wsUrl');
 
-      _channel = WebSocketChannel.connect(
+      // Create WebSocket connection with Authorization header
+      _channel = IOWebSocketChannel.connect(
         Uri.parse(wsUrl),
-        protocols: ['websocket'],
+        headers: {
+          // Prefer Bearer format for shared WizzUser endpoint authorizer
+          'Authorization': 'Bearer ${_authToken!}',
+          // Fallback header for any legacy handlers that expect a raw token
+          'X-Authorization': _authToken!,
+        },
+        pingInterval: pingInterval,
       );
 
       // Listen for messages
@@ -270,15 +317,33 @@ class RealtimeOrderService {
 
       debugPrint('✅ WebSocket connected successfully');
 
-      // Send subscription message
+      // First, register as merchant to override WizzUser default entityType
       _sendWebSocketMessage({
-        'type': 'SUBSCRIBE_ORDERS',
+        'type': 'REGISTER_CONNECTION',
         'businessId': _businessId,
+        'entityType': 'merchant',
+        'userType': 'merchant',
+        'userId': userId ?? _businessId,
         'timestamp': DateTime.now().toIso8601String(),
       });
+
+      // Then send subscription request (only once per connection)
+      if (!_didSendSubscribe) {
+        _sendWebSocketMessage({
+          'type': 'SUBSCRIBE_ORDERS',
+          'businessId': _businessId,
+          'entityType': 'merchant',
+          'userType': 'merchant',
+          'userId': userId ?? _businessId,
+          'timestamp': DateTime.now().toIso8601String(),
+        });
+        _didSendSubscribe = true;
+      }
     } catch (error) {
       debugPrint('❌ WebSocket connection failed: $error');
       _handleWebSocketError(error);
+    } finally {
+      _isConnecting = false;
     }
   }
 
@@ -322,9 +387,18 @@ class RealtimeOrderService {
         case 'order_update':
           _safeAddToOrderUpdateController(payload ?? message);
           break;
+        case 'BUSINESS_STATUS_UPDATED':
+          try {
+            final isActive = (payload ?? message)['isActive'] == true;
+            // Sync UI state with server confirmation
+            AppState().updateOnlineStatus(isActive);
+          } catch (_) {}
+          debugPrint('✅ Business status updated ack received.');
+          break;
         case 'CONNECTION_ESTABLISHED':
         case 'connection_established':
         case 'SUBSCRIBED':
+        case 'REGISTERED':
           debugPrint('✅ WebSocket connection established.');
           break;
         case 'PONG':
@@ -513,6 +587,8 @@ class RealtimeOrderService {
   void _handleWebSocketError(dynamic error) {
     debugPrint('❌ WebSocket error: $error');
     _isConnected = false;
+    _isConnecting = false;
+    _didSendSubscribe = false;
     _safeAddToConnectionController(false);
     _stopPing();
     _scheduleReconnect();
@@ -522,6 +598,8 @@ class RealtimeOrderService {
   void _handleWebSocketDisconnection() {
     debugPrint('🔌 WebSocket disconnected');
     _isConnected = false;
+    _isConnecting = false;
+    _didSendSubscribe = false;
     _safeAddToConnectionController(false);
     _stopPing();
     if (!_isDisposed && !_manualDisconnect) {
@@ -551,6 +629,46 @@ class RealtimeOrderService {
       'timestamp': DateTime.now().toIso8601String(),
       'reason': 'user_logout',
     });
+  }
+
+  /// Send business busy status update via WebSocket (public method)
+  void sendBusinessBusyStatusUpdate(
+      {required String businessId,
+      required String userId,
+      required bool isBusy}) {
+    debugPrint(
+        '🔌 Sending business busy status update: ${isBusy ? 'BUSY' : 'NOT BUSY'}');
+    _sendWebSocketMessage({
+      'type': 'BUSINESS_BUSY_STATUS_UPDATE',
+      'businessId': businessId,
+      'userId': userId,
+      'isBusy': isBusy,
+      'timestamp': DateTime.now().toIso8601String(),
+    });
+  }
+
+  /// Send business status update (online/offline) for sidebar toggle
+  void sendBusinessStatusUpdate({
+    required String businessId,
+    required String userId,
+    required bool isActive,
+  }) {
+    debugPrint('🔌 Sending BUSINESS_STATUS_UPDATE: isActive=$isActive');
+    _sendWebSocketMessage({
+      'type': 'BUSINESS_STATUS_UPDATE',
+      'businessId': businessId,
+      'userId': userId,
+      'isActive': isActive,
+      'entityType': 'merchant',
+      'userType': 'merchant',
+      'timestamp': DateTime.now().toIso8601String(),
+    });
+  }
+
+  /// Send custom WebSocket message (public method for toggle fix)
+  void sendCustomMessage(Map<String, dynamic> message) {
+    debugPrint('🔌 Sending custom WebSocket message: ${message['type']}');
+    _sendWebSocketMessage(message);
   }
 
   /// Start periodic ping to keep connection alive
@@ -643,6 +761,8 @@ class RealtimeOrderService {
     _stopPing();
     _reconnectTimer?.cancel();
     _isConnected = false;
+    _isConnecting = false;
+    _didSendSubscribe = false;
     _safeAddToConnectionController(false);
     debugPrint('🔌 WebSocket disconnected manually');
   }

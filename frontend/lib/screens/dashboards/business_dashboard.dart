@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// Removed unused shared_preferences import after removing toggle functionality
+// import 'package:shared_preferences/shared_preferences.dart';
 import '../orders_page.dart';
 import '../products_management_screen.dart';
 import '../analytics_page.dart';
@@ -11,13 +12,10 @@ import '../../models/business.dart';
 import '../../models/order.dart';
 import '../../services/order_service.dart';
 import '../../services/app_state.dart';
-import '../../services/app_auth_service.dart';
 import '../../providers/session_provider.dart';
 import '../../providers/business_provider.dart';
 import '../../widgets/modern_navigation_rail.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/design_system/golden_ratio_constants.dart';
-import '../../core/design_system/typography_system.dart';
 import '../../widgets/modern_sidebar.dart';
 import '../../utils/responsive_helper.dart';
 import '../../l10n/app_localizations.dart';
@@ -40,7 +38,6 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
   bool _isOnline = true;
   List<Order> _orders = [];
   bool _loadingOrders = false;
-  bool _isToggling = false;
 
   final OrderService _orderService = OrderService();
   final AppState _appState = AppState();
@@ -73,46 +70,6 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
     final session = ref.read(sessionProvider);
     if (session.isAuthenticated && session.businessId != null) {
       await _loadOrders();
-      await _loadOnlineStatus(session.businessId!);
-    }
-  }
-
-  /// Load online status from API and sync with local state
-  Future<void> _loadOnlineStatus(String businessId) async {
-    try {
-      // Check if we just recently forced online status during login
-      // If so, skip loading from API to preserve the forced status
-      final prefs = await SharedPreferences.getInstance();
-      final lastLoginTime = prefs.getInt('last_login_time') ?? 0;
-      final currentTime = DateTime.now().millisecondsSinceEpoch;
-      final timeSinceLogin = currentTime - lastLoginTime;
-
-      // If login was within the last 30 seconds, keep forced online status
-      if (timeSinceLogin < 30000) {
-        debugPrint('🟢 Preserving forced online status from recent login');
-        if (mounted) {
-          setState(() {
-            _isOnline = _appState.isOnline;
-          });
-        }
-        return;
-      }
-
-      // Otherwise, load from API as usual
-      await _appState.loadOnlineStatusFromAPI(businessId);
-      if (mounted) {
-        setState(() {
-          _isOnline = _appState.isOnline;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading online status: $e');
-      // Keep the current persisted status if API fails
-      if (mounted) {
-        setState(() {
-          _isOnline = _appState.isOnline;
-        });
-      }
     }
   }
 
@@ -139,75 +96,6 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
       if (mounted) {
         setState(() {
           _loadingOrders = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _toggleOnlineStatus(bool isOnline) async {
-    if (_isToggling) return;
-
-    final session = ref.read(sessionProvider);
-    if (!session.isAuthenticated || session.businessId == null) {
-      debugPrint('Cannot toggle status: missing authentication data');
-      return;
-    }
-
-    setState(() {
-      _isToggling = true;
-    });
-
-    try {
-      // Get current user information to obtain userId
-      final currentUser = await AppAuthService.getCurrentUser();
-      if (currentUser == null || currentUser['userId'] == null) {
-        throw Exception('Cannot get current user information');
-      }
-
-      // Use AppState to handle the toggle with real API call
-      await _appState.setOnline(isOnline, (status) async {
-        await _appState.updateBusinessOnlineStatus(
-          session.businessId!,
-          currentUser['userId']!,
-          status,
-        );
-      });
-
-      if (mounted) {
-        setState(() {
-          _isOnline = isOnline;
-        });
-
-        HapticFeedback.lightImpact();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isOnline 
-                ? AppLocalizations.of(context)!.businessNowOnline 
-                : AppLocalizations.of(context)!.businessNowOffline,
-            ),
-            backgroundColor: isOnline ? AppColors.success : AppColors.warning,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('Error toggling online status: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.errorUpdatingStatus,
-            ),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isToggling = false;
         });
       }
     }
@@ -403,7 +291,7 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
       ),
       endDrawer: ModernSidebar(
         isOnline: _isOnline,
-        onToggleStatus: _toggleOnlineStatus,
+        // Removed onToggleStatus - no toggle functionality
         onNavigate: _onNavigate,
         onClose: () => Navigator.of(context).pop(),
         onReturnOrder: () {},
@@ -419,7 +307,7 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
             selectedIndex: _selectedIndex,
             onNavigate: _onNavigate,
             isOnline: _isOnline,
-            onToggleStatus: _toggleOnlineStatus,
+            // Removed onToggleStatus - no toggle functionality
           ),
           Expanded(
             child: _buildDashboardBody(business),
@@ -435,7 +323,7 @@ class _BusinessDashboardState extends ConsumerState<BusinessDashboard>
         children: [
           ModernSidebar(
             isOnline: _isOnline,
-            onToggleStatus: _toggleOnlineStatus,
+            // Removed onToggleStatus - no toggle functionality
             onReturnOrder: () {},
             onNavigate: _onNavigate,
             onClose: () {},

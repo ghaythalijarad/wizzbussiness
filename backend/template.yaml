@@ -19,6 +19,14 @@ Parameters:
     Type: String
     Default: "v3"
     Description: Cache busting version
+  SharedWebSocketApiId:
+    Type: String
+    Default: lwk0wf6rpl
+    Description: Shared WebSocket API ID (WizzUser-WebSocket-dev)
+  SharedWebSocketUrl:
+    Type: String  
+    Default: wss://lwk0wf6rpl.execute-api.us-east-1.amazonaws.com/dev
+    Description: Shared WebSocket URL for ecosystem integration
 
 Globals:
   Function:
@@ -1649,7 +1657,8 @@ Resources:
       Handler: websocket_handler.handler
       Environment:
         Variables:
-          WEBSOCKET_ENDPOINT: !Sub "https://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}"
+          WEBSOCKET_ENDPOINT: !Ref SharedWebSocketUrl
+          SHARED_WEBSOCKET_API_ID: !Ref SharedWebSocketApiId
           MERCHANT_ENDPOINTS_TABLE: !Sub 'wizzgo-${Stage}-merchant-endpoints'
       Policies:
         - Version: "2012-10-17"
@@ -1663,8 +1672,10 @@ Resources:
                 - dynamodb:Query
                 - dynamodb:Scan
               Resource: 
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-${Stage}"
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-${Stage}/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WizzUser_websocket_connections_dev"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WizzUser_websocket_connections_dev/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WizzUser_websocket_subscriptions_dev"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WizzUser_websocket_subscriptions_dev/index/*"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/wizzgo-${Stage}-merchant-endpoints"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/wizzgo-${Stage}-merchant-endpoints/index/*"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses"
@@ -1672,7 +1683,7 @@ Resources:
             - Effect: Allow
               Action:
                 - execute-api:ManageConnections
-              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*"
+              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SharedWebSocketApiId}/*"
 
   WebSocketConnectionManagerFunction:
     Type: AWS::Serverless::Function
@@ -1692,8 +1703,10 @@ Resources:
                 - dynamodb:Query
                 - dynamodb:Scan
               Resource: 
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-${Stage}"
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/order-receiver-websocket-connections-${Stage}/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WizzUser_websocket_connections_dev"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WizzUser_websocket_connections_dev/index/*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WizzUser_websocket_subscriptions_dev"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WizzUser_websocket_subscriptions_dev/index/*"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/WhizzMerchants_Businesses/index/*"
 
@@ -1751,119 +1764,121 @@ Resources:
                 - cognito-idp:GetUser
               Resource: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
 
+  # ========================================================================
+  # INDIVIDUAL WEBSOCKET API RESOURCES - COMMENTED OUT FOR SHARED MIGRATION
+  # ========================================================================
+  # Migrated to shared WebSocket infrastructure: WizzUser-WebSocket-dev
+  # API ID: lwk0wf6rpl
+  # URL: wss://lwk0wf6rpl.execute-api.us-east-1.amazonaws.com/dev
+  # ========================================================================
+  
   # WebSocket API
-  WebSocketApi:
-    Type: AWS::ApiGatewayV2::Api
-    Properties:
-      Name: !Sub 'order-receiver-websocket-api-${Stage}'
-      ProtocolType: WEBSOCKET
-      RouteSelectionExpression: "$request.body.action"
+  # WebSocketApi:
+  #   Type: AWS::ApiGatewayV2::Api
+  #   Properties:
+  #     Name: !Sub 'order-receiver-websocket-api-${Stage}'
+  #     ProtocolType: WEBSOCKET
+  #     RouteSelectionExpression: "$request.body.action"
 
-  WebSocketConnectRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref WebSocketApi
-      RouteKey: $connect
-      Target: !Sub 'integrations/${WebSocketConnectIntegration}'
+  # WebSocketConnectRoute:
+  #   Type: AWS::ApiGatewayV2::Route
+  #   Properties:
+  #     ApiId: !Ref WebSocketApi
+  #     RouteKey: $connect
+  #     Target: !Sub 'integrations/${WebSocketConnectIntegration}'
 
-  WebSocketDisconnectRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref WebSocketApi
-      RouteKey: $disconnect
-      Target: !Sub 'integrations/${WebSocketDisconnectIntegration}'
+  # WebSocketDisconnectRoute:
+  #   Type: AWS::ApiGatewayV2::Route
+  #   Properties:
+  #     ApiId: !Ref WebSocketApi
+  #     RouteKey: $disconnect
+  #     Target: !Sub 'integrations/${WebSocketDisconnectIntegration}'
 
-  WebSocketDefaultRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref WebSocketApi
-      RouteKey: $default
-      Target: !Sub 'integrations/${WebSocketDefaultIntegration}'
+  # WebSocketDefaultRoute:
+  #   Type: AWS::ApiGatewayV2::Route
+  #   Properties:
+  #     ApiId: !Ref WebSocketApi
+  #     RouteKey: $default
+  #     Target: !Sub 'integrations/${WebSocketDefaultIntegration}'
 
-  WebSocketConnectIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref WebSocketApi
-      IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebSocketHandlerFunction.Arn}/invocations'
+  # WebSocketConnectIntegration:
+  #   Type: AWS::ApiGatewayV2::Integration
+  #   Properties:
+  #     ApiId: !Ref WebSocketApi
+  #     IntegrationType: AWS_PROXY
+  #     IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebSocketHandlerFunction.Arn}/invocations'
 
-  WebSocketDisconnectIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref WebSocketApi
-      IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebSocketHandlerFunction.Arn}/invocations'
+  # WebSocketDisconnectIntegration:
+  #   Type: AWS::ApiGatewayV2::Integration
+  #   Properties:
+  #     ApiId: !Ref WebSocketApi
+  #     IntegrationType: AWS_PROXY
+  #     IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebSocketHandlerFunction.Arn}/invocations'
 
-  WebSocketDefaultIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref WebSocketApi
-      IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebSocketHandlerFunction.Arn}/invocations'
+  # WebSocketDefaultIntegration:
+  #   Type: AWS::ApiGatewayV2::Integration
+  #   Properties:
+  #     ApiId: !Ref WebSocketApi
+  #     IntegrationType: AWS_PROXY
+  #     IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebSocketHandlerFunction.Arn}/invocations'
 
-  WebSocketDeployment:
-    Type: AWS::ApiGatewayV2::Deployment
-    DependsOn:
-      - WebSocketConnectRoute
-      - WebSocketDisconnectRoute
-      - WebSocketDefaultRoute
-    Properties:
-      ApiId: !Ref WebSocketApi
+  # WebSocketDeployment:
+  #   Type: AWS::ApiGatewayV2::Deployment
+  #   DependsOn:
+  #     - WebSocketConnectRoute
+  #     - WebSocketDisconnectRoute
+  #     - WebSocketDefaultRoute
+  #   Properties:
+  #     ApiId: !Ref WebSocketApi
 
-  WebSocketStage:
-    Type: AWS::ApiGatewayV2::Stage
-    Properties:
-      StageName: !Ref Stage
-      ApiId: !Ref WebSocketApi
-      DeploymentId: !Ref WebSocketDeployment
+  # WebSocketStage:
+  #   Type: AWS::ApiGatewayV2::Stage
+  #   Properties:
+  #     StageName: !Ref Stage
+  #     ApiId: !Ref WebSocketApi
+  #     DeploymentId: !Ref WebSocketDeployment
 
-  WebSocketConnectPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref WebSocketHandlerFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*'
+  # NOTE: Lambda permissions will be handled by the shared WebSocket API infrastructure
 
-  # WebSocket Connections Table
-  WebSocketConnectionsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub 'order-receiver-websocket-connections-${Stage}'
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: PK
-          AttributeType: S
-        - AttributeName: SK
-          AttributeType: S
-        - AttributeName: GSI1PK
-          AttributeType: S
-        - AttributeName: GSI1SK
-          AttributeType: S
-      KeySchema:
-        - AttributeName: PK
-          KeyType: HASH
-        - AttributeName: SK
-          KeyType: RANGE
-      GlobalSecondaryIndexes:
-        - IndexName: GSI1
-          KeySchema:
-            - AttributeName: GSI1PK
-              KeyType: HASH
-            - AttributeName: GSI1SK
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-      TimeToLiveSpecification:
-        AttributeName: ttl
-        Enabled: true
-      Tags:
-        - Key: Environment
-          Value: !Ref Stage
-        - Key: Service
-          Value: OrderReceiver
-        - Key: Purpose
-          Value: websocket-connections
+  # WebSocket Connections Table - Using shared tables instead
+  # WebSocketConnectionsTable:
+  #   Type: AWS::DynamoDB::Table
+  #   Properties:
+  #     TableName: !Sub 'order-receiver-websocket-connections-${Stage}'
+  #     BillingMode: PAY_PER_REQUEST
+  #     AttributeDefinitions:
+  #       - AttributeName: PK
+  #         AttributeType: S
+  #       - AttributeName: SK
+  #         AttributeType: S
+  #       - AttributeName: GSI1PK
+  #         AttributeType: S
+  #       - AttributeName: GSI1SK
+  #         AttributeType: S
+  #     KeySchema:
+  #       - AttributeName: PK
+  #         KeyType: HASH
+  #       - AttributeName: SK
+  #         KeyType: RANGE
+  #     GlobalSecondaryIndexes:
+  #       - IndexName: GSI1
+  #         KeySchema:
+  #           - AttributeName: GSI1PK
+  #             KeyType: HASH
+  #           - AttributeName: GSI1SK
+  #             KeyType: RANGE
+  #         Projection:
+  #           ProjectionType: ALL
+  #     TimeToLiveSpecification:
+  #       AttributeName: ttl
+  #       Enabled: true
+  #     Tags:
+  #       - Key: Environment
+  #         Value: !Ref Stage
+  #       - Key: Service
+  #         Value: OrderReceiver
+  #       - Key: Purpose
+  #         Value: websocket-connections
 
   # DynamoDB Tables
   BusinessWorkingHoursTable:
@@ -1897,16 +1912,23 @@ Outputs:
       Name: !Sub "${AWS::StackName}-ApiEndpoint"
   
   WebSocketUrl:
-    Description: "WebSocket API Gateway URL"
-    Value: !Sub "wss://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}"
+    Description: "Shared WebSocket API Gateway URL for ecosystem integration"
+    Value: !Ref SharedWebSocketUrl
     Export:
       Name: !Sub "${AWS::StackName}-WebSocketUrl"
   
-  WebSocketConnectionsTable:
-    Description: "WebSocket Connections Table Name"
-    Value: !Ref WebSocketConnectionsTable
+  SharedWebSocketApiId:
+    Description: "Shared WebSocket API ID (WizzUser-WebSocket-dev)"
+    Value: !Ref SharedWebSocketApiId
     Export:
-      Name: !Sub "${AWS::StackName}-WebSocketConnectionsTable"
+      Name: !Sub "${AWS::StackName}-SharedWebSocketApiId"
+  
+  # NOTE: Using shared tables - individual table output commented out
+  # WebSocketConnectionsTable:
+  #   Description: "WebSocket Connections Table Name"
+  #   Value: !Ref WebSocketConnectionsTable
+  #   Export:
+  #     Name: !Sub "${AWS::StackName}-WebSocketConnectionsTable"
   
   BusinessWorkingHoursTableName:
     Description: "Business Working Hours Table Name"

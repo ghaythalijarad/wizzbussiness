@@ -8,5 +8,5 @@ region = "us-east-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 disable_rollback = true
-parameter_overrides = "Stage=\"dev\" CognitoUserPoolId=\"us-east-1_PHPkG78b5\" CognitoClientId=\"1tl9g7nk2k2chtj5fg960fgdth\" CacheVersion=\"v2\""
+parameter_overrides = "Stage=\"dev\" CognitoUserPoolId=\"us-east-1_PHPkG78b5\" CognitoClientId=\"1tl9g7nk2k2chtj5fg960fgdth\" CacheVersion=\"v2\" SharedWebSocketApiId=\"lwk0wf6rpl\" SharedWebSocketUrl=\"wss://lwk0wf6rpl.execute-api.us-east-1.amazonaws.com\""
 image_repositories = []

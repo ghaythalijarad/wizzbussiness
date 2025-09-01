@@ -152,6 +152,34 @@ class WebSocketService {
     }
   }
 
+  /// Send business busy status update - NEW APPROACH for UI toggle
+  void sendBusinessBusyStatusUpdate({
+    required String businessId,
+    required String userId,
+    required bool isBusy,
+  }) {
+    if (_channel?.sink == null) {
+      print("WebSocket: Cannot send busy status update - no active connection");
+      return;
+    }
+
+    final message = {
+      'type': 'BUSINESS_BUSY_STATUS_UPDATE',
+      'businessId': businessId,
+      'userId': userId,
+      'isBusy': isBusy,
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+
+    try {
+      _channel!.sink.add(jsonEncode(message));
+      print(
+          "WebSocket: Business busy status update sent - $businessId: ${isBusy ? 'BUSY' : 'NOT BUSY'}");
+    } catch (error) {
+      print("WebSocket: Error sending business busy status update: $error");
+    }
+  }
+
   /// Send merchant logout notification
   void sendMerchantLogout({
     required String businessId,

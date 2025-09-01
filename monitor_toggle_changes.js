@@ -1,25 +1,27 @@
 #!/usr/bin/env node
 
 /**
- * Monitor DynamoDB Table Changes When Merchant Status Toggle Is Used
- * 
- * This script monitors the three DynamoDB tables that update when you
- * toggle your merchant status in the Flutter app.
+ * Database Monitor for Sidebar Toggle Fix
+ * This script monitors the WizzUser_websocket_subscriptions_dev table
+ * to track changes when the sidebar toggle is used.
  */
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, GetCommand, QueryCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, ScanCommand, GetCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
 
-// Configure AWS
-const dynamoDbClient = new DynamoDBClient({ 
+const client = new DynamoDBClient({ 
     region: 'us-east-1',
-    profile: 'wizz-merchants-dev'  // Use your AWS profile
+    // AWS credentials should be configured via AWS CLI or environment variables
 });
-const dynamodb = DynamoDBDocumentClient.from(dynamoDbClient);
+const dynamodb = DynamoDBDocumentClient.from(client);
 
-// Your business details - UPDATE THESE
-const BUSINESS_ID = 'business_1756220656049_ee98qktepks'; // Your actual business ID
-const USER_ID = 'b6895b2c-4bf5-4a95-8ee6-05c6a8bb3b47'; // Your actual user ID from session
+const tableName = 'WizzUser_websocket_subscriptions_dev';
+
+// Store previous state to detect changes
+let previousState = {};
+let monitoringStartTime = new Date();
+const BUSINESS_ID = '7ccf646c-9594-48d4-8f63-c366d89257e5'; // Current logged-in business
+const USER_ID = '34381438-1011-7067-5ae3-a848cbf1d682'; // Current user ID from session
 
 // Table names
 const BUSINESSES_TABLE = 'order-receiver-businesses-dev';
